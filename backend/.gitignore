@@ -1,0 +1,9 @@
+# ignore all csv files
+*.csv
+
+# ignore all html files
+*.html
+
+# ignore all png and jpg files
+*.png
+*.jpg

@@ -146,3 +146,20 @@ npm install
 npm run start
 ```
 This will start the frontend server and allow you to access the user interface in your web browser.
+
+## Contributing
+
+We welcome contributions to this project. To contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them with a descriptive message.
+4. Push your changes to your fork.
+5. Submit a pull request to the main repository.
+6. We will review your changes and merge them if they align with the project's goals.
+
+
+
+
+## License
+This project is licensed under the [insert license name here] license. See the LICENSE file for more information.

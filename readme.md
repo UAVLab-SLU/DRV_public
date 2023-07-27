@@ -83,44 +83,6 @@ python ./PythonClient/server/simulation_server.py
 ```
 
 
-GitHub Copilot: To make the section more professional, you can consider the following:
-
-1. Use a clear and concise language that is easy to understand.
-2. Provide more detailed instructions on how to prepare the environment and start the server.
-3. Include any necessary command line arguments or configuration options.
-4. Provide troubleshooting tips for common issues that users may encounter.
-
-Here is an example of how you can improve the section:
-
-## 2. Python backend
-
-To prepare the environment and start the Python backend, follow these steps:
-
-1. Open the terminal and navigate to the project repository.
-
-2. Create a virtual environment by running the following command:
-
-```
-python -m venv venv
-```
-
-3. Activate the virtual environment by running the following command:
-
-```
-source venv/bin/activate
-```
-
-4. Install the necessary dependencies by running the following command:
-
-```
-pip install -r requirements.txt
-```
-
-5. Start the server by running the following command:
-
-```
-python ./PythonClient/server/simulation_server.py
-```
 
 This will start the Python backend server and allow it to communicate with the Unreal application.
 
@@ -162,4 +124,4 @@ We welcome contributions to this project. To contribute, please follow these ste
 
 
 ## License
-This project is licensed under the [insert license name here] license. See the LICENSE file for more information.
+This project is licensed under the MIT  license. See the LICENSE file for more information.

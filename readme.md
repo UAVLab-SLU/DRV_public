@@ -48,7 +48,7 @@ If you do not download the patch, the unreal editor will not be able to load the
 ### Executable mode 
 1. Download the "0.4.0.rar" from
 https://sluedu-my.sharepoint.com/:f:/g/personal/ankit_agrawal_1_slu_edu/ElbD1q-O8fBFgGDqov6Mh5EBsJ90YyPj2fzsIznTP6AX-w?e=XZaPiX
-2. Extract it
+2. Extract it to `unreal_app\executable_mode`
 3. Run the "Blocks.exe" file
 
 
@@ -57,6 +57,9 @@ https://sluedu-my.sharepoint.com/:f:/g/personal/ankit_agrawal_1_slu_edu/ElbD1q-O
 To prepare the environment and start the Python backend, follow these steps:
 
 1. Open the terminal and navigate to the project repository.
+```powershell
+cd backend 
+```
 
 2. Create a virtual environment by running the following command:
 

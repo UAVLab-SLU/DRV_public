@@ -124,7 +124,5 @@ We welcome contributions to this project. To contribute, please follow these ste
 6. We will review your changes and merge them if they align with the project's goals.
 
 
-
-
 ## License
 This project is licensed under the MIT  license. See the LICENSE file for more information.

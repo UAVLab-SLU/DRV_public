@@ -1,2 +1,10 @@
 Hebron Bekele 
-//Issue3: Allow users to select wind type and wind origin 
+//Issue3: Allow users to select wind type and wind origin  
+
+import windtype options
+
+Change dropdown to text input for origin name 
+
+Accept windType and origin as objects instead of strings 
+Pass windType and origin names as string values  
+

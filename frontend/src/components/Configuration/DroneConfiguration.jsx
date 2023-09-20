@@ -180,7 +180,7 @@ export default function DroneConfiguration (droneData)  {
                         <Grid container direction="row">
                             {/* <Grid item xs={3}> */}
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="home-location">Home Spot Location</InputLabel>
+                                    <InputLabel id="home-location">Home Location</InputLabel>
                                     {/* <Select label="Home Location" value={selectedLoc} onChange={handleLocChange} disabled>
                                         {locations.map(function(val) {
                                             return(<MenuItem value={val.value} key={val.id}>

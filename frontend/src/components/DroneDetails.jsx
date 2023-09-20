@@ -1,15 +1,8 @@
-import { Typography, Select, MenuItem } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import colors from '../utils/colors';
 
 const DroneDetails = (props) => {
-  const handleChange = (event) => {
-    // Handle the selected option here
-    const selectedOption = event.target.value;
-    // You can perform any actions you need with the selected option
-    console.log(selectedOption);
-  };
-
   return (
     <Box
       sx={{
@@ -17,7 +10,7 @@ const DroneDetails = (props) => {
         flexDirection: 'row',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex' }}>
         <Typography sx={{ display: 'flex' }}>Name:</Typography>
         <Box
           sx={{
@@ -34,9 +27,6 @@ const DroneDetails = (props) => {
         </Box>
       </Box>
 
-
-
-
       <Box sx={{ marginLeft: '20px' }}>
         <Typography sx={{ display: 'flex' }}>Options:</Typography>
         <Select
@@ -52,6 +42,8 @@ const DroneDetails = (props) => {
 
         </Select>
       </Box>
+
+
 
 
 

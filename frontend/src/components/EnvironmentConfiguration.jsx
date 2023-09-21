@@ -42,7 +42,9 @@ export default function EnvironmentConfiguration (env) {
         enableFuzzy: false,
         Wind: {
             Distance: "NE",
-            Force: 1
+            Force: 1,
+            Type: "None",
+            WindOrigin: "None",
         },
         Origin: {
             Latitude: 41.980381,
@@ -78,6 +80,36 @@ export default function EnvironmentConfiguration (env) {
         {value:'SW', id:3},
         {value:'NW', id:4}
     ]
+
+    //Wind Origin
+    const WindOrigin = [
+        { value: "VALUE SUBJECT TO CHANGE1", id: 1 },
+        { value: "VALUE SUBJECT TO CHANGE2", id: 2 },
+        { value: "VALUE SUBJECT TO CHANGE3", id: 3 },
+        { value: "VALUE SUBJECT TO CHANGE4", id: 4 },
+        { value: "VALUE SUBJECT TO CHANGE5", id: 5 },
+        { value: "None", id: 6 }
+    ]
+
+    //Saves selected wind origin with a chosen one, or if none is chosen, it uses a default
+    //THIS WILL CHANGE WHEN WE HAVE FURTHER INFORMATION ON WHAT THE VALUES ARE, AS WELL AS ENVCONFIG
+    const [selectedWindOrigin, setSelectedWindOrigin] = React.useState(
+        envConf.Wind.WindOrigin || "None"
+    );
+
+    //Wind type
+    const WindType = [
+        { value: "Constant Wind", id: 1 },
+        { value: "Turbulant Wind", id: 2 },
+        { value: "Wind Shear", id: 3 },
+        { value: "None", id: 4 },
+
+    ]
+
+    const [selectedWindType, setSelectedWindType] = React.useState(
+        envConf.Wind.Type || "None" // Set a default value if needed
+    );
+
 
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
@@ -116,6 +148,33 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     }
+
+
+  const handleWindOriginChange = (event) => {
+        const newWindOrigin = event.target.value;
+        setSelectedWindOrigin(newWindOrigin);
+        setEnvConf(prevState=> ({
+          ...prevState,
+              Wind: {
+              ...prevState.Wind,
+              WindOrigin: newWindOrigin,
+              },
+          }));
+
+  };
+
+  const handleWindTypeChange = (event) => {
+      const newWindType = event.target.value;
+      setSelectedWindType(newWindType);
+      setEnvConf((prevState) => ({
+          ...prevState,
+              Wind: {
+              ...prevState.Wind,
+              Type: newWindType,
+              },
+          }));
+  };
+
     
     const handleDistance = (val) => {
         setEnvConf(prevState => ({
@@ -180,18 +239,45 @@ export default function EnvironmentConfiguration (env) {
                                     </Select>
                                 </FormControl>
                             </Grid>
+                            <Grid item xs={3}> {/* WIND ORIGIN DROP DOWN */}
+                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                                    <InputLabel id="WindOrigin">Wind Origin</InputLabel>
+                                        <Select
+                                            label="Wind Origin"
+                                            value={selectedWindOrigin}
+                                            onChange={handleWindOriginChange}>
+                                        {WindOrigin.map(function (val) {
+                                            return (
+                                                <MenuItem value={val.value} key={val.id}>
+                                                    <em>{val.value}</em>
+                                                </MenuItem>)
+                                                })}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={3}> {/* WIND TYPE DROP DOWN */}
+                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                                    <InputLabel id="WindType">Wind Type</InputLabel>
+                                        <Select
+                                            label="Wind Type"
+                                            value={selectedWindType}
+                                            onChange={handleWindTypeChange}>
+                                            {WindType.map(function (val) {
+                                                return (
+                                                    <MenuItem value={val.value} key={val.id}>
+                                                        <em>{val.value}</em>
+                                                    </MenuItem>)
+                                                    })}
+                                        </Select>
+                                </FormControl>
+                            </Grid>
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                             <Grid item xs={3}>
                                 <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
                             </Grid>
                             </Tooltip>
                             <Tooltip title="Automatically run series of simulations to fuzzy test the wind velocity impact" placement='bottom'>
-                            <Grid item xs={3}>
-                                <FormGroup>
-                                    <FormControlLabel control={<Switch checked={envConf.enableFuzzy} onChange={handleChangeSwitch} inputProps={{ 'aria-label': 'controlled' }} />}  label="Enable Fuzzy Test" />
-                                    <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
-                                </FormGroup>
-                            </Grid>
+
                             </Tooltip>
                             <Grid item xs={3} />
                             <Grid item xs={3} >
@@ -222,27 +308,35 @@ export default function EnvironmentConfiguration (env) {
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind">Time of Day</Typography>
                             </Grid> */}
-                            <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
+                        
                             <Grid item xs={3}>
-                                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                    <Stack spacing={3}>
-                                        <TimePicker
-                                        ampm={false}
-                                        openTo="hours"
-                                        views={['hours', 'minutes', 'seconds']}
-                                        inputFormat="HH:mm:ss"
-                                        mask="__:__:__"
-                                        label="Time of Day"
-                                        value={envConf.time}
-                                        onChange={handleTimeChange}
-                                        renderInput={(params) => <TextField {...params} 
-                                        helperText="Enter Time of Day (24 Hour Format)"/>}
-                                        />
-                                    </Stack>
-                                </LocalizationProvider>
+                                <FormGroup>
+                                    <FormControlLabel control={<Switch checked={envConf.enableFuzzy} onChange={handleChangeSwitch} inputProps={{ 'aria-label': 'controlled' }} />}  label="Enable Fuzzy Test" />
+                                    <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
+                                </FormGroup>
                             </Grid>
+                            <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
+                                <Grid item xs={3}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <Stack spacing={3}>
+                                            <TimePicker
+                                            ampm={false}
+                                            openTo="hours"
+                                            views={['hours', 'minutes', 'seconds']}
+                                            inputFormat="HH:mm:ss"
+                                            mask="__:__:__"
+                                            label="Time of Day"
+                                            value={envConf.time}
+                                            onChange={handleTimeChange}
+                                            renderInput={(params) => <TextField {...params} 
+                                            helperText="Enter Time of Day (24 Hour Format)"/>}
+                                            />
+                                        </Stack>
+                                    </LocalizationProvider>
+                                </Grid>
                             </Tooltip>
                         </Grid>
+
                         {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>
                             <LoadScript googlMapsApiKey={YOUR_API_KEY}>
                                 <GoogleMap

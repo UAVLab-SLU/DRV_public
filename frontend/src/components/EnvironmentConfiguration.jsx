@@ -44,7 +44,7 @@ export default function EnvironmentConfiguration (env) {
             Distance: "NE",
             Force: 1,
             Type: "None",
-            WindOrigin: "None",
+            //WindOrigin: "None",
         },
         Origin: {
             Latitude: 41.980381,
@@ -81,6 +81,7 @@ export default function EnvironmentConfiguration (env) {
         {value:'NW', id:4}
     ]
 
+    {/*}
     //Wind Origin
     const WindOrigin = [
         { value: "VALUE SUBJECT TO CHANGE1", id: 1 },
@@ -90,12 +91,15 @@ export default function EnvironmentConfiguration (env) {
         { value: "VALUE SUBJECT TO CHANGE5", id: 5 },
         { value: "None", id: 6 }
     ]
+    */}
 
+    {/*}
     //Saves selected wind origin with a chosen one, or if none is chosen, it uses a default
     //THIS WILL CHANGE WHEN WE HAVE FURTHER INFORMATION ON WHAT THE VALUES ARE, AS WELL AS ENVCONFIG
     const [selectedWindOrigin, setSelectedWindOrigin] = React.useState(
         envConf.Wind.WindOrigin || "None"
     );
+    */}
 
     //Wind type
     const WindType = [
@@ -149,7 +153,7 @@ export default function EnvironmentConfiguration (env) {
         }))
     }
 
-
+  {/*
   const handleWindOriginChange = (event) => {
         const newWindOrigin = event.target.value;
         setSelectedWindOrigin(newWindOrigin);
@@ -162,6 +166,7 @@ export default function EnvironmentConfiguration (env) {
           }));
 
   };
+  */}
 
   const handleWindTypeChange = (event) => {
       const newWindType = event.target.value;
@@ -227,6 +232,7 @@ export default function EnvironmentConfiguration (env) {
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                             </Grid> */}
+
                             <Grid item xs={3}>
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
                                     <InputLabel id="Distance">Wind Direction</InputLabel>
@@ -239,29 +245,36 @@ export default function EnvironmentConfiguration (env) {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={3}> {/* WIND ORIGIN DROP DOWN */}
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="WindOrigin">Wind Origin</InputLabel>
-                                        <Select
-                                            label="Wind Origin"
-                                            value={selectedWindOrigin}
-                                            onChange={handleWindOriginChange}>
-                                        {WindOrigin.map(function (val) {
-                                            return (
-                                                <MenuItem value={val.value} key={val.id}>
-                                                    <em>{val.value}</em>
-                                                </MenuItem>)
-                                                })}
-                                    </Select>
-                                </FormControl>
+                           {/* <Grid item xs={3}> */} {/* WIND ORIGIN DROP DOWN */}
+                                {/*<FormControl variant="standard" sx={{ minWidth: 150 }}>*/}
+                                    {/*<InputLabel id="WindOrigin">Wind Origin</InputLabel>*/}
+                                        {/*<Select*/}
+                                           {/* label="Wind Origin"*/}
+                                            {/*value={selectedWindOrigin}*/}
+                                           {/* onChange={handleWindOriginChange}>*/}
+                                        {/*{WindOrigin.map(function (val) {*/}
+                                            {/*return (*/}
+                                               {/* <MenuItem value={val.value} key={val.id}>*/}
+                                               {/*     <em>{val.value}</em>*/}
+                                               {/* </MenuItem>)*/}
+                                               {/* })}*/}
+                                   {/* </Select>*/}
+                                {/*</FormControl>*/}
+                            {/*</Grid>*/}
+                            {/* WIND TYPE DROP DOWN */}
+
+                            <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
+                            <Grid item xs={3}>
+                                <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
                             </Grid>
-                            <Grid item xs={3}> {/* WIND TYPE DROP DOWN */}
+                            </Tooltip>
+                            <Grid item xs={3}> 
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
                                     <InputLabel id="WindType">Wind Type</InputLabel>
                                         <Select
-                                            label="Wind Type"
-                                            value={selectedWindType}
-                                            onChange={handleWindTypeChange}>
+                                           label= "Wind Type"
+                                           value={selectedWindType}
+                                           onChange={handleWindTypeChange}>
                                             {WindType.map(function (val) {
                                                 return (
                                                     <MenuItem value={val.value} key={val.id}>
@@ -271,11 +284,6 @@ export default function EnvironmentConfiguration (env) {
                                         </Select>
                                 </FormControl>
                             </Grid>
-                            <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                            <Grid item xs={3}>
-                                <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
-                            </Grid>
-                            </Tooltip>
                             <Tooltip title="Automatically run series of simulations to fuzzy test the wind velocity impact" placement='bottom'>
 
                             </Tooltip>

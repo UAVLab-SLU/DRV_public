@@ -1,4 +1,5 @@
-import * as React from 'react'
+//import * as React from 'react'  
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -18,9 +19,16 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormHelperText from '@mui/material/FormHelperText';
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";  
+import { WIND_TYPES } from '@mui/material/new'; 
 
-export default function EnvironmentConfiguration (env) {
+
+export default function EnvironmentConfiguration (env) {  
+    const [windType, setWindType] = useState("North"); // State for wind type
+    const [originName, setOriginName] = useState(""); // State for origin name
+    const [originLat, setOriginLat] = useState(0); // State for origin latitude
+    const [originLng, setOriginLng] = useState(0);  
+
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
         lng: -87.934524
@@ -37,7 +45,7 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
 
-      }
+      } 
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
         enableFuzzy: false,
         Wind: {
@@ -51,14 +59,17 @@ export default function EnvironmentConfiguration (env) {
         TimeOfDay: "10:00:00",
         UseGeo: true,
         time:dayjs('2020-01-01 10:00')
-    });
+    }); 
+    const handleWindTypeChange = (event) => {
+        setWindType(event.target.value);
+      } 
 
     const handleChangeSwitch = (val) => {
         setEnvConf(prevState => ({
                 ...prevState,
                 enableFuzzy: val.target.checked
         }))
-    }
+    }  
 
     const environmentJson = (event) => {
         env.environmentJson(event, env.id);
@@ -113,10 +124,16 @@ export default function EnvironmentConfiguration (env) {
             Origin: {
                 ...prevState.Origin,
                 [val.target.id]: parseFloat(val.target.value)
-            }
-        }))
-    }
-    
+            } 
+        })); 
+        if(event.target.id === "name") {
+            setOriginName(event.target.value);
+          } else if(event.target.id === "lat") {
+            setOriginLat(event.target.value);
+          } else if(event.target.id === "lng") { 
+            setOriginLng(event.target.value);
+          }
+    };
     const handleDistance = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -125,7 +142,18 @@ export default function EnvironmentConfiguration (env) {
                 Distance: val.target.value
             }
         }))
-    }
+    } 
+
+    const environmentConfig = {
+        wind: {
+          type: windType 
+        },
+        origin: {
+          name: originName,
+          latitude: originLat,
+          longitude: originLng
+        } 
+    }; 
 
     const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
@@ -164,7 +192,16 @@ export default function EnvironmentConfiguration (env) {
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
                 {/* <Container fixed > */}
                     <Typography>
-                        <Grid container spacing={3} direction="row">
+                        <Grid container spacing={3} direction="row"> 
+                        {/* Render wind type dropdown */}
+                         <select value={windType} onChange={handleWindTypeChange}>
+                        {WIND_TYPES.map((type, index) => <option key = {index}>{type}</option>)}  
+                        </select>
+
+                        {/* Render origin text inputs */}
+                        <input id="name" value={originName} onChange={handleOriginChange} />
+                        <input id="lat" value={originLat} onChange={handleOriginChange} />
+                        <input id="lng" value={originLng} onChange={handleOriginChange} />
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                             </Grid> */}

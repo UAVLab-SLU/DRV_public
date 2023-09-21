@@ -160,29 +160,27 @@ export default function DroneConfiguration (droneData)  {
     return (
         <div>
             <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 2 }}>
-                <Container fixed >
+                <Container fixed>
                     <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                            <TextField label="Name" id="Name" value={drone.droneName} variant="standard" onChange={handleChange}/>
+                        <Grid item xs={4}>
+                            <TextField label="Name" id="Name" value={drone.droneName} variant="standard" onChange={handleChange} />
                         </Grid>
-                        <Grid item xs={6} alignItems="flex-end">
+                        <Grid item xs={4} alignItems="flex-end">
                             <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                                 <InputLabel id="flight-path">Mission</InputLabel>
                                 <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
-                                    {flightPaths.map(function(val) {
-                                        return(<MenuItem value={val.value} key={val.id}>
+                                    {flightPaths.map(function (val) {
+                                        return (<MenuItem value={val.value} key={val.id}>
                                             <em>{val.label}</em>
                                         </MenuItem>)
                                     })}
                                 </Select>
                             </FormControl>
                         </Grid>
-
-
-                        <Grid container direction="row">
+                        <Grid item xs={4}>
                             <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                <InputLabel id="drone-type">Select Drone Type</InputLabel>
-                                <Select label="drone-type" value={selectedLoc} onChange={handleLocChange}>
+                                <InputLabel id="drone-type">Drone Type</InputLabel>
+                                <Select label="Drone Type" value={selectedLoc} onChange={handleLocChange}>
                                     <MenuItem value="FixedWing">
                                         <em>Fixed Wing</em>
                                     </MenuItem>
@@ -191,24 +189,25 @@ export default function DroneConfiguration (droneData)  {
                                     </MenuItem>
                                 </Select>
                             </FormControl>
-                            {selectedLoc === 'Fixed Wing' ? 
-                                <React.Fragment>
-                                    {/* Add the code for Fixed Wing */}
-                                </React.Fragment> : 
-                                <React.Fragment>
-                                    {/* Add the code for Multi Color dropdown options here */}
-                                </React.Fragment>
-                            }
                         </Grid>
-
                     </Grid>
-                    <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/>
-                    <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
+                    {selectedLoc === 'FixedWing' ?
+                        <React.Fragment>
+                            {/* Add the code for fixed wing dropdown */}
+                        </React.Fragment> :
+                        <React.Fragment>
+                            {/* Add the code for Multi color */}
+                        </React.Fragment>
+                    }
+                    <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors} />
+                    <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{ paddingTop: '15px', marginTop: '15px' }}>
                         {/* Add your buttons or other UI elements here */}
                     </Grid>
                 </Container>
             </Box>
         </div>
     )
+    
+    
     
 }

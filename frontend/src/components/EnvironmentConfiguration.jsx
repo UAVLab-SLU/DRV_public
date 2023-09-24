@@ -106,13 +106,12 @@ export default function EnvironmentConfiguration (env) {
         { value: "Constant Wind", id: 1 },
         { value: "Turbulant Wind", id: 2 },
         { value: "Wind Shear", id: 3 },
-        { value: "None", id: 4 },
-
     ]
 
     const [selectedWindType, setSelectedWindType] = React.useState(
         //envConf.Wind.Type || "None" // Set a default value if needed
         //"Temp Value"
+        "Constant Wind"
     );
 
 

@@ -26,24 +26,6 @@ const DroneDetails = (props) => {
           Drone 1
         </Box>
       </Box>
-
-      <Box sx={{ marginLeft: '20px' }}>
-        <Typography sx={{ display: 'flex' }}>Options:</Typography>
-        <Select
-          value={props.selectedOption}
-          onChange={handleChange}
-          sx={{ width: 100 }}
-        >
-          <MenuItem value={1}>Drone Option 1</MenuItem>
-
-          <MenuItem value={2}>Option 2</MenuItem>
-
-          <MenuItem value={3}>Option 3 Add more as needed</MenuItem>
-
-        </Select>
-      </Box>
-
-
     </Box>
   );
 };

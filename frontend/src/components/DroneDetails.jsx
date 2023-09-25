@@ -44,9 +44,6 @@ const DroneDetails = (props) => {
       </Box>
 
 
-
-
-
     </Box>
   );
 };

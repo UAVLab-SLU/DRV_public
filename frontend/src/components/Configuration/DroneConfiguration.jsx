@@ -31,7 +31,10 @@ const locations = [
 export default function DroneConfiguration (droneData)  {
     console.log('DroneConfiguration-----', droneData)
     const [selectedLoc, setSelectedLoc] = React.useState('GeoLocation')
-    const [drone, setDrone] = React.useState(droneData.droneObject 
+    const [drone, setDrone] = React.useState({
+        ...droneData.droneObject, 
+        droneType: droneTypes[1].value
+    }
         // != null ? droneData.droneObject : {
         // VehicleType: "SimpleFlight",
 		// DefaultVehicleState: "Armed",
@@ -200,7 +203,7 @@ export default function DroneConfiguration (droneData)  {
                         <Grid item xs={3} alignItems="flex-end">
                             <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                                 <InputLabel id="drone-type">Drone Type</InputLabel>
-                                <Select label="Drone Type" value={drone.droneType} onChange={handleDroneTypeChange}>
+                                <Select label="Select Drone Type" value={drone.droneType} onChange={handleDroneTypeChange}>
                                     {droneTypes.map(val => (
                                         <MenuItem value={val.value} key={val.value}>
                                             <em>{val.label}</em>

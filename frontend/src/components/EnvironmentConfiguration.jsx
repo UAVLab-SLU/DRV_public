@@ -1,4 +1,5 @@
-import * as React from 'react'
+//import * as React from 'react' 
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -20,11 +21,16 @@ import Switch from '@mui/material/Switch';
 import FormHelperText from '@mui/material/FormHelperText';
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
-export default function EnvironmentConfiguration (env) {
+export default function EnvironmentConfiguration (env) {  
+    //new added
+    const [backendInfo, setBackendInfo] = useState({ 
+        numQueuedTasks: 0,
+        backendStatus: 'idle'
+    });
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
         lng: -87.934524
-      });
+      }); 
       const YOUR_API_KEY="AIzaSyAh_7ie16ikloOrjqURycdAan3INZ1qgiQ"
       const onMapClick = (e) => {
         setCurrentPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
@@ -125,8 +131,7 @@ export default function EnvironmentConfiguration (env) {
                 Distance: val.target.value
             }
         }))
-    }
-
+    } 
     const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
             let originValue 
@@ -157,18 +162,29 @@ export default function EnvironmentConfiguration (env) {
                 }
             }))
         }
-    }
+    }  
+    //new added
+    useEffect(() => {
+        const interval = setInterval(() => {
+          fetch('/currentRunning')
+            .then(res => res.json())
+            .then(data => setBackendInfo(data));
+        }, 2000);
+      
+        return () => clearInterval(interval);
+      }, []);    
 
     return (
         <div>
-            <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
+            <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5, mt: 2}}>
                 {/* <Container fixed > */}
-                    <Typography>
-                        <Grid container spacing={3} direction="row">
+                    <Typography mb={4}>  
+                        Queued Tasks: {backendInfo.numQueuedTasks} 
+                        <Grid container spacing={3} direction="row" gutterBottom>
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                             </Grid> */}
-                            <Grid item xs={3}>
+                            <Grid item xs={2.89} mt={5}>
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
                                     <InputLabel id="Distance">Wind Direction</InputLabel>
                                     <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
@@ -181,7 +197,7 @@ export default function EnvironmentConfiguration (env) {
                                 </FormControl>
                             </Grid>
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                            <Grid item xs={3}>
+                            <Grid item xs={3} mt ={5}>
                                 <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
                             </Grid>
                             </Tooltip>
@@ -223,7 +239,7 @@ export default function EnvironmentConfiguration (env) {
                                 <Typography id="standard-basic" label="Wind">Time of Day</Typography>
                             </Grid> */}
                             <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
-                            <Grid item xs={3}>
+                            <Grid item xs={2.5}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <Stack spacing={3}>
                                         <TimePicker
@@ -257,7 +273,13 @@ export default function EnvironmentConfiguration (env) {
                                 )}
                                 </GoogleMap>
                             </LoadScript>
-                        </div> :null}
+                        </div> :null}  
+                        <Typography variant="h6"> Status:</Typography>  
+                        <Box border={1} borderColor="grey.500" p={2} borderRadius={1} width={300} mb={3}>    
+                            <Typography>  
+                            Backend Status: {backendInfo.backendStatus}
+                            </Typography>
+                        </Box>
                     </Typography>
                 {/* </Container> */}
             </Box>

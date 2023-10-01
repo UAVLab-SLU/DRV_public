@@ -104,14 +104,12 @@ export default function EnvironmentConfiguration (env) {
     //Wind type
     const WindType = [
         { value: "Constant Wind", id: 1 },
-        { value: "Turbulant Wind", id: 2 },
+        { value: "Turbulent Wind", id: 2 },
         { value: "Wind Shear", id: 3 },
     ]
 
     const [selectedWindType, setSelectedWindType] = React.useState(
-        //envConf.Wind.Type || "None" // Set a default value if needed
-        //"Temp Value"
-        "Constant Wind"
+        WindType[0].value
     );
 
 
@@ -234,10 +232,26 @@ export default function EnvironmentConfiguration (env) {
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
                 {/* <Container fixed > */}
                     <Typography>
-                        <Grid container spacing={3} direction="row">
+                        <Grid container spacing={5} direction="row" >
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                             </Grid> */}
+                            <Grid item xs={3}> 
+                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                                    <InputLabel id="WindType">Wind Type</InputLabel>
+                                        <Select
+                                           label= "Wind Type"
+                                           value={selectedWindType}
+                                           onChange={handleWindTypeChange}>
+                                            {WindType.map(function (val) {
+                                                return (
+                                                    <MenuItem value={val.value} key={val.id}>
+                                                        <em>{val.value}</em>
+                                                    </MenuItem>)
+                                                    })}
+                                        </Select>
+                                </FormControl>
+                            </Grid>
 
                             <Grid item xs={3}>
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
@@ -277,22 +291,18 @@ export default function EnvironmentConfiguration (env) {
                                     <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
                                 </Grid>
                             </Tooltip>
-                            <Grid item xs={3}> 
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="WindType">Wind Type</InputLabel>
-                                        <Select
-                                           label= "Wind Type"
-                                           value={selectedWindType}
-                                           onChange={handleWindTypeChange}>
-                                            {WindType.map(function (val) {
-                                                return (
-                                                    <MenuItem value={val.value} key={val.id}>
-                                                        <em>{val.value}</em>
-                                                    </MenuItem>)
-                                                    })}
-                                        </Select>
-                                </FormControl>
-                            </Grid>
+
+
+                            {selectedWindType === "Turbulent Wind" && (
+                                <Tooltip title="Enter Fluctuation Percentage" placement='bottom'>
+                                    <Grid item xs={3}>
+                                        <TextField id="Fluctuation Precentage" label="Percentage Fluctuation " variant="standard" type="number" onChange={handleWindTypeChange} value={envConf.Wind.Force} />
+                                    </Grid>
+                                </Tooltip>
+                            )}
+                        </Grid>
+
+                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
                             <Grid item xs={3} />
                             <Grid item xs={3} >
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
@@ -324,9 +334,9 @@ export default function EnvironmentConfiguration (env) {
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind">Time of Day</Typography>
                             </Grid> */}
-                            </Grid>
+                        </Grid>
 
-                            <Grid container spacing={3} direction="row" sx={{ marginTop: '20px' }}>
+                            <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
                                 <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
                                     <Grid item xs={3}>
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -369,7 +379,7 @@ export default function EnvironmentConfiguration (env) {
                                     )}
                                     </GoogleMap>
                                 </LoadScript>
-                        </div> :null}
+                            </div> :null}
                         
                     </Typography>
                 {/* </Container> */}

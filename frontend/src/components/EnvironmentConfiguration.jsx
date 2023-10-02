@@ -112,6 +112,7 @@ export default function EnvironmentConfiguration (env) {
         WindType[0].value
     );
 
+    const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
 
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
@@ -168,7 +169,11 @@ export default function EnvironmentConfiguration (env) {
   };
   */}
 
-  
+  const handleFLuctuationChange = (event) => {
+      const newFlucValue = event.target.value;
+      setSelectedFluctuationValue(newFlucValue);
+  }
+
   const handleWindTypeChange = (event) => {
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
@@ -296,14 +301,20 @@ export default function EnvironmentConfiguration (env) {
                             {selectedWindType === "Turbulent Wind" && (
                                 <Tooltip title="Enter Fluctuation Percentage" placement='bottom'>
                                     <Grid item xs={3}>
-                                        <TextField id="Fluctuation Precentage" label="Percentage Fluctuation " variant="standard" type="number" onChange={handleWindTypeChange} value={envConf.Wind.Force} />
+                                        <TextField id="Fluctuation Precentage" 
+                                            label="Fluctuation Percentage" 
+                                            variant="standard" 
+                                            type="number" 
+                                            onChange={handleFLuctuationChange} 
+                                            value={selectedFluctuationValue} 
+                                            inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                            sx={{ width: '150px' }} />
                                     </Grid>
                                 </Tooltip>
                             )}
                         </Grid>
 
-                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
-                            <Grid item xs={3} />
+                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>  
                             <Grid item xs={3} >
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
                                     <InputLabel id="Origin">Region</InputLabel>

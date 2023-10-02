@@ -33,13 +33,13 @@ export default function EnvironmentConfiguration (env) {
       const getStatusStyle = () => {
         switch (backendInfo.backendStatus) {
           case 'idle':
-            return { color: 'green', icon: '✅' }; // Green color and a checkmark icon
+            return { color: 'green' }; 
           case 'running':
-            return { color: 'blue', icon: '🔄' }; // Blue color and a rotating arrow icon
+            return { color: 'blue'}; 
           case 'error':
-            return { color: 'red', icon: '❌' }; // Red color and a cross icon
+            return { color: 'red' }; 
           default:
-            return { color: 'gray', icon: 'ℹ️' }; // Gray color and an information icon
+            return { color: 'gray' }; 
         }
       }; 
       const statusStyle = getStatusStyle();

@@ -19,18 +19,31 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormHelperText from '@mui/material/FormHelperText';
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";  
 
 export default function EnvironmentConfiguration (env) {  
-    //new added
     const [backendInfo, setBackendInfo] = useState({ 
         numQueuedTasks: 0,
         backendStatus: 'idle'
-    });
+    });  
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
         lng: -87.934524
-      }); 
+      });  
+      const getStatusStyle = () => {
+        switch (backendInfo.backendStatus) {
+          case 'idle':
+            return { color: 'green', icon: '✅' }; // Green color and a checkmark icon
+          case 'running':
+            return { color: 'blue', icon: '🔄' }; // Blue color and a rotating arrow icon
+          case 'error':
+            return { color: 'red', icon: '❌' }; // Red color and a cross icon
+          default:
+            return { color: 'gray', icon: 'ℹ️' }; // Gray color and an information icon
+        }
+      }; 
+      const statusStyle = getStatusStyle();
+
       const YOUR_API_KEY="AIzaSyAh_7ie16ikloOrjqURycdAan3INZ1qgiQ"
       const onMapClick = (e) => {
         setCurrentPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
@@ -57,19 +70,17 @@ export default function EnvironmentConfiguration (env) {
         TimeOfDay: "10:00:00",
         UseGeo: true,
         time:dayjs('2020-01-01 10:00')
-    });
-
+    }); 
     const handleChangeSwitch = (val) => {
         setEnvConf(prevState => ({
                 ...prevState,
                 enableFuzzy: val.target.checked
         }))
-    }
-
+    }  
     const environmentJson = (event) => {
         env.environmentJson(event, env.id);
-    }
-
+    }    
+    //new added
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
@@ -89,7 +100,7 @@ export default function EnvironmentConfiguration (env) {
         {value:"Chicago O’Hare Airport", id:20},
         // {value:"Michigan Lake Beach", id:10},
         {value:"Specify Region", id:30}
-    ]
+    ]  
 
     const OriginValues = [
         {value: "Michigan Lake Beach", Latitude:42.211223, Longitude:-86.390394, Height:170},
@@ -111,8 +122,7 @@ export default function EnvironmentConfiguration (env) {
                 [val.target.id]: val.target.type === "number" ? parseFloat(val.target.value) : 0
             }
         }))
-    }
-
+    } 
     const handleOriginChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -122,7 +132,6 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     }
-    
     const handleDistance = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -162,7 +171,7 @@ export default function EnvironmentConfiguration (env) {
                 }
             }))
         }
-    }  
+    }    
     //new added
     useEffect(() => {
         const interval = setInterval(() => {
@@ -173,11 +182,36 @@ export default function EnvironmentConfiguration (env) {
       
         return () => clearInterval(interval);
       }, []);    
+      
+      //new added  
+      useEffect(() => {
+
+        console.log(`
+          <div class="status ${backendInfo.backendStatus}">
+            ${backendInfo.backendStatus}
+          </div>
+          
+          // CSS styles
+      
+        `); 
+        const style = document.createElement('style');
+  
+        style.innerHTML = `
+          .status {
+            // CSS styles  
+          }
+        `;
+        
+        document.head.appendChild(style);
+      
+      }, [backendInfo.backendStatus]); 
+
+      
 
     return (
-        <div>
+        <div> 
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5, mt: 2}}>
-                {/* <Container fixed > */}
+                {/* <Container fixed > */} 
                     <Typography mb={4}>  
                         Queued Tasks: {backendInfo.numQueuedTasks} 
                         <Grid container spacing={3} direction="row" gutterBottom>
@@ -194,7 +228,7 @@ export default function EnvironmentConfiguration (env) {
                                         </MenuItem>)
                                         })}
                                     </Select>
-                                </FormControl>
+                                </FormControl> 
                             </Grid>
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                             <Grid item xs={3} mt ={5}>
@@ -220,7 +254,7 @@ export default function EnvironmentConfiguration (env) {
                                         </MenuItem>)
                                         })}
                                     </Select>
-                                </FormControl>
+                                </FormControl> 
                             </Grid>
                             <Grid item xs={3}>
                                 <TextField id="Latitude" label="Latitude" variant="standard" type="number" 
@@ -275,14 +309,35 @@ export default function EnvironmentConfiguration (env) {
                             </LoadScript>
                         </div> :null}  
                         <Typography variant="h6"> Status:</Typography>  
-                        <Box border={1} borderColor="grey.500" p={2} borderRadius={1} width={300} mb={3}>    
+                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+
+                          {/* Show spinner if status is running */}
                             <Typography>  
                             Backend Status: {backendInfo.backendStatus}
                             </Typography>
                         </Box>
                     </Typography>
-                {/* </Container> */}
-            </Box>
+                {/* </Container> */} 
+            </Box>   
+            <Typography 
+            animate 
+            variants={{ 
+                hidden: { opacity: 0 }, 
+                visible: { opacity: 1 } 
+                }} 
+                > 
+                </Typography> 
+                <Box mb={2}> 
+                 </Box>
+            <Typography 
+            variant="h6" 
+            sx={{ 
+                opacity: 0, 
+                transition: 'opacity 0.5s ease-in-out'  
+                }} 
+                > 
+                {backendInfo.backendStatus}  
+                </Typography>
         </div>
     )
 }

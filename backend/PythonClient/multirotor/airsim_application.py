@@ -2,7 +2,8 @@ import json
 import math
 import os
 import time
-from abc import abstractmethod
+from abc import abstractmethod 
+from multiprocessing import Process
 
 from PythonClient import airsim
 
@@ -104,4 +105,11 @@ class AirSimApplication:
         lat = data["latitude"]
         lon = data["longitude"]
         height = data["height"]
-        return [lat, lon, height]
+        return [lat, lon, height] 
+    def generate_report(data): 
+          measurements = data['measurements'] 
+          simulations = data['simulations']  
+
+      ##  report = {  
+       ##    // 'summary': { 
+         ##  }

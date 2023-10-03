@@ -39,7 +39,7 @@ export default function EnvironmentConfiguration (env) {
           case 'error':
             return { color: 'red' }; // Red color and a cross icon
           default:
-            return { color: 'gray' }; // Gray color and an information icon
+            return { color: 'gray' }; // Gray color and an information 
         }
       }; 
       const statusStyle = getStatusStyle();

@@ -23,18 +23,21 @@ const droneTypes = [
     {value:'MultiRotor', label:'Multi Rotor'}
 ]
 
+{/* Old stuff from draft PR
+
 const droneModels = [
     {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
     {value: 'DJI', label: 'DJI'},
     {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
 ]
 
-{/*             
-const droneOptions = {
+*/}
+
+//{/*            
+const droneModels = {
     FixedWing: [
-        {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
-        {value: 'DJI', label: 'DJI'},
-        {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
+        {value: 'SenseflyeBeeX', label: 'Sensefly eBee X'},
+        {value: 'TrinityF90', label: 'Trinity F90'}
     ],
     MultiRotor: [
         {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
@@ -43,8 +46,7 @@ const droneOptions = {
     ]
 }
 
-*/}    
-
+//*/}    
 const locations = [
     {value:'GeoLocation', id:1},
     {value:'Cartesian Coordinate', id:2}
@@ -240,23 +242,24 @@ export default function DroneConfiguration (droneData)  {
                             </FormControl>
                         </Grid>
 
-                        {/*The Drone Model */}
-
+                        {/*The Drone Models */}
                         <Grid item xs={3} alignItems="flex-end">
-    <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
-        <InputLabel id="drone-model">Drone Model</InputLabel>
-        <Select label="Select Drone Model" value={selectedModel} onChange={handleDroneModelChange}>
-            {droneModels.map(val => (
-                <MenuItem value={val.value} key={val.value}>
-                    <em>{val.label}</em>
-                </MenuItem>
-            ))}
-        </Select>
-    </FormControl>
-</Grid>
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+                                <InputLabel id="drone-model">Drone Model</InputLabel>
+                                <Select label="Select Drone Model" value={selectedModel} onChange={handleDroneModelChange}>
+                                    {droneModels[drone.droneType].map(val => (
+                                        <MenuItem value={val.value} key={val.value}>
+                                            <em>{val.label}</em>
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/* */}
 
 
-                        {/*The Bottom Row */}
+                        {/*The Bottom Row of stuff */}
                         <Grid container direction="row">
                             {/* <Grid item xs={3}> */}
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>

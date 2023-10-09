@@ -312,10 +312,17 @@ export default function EnvironmentConfiguration (env) {
 
                           {/* Show spinner if status is running */}
                             <Typography>   
-                                Queued Tasks: {backendInfo.numQueuedTasks} | Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-                            </Typography>
-                        </Box>
-                    </Typography>
+                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+                            </Typography>  
+                        </Box>   
+                        <div style={{position: 'relative'}}> 
+                        <div style={{position: 'absolute', left: 380, top: -80}}>
+                    <Typography>  
+                        Queued Tasks: {backendInfo.numQueuedTasks}
+                    </Typography>    
+                    </div> 
+                    </div>
+                    </Typography> 
                 {/* </Container> */} 
             </Box>   
             <Typography 

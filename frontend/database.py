@@ -1,6 +1,6 @@
 from dbm import _Database
 import pymongo
-#given airsim api
+#call from airsim api
 
 class Databse:
 

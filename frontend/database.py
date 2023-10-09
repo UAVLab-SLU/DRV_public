@@ -26,7 +26,7 @@ def get_drone_status(self, name):
 # Set drone speed
 def set_drone_speed(self, name, speed):
 
-  # Call AirSim API to set speed 
+  #  set speed 
   self.client.moveByVelocityAsync(speed, 0, 0, duration=5, vehicle_name=name)
   
   self.db.drones.update_one({'name': name}, {'$set': {'speed': speed}})

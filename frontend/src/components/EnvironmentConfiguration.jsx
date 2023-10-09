@@ -269,7 +269,7 @@ export default function EnvironmentConfiguration (env) {
 
   // Temporary data saved in the window
   const [windShearData, setWindShearData] = React.useState({
-    windDirection: "",
+    windDirection: "NE",
     windVelocity: 0,
     fluctuationPercentage: 0,
   });

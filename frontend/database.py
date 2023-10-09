@@ -35,7 +35,3 @@ def set_drone_speed(self, name, speed):
 for drone in self.db.drones.find():
   print(drone['name'], drone['status'], drone['speed'])
 
-# Query drones collection
-for drone in self.db.drones.find():
-  print(drone['name'], drone['status'], drone['speed'])
-

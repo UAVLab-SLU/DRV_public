@@ -25,6 +25,7 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+import DialogTitle from '@mui/material/DialogTitle';
 
 
 export default function EnvironmentConfiguration (env) {
@@ -396,6 +397,7 @@ export default function EnvironmentConfiguration (env) {
 
                             {/* WIND SHEAR WINDOW */}
                             <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
+                                <DialogTitle>Enter Wind Shear Data</DialogTitle>
                                 <DialogContent>
                                     <Grid container spacing={5} direction="row" >
                                         <Grid item xs={3}>
@@ -426,6 +428,7 @@ export default function EnvironmentConfiguration (env) {
                                             label="Wind Velocity (m/s)"
                                             type="number"
                                             value={windShearData.windVelocity}
+                                            variant="standard"
                                             onChange={(e) =>
                                                 setWindShearData({
                                                 ...windShearData,
@@ -442,6 +445,7 @@ export default function EnvironmentConfiguration (env) {
                                         <TextField
                                             label="Fluctuation %"
                                             type="number"
+                                            variant="standard"
                                             value={windShearData.fluctuationPercentage}
                                                 onChange={(e) =>
                                                 setWindShearData({

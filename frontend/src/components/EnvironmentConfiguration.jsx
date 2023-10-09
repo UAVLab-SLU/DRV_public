@@ -19,6 +19,14 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormHelperText from '@mui/material/FormHelperText';
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import DialogTitle from '@mui/material/DialogTitle';
+
 
 export default function EnvironmentConfiguration (env) {
     const [currentPosition, setCurrentPosition] = React.useState({
@@ -104,16 +112,16 @@ export default function EnvironmentConfiguration (env) {
     //Wind type
     const WindType = [
         { value: "Constant Wind", id: 1 },
-        { value: "Turbulant Wind", id: 2 },
+        { value: "Turbulent Wind", id: 2 },
         { value: "Wind Shear", id: 3 },
     ]
 
     const [selectedWindType, setSelectedWindType] = React.useState(
-        //envConf.Wind.Type || "None" // Set a default value if needed
-        //"Temp Value"
         "Constant Wind"
     );
 
+    // Fluctuation Percentage
+    const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
 
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
@@ -170,7 +178,11 @@ export default function EnvironmentConfiguration (env) {
   };
   */}
 
-  
+  const handleFLuctuationChange = (event) => {
+      const newFlucValue = event.target.value;
+      setSelectedFluctuationValue(newFlucValue);
+  }
+
   const handleWindTypeChange = (event) => {
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
@@ -184,10 +196,8 @@ export default function EnvironmentConfiguration (env) {
           }));
       */}
   };
-  
-
     
-    const handleDistance = (val) => {
+  const handleDistance = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
             Wind: {
@@ -195,9 +205,9 @@ export default function EnvironmentConfiguration (env) {
                 Distance: val.target.value
             }
         }))
-    }
+  }
 
-    const handleOrigin = (val) => {
+  const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
             let originValue 
             OriginValues.map(obj => {
@@ -227,20 +237,93 @@ export default function EnvironmentConfiguration (env) {
                 }
             }))
         }
-    }
 
-    return (
+  }
+
+  //WIND SHEAR WINDOW FUNCTIONS
+  const [windShears, setwindShears] = React.useState([
+  {
+    windDirection: "NE",
+    windVelocity: 10,
+    fluctuationPercentage: 20,
+    },
+  ]);
+
+  const addWindShear = (direction, velocity, fluctuation) => {
+    const newWindShear = {
+      windDirection: direction,
+      windVelocity: velocity,
+      fluctuationPercentage: fluctuation,
+    };
+    
+    // Update the windShears array with the new shear wind object
+    setwindShears([...windShears, newWindShear]);
+  };
+  const deleteWindShear = (index) => {
+    const updatedWindShears = [...windShears];
+    updatedWindShears.splice(index, 1);
+    setwindShears(updatedWindShears);
+  };
+
+  const [isAddWindShearOpen, setIsAddWindShearOpen] = React.useState(false);
+
+  // Temporary data saved in the window
+  const [windShearData, setWindShearData] = React.useState({
+    windDirection: "NE",
+    windVelocity: 0,
+    fluctuationPercentage: 0,
+  });
+
+  // Function to open the wind shear Window
+  const openAddWindShearWindow = () => {
+    setIsAddWindShearOpen(true);
+  };
+
+  // Function to close the wind shear Window
+  const closeAddWindShearWindow = () => {
+    setIsAddWindShearOpen(false);
+    setWindShearData({
+        windDirection: "",
+        windVelocity: 0,
+        fluctuationPercentage: 0,
+    });
+  };
+
+  // Function to add a new wind shear entry for window
+  const addNewWindShear = () => {
+    const newWindShearEntry = { ...windShearData };
+    setwindShears([...windShears, newWindShearEntry]);
+  };
+
+  return (
         <div>
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
                 {/* <Container fixed > */}
                     <Typography>
-                        <Grid container spacing={3} direction="row">
+                        <Grid container spacing={5} direction="row" >
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                             </Grid> */}
-
-                            <Grid item xs={3}>
+                            <Grid item xs={3}> 
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                                    <InputLabel id="WindType">Wind Type</InputLabel>
+                                        <Select
+                                           label= "Wind Type"
+                                           value={selectedWindType}
+                                           onChange={handleWindTypeChange}>
+                                            {WindType.map(function (val) {
+                                                return (
+                                                    <MenuItem value={val.value} key={val.id}>
+                                                        <em>{val.value}</em>
+                                                    </MenuItem>)
+                                                    })}
+                                        </Select>
+                                </FormControl>
+                            </Grid>
+
+                            {selectedWindType !== "Wind Shear" && (
+                            <Grid item xs={3}>
+                                <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                                     <InputLabel id="Distance">Wind Direction</InputLabel>
                                     <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
                                         {Distance.map(function(val) {
@@ -251,6 +334,8 @@ export default function EnvironmentConfiguration (env) {
                                     </Select>
                                 </FormControl>
                             </Grid>
+                            )}
+
                             {/* WIND ORIGIN DROP DOWN */}
                             {/* <Grid item xs={3}> */} 
                                 {/*<FormControl variant="standard" sx={{ minWidth: 150 }}>*/}
@@ -272,28 +357,142 @@ export default function EnvironmentConfiguration (env) {
 
                             {/* WIND TYPE DROP DOWN */}
 
+                            {selectedWindType !== "Wind Shear" && (
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                                 <Grid item xs={3}>
-                                    <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
+                                    <TextField id="Force" 
+                                        label="Wind Velocity (m/s)" 
+                                        variant="standard" type="number" 
+                                        onChange={handleWindChange} 
+                                        value={envConf.Wind.Force} 
+                                        disabled={envConf.enableFuzzy} 
+                                        inputProps={{ min: 0 }}/>
                                 </Grid>
                             </Tooltip>
-                            <Grid item xs={3}> 
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="WindType">Wind Type</InputLabel>
-                                        <Select
-                                           label= "Wind Type"
-                                           value={selectedWindType}
-                                           onChange={handleWindTypeChange}>
-                                            {WindType.map(function (val) {
-                                                return (
-                                                    <MenuItem value={val.value} key={val.id}>
-                                                        <em>{val.value}</em>
-                                                    </MenuItem>)
-                                                    })}
-                                        </Select>
-                                </FormControl>
+                            )}
+                            
+
+
+                            {selectedWindType === "Turbulent Wind" && (
+                                <Tooltip title="Enter Fluctuation %" placement='bottom'>
+                                    <Grid item xs={3}>
+                                        <TextField id="Fluctuation %" 
+                                            label="Fluctuation %" 
+                                            variant="standard" 
+                                            type="number" 
+                                            onChange={handleFLuctuationChange} 
+                                            value={selectedFluctuationValue} 
+                                            inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                            sx={{ width: '150px' }} />
+                                    </Grid>
+                                </Tooltip>
+                            )}
+
+                            {selectedWindType === "Wind Shear" && (
+                            <Grid item xs={3} sx={{ marginTop: '10px' }}>
+                                <Button onClick={() => openAddWindShearWindow()}> Click to Enter Wind Shear Information</Button>
                             </Grid>
-                            <Grid item xs={3} />
+                            )}
+
+
+                            {/* WIND SHEAR WINDOW */}
+                            <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
+                                <DialogTitle>Enter Wind Shear Data</DialogTitle>
+                                <DialogContent>
+                                    <Grid container spacing={5} direction="row" >
+                                        <Grid item xs={3}>
+                                            <FormControl variant="standard" sx={{ minWidth: 130 }}>
+                                                <InputLabel id="WindDirection">Wind Direction</InputLabel>
+                                                    <Select
+                                                        labelId="WindDirection"
+                                                        label="Wind Direction"
+                                                        value={windShearData.windDirection}
+                                                        onChange={(e) =>
+                                                        setWindShearData({
+                                                            ...windShearData,
+                                                            windDirection: e.target.value,
+                                                            })}>
+                                                        
+                                                        {Distance.map(function (val) {
+                                                            return (
+                                                                <MenuItem value={val.value} key={val.id}>
+                                                                {val.value}
+                                                            </MenuItem>
+                                                            );
+                                                        })}
+                                                    </Select>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={3}>
+                                        <TextField
+                                            label="Wind Velocity (m/s)"
+                                            type="number"
+                                            value={windShearData.windVelocity}
+                                            variant="standard"
+                                            onChange={(e) =>
+                                                setWindShearData({
+                                                ...windShearData,
+                                                windVelocity: e.target.value,
+                                                })
+                                            }
+                                            inputProps = {{min:0}}
+                                            fullWidth
+                                            size="large" 
+                                            style={{ width: '120%' }}/>
+                                        </Grid>
+                                        <Grid item xs={3}>
+                                    
+                                        <TextField
+                                            label="Fluctuation %"
+                                            type="number"
+                                            variant="standard"
+                                            value={windShearData.fluctuationPercentage}
+                                                onChange={(e) =>
+                                                setWindShearData({
+                                                ...windShearData,
+                                                fluctuationPercentage: e.target.value,
+                                                })
+                                             }
+                                            fullWidth
+                                            inputProps={{ min: 0, max: 100, step: 0.1 }}
+                                            size="medium" 
+                                            style={{ width: '120%' }}/>
+                                        </Grid>
+                                        <Grid item xs = {3}>
+                                            <IconButton onClick={addNewWindShear} color="primary">
+                                                <AddIcon />
+                                            </IconButton>
+                                        </Grid>
+
+                                        {/* Display wind shear instances in the dialog */}
+                                        {windShears.map((shear, index) => (
+                                                <Grid item xs={12} key={index}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <ul style={{ flex: '1', marginRight: '10px' }}>
+                                                            <li>
+                                                                Direction: {shear.windDirection}, Velocity: {shear.windVelocity}, Fluctuation %: {shear.fluctuationPercentage}
+                                                            </li>
+                                                        </ul>
+                                                        <IconButton onClick={() => deleteWindShear(index)} color="blue">
+                                                            <CloseIcon />
+                                                        </IconButton>
+                                                    </div>
+                                                </Grid>
+                                        ))}
+
+                                        <Grid item xs = {3}>
+                                            <Button onClick={closeAddWindShearWindow}>Save</Button>
+                                        </Grid>
+
+                                        
+                                    </Grid>
+                                </DialogContent>
+                            </Dialog>
+                        </Grid>
+
+
+
+                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>  
                             <Grid item xs={3} >
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
                                     <InputLabel id="Origin">Region</InputLabel>
@@ -324,9 +523,9 @@ export default function EnvironmentConfiguration (env) {
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind">Time of Day</Typography>
                             </Grid> */}
-                            </Grid>
+                        </Grid>
 
-                            <Grid container spacing={3} direction="row" sx={{ marginTop: '20px' }}>
+                            <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
                                 <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
                                     <Grid item xs={3}>
                                         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -369,7 +568,7 @@ export default function EnvironmentConfiguration (env) {
                                     )}
                                     </GoogleMap>
                                 </LoadScript>
-                        </div> :null}
+                            </div> :null}
                         
                     </Typography>
                 {/* </Container> */}

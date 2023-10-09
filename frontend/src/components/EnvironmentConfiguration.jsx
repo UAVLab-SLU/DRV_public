@@ -213,7 +213,6 @@ export default function EnvironmentConfiguration (env) {
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5, mt: 2}}>
                 {/* <Container fixed > */} 
                     <Typography mb={4}>  
-                        Queued Tasks: {backendInfo.numQueuedTasks} 
                         <Grid container spacing={3} direction="row" gutterBottom>
                             {/* <Grid item xs={3}>
                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
@@ -312,8 +311,8 @@ export default function EnvironmentConfiguration (env) {
                         <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
 
                           {/* Show spinner if status is running */}
-                            <Typography>  
-                            Backend Status: {backendInfo.backendStatus}
+                            <Typography>   
+                                Queued Tasks: {backendInfo.numQueuedTasks} | Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
                             </Typography>
                         </Box>
                     </Typography>

@@ -16,7 +16,7 @@ class Databse:
 # Get drone status
 def get_drone_status(self, name):
 
-  # Call AirSim API to get drone state
+  #  AirSim API to get drone state
   drone = self.client.getMultirotorState(vehicle_name=name)
   
   status = drone.collision.has_collided

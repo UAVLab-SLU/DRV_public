@@ -310,7 +310,8 @@ export default function EnvironmentConfiguration (env) {
                                         <Select
                                            label= "Wind Type"
                                            value={selectedWindType}
-                                           onChange={handleWindTypeChange}>
+                                           onChange={handleWindTypeChange}
+                                           disabled={envConf.enableFuzzy}>
                                             {WindType.map(function (val) {
                                                 return (
                                                     <MenuItem value={val.value} key={val.id}>
@@ -383,6 +384,7 @@ export default function EnvironmentConfiguration (env) {
                                             onChange={handleFLuctuationChange} 
                                             value={selectedFluctuationValue} 
                                             inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                            disabled={envConf.enableFuzzy}
                                             sx={{ width: '150px' }} />
                                     </Grid>
                                 </Tooltip>

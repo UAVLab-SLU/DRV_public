@@ -180,6 +180,11 @@ class SimulationTaskManager:
 
             diff_dict = self.__find_diff(single_drone_setting_copy, self.__DEFAULT_DRONE_FULL_LENGTH)
 
+            # If Barometer settings exist in the input JSON, directly use them.
+            if "Sensors" in single_drone_setting and "Barometer" in single_drone_setting["Sensors"]:
+                diff_dict["Sensors"] = diff_dict.get("Sensors", {})
+                diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
+
             new_one_drone_json = {
                 drone_name: dict(VehicleType="SimpleFlight", X=drone_x, Y=drone_y, Z=drone_z)
             }

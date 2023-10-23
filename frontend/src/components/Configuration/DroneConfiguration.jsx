@@ -10,7 +10,8 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import SensorConfiguration from './SensorConfiguration'
 import Tooltip from '@mui/material/Tooltip';
-
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const flightPaths = [
     {value:'fly_in_circle', label:'Circle', id:1},
@@ -56,9 +57,10 @@ export default function DroneConfiguration (droneData)  {
     console.log('DroneConfiguration-----', droneData)
     const [selectedLoc, setSelectedLoc] = React.useState('GeoLocation')
     const [selectedModel, setSelectedModel] = React.useState('');
+    const [selectedDroneType, setselectedDroneType] = React.useState(droneTypes[1].value);
     const [drone, setDrone] = React.useState({
         ...droneData.droneObject, 
-        droneType: droneTypes[1].value
+        // droneType: droneTypes[1].value
     }
         // != null ? droneData.droneObject : {
         // VehicleType: "SimpleFlight",
@@ -148,13 +150,16 @@ export default function DroneConfiguration (droneData)  {
     };
 
     const handleDroneTypeChange = (event) => {
-        setDrone(prevState => ({
-            ...prevState,
-            droneType: event.target.value
-        }));
+        handleSnackBarVisibility(true)
+        setselectedDroneType(event.target.value)
+        // setDrone(prevState => ({
+        //     ...prevState,
+        //     droneType: event.target.value
+        // }));
     };
 
     const handleDroneModelChange = (event) => {
+        handleSnackBarVisibility(true)
         setSelectedModel(event.target.value);
     };
     
@@ -204,9 +209,28 @@ export default function DroneConfiguration (droneData)  {
         // }))
     }
 
+    const [snackBarState, setSnackBarState] = React.useState({
+        open: false,
+        });
     
+    const handleSnackBarVisibility = (val) => {
+        setSnackBarState(prevState => ({
+            ...prevState,
+            open: val
+        }))
+    }
     return (
         <div>
+            <Snackbar open={snackBarState.open} 
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right'
+                }} 
+                autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+                <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+                     Drone Type and Drone Model Changes is under Developement !
+                </Alert>
+            </Snackbar>
             <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 2 }}>
                 <Container fixed >
                     <Grid container spacing={1}>
@@ -232,7 +256,7 @@ export default function DroneConfiguration (droneData)  {
                         <Grid item xs={3} alignItems="flex-end">
                             <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                                 <InputLabel id="drone-type">Drone Type</InputLabel>
-                                <Select label="Select Drone Type" value={drone.droneType} onChange={handleDroneTypeChange}>
+                                <Select label="Select Drone Type" value={selectedDroneType} onChange={handleDroneTypeChange}>
                                     {droneTypes.map(val => (
                                         <MenuItem value={val.value} key={val.value}>
                                             <em>{val.label}</em>
@@ -247,7 +271,7 @@ export default function DroneConfiguration (droneData)  {
                             <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                                 <InputLabel id="drone-model">Drone Model</InputLabel>
                                 <Select label="Select Drone Model" value={selectedModel} onChange={handleDroneModelChange}>
-                                    {droneModels[drone.droneType].map(val => (
+                                    {droneModels[selectedDroneType].map(val => (
                                         <MenuItem value={val.value} key={val.value}>
                                             <em>{val.label}</em>
                                         </MenuItem>

@@ -27,6 +27,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import DialogTitle from '@mui/material/DialogTitle';
 import { DeleteOutline } from '@mui/icons-material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 
 export default function EnvironmentConfiguration (env) {
@@ -185,6 +187,7 @@ export default function EnvironmentConfiguration (env) {
   }
 
   const handleWindTypeChange = (event) => {
+        handleSnackBarVisibility(true)
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
       // ENV CONFIG
@@ -242,13 +245,7 @@ export default function EnvironmentConfiguration (env) {
   }
 
   //WIND SHEAR WINDOW FUNCTIONS
-  const [windShears, setwindShears] = React.useState([
-  {
-    windDirection: "NE",
-    windVelocity: 10,
-    fluctuationPercentage: 20,
-    },
-  ]);
+  const [windShears, setwindShears] = React.useState([]);
 
   const addWindShear = (direction, velocity, fluctuation) => {
     const newWindShear = {
@@ -296,8 +293,28 @@ export default function EnvironmentConfiguration (env) {
     setwindShears([...windShears, newWindShearEntry]);
   };
 
+  const [snackBarState, setSnackBarState] = React.useState({
+    open: false,
+    });
+
+const handleSnackBarVisibility = (val) => {
+    setSnackBarState(prevState => ({
+        ...prevState,
+        open: val
+    }))
+}
   return (
         <div>
+            <Snackbar open={snackBarState.open} 
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right'
+                }} 
+                autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+                <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+                     Wind Type Changes is under Developement !
+                </Alert>
+            </Snackbar>
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
                 {/* <Container fixed > */}
                     <Typography>
@@ -396,7 +413,7 @@ export default function EnvironmentConfiguration (env) {
 
 
                             {/* WIND SHEAR WINDOW */}
-                            <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
+                            {/* <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
                                 <DialogTitle>Enter Wind Shear Data</DialogTitle>
                                 <DialogContent>
                                     <Grid container spacing={5} direction="row" >
@@ -465,7 +482,7 @@ export default function EnvironmentConfiguration (env) {
                                         </Grid>
 
                                         {/* Display wind shear instances in the dialog */}
-                                        {windShears.map((shear, index) => (
+                                        {/* {windShears.map((shear, index) => ( 
                                                 <Grid item xs={12} key={index}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                                         <ul style={{ flex: '1', marginRight: '10px' }}>
@@ -485,9 +502,8 @@ export default function EnvironmentConfiguration (env) {
                                         </Grid>
                                     </Grid>
                                 </DialogContent>
-                            </Dialog>
+                            </Dialog> */}
                         </Grid>
-
                         {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((<Typography key={index}><Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
                             <Grid item xs={3}></Grid>
                                     <Grid item xs={3}>

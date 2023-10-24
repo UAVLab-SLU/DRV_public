@@ -26,9 +26,11 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import DialogTitle from '@mui/material/DialogTitle';
+import Checkbox from '@mui/material/Checkbox';
 import { DeleteOutline } from '@mui/icons-material';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+
 
 
 export default function EnvironmentConfiguration (env) {
@@ -126,6 +128,11 @@ export default function EnvironmentConfiguration (env) {
     // Fluctuation Percentage
     const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
 
+    // Check Box Status for Fuzzy Testing
+    const [windBoxStatus , setWindBox] = React.useState(true);
+    const [timeBoxStatus, setTimeBox] = React.useState(true);
+    const [positionBoxStatus, setPositionBox] = React.useState(true);
+
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
         // {value:"Michigan Lake Beach", id:10},
@@ -164,6 +171,34 @@ export default function EnvironmentConfiguration (env) {
         }))
     }
 
+    const handleCheckboxChange = (checkboxName) => {
+        // Used to determine the status of the checkbox
+        let newStatus;
+
+        // Calculate the number of checkboxes that are currently checked
+        const currentWindStatus = checkboxName === 'wind' ? !windBoxStatus : windBoxStatus;
+        const currentTimeStatus = checkboxName === 'time' ? !timeBoxStatus : timeBoxStatus;
+        const currentPositionStatus = checkboxName === 'position' ? !positionBoxStatus : positionBoxStatus;
+
+        // Count the number of checkboxes that are currently checked
+        const checkedCount = [currentWindStatus, currentTimeStatus, currentPositionStatus].filter(Boolean).length;
+
+        if (checkedCount >= 1 ) {
+            // allows toggling if there is more then one true value
+            newStatus = !eval(checkboxName + 'BoxStatus');
+        } else {
+            // Do not allow toggling when only one checkbox is checked
+            newStatus = eval(checkboxName + 'BoxStatus');
+        }
+
+        // Toggle the checkbox based on its name
+        if (checkboxName === 'wind') {
+        setWindBox(newStatus);
+        } else if (checkboxName === 'time') {
+            setTimeBox(newStatus);
+        } else if (checkboxName === 'position') {
+            setPositionBox(newStatus);
+    }};
 
   // HANDLE WIND ORIGIN
   {/*
@@ -611,10 +646,39 @@ const handleSnackBarVisibility = (val) => {
                                 </Tooltip>
                                 <Grid item xs={3}>
                                     <FormGroup>
-                                        <FormControlLabel control={<Switch checked={envConf.enableFuzzy} onChange={handleChangeSwitch} inputProps={{ 'aria-label': 'controlled' }} />}  label="Enable Fuzzy Test" />
+                                        <FormControlLabel control={
+                                            <Switch 
+                                                checked={envConf.enableFuzzy} 
+                                                onChange={handleChangeSwitch} 
+                                                inputProps={{ 'aria-label': 'controlled' }} />}  
+                                                label="Enable Fuzzy Test" 
+                                            />
                                         <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
                                     </FormGroup>
                                 </Grid>
+                                
+                                {envConf.enableFuzzy && (
+                                <>
+                                        <Grid item xs = {1.5}>
+                                            <FormControlLabel
+                                                control={<Checkbox checked = {windBoxStatus} onChange= {() => handleCheckboxChange('wind')} />}
+                                                label="Wind"
+                                            />
+                                        </Grid>
+                                        <Grid item xs = {1.5}>
+                                            <FormControlLabel
+                                               control={<Checkbox checked = {timeBoxStatus} onChange= {() => handleCheckboxChange('time')}/>}
+                                               label="Time of Day"
+                                            />
+                                        </Grid>
+                                        <Grid item xs = {1.7}>
+                                            <FormControlLabel
+                                                control={<Checkbox checked = {positionBoxStatus} onChange= {() => handleCheckboxChange('position')}/>}
+                                                label="Initial Position"
+                                            />
+                                        </Grid>
+                                </>
+                                )}
                             </Grid>
                             
                             {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>

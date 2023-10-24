@@ -10,7 +10,8 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import SensorConfiguration from './SensorConfiguration'
 import Tooltip from '@mui/material/Tooltip';
-
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const flightPaths = [
     {value:'fly_in_circle', label:'Circle', id:1},
@@ -18,6 +19,35 @@ const flightPaths = [
     // {value:'fly_straight',label:'Straight', id:1}
 ]
 
+const droneTypes = [
+    {value:'FixedWing', label:'Fixed Wing'},
+    {value:'MultiRotor', label:'Multi Rotor'}
+]
+
+{/* Old stuff from draft PR
+
+const droneModels = [
+    {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
+    {value: 'DJI', label: 'DJI'},
+    {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
+]
+
+*/}
+
+//{/*            
+const droneModels = {
+    FixedWing: [
+        {value: 'SenseflyeBeeX', label: 'Sensefly eBee X'},
+        {value: 'TrinityF90', label: 'Trinity F90'}
+    ],
+    MultiRotor: [
+        {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
+        {value: 'DJI', label: 'DJI'},
+        {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
+    ]
+}
+
+//*/}    
 const locations = [
     {value:'GeoLocation', id:1},
     {value:'Cartesian Coordinate', id:2}
@@ -26,7 +56,12 @@ const locations = [
 export default function DroneConfiguration (droneData)  {
     console.log('DroneConfiguration-----', droneData)
     const [selectedLoc, setSelectedLoc] = React.useState('GeoLocation')
-    const [drone, setDrone] = React.useState(droneData.droneObject 
+    const [selectedModel, setSelectedModel] = React.useState('');
+    const [selectedDroneType, setselectedDroneType] = React.useState(droneTypes[1].value);
+    const [drone, setDrone] = React.useState({
+        ...droneData.droneObject, 
+        // droneType: droneTypes[1].value
+    }
         // != null ? droneData.droneObject : {
         // VehicleType: "SimpleFlight",
 		// DefaultVehicleState: "Armed",
@@ -114,6 +149,23 @@ export default function DroneConfiguration (droneData)  {
         }));
     };
 
+    const handleDroneTypeChange = (event) => {
+        handleSnackBarVisibility(true)
+        setselectedDroneType(event.target.value)
+        // setDrone(prevState => ({
+        //     ...prevState,
+        //     droneType: event.target.value
+        // }));
+    };
+
+    const handleDroneModelChange = (event) => {
+        handleSnackBarVisibility(true)
+        setSelectedModel(event.target.value);
+    };
+    
+
+
+
 
     const handleChange = (val) => {
         console.log('handlechange---', val)
@@ -156,16 +208,37 @@ export default function DroneConfiguration (droneData)  {
         //     }
         // }))
     }
+
+    const [snackBarState, setSnackBarState] = React.useState({
+        open: false,
+        });
     
+    const handleSnackBarVisibility = (val) => {
+        setSnackBarState(prevState => ({
+            ...prevState,
+            open: val
+        }))
+    }
     return (
         <div>
+            <Snackbar open={snackBarState.open} 
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right'
+                }} 
+                autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+                <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+                     Drone Type and Drone Model Changes is under Developement !
+                </Alert>
+            </Snackbar>
             <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 2 }}>
                 <Container fixed >
                     <Grid container spacing={1}>
-                        <Grid item xs={6}>
+                        <Grid item xs={3}>
                             <TextField label="Name" id="Name" value={drone.droneName} variant="standard" onChange={handleChange}/>
                         </Grid>
-                        <Grid item xs={6} alignItems="flex-end">
+
+                        <Grid item xs={3} alignItems="flex-end">
                             <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                                 <InputLabel id="flight-path">Mission</InputLabel>
                                 <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
@@ -177,6 +250,40 @@ export default function DroneConfiguration (droneData)  {
                                 </Select>
                             </FormControl>
                         </Grid>
+
+                        {/*Drone Type selections */}
+
+                        <Grid item xs={3} alignItems="flex-end">
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+                                <InputLabel id="drone-type">Drone Type</InputLabel>
+                                <Select label="Select Drone Type" value={selectedDroneType} onChange={handleDroneTypeChange}>
+                                    {droneTypes.map(val => (
+                                        <MenuItem value={val.value} key={val.value}>
+                                            <em>{val.label}</em>
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/*The Drone Models */}
+                        <Grid item xs={3} alignItems="flex-end">
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+                                <InputLabel id="drone-model">Drone Model</InputLabel>
+                                <Select label="Select Drone Model" value={selectedModel} onChange={handleDroneModelChange}>
+                                    {droneModels[selectedDroneType].map(val => (
+                                        <MenuItem value={val.value} key={val.value}>
+                                            <em>{val.label}</em>
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/* */}
+
+
+                        {/*The Bottom Row of stuff */}
                         <Grid container direction="row">
                             {/* <Grid item xs={3}> */}
                                 <FormControl variant="standard" sx={{ minWidth: 150 }}>
@@ -189,6 +296,7 @@ export default function DroneConfiguration (droneData)  {
                                         })}
                                     </Select> */}
                                 </FormControl>
+
                             {/* </Grid> */}
                             {selectedLoc == 'GeoLocation' ? 
                                 <React.Fragment>

@@ -405,7 +405,7 @@ const handleSnackBarVisibility = (val) => {
                                             disabled={envConf.enableFuzzy}
                                             sx={{ width: '150px' }} />
                                              </Tooltip>
-                                             {windShears.length<2 ? (<IconButton onClick={addNewWindShear} color="primary">
+                                             {(windShears.length<2 && selectedWindType === "Wind Shear") ? (<IconButton onClick={addNewWindShear} color="primary">
                                                 <AddIcon />
                                             </IconButton>) : null}
                                     </Grid>

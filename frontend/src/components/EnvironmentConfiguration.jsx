@@ -54,8 +54,8 @@ export default function EnvironmentConfiguration (env) {
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
         enableFuzzy: false,
         Wind: {
-            Distance: "NE",
-            Force: 1,
+            Direction: "NE",
+            Velocity: 1,
             //Type: "None",
             //WindOrigin: "None",
         },
@@ -83,7 +83,7 @@ export default function EnvironmentConfiguration (env) {
         environmentJson(envConf)
     }, [envConf])
 
-    const Distance = [
+    const Direction = [
         {value:'N', id:5},
         {value:'S', id:6},
         {value:'E', id:7},
@@ -236,12 +236,12 @@ export default function EnvironmentConfiguration (env) {
       */}
   };
     
-  const handleDistance = (val) => {
+  const handleDirection = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
             Wind: {
                 ...prevState.Wind,
-                Distance: val.target.value
+                Direction: val.target.value
             }
         }))
   }
@@ -378,10 +378,10 @@ const handleSnackBarVisibility = (val) => {
                             {/* {selectedWindType !== "Wind Shear" && ( */}
                             <Grid item xs={3}>
                                 <FormControl variant="standard" sx = {{ minWidth: 150 }}>
-                                    <InputLabel id="Distance">Wind Direction</InputLabel>
-                                    <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
-                                        {Distance.map(function(val) {
-                                            return(<MenuItem value={val.value} key={val.id} id="Distance">
+                                    <InputLabel id="Direction">Wind Direction</InputLabel>
+                                    <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection} disabled={envConf.enableFuzzy}>
+                                        {Direction.map(function(val) {
+                                            return(<MenuItem value={val.value} key={val.id} id="Direction">
                                             <em>{val.value}</em>
                                         </MenuItem>)
                                         })}
@@ -414,11 +414,11 @@ const handleSnackBarVisibility = (val) => {
                             {/* {selectedWindType !== "Wind Shear" && ( */}
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                                 <Grid item xs={3}>
-                                    <TextField id="Force" 
+                                    <TextField id="Velocity" 
                                         label="Wind Velocity (m/s)" 
                                         variant="standard" type="number" 
                                         onChange={handleWindChange} 
-                                        value={envConf.Wind.Force} 
+                                        value={envConf.Wind.Velocity} 
                                         disabled={envConf.enableFuzzy} 
                                         inputProps={{ min: 0 }}/>
                                 </Grid>
@@ -465,7 +465,7 @@ const handleSnackBarVisibility = (val) => {
                                                             windDirection: e.target.value,
                                                             })}>
                                                         
-                                                        {Distance.map(function (val) {
+                                                        {Direction.map(function (val) {
                                                             return (
                                                                 <MenuItem value={val.value} key={val.id}>
                                                                 {val.value}
@@ -543,10 +543,10 @@ const handleSnackBarVisibility = (val) => {
                             <Grid item xs={3}></Grid>
                                     <Grid item xs={3}>
                                         <FormControl variant="standard" sx = {{ minWidth: 150 }}>
-                                            <InputLabel id="Distance">Wind Direction</InputLabel>
-                                            <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
-                                                {Distance.map(function(val) {
-                                                    return(<MenuItem value={val.value} key={val.id} id="Distance">
+                                            <InputLabel id="Direction">Wind Direction</InputLabel>
+                                            <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection} disabled={envConf.enableFuzzy}>
+                                                {Direction.map(function(val) {
+                                                    return(<MenuItem value={val.value} key={val.id} id="Direction">
                                                     <em>{val.value}</em>
                                                 </MenuItem>)
                                                 })}
@@ -556,11 +556,11 @@ const handleSnackBarVisibility = (val) => {
                             
                                     <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                                         <Grid item xs={3}>
-                                            <TextField id="Force" 
+                                            <TextField id="Velocity" 
                                                 label="Wind Velocity (m/s)" 
                                                 variant="standard" type="number" 
                                                 onChange={handleWindChange} 
-                                                value={envConf.Wind.Force} 
+                                                value={envConf.Wind.Velocity} 
                                                 disabled={envConf.enableFuzzy} 
                                                 inputProps={{ min: 0 }}/>
                                         </Grid>

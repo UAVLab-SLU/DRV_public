@@ -6,7 +6,7 @@ import time
 from flask import Flask, request, abort, send_file, render_template, Response
 from flask_cors import CORS
 
-from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
+from multirotor.control.simulation_task_manager import SimulationTaskManager
 
 app = Flask(__name__, template_folder="./templates")
 

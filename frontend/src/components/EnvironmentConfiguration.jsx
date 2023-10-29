@@ -132,6 +132,7 @@ export default function EnvironmentConfiguration (env) {
     const [windBoxStatus , setWindBox] = React.useState(true);
     const [timeBoxStatus, setTimeBox] = React.useState(true);
     const [positionBoxStatus, setPositionBox] = React.useState(true);
+    const [fuzzyAlert, setFuzzyAlert] = React.useState(false);
 
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
@@ -172,6 +173,8 @@ export default function EnvironmentConfiguration (env) {
     }
 
     const handleCheckboxChange = (checkboxName) => {
+        setFuzzyAlert(true);
+        handleSnackBarVisibility(true);
         // Used to determine the status of the checkbox
         let newStatus;
 
@@ -222,6 +225,7 @@ export default function EnvironmentConfiguration (env) {
   }
 
   const handleWindTypeChange = (event) => {
+        setFuzzyAlert(false)
         handleSnackBarVisibility(true)
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
@@ -347,7 +351,7 @@ const handleSnackBarVisibility = (val) => {
                 }} 
                 autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
                 <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
-                     Wind Type Changes is under Developement !
+                     {fuzzyAlert ? "Fuzzy Testing Changes is under development !" : "Wind Type Changes is under Developement !"}
                 </Alert>
             </Snackbar>
             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>

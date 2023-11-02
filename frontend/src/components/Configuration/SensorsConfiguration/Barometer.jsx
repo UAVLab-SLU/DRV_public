@@ -12,7 +12,16 @@ import Tooltip from '@mui/material/Tooltip';
 
 export default function Barometer (sensor) {
     console.log('In barometer')
-    const [barometer, setBarometer]  = React.useState(sensor.barometerObj)
+    const [barometer, setBarometer] = React.useState({
+        ...sensor.barometerObj,
+        PressureFactorSigma: '0.001825',
+        PressureFactorTau: '3600',
+        UncorrelatedNoiseSigma: '2.7',
+        UpdateLatency: '0',
+        UpdateFrequency: '50',
+        StartupDelay: '0'
+    });
+    
 
     React.useEffect(() => {
         console.log('use effect in barometer')
@@ -37,7 +46,7 @@ export default function Barometer (sensor) {
         }))
     }
 
-    return(
+    return (
         <div>
             <Box>
                 <Typography variant="h6" component="h2">
@@ -50,30 +59,24 @@ export default function Barometer (sensor) {
                                 <FormControlLabel disabled control={<Switch checked={barometer.Enabled}  inputProps={{ 'aria-label': 'controlled' }} />}  label="Enabled" />
                             </FormGroup>
                         </Grid>
-                        {/* <Grid item xs={3}>
-                            <TextField id="Key" onChange={handleChange} label="Name" variant="standard" value={barometer.Key}/>
-                        </Grid> */}
-                        {/* <Grid item xs={3}>
-                            <TextField id="PressureFactorSigma" onChange={handleChange} label="PressureFactorSigma" variant="standard" value={barometer.PressureFactorSigma}/>
+                        <Grid item xs={3}>
+                            <TextField id="PressureFactorSigma" onChange={handleChange} label="Pressure Factor Sigma" type="number" variant="standard" value={barometer.PressureFactorSigma}/>
                         </Grid>
                         <Grid item xs={3}>
-                            <TextField id="PressureFactorTau" onChange={handleChange} label="PressureFactorTau" variant="standard" value={barometer.PressureFactorTau}/>
+                            <TextField id="PressureFactorTau" onChange={handleChange} label="Pressure Factor Tau" type="number" variant="standard" value={barometer.PressureFactorTau}/>
                         </Grid>
                         <Grid item xs={3}>
-                            <TextField id="UncorrelatedNoiseSigma" onChange={handleChange} label="UncorrelatedNoiseSigma" variant="standard" value={barometer.UncorrelatedNoiseSigma}/>
+                            <TextField id="UncorrelatedNoiseSigma" onChange={handleChange} label="Uncorrelated Noise Sigma" type="number" variant="standard" value={barometer.UncorrelatedNoiseSigma}/>
                         </Grid>
                         <Grid item xs={3}>
-                            <TextField id="UpdateLatency" onChange={handleChange} label="UpdateLatency" variant="standard" value={barometer.UpdateLatency}/>
-                        </Grid> */}
-                        <Tooltip title="Enter barometer update frequency (Hz) for accurate pressure readings" placement='top'>
+                            <TextField id="UpdateLatency" onChange={handleChange} label="Update Latency" type="number" variant="standard" value={barometer.UpdateLatency}/>
+                        </Grid>
                         <Grid item xs={3}>
                             <TextField id="UpdateFrequency" onChange={handleChange} label="Update Frequency (Hz)" type="number" variant="standard" value={barometer.UpdateFrequency}/>
                         </Grid>
-                        </Tooltip>
-                        
-                        {/* <Grid item xs={3}>
-                            <TextField id="StartupDelay" onChange={handleChange} label="StartupDelay" variant="standard" value={barometer.StartupDelay}/>
-                        </Grid> */}
+                        <Grid item xs={3}>
+                            <TextField id="StartupDelay" onChange={handleChange} label="Startup Delay" type="number" variant="standard" value={barometer.StartupDelay}/>
+                        </Grid>
                     </Grid>
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
                         <Button variant="outlined" onClick={closeModal}>Ok</Button> &nbsp;&nbsp;&nbsp;

@@ -19,7 +19,18 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import FormHelperText from '@mui/material/FormHelperText';
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";  
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import DialogTitle from '@mui/material/DialogTitle';
+import Checkbox from '@mui/material/Checkbox';
+import { DeleteOutline } from '@mui/icons-material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 export default function EnvironmentConfiguration (env) {  
     const [backendInfo, setBackendInfo] = useState({ 
@@ -61,7 +72,9 @@ export default function EnvironmentConfiguration (env) {
         enableFuzzy: false,
         Wind: {
             Distance: "NE",
-            Force: 1
+            Force: 1,
+            //Type: "None",
+            //WindOrigin: "None",
         },
         Origin: {
             Latitude: 41.980381,
@@ -95,6 +108,46 @@ export default function EnvironmentConfiguration (env) {
         {value:'SW', id:3},
         {value:'NW', id:4}
     ]
+
+    {/*}
+    //Wind Origin
+    const WindOrigin = [
+        { value: "VALUE SUBJECT TO CHANGE1", id: 1 },
+        { value: "VALUE SUBJECT TO CHANGE2", id: 2 },
+        { value: "VALUE SUBJECT TO CHANGE3", id: 3 },
+        { value: "VALUE SUBJECT TO CHANGE4", id: 4 },
+        { value: "VALUE SUBJECT TO CHANGE5", id: 5 },
+        { value: "None", id: 6 }
+    ]
+    */}
+
+    {/*}
+    //Saves selected wind origin with a chosen one, or if none is chosen, it uses a default
+    //THIS WILL CHANGE WHEN WE HAVE FURTHER INFORMATION ON WHAT THE VALUES ARE, AS WELL AS ENVCONFIG
+    const [selectedWindOrigin, setSelectedWindOrigin] = React.useState(
+        envConf.Wind.WindOrigin || "None"
+    );
+    */}
+
+    //Wind type
+    const WindType = [
+        { value: "Constant Wind", id: 1 },
+        { value: "Turbulent Wind", id: 2 },
+        { value: "Wind Shear", id: 3 },
+    ]
+
+    const [selectedWindType, setSelectedWindType] = React.useState(
+        "Constant Wind"
+    );
+
+    // Fluctuation Percentage
+    const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
+
+    // Check Box Status for Fuzzy Testing
+    const [windBoxStatus , setWindBox] = React.useState(true);
+    const [timeBoxStatus, setTimeBox] = React.useState(true);
+    const [positionBoxStatus, setPositionBox] = React.useState(true);
+    const [fuzzyAlert, setFuzzyAlert] = React.useState(false);
 
     const Origin = [
         {value:"Chicago O’Hare Airport", id:20},
@@ -132,7 +185,75 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     }
-    const handleDistance = (val) => {
+    const handleCheckboxChange = (checkboxName) => {
+        setFuzzyAlert(true);
+        handleSnackBarVisibility(true);
+        // Used to determine the status of the checkbox
+        let newStatus;
+
+        // Calculate the number of checkboxes that are currently checked
+        const currentWindStatus = checkboxName === 'wind' ? !windBoxStatus : windBoxStatus;
+        const currentTimeStatus = checkboxName === 'time' ? !timeBoxStatus : timeBoxStatus;
+        const currentPositionStatus = checkboxName === 'position' ? !positionBoxStatus : positionBoxStatus;
+
+        // Count the number of checkboxes that are currently checked
+        const checkedCount = [currentWindStatus, currentTimeStatus, currentPositionStatus].filter(Boolean).length;
+
+        if (checkedCount >= 1 ) {
+            // allows toggling if there is more then one true value
+            newStatus = !eval(checkboxName + 'BoxStatus');
+        } else {
+            // Do not allow toggling when only one checkbox is checked
+            newStatus = eval(checkboxName + 'BoxStatus');
+        }
+
+        // Toggle the checkbox based on its name
+        if (checkboxName === 'wind') {
+        setWindBox(newStatus);
+        } else if (checkboxName === 'time') {
+            setTimeBox(newStatus);
+        } else if (checkboxName === 'position') {
+            setPositionBox(newStatus);
+    }};
+
+  // HANDLE WIND ORIGIN
+  {/*
+  const handleWindOriginChange = (event) => {
+        const newWindOrigin = event.target.value;
+        setSelectedWindOrigin(newWindOrigin);
+        setEnvConf(prevState=> ({
+          ...prevState,
+              Wind: {
+              ...prevState.Wind,
+              WindOrigin: newWindOrigin,
+              },
+          }));
+
+  };
+  */}
+
+  const handleFLuctuationChange = (event) => {
+      const newFlucValue = event.target.value;
+      setSelectedFluctuationValue(newFlucValue);
+  }
+
+  const handleWindTypeChange = (event) => {
+        setFuzzyAlert(false)
+        handleSnackBarVisibility(true)
+      const newWindType = event.target.value;
+      setSelectedWindType(newWindType); 
+      // ENV CONFIG
+      {/*setEnvConf((prevState) => ({
+          ...prevState,
+              Wind: {
+              ...prevState.Wind,
+              Type: newWindType,
+              },
+          }));
+      */}
+  };
+    
+  const handleDistance = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
             Wind: {
@@ -140,8 +261,9 @@ export default function EnvironmentConfiguration (env) {
                 Distance: val.target.value
             }
         }))
-    } 
-    const handleOrigin = (val) => {
+  }
+
+  const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
             let originValue 
             OriginValues.map(obj => {
@@ -208,17 +330,283 @@ export default function EnvironmentConfiguration (env) {
 
       
 
-    return (
-        <div> 
-            <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5, mt: 2}}>
-                {/* <Container fixed > */} 
-                    <Typography mb={4}>  
-                        <Grid container spacing={3} direction="row" gutterBottom>
-                            {/* <Grid item xs={3}>
-                                <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
-                            </Grid> */}
-                            <Grid item xs={2.89} mt={5}>
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
+//     return (
+//         <div> 
+//             <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5, mt: 2}}>
+//                 {/* <Container fixed > */} 
+//                     <Typography mb={4}>  
+//                         <Grid container spacing={3} direction="row" gutterBottom>
+//                             {/* <Grid item xs={3}>
+//                                 <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
+//                             </Grid> */}
+//                             <Grid item xs={2.89} mt={5}>
+
+//   }
+
+  //WIND SHEAR WINDOW FUNCTIONS
+  const [windShears, setwindShears] = React.useState([]);
+
+  const addWindShear = (direction, velocity, fluctuation) => {
+    const newWindShear = {
+      windDirection: direction,
+      windVelocity: velocity,
+      fluctuationPercentage: fluctuation,
+    };
+    
+    // Update the windShears array with the new shear wind object
+    setwindShears([...windShears, newWindShear]);
+  };
+  const deleteWindShear = (index) => {
+    const updatedWindShears = [...windShears];
+    updatedWindShears.splice(index, 1);
+    setwindShears(updatedWindShears);
+  };
+
+  const [isAddWindShearOpen, setIsAddWindShearOpen] = React.useState(false);
+
+  // Temporary data saved in the window
+  const [windShearData, setWindShearData] = React.useState({
+    windDirection: "NE",
+    windVelocity: 0,
+    fluctuationPercentage: 0,
+  });
+
+  // Function to open the wind shear Window
+  const openAddWindShearWindow = () => {
+    setIsAddWindShearOpen(true);
+  };
+
+  // Function to close the wind shear Window
+  const closeAddWindShearWindow = () => {
+    setIsAddWindShearOpen(false);
+    setWindShearData({
+        windDirection: "",
+        windVelocity: 0,
+        fluctuationPercentage: 0,
+    });
+  };
+
+  // Function to add a new wind shear entry for window
+  const addNewWindShear = () => {
+    const newWindShearEntry = { ...windShearData };
+    setwindShears([...windShears, newWindShearEntry]);
+  };
+
+  const [snackBarState, setSnackBarState] = React.useState({
+    open: false,
+    });
+
+const handleSnackBarVisibility = (val) => {
+    setSnackBarState(prevState => ({
+        ...prevState,
+        open: val
+    }))
+}
+  return (
+    <div>
+    <Snackbar open={snackBarState.open} 
+        anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+        }} 
+        autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+        <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+             {fuzzyAlert ? "Fuzzy Testing Changes is under development !" : "Wind Type Changes is under Developement !"}
+        </Alert>
+    </Snackbar>
+    <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
+        {/* <Container fixed > */}
+            <Typography>
+                <Grid container spacing={5} direction="row" >
+                    {/* <Grid item xs={3}>
+                        <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
+                    </Grid> */}
+                    <Grid item xs={3}> 
+                        <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                            <InputLabel id="WindType">Wind Type</InputLabel>
+                                <Select
+                                   label= "Wind Type"
+                                   value={selectedWindType}
+                                   onChange={handleWindTypeChange}
+                                   disabled={envConf.enableFuzzy}>
+                                    {WindType.map(function (val) {
+                                        return (
+                                            <MenuItem value={val.value} key={val.id}>
+                                                <em>{val.value}</em>
+                                            </MenuItem>)
+                                            })}
+                                </Select>
+                        </FormControl>
+                    </Grid>
+
+                    {/* {selectedWindType !== "Wind Shear" && ( */}
+                    <Grid item xs={3}>
+                        <FormControl variant="standard" sx = {{ minWidth: 150 }}>
+                            <InputLabel id="Distance">Wind Direction</InputLabel>
+                            <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
+                                {Distance.map(function(val) {
+                                    return(<MenuItem value={val.value} key={val.id} id="Distance">
+                                    <em>{val.value}</em>
+                                </MenuItem>)
+                                })}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    {/* )} */}
+
+                    {/* WIND ORIGIN DROP DOWN */}
+                    {/* <Grid item xs={3}> */} 
+                        {/*<FormControl variant="standard" sx={{ minWidth: 150 }}>*/}
+                            {/*<InputLabel id="WindOrigin">Wind Origin</InputLabel>*/}
+                                {/*<Select*/}
+                                   {/* label="Wind Origin"*/}
+                                    {/*value={selectedWindOrigin}*/}
+                                   {/* onChange={handleWindOriginChange}>*/}
+                                {/*{WindOrigin.map(function (val) {*/}
+                                    {/*return (*/}
+                                       {/* <MenuItem value={val.value} key={val.id}>*/}
+                                       {/*     <em>{val.value}</em>*/}
+                                       {/* </MenuItem>)*/}
+                                       {/* })}*/}
+                           {/* </Select>*/}
+                        {/*</FormControl>*/}
+                    {/*</Grid>*/}
+
+
+                    {/* WIND TYPE DROP DOWN */}
+
+                    {/* {selectedWindType !== "Wind Shear" && ( */}
+                    <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
+                        <Grid item xs={3}>
+                            <TextField id="Force" 
+                                label="Wind Velocity (m/s)" 
+                                variant="standard" type="number" 
+                                onChange={handleWindChange} 
+                                value={envConf.Wind.Force} 
+                                disabled={envConf.enableFuzzy} 
+                                inputProps={{ min: 0 }}/>
+                        </Grid>
+                    </Tooltip>
+                    {/* )} */}
+                    
+
+
+                    {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
+                            <Grid item xs={3}>
+                                 <Tooltip title="Enter Fluctuation %" placement='bottom'>
+                                <TextField id="Fluctuation %" 
+                                    label="Fluctuation %" 
+                                    variant="standard" 
+                                    type="number" 
+                                    onChange={handleFLuctuationChange} 
+                                    value={selectedFluctuationValue} 
+                                    inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                    disabled={envConf.enableFuzzy}
+                                    sx={{ width: '150px' }} />
+                                     </Tooltip>
+                                     {(windShears.length<2 && selectedWindType === "Wind Shear") ? (<IconButton onClick={addNewWindShear} color="primary">
+                                        <AddIcon />
+                                    </IconButton>) : null}
+                            </Grid>
+                    )}
+
+
+                    {/* WIND SHEAR WINDOW */}
+                    {/* <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
+                        <DialogTitle>Enter Wind Shear Data</DialogTitle>
+                        <DialogContent>
+                            <Grid container spacing={5} direction="row" >
+                                <Grid item xs={3}>
+                                    <FormControl variant="standard" sx={{ minWidth: 130 }}>
+                                        <InputLabel id="WindDirection">Wind Direction</InputLabel>
+                                            <Select
+                                                labelId="WindDirection"
+                                                label="Wind Direction"
+                                                value={windShearData.windDirection}
+                                                onChange={(e) =>
+                                                setWindShearData({
+                                                    ...windShearData,
+                                                    windDirection: e.target.value,
+                                                    })}>
+                                                
+                                                {Distance.map(function (val) {
+                                                    return (
+                                                        <MenuItem value={val.value} key={val.id}>
+                                                        {val.value}
+                                                    </MenuItem>
+                                                    );
+                                                })}
+                                            </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={3}>
+                                <TextField
+                                    label="Wind Velocity (m/s)"
+                                    type="number"
+                                    value={windShearData.windVelocity}
+                                    variant="standard"
+                                    onChange={(e) =>
+                                        setWindShearData({
+                                        ...windShearData,
+                                        windVelocity: e.target.value,
+                                        })
+                                    }
+                                    inputProps = {{min:0}}
+                                    fullWidth
+                                    size="large" 
+                                    style={{ width: '120%' }}/>
+                                </Grid>
+                                <Grid item xs={3}>
+                            
+                                <TextField
+                                    label="Fluctuation %"
+                                    type="number"
+                                    variant="standard"
+                                    value={windShearData.fluctuationPercentage}
+                                        onChange={(e) =>
+                                        setWindShearData({
+                                        ...windShearData,
+                                        fluctuationPercentage: e.target.value,
+                                        })
+                                     }
+                                    fullWidth
+                                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                                    size="medium" 
+                                    style={{ width: '120%' }}/>
+                                </Grid>
+                                <Grid item xs = {3}>
+                                    <IconButton onClick={addNewWindShear} color="primary">
+                                        <AddIcon />
+                                    </IconButton>
+                                </Grid>
+
+                                {/* Display wind shear instances in the dialog */}
+                                {/* {windShears.map((shear, index) => ( 
+                                        <Grid item xs={12} key={index}>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <ul style={{ flex: '1', marginRight: '10px' }}>
+                                                    <li>
+                                                        Direction: {shear.windDirection}, Velocity: {shear.windVelocity}, Fluctuation %: {shear.fluctuationPercentage}
+                                                    </li>
+                                                </ul>
+                                                <IconButton onClick={() => deleteWindShear(index)} color="blue">
+                                                    <CloseIcon />
+                                                </IconButton>
+                                            </div>
+                                        </Grid>
+                                ))}
+
+                                <Grid item xs = {3}>
+                                    <Button onClick={closeAddWindShearWindow}>Save</Button>
+                                </Grid>
+                            </Grid>
+                        </DialogContent>
+                    </Dialog> */}
+                </Grid>
+                {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((<Typography key={index}><Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
+                    <Grid item xs={3}></Grid>
+                            <Grid item xs={3}>
+                                <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                                     <InputLabel id="Distance">Wind Direction</InputLabel>
                                     <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
                                         {Distance.map(function(val) {
@@ -227,105 +615,171 @@ export default function EnvironmentConfiguration (env) {
                                         </MenuItem>)
                                         })}
                                     </Select>
-                                </FormControl> 
+                                </FormControl>
                             </Grid>
+                    
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                            <Grid item xs={3} mt ={5}>
-                                <TextField id="Force" label="Wind Velocity (m/s)" variant="standard" type="number" onChange={handleWindChange} value={envConf.Wind.Force} disabled={envConf.enableFuzzy}/>
-                            </Grid>
+                                <Grid item xs={3}>
+                                    <TextField id="Force" 
+                                        label="Wind Velocity (m/s)" 
+                                        variant="standard" type="number" 
+                                        onChange={handleWindChange} 
+                                        value={envConf.Wind.Force} 
+                                        disabled={envConf.enableFuzzy} 
+                                        inputProps={{ min: 0 }}/>
+                                </Grid>
                             </Tooltip>
-                            <Tooltip title="Automatically run series of simulations to fuzzy test the wind velocity impact" placement='bottom'>
+                   
                             <Grid item xs={3}>
-                                <FormGroup>
-                                    <FormControlLabel control={<Switch checked={envConf.enableFuzzy} onChange={handleChangeSwitch} inputProps={{ 'aria-label': 'controlled' }} />}  label="Enable Fuzzy Test" />
-                                    <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
-                                </FormGroup>
+                            <Tooltip title="Enter Fluctuation %" placement='bottom'>
+                                <TextField id="Fluctuation %" 
+                                    label="Fluctuation %" 
+                                    variant="standard" 
+                                    type="number" 
+                                    onChange={handleFLuctuationChange} 
+                                    value={selectedFluctuationValue} 
+                                    inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                    disabled={envConf.enableFuzzy}
+                                    sx={{ width: '150px' }} />
+                              </Tooltip>       
+                                <IconButton onClick={() => deleteWindShear(index)}>
+                                    <DeleteOutline color="primary"/>
+                                </IconButton>
                             </Grid>
-                            </Tooltip>
-                            <Grid item xs={3} />
-                            <Grid item xs={3} >
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="Origin">Region</InputLabel>
-                                    <Select label="Region" value={envConf.Origin.Name} onChange={handleOrigin} >
-                                        {Origin.map(function(val) {
-                                            return(<MenuItem value={val.value} key={val.id} >
-                                            <em>{val.value}</em>
-                                        </MenuItem>)
-                                        })}
-                                    </Select>
-                                </FormControl> 
-                            </Grid>
+                        </Grid>
+                            </Typography>
+                    // <Grid item xs={3} sx={{ marginTop: '10px' }}>
+                    //     <Button onClick={() => openAddWindShearWindow()}> Click to Enter Wind Shear Information</Button>
+                    // </Grid>
+                )))}
+
+
+                <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>  
+                    <Grid item xs={3} >
+                        <FormControl variant="standard" sx={{ minWidth: 150 }}>
+                            <InputLabel id="Origin">Region</InputLabel>
+                            <Select label="Region" value={envConf.Origin.Name} onChange={handleOrigin} >
+                                {Origin.map(function(val) {
+                                    return(<MenuItem value={val.value} key={val.id} >
+                                    <em>{val.value}</em>
+                                </MenuItem>)
+                                })}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField id="Latitude" label="Latitude" variant="standard" type="number" 
+                        inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Latitude}
+                         disabled={envConf.Origin.Name=="Specify Region" ? false : true} 
+                         />
+                    </Grid>
+
+                    <Grid item xs={3}>
+                        <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
+                    </Grid>
+                    
+                    {/*<Grid item xs={3}>*/}
+                    {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}
+                    {/*    helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>*/}
+                    {/*</Grid>*/}
+                    {/* <Grid item xs={3}>
+                        <Typography id="standard-basic" label="Wind">Time of Day</Typography>
+                    </Grid> */}
+                </Grid>
+
+                    <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
+                        <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
                             <Grid item xs={3}>
-                                <TextField id="Latitude" label="Latitude" variant="standard" type="number" 
-                                inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Latitude}
-                                 disabled={envConf.Origin.Name=="Specify Region" ? false : true} 
-                                 />
-                            </Grid>
-                            <Grid item xs={3}>
-                                <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
-                            </Grid>
-                            {/*<Grid item xs={3}>*/}
-                            {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}
-                            {/*    helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>*/}
-                            {/*</Grid>*/}
-                            {/* <Grid item xs={3}>
-                                <Typography id="standard-basic" label="Wind">Time of Day</Typography>
-                            </Grid> */}
-                            <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
-                            <Grid item xs={2.5}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <Stack spacing={3}>
-                                        <TimePicker
-                                        ampm={false}
-                                        openTo="hours"
-                                        views={['hours', 'minutes', 'seconds']}
-                                        inputFormat="HH:mm:ss"
-                                        mask="__:__:__"
-                                        label="Time of Day"
-                                        value={envConf.time}
-                                        onChange={handleTimeChange}
-                                        renderInput={(params) => <TextField {...params} 
-                                        helperText="Enter Time of Day (24 Hour Format)"/>}
-                                        />
+                                    <TimePicker
+                                    ampm={false}
+                                    openTo="hours"
+                                    views={['hours', 'minutes', 'seconds']}
+                                    inputFormat="HH:mm:ss"
+                                    mask="__:__:__"
+                                    label="Time of Day"
+                                    value={envConf.time}
+                                    onChange={handleTimeChange}
+                                    renderInput={(params) => <TextField {...params} 
+                                    helperText="Enter Time of Day (24 Hour Format)"/>}
+                                    />
                                     </Stack>
                                 </LocalizationProvider>
                             </Grid>
-                            </Tooltip>
+                        </Tooltip>
+                        <Grid item xs={3}>
+                            <FormGroup>
+                                <FormControlLabel control={
+                                    <Switch 
+                                        checked={envConf.enableFuzzy} 
+                                        onChange={handleChangeSwitch} 
+                                        inputProps={{ 'aria-label': 'controlled' }} />}  
+                                        label="Enable Fuzzy Test" 
+                                    />
+                                <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
+                            </FormGroup>
                         </Grid>
-                        {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>
-                            <LoadScript googlMapsApiKey={YOUR_API_KEY}>
-                                <GoogleMap
-                                id="map"
-                                mapContainerStyle={{ height: "100%", width: "100%" }}
-                                zoom={15}
-                                center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
-                                onClick={onMapClick}
-                                >
-                                {currentPosition.lat && currentPosition.lng && (
-                                    <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
-                                )}
-                                </GoogleMap>
-                            </LoadScript>
-                        </div> :null}  
-                        <Typography variant="h6"> Status:</Typography>  
-                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+                        
+                        {envConf.enableFuzzy && (
+                        <>
+                                <Grid item xs = {1.5}>
+                                    <FormControlLabel
+                                        control={<Checkbox checked = {windBoxStatus} onChange= {() => handleCheckboxChange('wind')} />}
+                                        label="Wind"
+                                    />
+                                </Grid>
+                                <Grid item xs = {1.5}>
+                                    <FormControlLabel
+                                       control={<Checkbox checked = {timeBoxStatus} onChange= {() => handleCheckboxChange('time')}/>}
+                                       label="Time of Day"
+                                    />
+                                </Grid>
+                                <Grid item xs = {1.7}>
+                                    <FormControlLabel
+                                        control={<Checkbox checked = {positionBoxStatus} onChange= {() => handleCheckboxChange('position')}/>}
+                                        label="Initial Position"
+                                    />
+                                </Grid>
+                        </>
+                        )}
+                    </Grid>
+                    
+                    {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>
+                        <LoadScript googlMapsApiKey={YOUR_API_KEY}>
+                            <GoogleMap
+                            id="map"
+                            mapContainerStyle={{ height: "100%", width: "100%" }}
+                            zoom={15}
+                            center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
+                            onClick={onMapClick}
+                            >
+                            {currentPosition.lat && currentPosition.lng && (
+                                <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
+                            )}
+                            </GoogleMap>
+                        </LoadScript>
+                    </div> :null}
+                    <Typography variant="h6"> Status:</Typography>  
+                    <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
 
-                          {/* Show spinner if status is running */}
-                            <Typography>   
-                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-                            </Typography>  
-                        </Box>   
-                        <div style={{position: 'relative'}}> 
+{/* Show spinner if status is running */}
+  <Typography>   
+      Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+  </Typography>  
+</Box>
+<div style={{position: 'relative'}}> 
                         <div style={{position: 'absolute', left: 380, top: -80}}>
                     <Typography>  
                         Queued Tasks: {backendInfo.numQueuedTasks}
                     </Typography>    
                     </div> 
                     </div>
-                    </Typography> 
-                {/* </Container> */} 
-            </Box>   
-            <Typography 
+                
+            </Typography>
+        {/* </Container> */}
+    </Box>
+    <Typography 
             animate 
             variants={{ 
                 hidden: { opacity: 0 }, 
@@ -344,6 +798,6 @@ export default function EnvironmentConfiguration (env) {
                 > 
                 {backendInfo.backendStatus}  
                 </Typography>
-        </div>
-    )
+</div>
+)
 }

@@ -761,43 +761,40 @@ const handleSnackBarVisibility = (val) => {
                         </LoadScript>
                     </div> :null}
                     <Typography variant="h6"> Status:</Typography>  
-                    <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
-
-{/* Show spinner if status is running */}
-  <Typography>   
-      Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-  </Typography>  
-</Box>
-<div style={{position: 'relative'}}> 
-                        <div style={{position: 'absolute', left: 380, top: -80}}>
-                    <Typography>  
-                        Queued Tasks: {backendInfo.numQueuedTasks}
-                    </Typography>    
-                    </div> 
-                    </div>
-                
-            </Typography>
-        {/* </Container> */}
-    </Box>
-    <Typography 
-            animate 
-            variants={{ 
-                hidden: { opacity: 0 }, 
-                visible: { opacity: 1 } 
-                }} 
-                > 
-                </Typography> 
-                <Box mb={2}> 
+                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+                            {/* Show spinner if status is running */}
+                            <Typography>   
+                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+                            </Typography>  
+                        </Box>
+                        <div style={{position: 'relative'}}> 
+                            <div style={{position: 'absolute', left: 380, top: -80}}>
+                                <Typography>  
+                                    Queued Tasks: {backendInfo.numQueuedTasks}
+                                </Typography>    
+                            </div> 
+                        </div>
+                    </Typography>
+                    {/* </Container> */}
                  </Box>
-            <Typography 
-            variant="h6" 
-            sx={{ 
-                opacity: 0, 
-                transition: 'opacity 0.5s ease-in-out'  
-                }} 
-                > 
-                {backendInfo.backendStatus}  
+                 <Typography 
+                    animate 
+                    variants={{ 
+                        hidden: { opacity: 0 }, 
+                        visible: { opacity: 1 } 
+                        }} 
+                        > 
+                </Typography> 
+                <Box mb={2}> </Box>
+                <Typography 
+                    variant="h6" 
+                    sx={{ 
+                        opacity: 0, 
+                        transition: 'opacity 0.5s ease-in-out'  
+                        }} 
+                        > 
+                        {backendInfo.backendStatus}  
                 </Typography>
-</div>
+            </div>
 )
 }

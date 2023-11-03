@@ -1,5 +1,7 @@
 # plot actual position and wind vector as information of that position
 import os
+import time
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from stl import mesh
@@ -10,8 +12,9 @@ html_file_name = "points.html"
 class PlotWithMesh:
     def __init__(self,
                  mesh_file_name,
-                 trace_1_csv_filename,
-                 trace_2_csv_filename,
+                 cfd_csv_filename,
+                 airsim_csv_filename,
+                 gazebo_csv_filename,
                  plan_path_csv_filename,
                  wind_vector_list_csv_filename):
         """
@@ -19,8 +22,9 @@ class PlotWithMesh:
         and wind vector list
         constructor only reads the csv files and create the mesh, the plotting is done by the plot_3d_with_mesh method
         :param mesh_file_name: file name of the environment mesh
-        :param trace_1_csv_filename: file name of the airsim path
-        :param trace_2_csv_filename: file name of the cfd path
+        :param cfd_csv_filename: file name of the cfd path
+        :param airsim_csv_filename: file name of the airsim path
+        :param gazebo_csv_filename: file name of the gazebo path
         :param plan_path_csv_filename: file name of the plan path
         :param wind_vector_list_csv_filename: file name of the wind vector list
         """
@@ -28,13 +32,30 @@ class PlotWithMesh:
             self.env_mesh = self.create_mesh(mesh_file_name)
         else:
             self.env_mesh = None
-        if trace_1_csv_filename is None:
-            self.airsim_path = None
+        if cfd_csv_filename is None:
+            self.path1 = None
         else:
-            self.airsim_path = self.read_list_from_csv(trace_1_csv_filename)
-        self.cfd_path = self.read_list_from_csv(trace_2_csv_filename)
-        self.plan_path = self.read_list_from_csv(plan_path_csv_filename)
-        self.wind_vector_list = self.read_list_from_csv(wind_vector_list_csv_filename)
+            self.path1 = self.read_list_from_csv(cfd_csv_filename)
+
+        if airsim_csv_filename is None:
+            self.path2 = None
+        else:
+            self.path2 = self.read_list_from_csv(airsim_csv_filename)
+
+        if gazebo_csv_filename is None:
+            self.path3 = None
+        else:
+            self.path3 = self.read_list_from_csv(gazebo_csv_filename)
+
+        if plan_path_csv_filename is None:
+            self.plan_path = None
+        else:
+            self.plan_path = self.read_list_from_csv(plan_path_csv_filename)
+
+        if wind_vector_list_csv_filename is None:
+            self.wind_vector_list = None
+        else:
+            self.wind_vector_list = self.read_list_from_csv(wind_vector_list_csv_filename)
 
     def plot_3d_with_mesh(self,
                           horizontal_angle,
@@ -63,54 +84,66 @@ class PlotWithMesh:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        # plot airsim path
-        if self.airsim_path is not None:
-            airsim_path_x = [point[0] for point in self.airsim_path]
-            airsim_path_y = [-point[1] for point in self.airsim_path]  # y is negative in airsim
-            airsim_path_z = [-point[2] for point in self.airsim_path]  # z is negative in airsim
-            ax.plot(airsim_path_x, airsim_path_y, airsim_path_z,
+        if self.path1 is not None:
+            path1_x = [point[0] for point in self.path1]
+            path1_y = [-point[1] for point in self.path1]  # y is negative in airsim
+            path1_z = [-point[2] for point in self.path1]  # z is negative in airsim
+            ax.plot(path1_x, path1_y, path1_z,
+                    marker='',
+                    linewidth=1,
+                    color='red',
+                    label='RWDS')
+
+        if self.path2 is not None:
+            path2_x = [point[0] for point in self.path2]
+            path2_y = [-point[1] for point in self.path2]  # y is negative in airsim
+            path3_z = [-point[2] for point in self.path2]  # z is negative in airsim
+            ax.plot(path2_x, path2_y, path3_z,
                     marker='',
                     linewidth=1,
                     dashes=[6, 2],
                     color='blue',
-                    label='Airsim')
-            # label the points
+                    zorder=20,
+                    label='AirSim')
 
-        # plot cfd path
-        cfd_path_x = [point[0] for point in self.cfd_path]
-        cfd_path_y = [-point[1] for point in self.cfd_path]  # y is negative in airsim
-        cfd_path_z = [-point[2] for point in self.cfd_path]  # z is negative in airsim
-        # use different color for cfd path
-        ax.plot(cfd_path_x, cfd_path_y, cfd_path_z,
-                marker='',
-                linewidth=1,
-                color='red',
-                zorder=20,
-                label='RWDS')
+        if self.path3 is not None:
+            path3_x = [point[0] for point in self.path3]
+            path3_y = [-point[1] for point in self.path3]  # y is negative in airsim
+            path3_z = [-point[2] for point in self.path3]  # z is negative in airsim
+
+            ax.plot(path3_x, path3_y, path3_z,
+                    marker='',
+                    linewidth=1,
+                    dashes=[3, 3],
+                    color='purple',
+                    zorder=20,
+                    label='Gazebo')
 
         # # add wind vector on cfd path for each 2 points
         # for i in range(0, len(self.cfd_path), 1):
-        #     q = plt.quiver(cfd_path_x[i], cfd_path_y[i], cfd_path_z[i],
+        #     q = plt.quiver(path2_x[i], path2_y[i], path3_z[i],
         #                   self.wind_vector_list[i][0], self.wind_vector_list[i][1], self.wind_vector_list[i][2],
         #                   length=1, color='purple', normalize=False, arrow_length_ratio=0.3)
         # if q is not None:
         #     q.set_label('RWDS wind vector')
 
         # plot plan path
-        plan_path_x = [point[0] for point in self.plan_path]
-        plan_path_y = [-point[1] for point in self.plan_path]  # y is negative in airsim
-        plan_path_z = [-point[2] for point in self.plan_path]  # z is negative in airsim
+        if self.plan_path is not None:
 
-        # use different color for plan path
-        ax.plot(plan_path_x, plan_path_y, plan_path_z,
-                marker='',
-                linewidth=1,
-                dashes=[1, 1],
-                color='green',
-                label='Planned Path')
-        # mark start and end point
-        ax.scatter(plan_path_x[0], plan_path_y[0], plan_path_z[0], marker='o', color='green', label='Start Point')
-        ax.scatter(plan_path_x[-1], plan_path_y[-1], plan_path_z[-1], marker='o', color='red', label='End Point')
+            plan_path_x = [point[0] for point in self.plan_path]
+            plan_path_y = [-point[1] for point in self.plan_path]  # y is negative in airsim
+            plan_path_z = [-point[2] for point in self.plan_path]  # z is negative in airsim
+
+            # use different color for plan path
+            ax.plot(plan_path_x, plan_path_y, plan_path_z,
+                    marker='',
+                    linewidth=1,
+                    dashes=[1, 1],
+                    color='green',
+                    label='Planned Path')
+            # mark start and end point
+            ax.scatter(plan_path_x[0], plan_path_y[0], plan_path_z[0], marker='o', color='green', label='Start Point')
+            ax.scatter(plan_path_x[-1], plan_path_y[-1], plan_path_z[-1], marker='o', color='red', label='End Point')
 
         # Plot environment mesh
         if self.env_mesh is not None:
@@ -148,7 +181,7 @@ class PlotWithMesh:
         ax.set_ylim(y_range[0], y_range[1])
         ax.set_zlim(z_range[0], z_range[1])
 
-        # ax.legend(handlelength=2, fontsize=12)
+        #ax.legend(handlelength=2, fontsize=12)
         # ax.set_title(title)
 
         # Set the initial view perspective, top down view, focus on the (100, 50, 10) point
@@ -158,11 +191,10 @@ class PlotWithMesh:
         plt.tight_layout()
 
         # set image size
-        fig.set_size_inches(7, 7)
+        fig.set_size_inches(6, 6)
 
         # set scale 1:1:1
         ax.set_aspect('equal')
-
 
         if x_density > 0:
             ax.locator_params(nbins=x_density, axis='x')
@@ -183,7 +215,8 @@ class PlotWithMesh:
         plt.show()
 
         # save
-        plot_name = "plot.png"
+        time_str = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+        plot_name = time_str +  "_" + title + ".png"
         fig.savefig(plot_name, dpi=300)
 
     @staticmethod
@@ -211,6 +244,224 @@ class PlotWithMesh:
             return value_list
 
 
+def tall_building_p1():
+    """
+    compare all 3 paths, airsim, RWDS, gazebo
+    """
+    airsim_dir_name = "rq1_const_17_ds5_AIRSIM"
+    cfd_dir_name = "rq1_const_17_ds5_CFD"
+    gazebo_dir_name = "gazebo"
+
+    cfd_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    airsim_path_filename = "report" + os.sep + airsim_dir_name + os.sep + "actual_path.csv"
+    gazebo_path_filename = "report" + os.sep + gazebo_dir_name + os.sep + "gazebo10ms_x_wind_RQ1p1.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+
+    # for tall building
+    plotter = PlotWithMesh(mesh_file_name=TALL_BUILDING_MESH_FILE_NAME,
+                           cfd_csv_filename=cfd_path_filename,
+                           airsim_csv_filename=airsim_path_filename,
+                           gazebo_csv_filename=gazebo_path_filename,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=None)
+    title = "tall buildings p1"
+    plotter.plot_3d_with_mesh(horizontal_angle=90,
+                              vertical_angle=-90,
+                              x_range=(-30, 30),
+                              y_range=(-90, 5),
+                              z_range=(0, 90),
+                              x_density=5,
+                              y_density=5,
+                              z_density=0,
+                              title=title)
+
+
+def tall_building_p2():
+    # turbulent wind 10ms +x, gazebo vs. RWDS
+    cfd_dir_name = "rq1_turb_17_ds5_CONTINUOUS_CFD"
+    gazebo_dir_name = "gazebo"
+
+    cfd_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    gazebo_path_filename = "report" + os.sep + gazebo_dir_name + os.sep + "gazebo10ms_x_wind_RQ1p2.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+
+    # for tall building
+    plotter = PlotWithMesh(mesh_file_name=TALL_BUILDING_MESH_FILE_NAME,
+                           cfd_csv_filename=cfd_path_filename,
+                           airsim_csv_filename=None,
+                           gazebo_csv_filename=gazebo_path_filename,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=None)
+    title = "tall buildings p2"
+    plotter.plot_3d_with_mesh(horizontal_angle=90,
+                              vertical_angle=-90,
+                              x_range=(-30, 30),
+                              y_range=(-90, 5),
+                              z_range=(0, 90),
+                              x_density=5,
+                              y_density=5,
+                              z_density=0,
+                              title=title)
+
+
+def tall_building_p3():
+    # wind shear 10ms +x 10ms -y, gazebo vs. RWDS
+    cfd_dir_name = "rq1_ws_10_ds4_CONTINUOUS_CFD"
+    gazebo_dir_name = "gazebo"
+
+    cfd_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    gazebo_path_filename = "report" + os.sep + gazebo_dir_name + os.sep + "gazebo10ms_x_wind_RQ1p3.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+
+    # for tall building
+    plotter = PlotWithMesh(mesh_file_name=TALL_BUILDING_MESH_FILE_NAME,
+                           cfd_csv_filename=cfd_path_filename,
+                           airsim_csv_filename=None,
+                           gazebo_csv_filename=gazebo_path_filename,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=None)
+    title = "tall buildings p3"
+    plotter.plot_3d_with_mesh(horizontal_angle=90,
+                              vertical_angle=-90,
+                              x_range=(-30, 30),
+                              y_range=(-90, 5),
+                              z_range=(0, 90),
+                              x_density=5,
+                              y_density=5,
+                              z_density=0,
+                              title=title)
+
+
+def chicago_p1():
+    cfd_dir_name = "rq2_shm_2_10_ds5_CONTINUOUS_CFD"
+    airsim_dir_name = "rq3_twoB_10_ds7_AIRSIM"
+
+    airsim_path_filename = "report" + os.sep + airsim_dir_name + os.sep + "actual_path.csv"
+    actual_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+    path_wind_vector_filename = "report" + os.sep + cfd_dir_name + os.sep + "path_wind_vector.csv"
+
+    plotter = PlotWithMesh(mesh_file_name=CHICAGO_MESH_FILE_NAME,
+                           cfd_csv_filename=airsim_path_filename,
+                           airsim_csv_filename=actual_path_filename,
+                           gazebo_csv_filename=None,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=path_wind_vector_filename)
+    title = "sUAS path comparison\nChicago +x 17m/s constant wind"
+    plotter.plot_3d_with_mesh(horizontal_angle=90,
+                              vertical_angle=90,
+                              x_range=(-90, 90),
+                              y_range=(-90, 90),
+                              z_range=(0, 90),
+                              x_density=5,
+                              y_density=5,
+                              z_density=0,
+                              title=title)
+
+    plotter.plot_3d_with_mesh(horizontal_angle=25,
+                              vertical_angle=80,
+                              x_range=(-90, 90),
+                              y_range=(-90, 90),
+                              z_range=(0, 90),
+                              x_density=5,
+                              y_density=5,
+                              z_density=5,
+                              title=title)
+
+    plotter.plot_3d_with_mesh(horizontal_angle=0,
+                              vertical_angle=90,
+                              x_range=(-25, 100),
+                              y_range=(-25, 100),
+                              z_range=(0, 100),
+                              x_density=5,
+                              y_density=0,
+                              z_density=5,
+                              title=title)
+
+
+def smh_compare():
+    # for shm comparison
+    cfd_dir_name = "rq2_shm_2_10_ds5_CONTINUOUS_CFD"
+    airsim_dir_name = "rq2_shm_5_10_ds5_CONTINUOUS_CFD"
+
+    airsim_path_filename = "report" + os.sep + airsim_dir_name + os.sep + "actual_path.csv"
+    actual_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+    path_wind_vector_filename = "report" + os.sep + cfd_dir_name + os.sep + "path_wind_vector.csv"
+
+    plotter = PlotWithMesh(mesh_file_name=CHICAGO_MESH_FILE_NAME,
+                           cfd_csv_filename=airsim_path_filename,
+                           airsim_csv_filename=actual_path_filename,
+                           gazebo_csv_filename=None,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=path_wind_vector_filename)
+    plotter.plot_3d_with_mesh(horizontal_angle=45,
+                              vertical_angle=-45,
+                              x_range=(-100, 100),
+                              y_range=(-100, 100),
+                              z_range=(0, 100),
+                              x_density=5,
+                              y_density=5,
+                              z_density=5,
+                              title=''
+                              )
+
+
+def straight_takeoff():
+    cfd_dir_name = "rq3_twoB_10_ds7_CONTINUOUS_CFD"
+    airsim_dir_name = "rq3_twoB_10_ds7_AIRSIM"
+    gazebo_dir_name = "gazebo"
+
+    airsim_path_filename = "report" + os.sep + airsim_dir_name + os.sep + "actual_path.csv"
+    actual_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    gazebo_path_filename = "report" + os.sep + gazebo_dir_name + os.sep + "gazebo10ms_x_wind_RQ3p1.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+
+    plotter = PlotWithMesh(mesh_file_name=TWO_BUILDING_MESH_FILE_NAME,
+                           cfd_csv_filename=actual_path_filename,
+                           airsim_csv_filename=airsim_path_filename,
+                           gazebo_csv_filename=gazebo_path_filename,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=None)
+    title = "straight takeoff"
+    plotter.plot_3d_with_mesh(horizontal_angle=0,
+                              vertical_angle=-90,
+                              x_range=(-10, 10),
+                              y_range=(-10, 10),
+                              z_range=(0, 20),
+                              x_density=3,
+                              y_density=0,
+                              z_density=3,
+                              title=title)
+
+
+def house_inspection():
+    cfd_dir_name = "rq3_house_10_ds4_CONTINUOUS_CFD"
+    gazebo_dir_name = "gazebo"
+
+    actual_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
+    gazebo_path_filename = "report" + os.sep + gazebo_dir_name + os.sep + "gazebo10ms_x_wind_RQ3p2.csv"
+    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
+
+    # for house inspection
+    plotter = PlotWithMesh(mesh_file_name=HOUSE_MESH_FILE_NAME,
+                           cfd_csv_filename=actual_path_filename,
+                           airsim_csv_filename=None,
+                           gazebo_csv_filename=gazebo_path_filename,
+                           plan_path_csv_filename=plan_path_filename,
+                           wind_vector_list_csv_filename=None)
+    title = "house inspection"
+    plotter.plot_3d_with_mesh(horizontal_angle=20,
+                              vertical_angle=70,
+                              x_range=(-5, 40),
+                              y_range=(-20, 20),
+                              z_range=(0, 20),
+                              x_density=3,
+                              y_density=3,
+                              z_density=3,
+                              title=title)
+
+
 if __name__ == "__main__":
     # read actual position from csv
 
@@ -220,139 +471,19 @@ if __name__ == "__main__":
         for dir_name in dirs:
             report_dir_names.append(dir_name)
 
-    tall_building_mesh_file_name = "foam_data/block/tallBuilding/threeBuildings_wo_ground.stl"
-    chicago_mesh_file_name = "foam_data/chicago/UE_exported_chicago_small_slice.stl"
-    two_buildings_mesh_file_name = "foam_data/block/twoB_takeoff/RQ3P1_wo_ground.stl"
-    house_mesh_file_name = "foam_data/block/house/simpleHouse_wo_ground.stl"
+    TALL_BUILDING_MESH_FILE_NAME = "foam_data/block/tallBuilding/threeBuildings_wo_ground.stl"
+    CHICAGO_MESH_FILE_NAME = "foam_data/chicago/UE_exported_chicago_small_slice.stl"
+    TWO_BUILDING_MESH_FILE_NAME = "foam_data/block/twoB_takeoff/RQ3P1_wo_ground.stl"
+    HOUSE_MESH_FILE_NAME = "foam_data/block/house/simpleHouse_wo_ground.stl"
 
-    mesh_file_name = tall_building_mesh_file_name
-    cfd_dir_name = "rq3_twoB_10_ds7_CONTINUOUS_CFD"
-    # cfd_dir_name = report_dir_names[-5]
-    airsim_dir_name = "rq3_twoB_10_ds7_AIRSIM"
-    # airsim_dir_name = "2023-07-01_18-48-23_chicago_straight_takeoff_17_ds10_AIRSIM"
-    # cfd_dir_name = "2023-07-01_18-46-57_chicago_straight_takeoff_17_ds10_CFD"
-    # mesh_file_name = "foam_data/chicago/constant_wind/UE_exported_chicago_wo_ground_slice.stl"
-    # airsim_dir_name = "2023-07-01_16-54-15_chicago_17_ds5_AIRSIM"
-    # cfd_dir_name = "2023-07-01_16-54-15_chicago_17_ds5_CFD"
-    airsim_path_filename = "report" + os.sep + airsim_dir_name + os.sep + "actual_path.csv"
-    actual_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "actual_path.csv"
-    plan_path_filename = "report" + os.sep + cfd_dir_name + os.sep + "plan_path.csv"
-    path_wind_vector_filename = "report" + os.sep + cfd_dir_name + os.sep + "path_wind_vector.csv"
+    mesh_file_name = TALL_BUILDING_MESH_FILE_NAME
 
-    # # for shm comparison
-    # plotter = PlotWithMesh(mesh_file_name=None,
-    #                        trace_1_csv_filename=airsim_path_filename,
-    #                        trace_2_csv_filename=actual_path_filename,
-    #                        plan_path_csv_filename=plan_path_filename,
-    #                        wind_vector_list_csv_filename=path_wind_vector_filename)
-    # plotter.plot_3d_with_mesh(horizontal_angle=45,
-    #                           vertical_angle=-45,
-    #                           x_range=(-100, 100),
-    #                           y_range=(-100, 100),
-    #                           z_range=(0, 100),
-    #                           x_density=5,
-    #                           y_density=5,
-    #                           z_density=5,
-    #                           title=''
-    #                           )
+    tall_building_p1()
+    tall_building_p2()
+    tall_building_p3()
 
-    # # for tall building
-    # plotter = PlotWithMesh(mesh_file_name=mesh_file_name,
-    #                        trace_1_csv_filename=None,
-    #                        trace_2_csv_filename=actual_path_filename,
-    #                        plan_path_csv_filename=plan_path_filename,
-    #                        wind_vector_list_csv_filename=path_wind_vector_filename)
-    # # title = "sUAS path comparison\nTall buildings +x 17m/s constant wind:
-    # title = ""
-    # # plotter.plot_3d_with_mesh(horizontal_angle=10,
-    # #                           vertical_angle=45,
-    # #                           x_range=(-40, 40),
-    # #                           y_range=(-80, 0),
-    # #                           z_range=(0, 60),
-    # #                           x_density=0,
-    # #                           y_density=5,
-    # #                           z_density=5,
-    # #                           title=title)
-    #
-    # plotter.plot_3d_with_mesh(horizontal_angle=90,
-    #                           vertical_angle=-90,
-    #                           x_range=(-30, 30),
-    #                           y_range=(-90, 5),
-    #                           z_range=(0, 90),
-    #                           x_density=5,
-    #                           y_density=5,
-    #                           z_density=0,
-    #                           title=title)
+    # smh_compare()
 
-    # for chicago
-    # plotter = PlotWithMesh(mesh_file_name=mesh_file_name,
-    #                        airsim_csv_filename=None,
-    #                        cfd_csv_filename=actual_path_filename,
-    #                        plan_path_csv_filename=plan_path_filename,
-    #                        wind_vector_list_csv_filename=path_wind_vector_filename)
-    # title = "sUAS path comparison\nChicago +x 17m/s constant wind"
-    # plotter.plot_3d_with_mesh(horizontal_angle=90,
-    #                           vertical_angle=90,
-    #                           x_range=(-90, 90),
-    #                           y_range=(-90, 90),
-    #                           z_range=(0, 90),
-    #                           x_density=5,
-    #                           y_density=5,
-    #                           z_density=0,
-    #                           title=title)
-    #
-    # plotter.plot_3d_with_mesh(horizontal_angle=25,
-    #                           vertical_angle=80,
-    #                           x_range=(-90, 90),
-    #                           y_range=(-90, 90),
-    #                           z_range=(0, 90),
-    #                           x_density=5,
-    #                           y_density=5,
-    #                           z_density=5,
-    #                           title=title)
-    #
-    # plotter.plot_3d_with_mesh(horizontal_angle=0,
-    #                           vertical_angle=90,
-    #                           x_range=(-25, 100),
-    #                           y_range=(-25, 100),
-    #                           z_range=(0, 100),
-    #                           x_density=5,
-    #                           y_density=0,
-    #                           z_density=5,
-    #                           title=title)
+    straight_takeoff()
 
-    # for straight takeoff
-    plotter = PlotWithMesh(mesh_file_name=two_buildings_mesh_file_name,
-                            trace_1_csv_filename=airsim_path_filename,
-                            trace_2_csv_filename=actual_path_filename,
-                            plan_path_csv_filename=plan_path_filename,
-                            wind_vector_list_csv_filename=path_wind_vector_filename)
-
-    #title = "sUAS path comparison\nChicago straight takeoff +x 17m/s constant wind"
-    plotter.plot_3d_with_mesh(horizontal_angle=0,
-                              vertical_angle=-90,
-                              x_range=(-10, 10),
-                              y_range=(-10, 10),
-                              z_range=(0, 20),
-                              x_density=3,
-                              y_density=0,
-                              z_density=3,
-                              title='')
-
-    # # for house inspection
-    # plotter = PlotWithMesh(mesh_file_name=house_mesh_file_name,
-    #                        trace_1_csv_filename=None,
-    #                        trace_2_csv_filename=actual_path_filename,
-    #                        plan_path_csv_filename=plan_path_filename,
-    #                        wind_vector_list_csv_filename=path_wind_vector_filename)
-    #
-    # title = ''
-    # plotter.plot_3d_with_mesh(horizontal_angle=20,
-    #                           vertical_angle=70,
-    #                           x_range=(-5, 40),
-    #                           y_range=(-20, 20),
-    #                           z_range=(0, 20),
-    #                           x_density=3,
-    #                           y_density=3,
-    #                           z_density=3,
-    #                           title=title)
+    house_inspection()

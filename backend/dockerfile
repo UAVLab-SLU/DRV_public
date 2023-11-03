@@ -1,0 +1,26 @@
+FROM python:3.10
+
+COPY . /app
+
+WORKDIR /app
+
+# AirSim dependencies
+#RUN apt-get update && apt-get install -y python3-dev portaudio19-dev
+
+# Streaming function opencv dependencies
+#RUN apt-get update && apt-get install libsm6 libxext6  -y
+
+RUN pip install wheel
+#RUN pip install --global-option='build_ext' --global-option='-I/usr/local/include' --global-option='-L/usr/local/lib' pyaudio
+
+RUN pip install -r requirements.txt
+
+RUN mkdir -p /root/Documents/AirSim/report/
+
+EXPOSE 5000
+
+WORKDIR /app/PythonClient/server
+
+ENV IN_DOCKER Yes
+
+CMD ["python", "simulation_server.py"]

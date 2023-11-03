@@ -1,4 +1,5 @@
 # uses airsim wind api to control the wind speed and direction
+import os
 import time
 
 from PythonClient import airsim
@@ -17,7 +18,10 @@ class AirSimWindController:
         :param reader: str, "csv" or "foam", "csv" reads the data from csv files,
         "foam" reads from the openfoam data directly, abandoned, too slow.
         """
-        self.client = airsim.MultirotorClient()
+        if os.environ.get("IN_DOCKER", False):
+            self.client = airsim.MultirotorClient(ip="host.docker.internal")
+        else:
+            self.client = airsim.MultirotorClient()
         self.client.confirmConnection()
         foam_data_root = openfoam_data_root
         if foam_data_root is not None:

@@ -1,12 +1,31 @@
+import argparse
 import logging
 import os.path
 import threading
 import time
+import sys
 
 from flask import Flask, request, abort, send_file, render_template, Response
 from flask_cors import CORS
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))  # two dir up is the root of the project
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
+
+if os.environ.get("IN_DOCKER", False):
+    print("Running in docker")
+else:
+    print("Running locally")
+
+# read command line arguments, if any
+parser = argparse.ArgumentParser(description='AirSim Python Multirotor API Server')
+parser.add_argument('--mode', default='SimpleFlight', help='Mode for the drone control, PX4 or SimpleFlight', required=False)
+print("Mode: " + parser.parse_args().mode)
+
+parser.add_argument('--ue_ip', default='localhost', help='IP address of the DRV UE5 game', required=False)
+print("UE IP: " + parser.parse_args().ue_ip)
+
+
+# if in docker, we need to set the environment variables
 
 app = Flask(__name__, template_folder="./templates")
 
@@ -14,7 +33,8 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 CORS(app)
 
-task_dispatcher = SimulationTaskManager()
+# initialize the task dispatcher based on the mode
+task_dispatcher = SimulationTaskManager(parser.parse_args().mode)
 threading.Thread(target=task_dispatcher.start).start()
 task_number = 1
 
@@ -25,6 +45,9 @@ task_number = 1
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
+@app.route('/google_api_key', methods=['GET'])
+def get_google_api_key():
+    return task_dispatcher.get_google_api_key()
 
 @app.route('/addTask', methods=['POST'])
 def add_task():

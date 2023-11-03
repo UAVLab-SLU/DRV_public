@@ -3,8 +3,8 @@ import os
 import time
 from PythonClient.multirotor.wind_control.openfoam_csv_reader import FoamCSVReader
 
-foam_data_root = "../foam_data/block/house"
-init_filename = "10ms_0.csv"
+foam_data_root = "../foam_data/block/twoB_takeoff/low_res"
+init_filename = "lowres_0.csv"
 init_file_path = os.path.join(foam_data_root, init_filename)
 
 

@@ -1,8 +1,8 @@
 msgpack-rpc-python
 numpy==1.25.0
 numpy_stl==3.0.1
-pyaudio
-opencv-contrib-python
+# pyaudio
+# opencv-contrib-python
 matplotlib==3.7.1
 flask==2.3.2
 flask_cors==4.0.0
@@ -13,3 +13,7 @@ requests==2.31.0
 pandas==2.0.2
 plotly==5.15.0
 Ofpp~=0.11
+mavsdk~=1.4.9
+# opencv-python~=4.7.0.72
+pyulog~=1.0.1
+stl~=0.0.3

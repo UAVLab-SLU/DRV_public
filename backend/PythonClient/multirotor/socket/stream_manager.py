@@ -1,3 +1,5 @@
+import os
+
 import PythonClient.airsim as airsim
 from PythonClient.multirotor.socket.mission_streamer import MissionStreamer
 
@@ -8,7 +10,10 @@ class StreamManager:
     """
 
     def __init__(self):
-        self.client = airsim.MultirotorClient()
+        if os.environ.get("IN_DOCKER", False):
+            self.client = airsim.MultirotorClient(ip="host.docker.internal")
+        else:
+            self.client = airsim.MultirotorClient()
         self.streamers = []
 
     def get_stream(self, drone_name, camera_name):

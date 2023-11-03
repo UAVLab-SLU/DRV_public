@@ -29,7 +29,8 @@ def str_to_number(s):
 
 
 class SimulationTaskManager:
-    def __init__(self):
+    def __init__(self, mode="SimpleFlight"):
+        self.__mode = mode
         self.__save_raw_request = False  # for debugging, set to true to save raw request to file
         self.__drone_positions_seen = set()  # prevent duplicate drone positions from crashing DroneWorld
         self.__current_task_batch = "None"
@@ -292,7 +293,10 @@ class SimulationTaskManager:
         :param fuzzy_test_info: Dict of fuzzy test info, None otherwise
         :return: None
         """
-        airsim.MultirotorClient().reset()  # reset scene before each task
+        if os.environ.get("IN_DOCKER", False):
+            airsim.MultirotorClient(ip="host.docker.internal").reset()
+        else:
+            airsim.MultirotorClient().reset()  # reset scene before each task
         mission_threads = []
         monitor_threads = []
         for drone_mission_pair in drone_mission_pair_list:
@@ -496,7 +500,12 @@ class SimulationTaskManager:
         """
         file_path = os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json'
         if not os.path.exists(file_path):
+            # create subdirs
+            os.makedirs(os.path.join(os.path.expanduser('~'), "Documents", "AirSim", "report"), exist_ok=True)
+
+            # create settings.json
             open(file_path, 'w').close()
+
             default_settings = {
                 "SettingsVersion": 1.2,
                 "SimMode": "Multirotor",
@@ -548,4 +557,8 @@ class SimulationTaskManager:
                 #     self.stream_manager.set_drone_names(raw_request_json["streaming_settings"]["drone_names"])
         else:
             self.__is_streaming_enabled = False
+
+    def get_google_api_key(self):
+        #TODO: get google api key from settings.json
+        return "AIzaSyBIeC0FRTem5PEc-2bT7XxO4SRCuzdiPaA"
 

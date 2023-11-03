@@ -13,7 +13,11 @@ class AirSimApplication:
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
         self.point_mission_names = {"FlyStraight"}
-        self.client = airsim.MultirotorClient()
+        # if in docker, use host.docker.internal as ip
+        if os.environ.get("IN_DOCKER", False):
+            self.client = airsim.MultirotorClient(ip="host.docker.internal")
+        else:
+            self.client = airsim.MultirotorClient()
         # self.client.confirmConnection()
         self.setting_file = self.load_airsim_setting()
         self.drone_number = len(self.setting_file['Vehicles'])  # only support name format of Drone1, Drone2...

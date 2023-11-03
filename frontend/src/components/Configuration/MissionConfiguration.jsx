@@ -28,8 +28,8 @@ export default function MissionConfiguration (mission) {
     const [droneArray, setDroneArray] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones : [{
         id: droneCount-1, 
         droneName:"Drone " + droneCount,
-        droneType:"typeTest", //add changing values later
-        droneModel:"modelTest", //add changing values here
+        droneType:"Multi Rotor", //add changing values later
+        droneModel:"DJI", //add changing values here
         VehicleType: "SimpleFlight",
         DefaultVehicleState: "Armed",
         PawnPath: "",
@@ -104,6 +104,8 @@ export default function MissionConfiguration (mission) {
         droneArray.push({
             id: (droneCount), 
             droneName:"Drone " + (droneCount+1),//Add droneType and droneModel here
+            droneType:"Multi Rotor", //add changing values later
+            droneModel:"DJI", //add changing values here
             VehicleType: "SimpleFlight",
             DefaultVehicleState: "Armed",
             PawnPath: "",

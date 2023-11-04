@@ -442,10 +442,10 @@ const handleSnackBarVisibility = (val) => {
                     {/* {selectedWindType !== "Wind Shear" && ( */}
                     <Grid item xs={3}>
                         <FormControl variant="standard" sx = {{ minWidth: 150 }}>
-                            <InputLabel id="Distance">Wind Direction</InputLabel>
-                            <Select label="Direction" value={envConf.Wind.Distance} onChange={handleDistance} disabled={envConf.enableFuzzy}>
-                                {Distance.map(function(val) {
-                                    return(<MenuItem value={val.value} key={val.id} id="Distance">
+                            <InputLabel id="Direction">Wind Direction</InputLabel>
+                            <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection} disabled={envConf.enableFuzzy}>
+                                {Direction.map(function(val) {
+                                    return(<MenuItem value={val.value} key={val.id} id="Direction">
                                     <em>{val.value}</em>
                                 </MenuItem>)
                                 })}
@@ -529,7 +529,7 @@ const handleSnackBarVisibility = (val) => {
                                                     windDirection: e.target.value,
                                                     })}>
                                                 
-                                                {Distance.map(function (val) {
+                                                {Direction.map(function (val) {
                                                     return (
                                                         <MenuItem value={val.value} key={val.id}>
                                                         {val.value}

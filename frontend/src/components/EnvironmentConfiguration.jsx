@@ -35,7 +35,7 @@ import Alert from '@mui/material/Alert';
 export default function EnvironmentConfiguration (env) {  
     const [backendInfo, setBackendInfo] = useState({ 
         numQueuedTasks: 0,
-        backendStatus: 'idle'
+        backendStatus: 'error'
     });  
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
@@ -297,37 +297,30 @@ export default function EnvironmentConfiguration (env) {
     //new added
     useEffect(() => {
         const interval = setInterval(() => {
-          fetch('/currentRunning')
-            .then(res => res.json())
-            .then(data => setBackendInfo(data));
+          fetch('http://localhost:5000/currentRunning')
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return res.text();
+
+            })
+            .then((data) => {
+              console.log("Received data: ", data)
+              if (data.status === "None") {
+                setBackendInfo({ numQueuedTasks: -1, backendStatus: 'idle' });
+              } else if (data.status === "Running") {
+                setBackendInfo({ numQueuedTasks: data.numQueuedTasks, backendStatus: 'running' });
+              }
+            })
+            .catch((error) => {
+              console.error('Error fetching data:', error);
+              setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
+            });
         }, 2000);
-      
+    
         return () => clearInterval(interval);
-      }, []);    
-      
-      //new added  
-      useEffect(() => {
-
-        console.log(`
-          <div class="status ${backendInfo.backendStatus}">
-            ${backendInfo.backendStatus}
-          </div>
-          
-          // CSS styles
-      
-        `); 
-        const style = document.createElement('style');
-  
-        style.innerHTML = `
-          .status {
-            // CSS styles  
-          }
-        `;
-        
-        document.head.appendChild(style);
-      
-      }, [backendInfo.backendStatus]); 
-
+      }, []);
       
 
 //     return (
@@ -760,41 +753,42 @@ const handleSnackBarVisibility = (val) => {
                             </GoogleMap>
                         </LoadScript>
                     </div> :null}
+
                     <Typography variant="h6"> Status:</Typography>  
-                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
-                            {/* Show spinner if status is running */}
-                            <Typography>   
-                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-                            </Typography>  
-                        </Box>
-                        <div style={{position: 'relative'}}> 
-                            <div style={{position: 'absolute', left: 380, top: -80}}>
-                                <Typography>  
-                                    Queued Tasks: {backendInfo.numQueuedTasks}
-                                </Typography>    
-                            </div> 
-                        </div>
+                    <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+                        {/* Show spinner if status is running */}
+                        <Typography>   
+                            Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+                        </Typography>  
+                    </Box>
+                    <div style={{position: 'relative'}}> 
+                        <div style={{position: 'absolute', left: 380, top: -80}}>
+                            <Typography>  
+                                Queued Tasks: {backendInfo.numQueuedTasks}
+                            </Typography>    
+                        </div> 
+                    </div>
                     </Typography>
                     {/* </Container> */}
-                 </Box>
-                 <Typography 
-                    animate 
-                    variants={{ 
-                        hidden: { opacity: 0 }, 
-                        visible: { opacity: 1 } 
-                        }} 
-                        > 
-                </Typography> 
-                <Box mb={2}> </Box>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        opacity: 0, 
-                        transition: 'opacity 0.5s ease-in-out'  
-                        }} 
-                        > 
+                    </Box>
+                    <Typography 
+                        animate 
+                        variants={{ 
+                            hidden: { opacity: 0 }, 
+                            visible: { opacity: 1 } 
+                            }} 
+                            > 
+                    </Typography> 
+                    <Box mb={2}> </Box>
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            opacity: 0, 
+                            transition: 'opacity 0.5s ease-in-out'  
+                            }} 
+                            > 
                         {backendInfo.backendStatus}  
-                </Typography>
+                    </Typography>
             </div>
 )
 }

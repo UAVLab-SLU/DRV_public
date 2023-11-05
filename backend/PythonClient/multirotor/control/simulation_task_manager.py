@@ -30,7 +30,7 @@ def str_to_number(s):
 
 class SimulationTaskManager:
     def __init__(self):
-        self.__save_raw_request = False  # for debugging, set to true to save raw request to file
+        self.__save_raw_request = True  # for debugging, set to true to save raw request to file
         self.__drone_positions_seen = set()  # prevent duplicate drone positions from crashing DroneWorld
         self.__current_task_batch = "None"
         self.__environment_check()
@@ -64,10 +64,12 @@ class SimulationTaskManager:
         while self.state:
             while self.mission_queue.empty():
                 self.__current_task_batch = "None"
+                print("This is the current task_batch, waiting for task to be added: " , self.__current_task_batch)
                 self.unreal_off()
                 sleep(1)
             current_queue_top = self.mission_queue.get()
             self.__current_task_batch = current_queue_top[1]
+            print("This is the current task_batch: " , self.__current_task_batch)
             try:
                 if "FuzzyTest" not in current_queue_top[0]:
                     self.__run_regular_batch(current_queue_top)
@@ -397,7 +399,7 @@ class SimulationTaskManager:
                 start_threads.append(threading.Thread(target=monitor_instance.start))
                 stop_threads.append(threading.Thread(target=monitor_instance.stop))
         return start_threads, stop_threads
-
+    
     @staticmethod
     def __get_class_instance(class_name, module_name):
         module = importlib.import_module("PythonClient.multirotor." + module_name + "." + class_name)

@@ -29,7 +29,7 @@ export default function MissionConfiguration (mission) {
         id: droneCount-1, 
         droneName:"Drone " + droneCount,
         droneType:"Multi Rotor", 
-        droneModel:"DJI", 
+        droneModel:"DJI",
         VehicleType: "SimpleFlight",
         DefaultVehicleState: "Armed",
         PawnPath: "",

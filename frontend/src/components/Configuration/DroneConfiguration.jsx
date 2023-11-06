@@ -65,7 +65,6 @@ export default function DroneConfiguration (droneData)  {
         // != null ? droneData.droneObject : {
         // VehicleType: "SimpleFlight",
 		// DefaultVehicleState: "Armed",
-		// PawnPath: "",
 		// EnableCollisionPassthrogh: false,
 		// EnableCollisions: true,
 		// AllowAPIAlways: true,

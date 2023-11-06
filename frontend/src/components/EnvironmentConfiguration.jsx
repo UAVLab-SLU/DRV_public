@@ -35,7 +35,7 @@ import Alert from '@mui/material/Alert';
 export default function EnvironmentConfiguration (env) {  
     const [backendInfo, setBackendInfo] = useState({ 
         numQueuedTasks: 0,
-        backendStatus: 'error'
+        backendStatus: 'idle'
     });  
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
@@ -300,17 +300,17 @@ export default function EnvironmentConfiguration (env) {
           fetch('http://localhost:5000/currentRunning')
             .then((res) => {
               if (!res.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('No response from server/something went wrong');
               }
               return res.text();
-
             })
             .then((data) => {
-              console.log("Received data: ", data)
-              if (data.status === "None") {
-                setBackendInfo({ numQueuedTasks: -1, backendStatus: 'idle' });
-              } else if (data.status === "Running") {
-                setBackendInfo({ numQueuedTasks: data.numQueuedTasks, backendStatus: 'running' });
+              const [status, queueSize] = data.split(', ');
+              console.log('Simulation Status,', status, 'Queue Size:', queueSize);
+              if (status === "None") {
+                setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
+              } else if (status === "Running") {
+                setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
               }
             })
             .catch((error) => {

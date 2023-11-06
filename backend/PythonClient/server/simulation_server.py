@@ -41,9 +41,9 @@ def add_task():
 def get_current_running():
     current_task_batch = task_dispatcher.get_current_task_batch()
     if current_task_batch == "None":
-        return "None", task_dispatcher.mission_queue.qsize()
+        return f"{'None'}, {task_dispatcher.mission_queue.qsize()}"
     else:
-        return "Running", task_dispatcher.mission_queue.qsize()
+        return f"{'Running'}, {task_dispatcher.mission_queue.qsize()}"
 
 @app.route('/report')
 @app.route('/report/<path:dir_name>')

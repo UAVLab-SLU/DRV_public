@@ -186,7 +186,7 @@ class SimulationTaskManager:
                 diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
 
             new_one_drone_json = {
-                drone_name: dict(VehicleType="SimpleFlight", X=drone_x, Y=drone_y, Z=drone_z)
+                drone_name: dict(FlightController="SimpleFlight", X=drone_x, Y=drone_y, Z=drone_z)
             }
 
             new_one_drone_json[drone_name].update(diff_dict)
@@ -200,8 +200,8 @@ class SimulationTaskManager:
                 # wind vector already handled in run_fuzzy_test_batch
             else:
                 wind = raw_request_json['environment']['Wind']
-                if "Force" in wind:
-                    wind_vector = self.__string_to_wind_vector(wind["Distance"], wind["Force"])
+                if "Velocity" in wind:
+                    wind_vector = self.__string_to_wind_vector(wind["Direction"], wind["Velocity"])
                     new_setting_dot_json['Wind'] = {'X': wind_vector[0], 'Y': wind_vector[1], 'Z': wind_vector[2]}
                 elif not (wind['X'] == 0 and wind['Y'] == 0 and wind['Z'] == 0):
                     new_setting_dot_json['Wind'] = raw_request_json['environment']['Wind']
@@ -406,7 +406,7 @@ class SimulationTaskManager:
     @staticmethod
     def __create_default_drone_full_length_reqeust():
         return dict(
-            VehicleType="SimpleFlight", DefaultVehicleState="Armed", PawnPath="",
+            FlightController="SimpleFlight", DefaultVehicleState="Armed", PawnPath="",
             EnableCollisionPassthrogh=False, EnableCollisions=True,
             AllowAPIAlways=True, EnableTrace=False, Name="Drone1", Mission={},
             X=0, Y=0, Z=0, Pitch=0, Roll=0, Yaw=0)
@@ -450,23 +450,23 @@ class SimulationTaskManager:
         return [x, y, 0]
 
     @staticmethod
-    def __string_to_wind_vector(direction, force):
+    def __string_to_wind_vector(direction, velocity):
         if direction == 'N':
-            return [force, 0, 0]
+            return [velocity, 0, 0]
         elif direction == 'S':
-            return [-force, 0, 0]
+            return [-velocity, 0, 0]
         elif direction == 'E':
-            return [0, force, 0]
+            return [0, velocity, 0]
         elif direction == 'W':
-            return [0, -force, 0]
+            return [0, -velocity, 0]
         elif direction == 'NE':
-            return [force / 2 ** 0.5, force / 2 ** 0.5, 0]
+            return [velocity / 2 ** 0.5, velocity / 2 ** 0.5, 0]
         elif direction == 'NW':
-            return [force / 2 ** 0.5, -force / 2 ** 0.5, 0]
+            return [velocity / 2 ** 0.5, -velocity / 2 ** 0.5, 0]
         elif direction == 'SE':
-            return [-force / 2 ** 0.5, force / 2 ** 0.5, 0]
+            return [-velocity / 2 ** 0.5, velocity / 2 ** 0.5, 0]
         elif direction == 'SW':
-            return [-force / 2 ** 0.5, -force / 2 ** 0.5, 0]
+            return [-velocity / 2 ** 0.5, -velocity / 2 ** 0.5, 0]
         else:
             return [0, 0, 0]
 
@@ -507,7 +507,7 @@ class SimulationTaskManager:
                 "SimMode": "Multirotor",
                 "Vehicles": {
                     "Drone1": {
-                        "VehicleType": "SimpleFlight",
+                        "FlightController": "SimpleFlight",
                         "X": 0,
                         "Y": 0,
                         "Z": 0

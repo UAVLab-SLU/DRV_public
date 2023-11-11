@@ -26,7 +26,7 @@ const defaultGps = {
   };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(sensor.gPSObj) 
+    const[gps, setGps] = React.useState(defaultGps) 
     
 
     React.useEffect(() => {
@@ -49,13 +49,17 @@ export default function GPS (sensor) {
         // etc for other fields
       }
 
-    const handleChange = (val) => {
+    const handleChange = (val) => {   
         setGps(prevState => ({
             ...prevState,
             [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
-        }))
-    }
+        }));  
+    } 
 
+
+    const handleReset = () => {
+        setGps(defaultGps);
+      };
     return(
         <div>  
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
@@ -71,8 +75,8 @@ export default function GPS (sensor) {
                             </FormGroup>
                 </Grid>   
                 </Grid>  
-            <Box>    
-
+            <Box>     
+            
             
             <Grid container spacing={2}>   
             <Grid container item xs={12}>
@@ -84,8 +88,20 @@ export default function GPS (sensor) {
             id="EphTimeConstant"
             label="EphTimeConstant"
             type="number"
-            InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-            value={defaultGps.EphTimeConstant}
+            InputProps={{
+                inputProps: { min: 0, max: 100, step: 0.1 },
+                onChange: (e) => {
+                  let value = parseFloat(e.target.value);
+                  value = Math.round(value / 0.1) * 0.1;
+                  value = Math.min(Math.max(value, 0), 100);
+        
+                  // Format the value to a string with 2 decimal places
+                  const formattedValue = value.toFixed(2);
+        
+                  setGps({ ...gps, EphTimeConstant: formattedValue });
+                },
+              }}
+            value={gps.EphTimeConstant}
             onChange={handleChange} 
             variant="standard" 
             //style={{ marginBottom: '16px' }}  
@@ -101,8 +117,20 @@ export default function GPS (sensor) {
          id="EpvTimeConstant"
          label="EpvTimeConstant"
          type="number"
-         InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-         value={defaultGps.EpvTimeConstant}
+         InputProps={{
+            inputProps: { min: 0, max: 100, step: 0.1 },
+            onChange: (e) => {
+              let value = parseFloat(e.target.value);
+              value = Math.round(value / 0.1) * 0.1;
+              value = Math.min(Math.max(value, 0), 100);
+    
+              // Format the value to a string with 2 decimal places
+              const formattedValue = value.toFixed(2);
+    
+              setGps({ ...gps, EpvTimeConstant: formattedValue });
+            },
+          }}
+         value={gps.EpvTimeConstant}
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -115,8 +143,8 @@ export default function GPS (sensor) {
          id="EphInitial"
          label="EphInitial"
          type="number"
-         InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-         value={defaultGps.EphInitial}
+         InputProps={{ inputProps: { min: 0, max: Infinity } }} 
+         value={gps.EphInitial}
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -128,8 +156,8 @@ export default function GPS (sensor) {
          id="EpvInitial"
          label="EpvInitial"
          type="number"
-         InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-         value={defaultGps.EpvInitial}
+         InputProps={{ inputProps: { min: 0, max: Infinity} }} 
+         value={gps.EpvInitial}
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -144,8 +172,20 @@ export default function GPS (sensor) {
          id="EphFinal"
          label="EphFinal"
          type="number"
-         InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-         value={defaultGps.EphFinal}
+         InputProps={{
+            inputProps: { min: 0, max: 100, step: 0.1 },
+            onChange: (e) => {
+              let value = parseFloat(e.target.value);
+              value = Math.round(value / 0.1) * 0.1;
+              value = Math.min(Math.max(value, 0), 100);
+    
+              // Format the value to a string with 2 decimal places
+              const formattedValue = value.toFixed(2);
+    
+              setGps({ ...gps, EphFinal: formattedValue });
+            },
+          }}
+         value={gps.EphFinal}
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -156,9 +196,21 @@ export default function GPS (sensor) {
          <TextField 
          id="EpvFinal"
          label="EpvFinal"
-         type="number"
-         InputProps={{ inputProps: { min: 0, max: 1, step: 0.1 } }} 
-         value={defaultGps.EpvFinal}
+         type="number" 
+         InputProps={{
+            inputProps: { min: 0, max: 100, step: 0.1 },
+            onChange: (e) => {
+              let value = parseFloat(e.target.value);
+              value = Math.round(value / 0.1) * 0.1;
+              value = Math.min(Math.max(value, 0), 100);
+    
+              // Format the value to a string with 2 decimal places
+              const formattedValue = value.toFixed(2);
+    
+              setGps({ ...gps, EpvFinal: formattedValue });
+            },
+          }}
+         value={gps.EpvFinal}
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -170,8 +222,8 @@ export default function GPS (sensor) {
          id="EphMin3d" 
          label="EphMin3d" 
          type="number" 
-         InputProps={{ inputProps: {min: 0, max: 1, step:0 } }} 
-         value={defaultGps.EphMin3d} 
+         InputProps={{ inputProps: {min: 0, max: Infinity } }} 
+         value={gps.EphMin3d} 
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -184,8 +236,8 @@ export default function GPS (sensor) {
          id="EphMin2d" 
          label="EphMin2d" 
          type="number" 
-         InputProps={{ inputProps: {min: 0, max: 1, step:0 } }} 
-         value={defaultGps.EphMin2d} 
+         InputProps={{ inputProps: {min: 0, max: Infinity } }} 
+         value={gps.EphMin2d} 
          onChange={handleChange} 
          variant="standard" 
          style={{ width: 160 }}
@@ -255,8 +307,8 @@ export default function GPS (sensor) {
                       id="StartupDelay"  
                       label="StartupDelay (s)"  
                       type="number"  
-                      InputProps={{ inputProps: {min: 0, max: 1, step:0 } }}  
-                      value={defaultGps.StartupDelay}  
+                      InputProps={{ inputProps: {min: 0, max: Infinity } }}  
+                      value={gps.StartupDelay}  
                       onChange={handleChange}   
                       variant="standard"  
                       style={{ width: 160 }} 
@@ -269,8 +321,20 @@ export default function GPS (sensor) {
                       id="UpdateLatency"  
                       label="UpdateLatency (s)"  
                       type="number"  
-                      InputProps={{ inputProps: {min: 0, max: 1, step:0 } }}  
-                      value={defaultGps.UpdateLatency} 
+                      InputProps={{
+                        inputProps: { min: 0, max: 100, step: 0.1 },
+                        onChange: (e) => {
+                          let value = parseFloat(e.target.value);
+                          value = Math.round(value / 0.1) * 0.1;
+                          value = Math.min(Math.max(value, 0), 100);
+                
+                          // Format the value to a string with 2 decimal places
+                          const formattedValue = value.toFixed(2);
+                
+                          setGps({ ...gps, UpdateLatency: formattedValue });
+                        },
+                      }}  
+                      value={gps.UpdateLatency} 
                       onChange={handleChange}  
                       variant="standard"  
                       style={{ width: 160 }} 

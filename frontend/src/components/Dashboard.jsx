@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import AlertTitle from '@mui/material/AlertTitle';
-
+import AdjustIcon from '@mui/icons-material/Adjust';
 
 const style = {
   position: 'absolute',
@@ -446,19 +446,32 @@ export default function Dashboard(parameter) {
           })}
           <Grid container spacing={2} direction="row" >
           {CollisionMonitor.map(function(file, index) {
-            return (
-              <React.Fragment key={index}>
-                {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
-                <Card sx={{ maxWidth: 500 }} variant="outlined">
-                  {/* <img src={file.imgContent} width="30%"/> */}
-                  <CardMedia
-                    component="img"
-                    image={file.imgContent}/>
-                </Card></Grid>}
-              </React.Fragment>
-            )
-          })}</Grid>
+
+return (
+
+  <React.Fragment key={index}>
+  
+    {/* Render file content */}
+    
+    <ListItem>
+      {file.type === 'text/plain' ?  
+        <AdjustIcon/>
+      : null}
+      
+      <ListItemText primary={file.content} />
+    </ListItem>
+
+    {/* ReturnContentsItem */}
+
+    {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />))}
+    {(returnContentsItem('darkred', index, file.failContent, <ClearIcon/>))}
+
+  </React.Fragment>
+
+)
+
+})} 
+</Grid>
           </ul>
           </Paper> : null}
       </Box>

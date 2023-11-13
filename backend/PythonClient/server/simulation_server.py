@@ -20,10 +20,10 @@ task_number = 1
 
 
 # For Frontend to fetch all missions available to use
-# @app.route('/mission', methods=['GET'])
-# def mission():
-#     directory = '../multirotor/mission'
-#     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+@app.route('/mission', methods=['GET'])
+def mission():
+     directory = '../multirotor/mission'
+     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
 
 @app.route('/addTask', methods=['POST'])

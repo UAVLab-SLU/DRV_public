@@ -411,13 +411,13 @@ export default function Dashboard(parameter) {
   
   return (
     <div>
-      {/*<Box>
+      <Box>
       <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
         Acceptance Test Report
         <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
       
         <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
-         <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> 
+         <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> </Paper>
          <div>UPLOAD FILE CONTENTS</div><br/><br/> 
         <Button variant="contained" component="label">
         Select Simulation Data Directory
@@ -430,7 +430,7 @@ export default function Dashboard(parameter) {
                         <AlertTitle>Warning</AlertTitle>
                         <strong>Violation Detected</strong>
                     </Alert>  : null}
-      */}
+      
       <Box sx={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -815,5 +815,5 @@ export default function Dashboard(parameter) {
         </Modal>
       </div>
     </div>
-  )
+  );
         }}

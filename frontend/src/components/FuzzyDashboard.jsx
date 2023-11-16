@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
@@ -491,24 +491,45 @@ export default function FuzzyDashboard(parameter) {
     console.log('name----', name)
     // handleDirectorySelectFuzzy(name);
   }
-  
+  const [folderDirectories, setFolderDirectories] = useState([]);
+  const componenet = () => {
+    const handleDirectorySelect = (selectedFiles) => {
+    console.log('Selected Files:', selectedFiles);
+  }
+
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch('http://localhost:5000/folderData') // This is the temp folder path, will change once it is implemented
+        .then((res) => {
+          if (!res.ok) {
+            throw Error('Could not fetch the data for that resource');
+          }
+          return res.text(); // Assuming the server response is JSON
+        })
+        .then((data) => {
+          console.log('Fetched Folder Directories:', data);
+          setFolderDirectories(data);
+          handleDirectorySelect({ target: { files: data } });
+        })
+        .catch((error) => {
+          console.error('Error fetching folder data:', error.message);
+        });
+    }, 2000);
+      return () => clearInterval(interval);
+  }, []); 
+};
   return (
     <div>
       <Box>
-      <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
-        Acceptance Test Report
-        <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
-      
-        <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
-        {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
-        {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
-        <Button variant="contained" component="label">
-        Select Simulation Data Directory
-        <input hidden type="file" webkitdirectory="" multiple onChange={handleDirectorySelect} />
-        </Button>
-      </Container>
+        <Typography variant="h4" style={{ textAlign: 'center', padding: '10px', fontWeight: 700 }}>
+          Acceptance Test Report
+        <Tooltip title="Home" placement="bottom">
+        <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+      </Tooltip>
       </Typography>
-      </Box>
+      </Box> 
       {voilation ? <Alert severity="warning">
                         <AlertTitle>Warning</AlertTitle>
                         <strong>Violation Detected</strong>
@@ -1233,5 +1254,5 @@ export default function FuzzyDashboard(parameter) {
         </Modal>
       </div>
     </div>
-  )
+  );
 }

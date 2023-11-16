@@ -39,7 +39,7 @@ def list_reports():
 
     for file in os.listdir(reports_path):
         file_path = os.path.join(reports_path, file)
-        
+
         if os.path.isfile(file_path):
             contains_fuzzy = 'Fuzzy' in file
             report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy})
@@ -48,6 +48,11 @@ def list_reports():
 
 
 #make a report data function that takes the fileName.
+
+def reportData(value):
+    return str(value)
+
+# Example usage
 
 
 @app.route('/addTask', methods=['POST'])

@@ -20,10 +20,34 @@ task_number = 1
 
 
 # For Frontend to fetch all missions available to use
-@app.route('/mission', methods=['GET'])
-def mission():
-     directory = '../multirotor/mission'
-     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+#@app.route('/mission', methods=['GET'])
+#def mission():
+#     directory = '../multirotor/mission'
+#     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+
+@app.route('/list-reports', methods=['GET'])
+def list_reports():
+
+    #Reports file
+
+    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "reports")
+
+    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
+        return 'Reports directory not found', 404
+
+    report_files = []
+
+    for file in os.listdir(reports_path):
+        file_path = os.path.join(reports_path, file)
+        
+        if os.path.isfile(file_path):
+            contains_fuzzy = 'Fuzzy' in file
+            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy})
+
+    return {'reports': report_files} #report_files is a list of tuples containing the filename and if it has fuzzy testing
+
+
+#make a report data function that takes the fileName.
 
 
 @app.route('/addTask', methods=['POST'])

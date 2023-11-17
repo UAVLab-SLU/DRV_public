@@ -14,15 +14,15 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
-import Card from '@mui/material/Card';
+//import Card from '@mui/material/Card'; 
+import { Card, CardContent } from '@mui/material';
 import CardMedia from '@mui/material/CardMedia'
 import Modal from '@mui/material/Modal';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import AlertTitle from '@mui/material/AlertTitle';
-
-
+import PropTypes from 'prop-types'; 
 
 const style = {
   position: 'absolute',
@@ -34,7 +34,7 @@ const style = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
-};
+};  
 
 export default function Dashboard(parameter) {
   const navigate = useNavigate(); 
@@ -815,5 +815,6 @@ export default function Dashboard(parameter) {
         </Modal>
       </div>
     </div>
-  );
-        }}
+  )
+}
+}

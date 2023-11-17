@@ -3,7 +3,7 @@ import os.path
 import threading
 import time
 
-from flask import Flask, request, abort, send_file, render_template, Response
+from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
 
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
@@ -48,11 +48,27 @@ def list_reports():
 
 
 #make a report data function that takes the fileName.
+@app.route('/report-data/<filename>', methods=['GET'])
 
-def reportData(value):
-    return str(value)
+def report_data(filename):
 
-# Example usage
+    #construct the full path to the file
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "reports", filename)
+
+    #check if the file exists
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
+
+    try:
+        #open and read the file content
+        with open(file_path, 'r') as file:
+            content = file.read()
+            return jsonify({'content': content})
+        
+        #if error give us an error message to tell the user
+    except Exception as e:
+        return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
+
 
 
 @app.route('/addTask', methods=['POST'])

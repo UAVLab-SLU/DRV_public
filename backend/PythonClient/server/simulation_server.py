@@ -30,7 +30,7 @@ def list_reports():
 
     #Reports file
 
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "reports")
+    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
 
     if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
         return 'Reports directory not found', 404
@@ -53,7 +53,7 @@ def list_reports():
 def report_data(filename):
 
     #construct the full path to the file
-    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "reports", filename)
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
 
     #check if the file exists
     if not os.path.exists(file_path):

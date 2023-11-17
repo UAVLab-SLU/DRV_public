@@ -14,14 +14,16 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
-import Card from '@mui/material/Card';
+//import Card from '@mui/material/Card'; 
+import { Card, CardContent } from '@mui/material';
 import CardMedia from '@mui/material/CardMedia'
 import Modal from '@mui/material/Modal';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
-import AlertTitle from '@mui/material/AlertTitle';
-import AdjustIcon from '@mui/icons-material/Adjust';
+import AlertTitle from '@mui/material/AlertTitle';  
+import PropTypes from 'prop-types'; 
+
 
 const style = {
   position: 'absolute',
@@ -33,7 +35,7 @@ const style = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
-};
+};  
 
 export default function Dashboard(parameter) {
   const navigate = useNavigate(); 
@@ -446,32 +448,19 @@ export default function Dashboard(parameter) {
           })}
           <Grid container spacing={2} direction="row" >
           {CollisionMonitor.map(function(file, index) {
-
-return (
-
-  <React.Fragment key={index}>
-  
-    {/* Render file content */}
-    
-    <ListItem>
-      {file.type === 'text/plain' ?  
-        <AdjustIcon/>
-      : null}
-      
-      <ListItemText primary={file.content} />
-    </ListItem>
-
-    {/* ReturnContentsItem */}
-
-    {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />))}
-    {(returnContentsItem('darkred', index, file.failContent, <ClearIcon/>))}
-
-  </React.Fragment>
-
-)
-
-})} 
-</Grid>
+            return (
+              <React.Fragment key={index}>
+                {file.type === 'text/plain' ?  null :  
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
+                <Card sx={{ maxWidth: 500 }} variant="outlined">
+                  {/* <img src={file.imgContent} width="30%"/> */}
+                  <CardMedia
+                    component="img"
+                    image={file.imgContent}/>
+                </Card></Grid>}
+              </React.Fragment>
+            )
+          })}</Grid>
           </ul>
           </Paper> : null}
       </Box>

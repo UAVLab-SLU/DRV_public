@@ -53,7 +53,7 @@ def get_file_path(filename):
     file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
 
     #return the file path
-    return jsonify({'file_path': file_path})
+    return file_path
 
 """
 #make a report data function that takes the fileName.

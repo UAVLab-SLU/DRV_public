@@ -47,6 +47,15 @@ def list_reports():
     return {'reports': report_files} #report_files is a list of tuples containing the filename and if it has fuzzy testing
 
 
+@app.route('/get-file-path/<filename>', methods=['GET'])
+def get_file_path(filename):
+    #construct the full path to the file
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
+
+    #return the file path
+    return jsonify({'file_path': file_path})
+
+"""
 #make a report data function that takes the fileName.
 @app.route('/report-data/<filename>', methods=['GET'])
 
@@ -68,7 +77,7 @@ def report_data(filename):
         #if error give us an error message to tell the user
     except Exception as e:
         return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
-
+"""
 
 
 @app.route('/addTask', methods=['POST'])

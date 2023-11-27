@@ -2,11 +2,9 @@ import logging
 import os.path
 import threading
 import time
-import sys
 
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 
@@ -50,25 +48,27 @@ def list_reports():
 
 
 #make a report data function that takes the fileName.
-@app.route('/report-data/<foldername>', methods=['GET'])
-def report_data(foldername):
-    # Construct the full path to the folder
-    folder_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", foldername)
+@app.route('/report-data/<filename>', methods=['GET'])
 
-    # Check if the folder exists
-    if not os.path.exists(folder_path):
-        return jsonify({'error': 'Folder not found'}), 404
+def report_data(filename):
 
-    # Check if the path is a directory
-    if not os.path.isdir(folder_path):
-        return jsonify({'error': 'Path is not a folder'}), 400
+    #construct the full path to the file
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
+
+    #check if the file exists
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
 
     try:
-        # Get a list of files in the folder
-        files = os.listdir(folder_path)
-        return jsonify({'files': files})
+        #open and read the file content
+        with open(file_path, 'r') as file:
+            content = file.read()
+            return jsonify({'content': content})
+        
+        #if error give us an error message to tell the user
     except Exception as e:
-        return jsonify({'error': 'Error reading folder', 'details': str(e)}), 500
+        return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
+
 
 
 @app.route('/addTask', methods=['POST'])

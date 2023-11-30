@@ -69,10 +69,16 @@ const style = {
     const [htmlLink, setHtmlLink] = React.useState();
     const [voilation, setVoilation] = React.useState(false)
     const [isFuzzyList, setIsFuzzyList] = React.useState(false);
-    const [fuzzyTest, setFuzzyTest] = React.useState([]); 
+    const [fuzzyTest, setFuzzyTest] = React.useState([]);    
+    
+    const [droneCount, setDroneCount] = useState(null);
+    
+    const [expanded, setExpanded] = React.useState({});  
 
-    const [expanded, setExpanded] = React.useState({});
-  
+    const [reportFiles, setReportFiles] = React.useState([]); 
+
+
+
     const names = [{name:0},{name:5},{name:10}]
   
     const handleOpen = (img) => {
@@ -138,6 +144,7 @@ const style = {
           return (
             <React.Fragment key={keyValue} >
             {/* <List sx={{ width: '100%', bgcolor: 'background.paper', position:'relative' }} key={keyValue}> */}
+            <Grid container spacing={2} direction="row"> 
             <Card key={id}>
        <CardHeader title={name} />
        
@@ -152,7 +159,8 @@ const style = {
          
        </CardContent>
        
-     </Card>
+     </Card> 
+     </Grid>
             
             </React.Fragment>
           )
@@ -237,11 +245,29 @@ const style = {
     }
   
     useEffect(() => {
-      handleDirectorySelectFuzzy()
-    }, 
-    [UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
-    )
-      
+      const interval = setInterval(() => {
+        fetch('http://localhost:5000/list-reports', { method: 'GET' }) 
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error('No response from server/something went wrong');
+            }
+            return res.json(); 
+          })
+          .then((data) => {
+            //  'data.reports' containing filename and fuzzy info
+            console.log('Report Files:', data.reports);
+            
+            setReportFiles(data.reports);
+          })
+          .catch((error) => {
+            console.error('Error fetching report data:', error);
+          });
+      }, 2000);
+    
+      return () => clearInterval(interval);
+    }, []); 
+    
+
     React.useEffect(() => {}, [fileArray])
     const handleDirectorySelect = (event) => {
       const files = event.target.files;
@@ -523,7 +549,15 @@ const style = {
     }
     
     return (
-      <div>
+      <div> 
+      
+        <ul>
+                {reportFiles.map((report, index) => (
+                    <li key={index}>
+                        Filename: {report.filename}, Contains Fuzzy: {report.contains_fuzzy ? 'Yes' : 'No'}
+                    </li>
+                ))}
+            </ul>
         <Box>
         <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
           Acceptance Test Report
@@ -565,7 +599,7 @@ const style = {
                 /> 
 
               
-                <CardContent> 
+                <CardContent>  
 
           {fuzzy.CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
@@ -582,18 +616,19 @@ const style = {
                  </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container direction="row" spacing={1} >
             {fuzzy.CollisionMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
                   {file.type === 'text/plain' ?  null :  
                   <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
-                  <Card sx={{ maxWidth: 500 }} variant="outlined">
+                  <Card sx={{ maxWidth: 700 }} variant="outlined">
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
                       component="img"
                       image={file.imgContent}/>
-                  </Card></Grid>}
+                  </Card> 
+                  </Grid>}
                 </React.Fragment>
               )
             })}</Grid>
@@ -627,19 +662,22 @@ const style = {
                 </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={1} direction="row" >
             {fuzzy.LandspaceMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
   
                   {file.type === 'text/plain' ?  null :  
                   <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
+                  <Grid container direction="row" spacing={1} >
+
                   <Card sx={{ maxWidth: 500 }} variant="outlined">
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
                       component="img"
                       image={file.imgContent}/>
-                  </Card></Grid>}
+                  </Card> 
+                  </Grid></Grid>}
                 </React.Fragment>
               )
             })}</Grid>
@@ -750,7 +788,7 @@ const style = {
                 </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={4} direction="row" >
             {fuzzy.PointDeviationMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
@@ -778,7 +816,7 @@ const style = {
                 </React.Fragment> : null
               ) 
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={4} direction="row" >
             {fuzzy.CircularDeviationMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
@@ -832,7 +870,7 @@ const style = {
                 </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={4} direction="row" >
             {fuzzy.MinSepDistMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
@@ -849,7 +887,7 @@ const style = {
             })}</Grid>
             </ul>
             </Paper> : null}
-            {fuzzy.NoFlyZoneMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
+            {fuzzy.NoFlyZoneMonitor.length > 0 ?  <Card elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones entered in specified fly zones </div>
             </Typography>
@@ -878,7 +916,7 @@ const style = {
               )
             })}</Grid>
             </ul>
-            </Paper> : null}
+            </Card> : null}
         </Box>
                   </Card>
                 )
@@ -893,12 +931,16 @@ const style = {
             width: "100%",
             height: "100%",
           },
-        }}>
-          {CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
+        }}> 
+      
+
+          {CollisionMonitor.length > 0 ?<Card elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
               <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall avoid collisions with other drones and the environment</div>
             </Typography>
-            <ul>
+            <ul> 
+           
+            <Grid item xs={4}>
             {CollisionMonitor.map(function(file, index) {
               return (file.type=== 'text/plain' ?
                 <React.Fragment key={index}>
@@ -912,14 +954,18 @@ const style = {
                     return (returnContentsItem('darkred', i, info, <ClearIcon/>))
                   })} */}
                   {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath, 'success'))}
-                  {(returnContentsItem('darkred', index, file.failContent, <ClearIcon/>, file.fuzzyPath, 'error'))}
+                  {(returnContentsItem('darkred', index, file.failContent, <ClearIcon/>, file.fuzzyPath, 'error'))} 
+                  
                   
                   {/* {file.type === 'text/plain' ?  <ListItem ><AdjustIcon/><ListItemText primary={file.content} /></ListItem> : null} */}
-                </React.Fragment>:null
-              )
-            })}
-            <Grid container spacing={2} direction="row" >
-            {CollisionMonitor.map(function(file, index) {
+                </React.Fragment>:null    
+              ) 
+            })}   
+          
+            </Grid> 
+            
+           
+            {CollisionMonitor.map(function(file, index) { 
               return (
                 <React.Fragment key={index}>
                   {file.type === 'text/plain' ?  null :  
@@ -929,12 +975,13 @@ const style = {
                     <CardMedia
                       component="img"
                       image={file.imgContent}/>
-                  </Card></Grid>}
+                  </Card> 
+                  </Grid>}
                 </React.Fragment>
               )
-            })}</Grid>
+            })}
             </ul>
-            </Paper> : null}
+            </Card> : null}
         </Box>
         <Box sx={{
           display: 'flex',
@@ -945,7 +992,7 @@ const style = {
             height: "100%",
           },
         }}>
-          {LandspaceMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+          {LandspaceMonitor.length > 0 ? <Card elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drone shall always land at safe locations</div>
             </Typography>
@@ -986,7 +1033,9 @@ const style = {
               )
             })}</Grid>
             </ul>
-            </Paper> : null}
+            </Card> : null}  
+            
+    
         </Box>
         <Box sx={{
           display: 'flex',
@@ -997,7 +1046,7 @@ const style = {
             height: "100%",
           },
         }}>
-          {UnorderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+          {UnorderedWaypointMonitor.length > 0 ? <Card elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall reach all waypoints in the mission</div>
             </Typography>
@@ -1015,8 +1064,9 @@ const style = {
                   {/* {file.type === 'text/plain' ?  <ListItem ><AdjustIcon/><ListItemText primary={file.content} /></ListItem> : null} */}
                 </React.Fragment>:null
               )
-            })}
-           <Grid container spacing={2} direction="row" >
+            } 
+            )} 
+            
             {UnorderedWaypointMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
@@ -1027,12 +1077,15 @@ const style = {
                    <CardMedia
                      component="img"
                      image={file.imgContent}/>
-                 </Card></Grid> }
+                 </Card></Grid>} 
                 </React.Fragment>
               )
-            })}</Grid>
-            </ul>
-            </Paper>: null}
+            } )} 
+            </ul> 
+            </Card>: null  
+            }  
+            
+            
             {/* {OrderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones must reach all their waypoints in  order</div>
@@ -1055,7 +1108,9 @@ const style = {
               )
             })}
             </ul>
-            </Paper> : null} */}
+            </Paper> : null} */} 
+          
+          
         </Box>
         <Box sx={{
           display: 'flex',
@@ -1077,7 +1132,7 @@ const style = {
             height: "100%",
           },
         }}>
-          {PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+          {PointDeviationMonitor.length > 0 ? <Card elevation={3} style={{margin:'25px', padding:20}}>
             <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : A drone should not deviate more than {deviation != null ? deviation : 'X'} meters from its planned flight path</div>
             </Typography>
@@ -1116,8 +1171,9 @@ const style = {
                   }
                 </React.Fragment>
               )
-            })}</Grid>
-            </ul>
+            })}</Grid> 
+            </ul> 
+        
   
             {/* <Paper elevation={3} style={{margin:'25px', padding:20}}> */}
             {/* <Typography variant="h5" component="h2">
@@ -1156,12 +1212,15 @@ const style = {
                   </Card></Grid>}
                 </React.Fragment>
               )
-            })}</Grid>
+            })}</Grid> 
+            
             </ul>
-            </Paper> : null }
+            </Card> : null } 
+            
   
             {/* </Paper> */}
-        </Box>
+        </Box> 
+        
         <Box sx={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -1196,7 +1255,7 @@ const style = {
                 </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={4} direction="row" >
             {MinSepDistMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>
@@ -1226,7 +1285,7 @@ const style = {
                 </React.Fragment>:null
               )
             })}
-            <Grid container spacing={2} direction="row" >
+            <Grid container spacing={4} direction="row" >
             {NoFlyZoneMonitor.map(function(file, index) {
               return (
                 <React.Fragment key={index}>

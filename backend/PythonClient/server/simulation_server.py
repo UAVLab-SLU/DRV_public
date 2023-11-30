@@ -3,7 +3,7 @@ import os.path
 import threading
 import time
 
-from flask import Flask, request, abort, send_file, render_template, Response
+from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
 
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
@@ -20,10 +20,83 @@ task_number = 1
 
 
 # For Frontend to fetch all missions available to use
-# @app.route('/mission', methods=['GET'])
-# def mission():
+#@app.route('/mission', methods=['GET'])
+#def mission():
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+
+@app.route('/list-reports', methods=['GET'])
+def list_reports():
+    # Reports file
+    reports_path = "C:/Users/Kaleb/Desktop/jsTest/report"
+    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
+        return 'Reports directory not found', 404
+    #print("Listing items in:", reports_path) #Debugging line
+    #print(os.listdir(reports_path))  #Debugging line
+    report_files = []
+    for file in os.listdir(reports_path):
+        file_path = os.path.join(reports_path, file)
+        #print("Checking file:", file_path)
+        if os.path.isfile(file_path):
+            #contains_fuzzy = 'Fuzzy' in file
+            report_files.append({'filename': file})
+        else:
+            report_files.append({'filename': file})
+    return {'reports': report_files}
+
+"""
+def list_reports():
+
+    #Reports file
+
+    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+
+    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
+        return 'Reports directory not found', 404
+
+    report_files = []
+
+    for file in os.listdir(reports_path):
+        file_path = os.path.join(reports_path, file)
+
+        if os.path.isfile(file_path):
+            contains_fuzzy = 'Fuzzy' in file
+            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy})
+
+    return {'reports': report_files} #report_files is a list of tuples containing the filename and if it has fuzzy testing
+"""
+
+@app.route('/get-file-path/<filename>', methods=['GET'])
+def get_file_path(filename):
+    #construct the full path to the file
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
+
+    #return the file path
+    return file_path
+
+"""
+#make a report data function that takes the fileName.
+@app.route('/report-data/<filename>', methods=['GET'])
+
+def report_data(filename):
+
+    #construct the full path to the file
+    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
+
+    #check if the file exists
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found'}), 404
+
+    try:
+        #open and read the file content
+        with open(file_path, 'r') as file:
+            content = file.read()
+            return jsonify({'content': content})
+        
+        #if error give us an error message to tell the user
+    except Exception as e:
+        return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
+"""
 
 
 @app.route('/addTask', methods=['POST'])

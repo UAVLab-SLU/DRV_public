@@ -496,29 +496,7 @@ export default function FuzzyDashboard(parameter) {
     const handleDirectorySelect = (selectedFiles) => {
     console.log('Selected Files:', selectedFiles);
   }
-
-
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('http://localhost:5000/folderData') // This is the temp folder path, will change once it is implemented
-        .then((res) => {
-          if (!res.ok) {
-            throw Error('Could not fetch the data for that resource');
-          }
-          return res.text(); // Assuming the server response is JSON
-        })
-        .then((data) => {
-          console.log('Fetched Folder Directories:', data);
-          setFolderDirectories(data);
-          handleDirectorySelect({ target: { files: data } });
-        })
-        .catch((error) => {
-          console.error('Error fetching folder data:', error.message);
-        });
-    }, 2000);
-      return () => clearInterval(interval);
-  }, []); 
+  
   };
   return (
     <div>

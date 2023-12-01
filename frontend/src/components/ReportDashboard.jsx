@@ -70,7 +70,9 @@ const style = {
           .catch((error) => {
             console.error('Error fetching report data:', error);
           });
-      });
+      }, 2000);
+
+      return () => clearInterval(interval);
     }, []); 
     
     return (
@@ -80,14 +82,16 @@ const style = {
            <Grid key={file.id} item xs={4}>
   
              <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
-               <CardHeader title= {file.filename}/>
+               <CardHeader title= "Report" sx ={{font: 'icon'}}/>
   
-               <CardContent>
-  
-                 <p>Drone Count: {file.drone_count}</p> 
+               <CardContent> 
+
+                <p>{file.filename}</p>
+                 <p>Drone Count: {file.drone_count}</p>  
+
 
                  {file.contains_fuzzy && (
-                <p>Fuzzy Testing: {file.contains_fuzzy.toString()}</p>
+                <p>Fuzzy Testing {file.contains_fuzzy}</p>
                 )}
 
                 {!file.contains_fuzzy && ( 
@@ -97,14 +101,14 @@ const style = {
                  
                </CardContent>  
                <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
-  <Button 
-    variant="contained"  
-    sx={{ minWidth: '120px', marginLeft: '230px', fontSize: '0.8rem' }} 
-    // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete 
-  >  
-    View File 
-  </Button> 
-</Box>
+               <Button  
+               variant="contained"   
+               sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem' }}  
+               // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
+               >   
+               View File  
+               </Button>  
+               </Box>
              </Card>
   
            </Grid>

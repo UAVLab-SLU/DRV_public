@@ -79,7 +79,7 @@ const style = {
          {reportFiles.map(file => (
            <Grid key={file.id} item xs={4}>
   
-             <Card key={file.filename} sx={{ maxWidth: 400}}>
+             <Card key={file.filename} sx={{ maxWidth: 400, height: 270}}>
                <CardHeader title= {file.filename}/>
   
                <CardContent>

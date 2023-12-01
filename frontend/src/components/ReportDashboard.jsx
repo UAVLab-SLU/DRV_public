@@ -1,4 +1,4 @@
-//import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 //import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
@@ -25,17 +25,30 @@ import { wait } from '@testing-library/user-event/dist/utils';
 //import { Card, CardContent } from '@mui/material';
 import PropTypes from 'prop-types'; 
 //import FuzzyDashboard from '/dashboard';
-import React, { useState } from 'react';
+//import React from 'react';
 import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
-import FuzzyDashboard from './FuzzyDashboard';
+import FuzzyDashboard from './FuzzyDashboard'; 
+//import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 // ReportDashboard.js
 //import React from 'react';
 //import { Card, CardHeader, CardContent } from '@material-ui/core';
 
+//var filename="";  
 
-
-export default function ReportDashboard() {
-  const navigate = useNavigate(); 
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 900,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+  
+  export default function ReportDashboard(parameter) {
+    const navigate = useNavigate(); 
   const location = useLocation();
   const deviation = location.state != null ? location.state.mainJson.monitors != null ?  
       location.state.mainJson.monitors.circular_deviation_monitor != null ? location.state.mainJson.monitors.circular_deviation_monitor.param[0] : null : null : null
@@ -58,46 +71,22 @@ export default function ReportDashboard() {
   const [voilation, setVoilation] = React.useState(false)
   const [isFuzzyList, setIsFuzzyList] = React.useState(false);
   const [fuzzyTest, setFuzzyTest] = React.useState([]);
-  const [files, setFiles] = useState([
-    {
-      name: '2023-11-04-12-22-28_Batch_1',
-      droneCount: 5,
-      // timestamp: '2023-11-15T08:30:00',
-      acceptanceResult: 'Accepted',
-      testType: 'fuzzyTest',
-      fuzzyTest: 'Passed',
-    },
-    {
-      name: '2023-11-16',
-      droneCount: 2,
-      // timestamp: '2023-11-16T10:45:00',
-      acceptanceResult: 'Rejected',
-      testType: 'simulationTest',
-      simulationTest: 'Completed',
-    },
-  ]);
 
-  const [selectedFileContent, setSelectedFileContent] = useState(null);
+  const names = [{name:0},{name:5},{name:10}]
 
-  // Function to add a new file to the array
-  const addFile = (newFile) => {
-    setFiles([...files, newFile]);
+  const handleOpen = (img) => {
+    setOpen(true);
+    setSelectedImage(img.imgContent)
+    setHtmlLink(img.path)
+  }
+  const handleClose = (e, name) => {
+      setOpen(false)
   };
 
-  // Function to get the name of a file by index
-  const getFileName = (index) => {
-    return files[index] ? files[index].name : null;
-  };
+  const redirectToHome = () => {
+    navigate('/')
+  }
   
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  const handleFileSelect = (index) => {
-    const fileName = getFileName(index);
-    setSelectedFile(fileName);
-
-    // Call a function to fetch and set content based on the selected file name
-    fetchFileContent(fileName);
-  };
   const getInfoContents = (fileContents, keyMatch, droneMap) => {
     const content_array = fileContents.split("\n");
     let infoContent = [];
@@ -121,296 +110,6 @@ export default function ReportDashboard() {
     })
     return droneMap;
   }
-  React.useEffect(() => {}, [fileArray])
-  const fetchFileContent = (fileName) => {
-    setSelectedFileContent(fileName);
-      const files = fileName;
-      let name = [];
-      for (let i = 0; i < files.length; i++) {
-        const fileReader = new FileReader();
-        const file = files[i];
-        console.log('file----', file)
-        const data = [...fileArray]
-        let path = file.webkitRelativePath
-        let fuzzyPathValue = null
-        let paths = path.split("/")
-        console.log('paths----', paths)
-        if(paths.length > 1) {
-          fuzzyPathValue = paths[1]
-          setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
-        }
-        let fuzzyValueArray = fuzzyPathValue.split("_")
-        let exist = false
-        name.map(testName => {
-          if(testName.name == fuzzyValueArray[2]) {
-            exist = true;
-          }
-        }) 
-        if(!exist) {
-          name.push({name:fuzzyValueArray[2]})
-        }
-        console.log('fuzzyPathValue---', fuzzyPathValue)
-        if (file.type === 'text/plain') {
-          fileReader.onload = () => {
-            const fileContents = fileReader.result;
-            if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
-              setUnorderedWaypointMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
-              let info = getInfoContents(fileContents);
-              console.log('info----', info)
-              setCircularDeviationMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("CollisionMonitor")) {
-              setCollisionMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("LandspaceMonitor")) {
-              setLandspaceMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
-              setOrderedWaypointMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
-              setPointDeviationMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
-              setMinSepDistMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
-              setNoFlyZoneMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  content:fileContents,
-                  infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                  passContent:getInfoContents(fileContents, "PASS", new Map()),
-                  failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                  fuzzyPath:fuzzyPathValue,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            
-          };
-          fileReader.readAsText(file);
-        } else if (file.type === 'image/png') {
-          console.log("its image")
-          fileReader.onload = () => {
-            const fileContents = fileReader.result;
-            if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setUnorderedWaypointMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setCircularDeviationMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("CollisionMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setCollisionMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("LandspaceMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setLandspaceMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setOrderedWaypointMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setPointDeviationMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setMinSepDistMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-            if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
-              let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-              setNoFlyZoneMonitor(prevState => [
-                ...prevState,
-                {
-                  name:file.name,
-                  type:file.type,
-                  imgContent:URL.createObjectURL(file),
-                  path:htmlfile,
-                  fuzzyValue: fuzzyValueArray[2]
-                }
-              ])
-            }
-          }
-          fileReader.readAsText(file);
-        } else if (file.type === '') {
-          const directoryReader = new FileReader();
-          directoryReader.onload = () => {
-            fetchFileContent({target: {files: directoryReader.result}});
-          };
-          directoryReader.readAsArrayBuffer(file);
-        }
-      }
-      // setTestNames([name]);
-      console.log('name----', name)
-      // handleDirectorySelectFuzzy(name);
-    };
-  const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 900,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-  };
   const returnContentsItem = (colorCode, keyValue, info, icon, fuzzyValue, severity_val) => {
     for (const mapKey of info.keys()) {
       console.log(mapKey);
@@ -443,47 +142,445 @@ export default function ReportDashboard() {
       </React.Fragment>)
     }
   }
-
-  const handleClose = () => {
-    setSelectedFile(null);
-  };
-
-  const handleFileOpen = (img) => {
-    setOpen(true);
-    setSelectedImage(img.imgContent)
-    setHtmlLink(img.path)
+  const handleDirectorySelectFuzzy = () => {
+    wait(1000);
+    console.log('fuzztTestNames----- in handleDirectorySelectFuzzy', names)
+  
+    setFuzzyTest([]);
+    names.map(id=> {
+      let unordered=[];
+      let circular = [];
+    let collision = [];
+    let landscape = [];
+    let orderWay = [];
+    let pointDev = [];
+    let minSep = [];
+    let nonFly = [];
+      UnorderedWaypointMonitor.map(unorder => {
+        console.log('UnorderedWaypointMonitor---', UnorderedWaypointMonitor)
+        console.log('un  unorder.fuzzyValue', unorder.fuzzyValue)
+        if(id.name == unorder.fuzzyValue) {
+          console.log('inside unod')
+          unordered.push(unorder)
+        }
+        console.log('unordered----', unordered)
+      })
+      CircularDeviationMonitor.map(circularDev => {
+        if(id.name == circularDev.fuzzyValue) {
+          circular.push(circularDev);
+        }
+      })
+      CollisionMonitor.map(coll => {
+        console.log('CollisionMonitor---', CollisionMonitor)
+        if(id.name == coll.fuzzyValue) {
+          collision.push(coll);
+        }
+      })
+      LandspaceMonitor.map(land => {
+        if(id.name == land.fuzzyValue) {
+          landscape.push(land);
+        }
+      })
+      OrderedWaypointMonitor.map( order => {
+        if(id.name == order.fuzzyValue) {
+          orderWay.push(order);
+        }
+      })
+      PointDeviationMonitor.map(point => {
+        if(id.name == point.fuzzyValue) {
+          pointDev.push(point);
+        }
+      })
+      MinSepDistMonitor.map(min => {
+        if(id.name == min.fuzzyValue) {
+          minSep.push(min);
+        }
+      })
+      NoFlyZoneMonitor.map(zone => {
+        if(id.name == zone.fuzzyVale) {
+          nonFly.push(zone)
+        }
+      })
+      setFuzzyTest(prevState => [
+        ...prevState,
+        {
+            "name":id.name,
+            "UnorderedWaypointMonitor": unordered,
+            "CircularDeviationMonitor": circular,
+            "CollisionMonitor" : collision,
+            "LandspaceMonitor": landscape,
+            "OrderedWaypointMonitor": orderWay,
+            "PointDeviationMonitor": pointDev,
+            "MinSepDistMonitor": minSep,
+            "NoFlyZoneMonitor":nonFly
+        }
+      ])
+    })
   }
-  const handleFileClose = (e, name) => {
-      setOpen(false)
-  };
 
-  const redirectToHome = () => {
-    navigate('/')
+  useEffect(() => {
+    handleDirectorySelectFuzzy()
+  }, 
+  [UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
+  )
+    
+  //React.useEffect(() => {}, [fileArray])
+  const handleDirectorySelect = (event) => {
+    const files = event.target.files;
+    let name = [];
+    for (let i = 0; i < files.length; i++) {
+      const fileReader = new FileReader();
+      const file = files[i];
+      console.log('file----', file)
+      const data = [...fileArray]
+      let path = file.webkitRelativePath
+      let fuzzyPathValue = null
+      let paths = path.split("/")
+      console.log('paths----', paths)
+      if(paths.length > 1) {
+        fuzzyPathValue = paths[1]
+        setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
+      }
+      let fuzzyValueArray = fuzzyPathValue.split("_")
+      let exist = false
+      name.map(testName => {
+        if(testName.name == fuzzyValueArray[2]) {
+          exist = true;
+        }
+      }) 
+      if(!exist) {
+        name.push({name:fuzzyValueArray[2]})
+      }
+      console.log('fuzzyPathValue---', fuzzyPathValue)
+      if (file.type === 'text/plain') {
+        fileReader.onload = () => {
+          const fileContents = fileReader.result;
+          if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
+            setUnorderedWaypointMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
+            let info = getInfoContents(fileContents);
+            console.log('info----', info)
+            setCircularDeviationMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("CollisionMonitor")) {
+            setCollisionMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("LandspaceMonitor")) {
+            setLandspaceMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
+            setOrderedWaypointMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
+            setPointDeviationMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
+            setMinSepDistMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
+            setNoFlyZoneMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                content:fileContents,
+                infoContent:getInfoContents(fileContents, "INFO", new Map()),
+                passContent:getInfoContents(fileContents, "PASS", new Map()),
+                failContent:getInfoContents(fileContents, "FAIL", new Map()),
+                fuzzyPath:fuzzyPathValue,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          
+        };
+        fileReader.readAsText(file);
+      } else if (file.type === 'image/png') {
+        console.log("its image")
+        fileReader.onload = () => {
+          const fileContents = fileReader.result;
+          if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setUnorderedWaypointMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setCircularDeviationMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("CollisionMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setCollisionMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("LandspaceMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setLandspaceMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setOrderedWaypointMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setPointDeviationMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setMinSepDistMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+          if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
+            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+            setNoFlyZoneMonitor(prevState => [
+              ...prevState,
+              {
+                name:file.name,
+                type:file.type,
+                imgContent:URL.createObjectURL(file),
+                path:htmlfile,
+                fuzzyValue: fuzzyValueArray[2]
+              }
+            ])
+          }
+        }
+        fileReader.readAsText(file);
+      } else if (file.type === '') {
+        const directoryReader = new FileReader();
+        directoryReader.onload = () => {
+          handleDirectorySelect({target: {files: directoryReader.result}});
+        };
+        directoryReader.readAsArrayBuffer(file);
+      }
+    }
+    // setTestNames([name]);
+    console.log('name----', name)
+    // handleDirectorySelectFuzzy(name);
   }
 
-  return (
-    <div className="dashboard" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-      {files.map((file, index) => (
-        <Card key={file.name} style={{ marginBottom: '20px' }} onClick={() => fetchFileContent(file.name)}>
-          <CardHeader title={file.name} />
-          <CardContent>
-            <p>Drone Count: {file.droneCount}</p>
-            <p>Timestamp: {file.timestamp}</p>
-            <p>Acceptance Result: {file.acceptanceResult}</p>
-            {file.testType === 'fuzzyTest' && <p>Fuzzy Test: {file.fuzzyTest}</p>}
-            {file.testType === 'simulationTest' && <p>Simulation Test: {file.simulationTest}</p>}
-          </CardContent>
-        </Card>
-      ))}
+    {/* CODE FOR CALLING TO BACKEND*/}
+    const [reportFiles, setReportFiles] = React.useState([]);  
+   // const isFuzzy = file.filename.includes('Fuzzy');
 
-      {selectedFileContent && (
-        <div>
-          <h2>Selected File Content:</h2>
-          <pre>{selectedFileContent}</pre>
-          <button onClick={handleClose}>Close</button>
-        </div>
-      )}
-      <Box sx={{
+   useEffect(() => {
+    const fetchData = () => {
+      fetch('http://localhost:5000/list-reports', { method: 'GET' }) 
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('No response from server/something went wrong');
+          }
+          return res.json(); 
+        })
+        .then((data) => {
+          // 'data.reports' containing filename and fuzzy info
+          console.log('Report Files:', data.reports);
+          
+          setReportFiles(data.reports);
+        })
+        .catch((error) => {
+          console.error('Error fetching report data:', error);
+        });
+    };
+  
+    // Call fetchData once when the component mounts
+    fetchData();
+  }, []); 
+    
+    return (
+      <div className='dashboard'>
+        <Box>
+          <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
+            Acceptance Test Report
+            <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
+      
+            <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
+              {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
+              {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
+            </Container>
+          </Typography>
+        </Box>
+        <Grid container spacing={2}> 
+         {reportFiles.map(file => (
+           <Grid key={file.id} item xs={4}>
+  
+             <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
+               <CardHeader title= {file.filename}/>
+  
+               <CardContent>
+  
+                 <p>Drone Count: {file.drone_count}</p> 
+
+                 {file.contains_fuzzy && (
+                <p>Fuzzy Testing: {file.contains_fuzzy.toString()}</p>
+                )}
+
+                {!file.contains_fuzzy && ( 
+               <p>Simulation Testing</p>
+                 )}
+                 
+                 
+               </CardContent>  
+               <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
+                  <Button 
+                      variant="contained"  component = "label"
+                      sx={{ minWidth: '120px', marginLeft: '230px', fontSize: '0.8rem' }} >
+                      <input hidden type="file" webkitdirectory="" multiple onChange={handleDirectorySelect} />
+                  View File 
+                  </Button> 
+                </Box>
+              </Card>
+  
+           </Grid>
+         ))} 
+         
+
+       </Grid>
+       <Box sx={{
         display: 'flex',
         flexWrap: 'wrap',
         '& > :not(style)': {
@@ -529,7 +626,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -573,7 +670,7 @@ export default function ReportDashboard() {
               <React.Fragment key={index}>
 
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -619,7 +716,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-               <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+               <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                <Card sx={{ maxWidth: 500 }} variant="outlined">
                  {/* <img src={file.imgContent} width="30%"/> */}
                  <CardMedia
@@ -694,7 +791,7 @@ export default function ReportDashboard() {
           {fuzzy.PointDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
-                {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                   <Card sx={{ maxWidth: 500 }} variant="outlined">
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
@@ -723,7 +820,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -777,7 +874,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -807,7 +904,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -863,7 +960,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -915,7 +1012,7 @@ export default function ReportDashboard() {
               <React.Fragment key={index}>
 
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -961,7 +1058,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-               <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+               <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                <Card sx={{ maxWidth: 500 }} variant="outlined">
                  {/* <img src={file.imgContent} width="30%"/> */}
                  <CardMedia
@@ -1045,7 +1142,7 @@ export default function ReportDashboard() {
           {PointDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
-                {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                   <Card sx={{ maxWidth: 500 }} variant="outlined">
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
@@ -1087,7 +1184,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -1141,7 +1238,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -1171,7 +1268,7 @@ export default function ReportDashboard() {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
-                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleFileOpen(file)}>
+                <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
                 <Card sx={{ maxWidth: 500 }} variant="outlined">
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
@@ -1202,5 +1299,4 @@ export default function ReportDashboard() {
         </Modal>
       </div>
     </div>
-  );
-}
+    );}

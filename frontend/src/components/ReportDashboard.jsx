@@ -79,7 +79,7 @@ const style = {
          {reportFiles.map(file => (
            <Grid key={file.id} item xs={4}>
   
-             <Card key={file.filename} sx={{ maxWidth: 400, height: 270}}>
+             <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
                <CardHeader title= {file.filename}/>
   
                <CardContent>

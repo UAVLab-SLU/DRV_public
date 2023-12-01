@@ -33,7 +33,7 @@ import FuzzyDashboard from './FuzzyDashboard';
 //import React from 'react';
 //import { Card, CardHeader, CardContent } from '@material-ui/core';
 
-//var filename=""; 
+//var filename="";  
 
 const style = {
     position: 'absolute',
@@ -95,12 +95,21 @@ const style = {
                  )}
                  
                  
-               </CardContent>
-  
+               </CardContent>  
+               <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
+  <Button 
+    variant="contained"  
+    sx={{ minWidth: '120px', marginLeft: '230px', fontSize: '0.8rem' }} 
+    // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete 
+  >  
+    View File 
+  </Button> 
+</Box>
              </Card>
   
            </Grid>
-         ))}
+         ))} 
+
        </Grid>
       </div>
     );

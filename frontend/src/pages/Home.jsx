@@ -57,6 +57,24 @@ const Home = () => {
   const [text, setText] = useState('Please select a requirement identifier');
   const [title, setTitle] = useState('');
   let requirement_id="";
+  const [backendInfo, setBackendInfo] = useState({ 
+    numQueuedTasks: 0,
+    backendStatus: 'idle'
+  });
+  const getStatusStyle = () => {
+    switch (backendInfo.backendStatus) {
+      case 'idle':
+        return { color: 'green' }; // Green color and a checkmark icon
+      case 'running':
+        return { color: 'blue'}; // Blue color and a rotating arrow icon
+      case 'error':
+        return { color: 'red' }; // Red color and a cross icon
+      default:
+        return { color: 'gray' }; // Gray color and an information 
+    }
+  }; 
+  const statusStyle = getStatusStyle();
+
   const handleReqIdChange = (event) => {
     setSelectedValue(event.target.value);
     // requirement_id=event.target.value;
@@ -84,14 +102,27 @@ const Home = () => {
         '& > :not(style)': {
           m: 1,
           width: 1000,
-          height: 350,
+          // height: 350,
         },
       }}
     >
       {
         <React.Fragment>
+          <Typography style={{float: 'right', margin: '15px'}}>
+            <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5} >     
+              <Typography>   
+                  Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+              </Typography>  
+            </Box>
+            <div style={{position: 'relative'}}> 
+                <div style={{position: 'absolute', left: 280, top: -80}}>
+                    <Typography>  
+                        Queued Tasks: {backendInfo.numQueuedTasks}
+                    </Typography>    
+                </div> 
+            </div>
+          </Typography>
         <FormControl>
-          
         <InputLabel id="demo-simple-select-label">Requirement ID</InputLabel>
         <Select
           labelId="req-id"
@@ -110,6 +141,7 @@ const Home = () => {
         </Typography>
         </div>
         {/* <h3>{text}</h3> */}
+        
         <div style={{ marginTop: '3em' }}>
         <Typography variant="h5" component="h4">
           {selectedvalue != '' ? <React.Fragment>Title: {title}</React.Fragment> : null}
@@ -125,10 +157,15 @@ const Home = () => {
       </React.Fragment>
       
       }
+      <div>
+      {/* <Typography variant="h6"> Status:</Typography>   */}
+                    
+      </div>
       <StyledLink to='/simulation' state={{req:selectedvalue.toString(), descs:text.toString(), title:title.toString()}}>
         <StyledButton variant='contained' disabled={text=="Please select a requirement identifier"? true : false}>Start Scenario Configuration</StyledButton>
       </StyledLink>
     </Box>
+    
   );
 };
 

@@ -754,9 +754,9 @@ const handleSnackBarVisibility = (val) => {
                         </LoadScript>
                     </div> :null}
 
-                    <Typography variant="h6"> Status:</Typography>  
+                    {/* <Typography variant="h6"> Status:</Typography>  
                     <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
-                        {/* Show spinner if status is running */}
+                         Show spinner if status is running
                         <Typography>   
                             Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
                         </Typography>  
@@ -767,7 +767,7 @@ const handleSnackBarVisibility = (val) => {
                                 Queued Tasks: {backendInfo.numQueuedTasks}
                             </Typography>    
                         </div> 
-                    </div>
+                    </div> */}
                     </Typography>
                     {/* </Container> */}
                     </Box>

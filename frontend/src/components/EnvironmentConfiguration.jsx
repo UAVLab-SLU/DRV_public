@@ -295,32 +295,32 @@ export default function EnvironmentConfiguration (env) {
         }
     }    
     //new added
-    useEffect(() => {
-        const interval = setInterval(() => {
-          fetch('http://localhost:5000/currentRunning')
-            .then((res) => {
-              if (!res.ok) {
-                throw new Error('No response from server/something went wrong');
-              }
-              return res.text();
-            })
-            .then((data) => {
-              const [status, queueSize] = data.split(', ');
-              console.log('Simulation Status,', status, 'Queue Size:', queueSize);
-              if (status === "None") {
-                setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
-              } else if (status === "Running") {
-                setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
-              }
-            })
-            .catch((error) => {
-              console.error('Error fetching data:', error);
-              setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
-            });
-        }, 2000);
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //       fetch('http://localhost:5000/currentRunning')
+    //         .then((res) => {
+    //           if (!res.ok) {
+    //             throw new Error('No response from server/something went wrong');
+    //           }
+    //           return res.text();
+    //         })
+    //         .then((data) => {
+    //           const [status, queueSize] = data.split(', ');
+    //           console.log('Simulation Status,', status, 'Queue Size:', queueSize);
+    //           if (status === "None") {
+    //             setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
+    //           } else if (status === "Running") {
+    //             setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
+    //           }
+    //         })
+    //         .catch((error) => {
+    //           console.error('Error fetching data:', error);
+    //           setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
+    //         });
+    //     }, 2000);
     
-        return () => clearInterval(interval);
-      }, []);
+    //     return () => clearInterval(interval);
+    //   }, []);
       
 
 //     return (

@@ -353,14 +353,11 @@ export default function GPS (sensor) {
                 
                     
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Button variant="outlined" onClick={closeModal}>Ok</Button> &nbsp;&nbsp;&nbsp;
-                   
+                        <Grid item xs={3}><Button onClick={() => setGps(defaultGps)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                     </Grid>  
-                </Typography> 
-                <Button onClick={() => setGps(defaultGps)}> 
-                Reset to Default 
-                </Button> 
+                </Typography>  
             </Box> 
         </div> 
     )

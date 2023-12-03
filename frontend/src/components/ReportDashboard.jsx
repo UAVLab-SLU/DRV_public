@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
-//import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
@@ -32,7 +31,6 @@ import FuzzyDashboard from './FuzzyDashboard';
 //import React from 'react';
 //import { Card, CardHeader, CardContent } from '@material-ui/core';
 
-//var filename="";  
 
 const style = {
     position: 'absolute',

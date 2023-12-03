@@ -25,7 +25,7 @@ task_number = 1
 #def mission():
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-"""
+
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
@@ -59,8 +59,8 @@ def list_reports():
         else:
             report_files.append({'filename': file, 'contains_fuzzy': False, 'drone_count': 0})
     return {'reports': report_files}
-"""
 
+"""
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
@@ -87,7 +87,7 @@ def get_file_path(filename):
 
     #return the file path
     return file_path
-
+"""
 """
 #make a report data function that takes the fileName.
 @app.route('/report-data/<filename>', methods=['GET'])

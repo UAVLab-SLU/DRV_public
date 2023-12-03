@@ -2,6 +2,7 @@ import logging
 import os.path
 import threading
 import time
+import base64
 
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
@@ -91,6 +92,50 @@ def report_data(filename):
     except Exception as e:
         return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
 """
+
+@app.route('/list-folder-contents', methods=['GET'])
+def list_folder_contents():
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+    folder_name = request.args.get('folder')
+    folder_path = os.path.join(base_directory, folder_name)
+
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    folder_contents = []
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        file_content = None
+        file_type = None
+
+        if os.path.isfile(item_path):
+            file_type = 'file'
+            if item.endswith('.txt') or item.endswith('.html'):
+                # For text and HTML files, read as text
+                with open(item_path, 'r', encoding='utf-8') as file:
+                    file_content = file.read()
+            elif item.endswith('.png'):
+                # For PNG images, encode the content in base64
+                with open(item_path, 'rb') as file:
+                    file_content = base64.b64encode(file.read()).decode('utf-8')
+            else:
+                # For other file types, you may add more conditions
+                continue
+
+            folder_contents.append({
+                'name': item,
+                'type': file_type,
+                'content': file_content,
+                'file_extension': item.split('.')[-1]
+            })
+        elif os.path.isdir(item_path):
+            file_type = 'directory'
+            folder_contents.append({
+                'name': item,
+                'type': file_type
+            })
+
+    return jsonify(folder_contents)
 
 
 @app.route('/addTask', methods=['POST'])

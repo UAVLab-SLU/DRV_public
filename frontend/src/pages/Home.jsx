@@ -7,7 +7,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import  { useState } from 'react';
+import  { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 
 const StyledButton = styled(Button)`
@@ -92,7 +92,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+      const callOnOpen = () => {
       fetch('http://localhost:5000/currentRunning')
         .then((res) => {
           if (!res.ok) {
@@ -113,9 +113,8 @@ const Home = () => {
           console.error('Error fetching data:', error);
           setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
         });
-    }, 2000);
-
-    return () => clearInterval(interval);
+    };
+    callOnOpen();
   }, []);
 
   return (

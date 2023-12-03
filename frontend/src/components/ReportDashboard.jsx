@@ -226,6 +226,8 @@ const style = {
     
   //React.useEffect(() => {}, [fileArray])
   const handleDirectorySelect = (event) => {
+    // handleFolderSelect(folderName)
+    // handleButtonClick(selectedFolderName)
     const files = event.target.files;
     let name = [];
     for (let i = 0; i < files.length; i++) {
@@ -503,7 +505,7 @@ const style = {
     // handleDirectorySelectFuzzy(name);
   }
 
-    {/* CODE FOR CALLING TO BACKEND*/}
+    {/* CODE FOR CALLING FOLDER NAMES*/}
     const [reportFiles, setReportFiles] = React.useState([]);  
    // const isFuzzy = file.filename.includes('Fuzzy');
 
@@ -530,6 +532,41 @@ const style = {
     // Call fetchData once when the component mounts
     fetchData();
   }, []); 
+
+  
+  // {/* CODE FOR GETTING ENCODED FOLDERS*/}
+  // const [folderContents, setFolderContents] = useState([]);
+  // const [selectedFolderName, setSelectedFolderName] = useState(null);
+  // const handleFolderSelect = (folderName) => {
+  //   // Update the selected folder when a folder is selected
+  //   setSelectedFolderName(folderName);
+  // };
+  // const handleButtonClick = async (folderName) => {
+  //   handleFolderSelect(folderName);
+  //   // Define the API endpoint
+  //   const apiUrl = `http://localhost:5000/list-folder-contents-${selectedFolderName}`;
+
+
+  //   // Make the API call using the fetch function
+  //   fetch(apiUrl)
+  //     .then(response => {
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       return response.json();
+  //     })
+  //     .then(data => {
+  //         // Set the folder contents in the state
+  //         setFolderContents(data);
+  //         console.log('Folder Contents:', data);
+  //         })
+  //     .catch(error => {
+  //       console.error('Error fetching data:', error);
+  //     });
+      
+  // };
+
+
     
     return (
       <div className='dashboard'>

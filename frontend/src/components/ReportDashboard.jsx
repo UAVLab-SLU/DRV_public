@@ -49,28 +49,27 @@ const style = {
     const [reportFiles, setReportFiles] = React.useState([]);  
    // const isFuzzy = file.filename.includes('Fuzzy');
 
-    useEffect(() => {
-      const interval = setInterval(() => {
-        fetch('http://localhost:5000/list-reports', { method: 'GET' }) 
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error('No response from server/something went wrong');
-            }
-            return res.json(); 
-          })
-          .then((data) => {
-            //  'data.reports' containing filename and fuzzy info
-            console.log('Report Files:', data.reports);
-            
-            setReportFiles(data.reports);
-          })
-          .catch((error) => {
-            console.error('Error fetching report data:', error);
-          });
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }, []); 
+   useEffect(() => {
+    const fetchData = () => {
+      fetch('http://localhost:5000/list-reports', { method: 'GET' })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('No response from server/something went wrong');
+          }
+          return res.json();
+        })
+        .then((data) => {
+          // 'data.reports' containing filename and fuzzy info
+          console.log('Report Files:', data.reports);
+          setReportFiles(data.reports);
+        })
+        .catch((error) => {
+          console.error('Error fetching report data:', error);
+        });
+    };
+    // Call fetchData once when the component mounts
+    fetchData();
+  }, []); 
     
     return (
       <div className='dashboard'>

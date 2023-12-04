@@ -112,7 +112,7 @@ export default function HorizontalLinearStepper(data) {
       mainJson.monitors.battery_monitor["enable"] == true ? delete mainJson.monitors.battery_monitor["enable"] : delete mainJson.monitors.battery_monitor
       delete mainJson.environment["enableFuzzy"]
       console.log('mainJson-----', JSON.stringify(mainJson))
-      navigate('/dashboard', {
+      navigate('/report-dashboard', {
         state: {mainJson: mainJson}
       })
       fetch('http://127.0.0.1:5000/addTask', { 

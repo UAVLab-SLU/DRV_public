@@ -30,26 +30,41 @@ import FuzzyDashboard from './FuzzyDashboard';
 // ReportDashboard.js
 //import React from 'react';
 //import { Card, CardHeader, CardContent } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 900,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-  };
+const useStyles = makeStyles((theme) => ({ 
+  lightBlueBackground: {
+    backgroundColor: '#e3f2fd', 
+  },
+  card: {
+    maxWidth: 400,
+    height: 270,
+    border: '1px solid lightgreen', 
+    backgroundColor: '#e3f2fd', 
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+  },
+  invalidData: {
+    fontWeight: 'bold',
+    color: 'red', 
+  },
+  button: {
+    backgroundColor: '#1976d2', 
+    color: '#fff', 
+    '&:hover': {
+      backgroundColor: '#1565c0', 
+    },
+  },
+})); 
+
   
   export default function ReportDashboard(parameter) {
 
     const [reportFiles, setReportFiles] = React.useState([]);  
-   // const isFuzzy = file.filename.includes('Fuzzy');
+   // const isFuzzy = file.filename.includes('Fuzzy'); 
+    const classes = useStyles(); 
 
-   useEffect(() => {
+    useEffect(() => {
     const fetchData = () => {
       fetch('http://localhost:5000/list-reports', { method: 'GET' })
         .then((res) => {
@@ -70,85 +85,81 @@ const style = {
     fetchData();
   }, []); 
     
-  return (
-    <div className='dashboard'>
-      <Grid container spacing={2}>  
-      
-        {reportFiles.map(file => {
-          const parts = file.filename.split('_');  
+  return (  
+    <>
+    <Typography variant="h4" fontWeight="bold" style={{
+      textAlign: 'center',
+      marginTop: '10px', // Adjust top margin as needed 
+      marginBottom: "rem"
+    }}>
+      Acceptance Report 
 
-          if (!file || !file.filename || file.filename.includes('.DS_Store')) {
-            return null;
-          } 
-          
-          if (parts.length < 2) {
-            return (
-              <Grid key={file.id} item xs={4}>
-                <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
-                  <CardHeader title= "Invalid Report Data" sx ={{font: 'icon'}}/>
-                  <CardContent> 
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}> Invalid data format: {file.filename} </Typography>
-                    <p>Drone Count: {file.drone_count}</p>  
-                    {file.contains_fuzzy && (
-                      <p>Fuzzy Testing {file.contains_fuzzy}</p>
-                    )}
-                    {!file.contains_fuzzy && ( 
-                      <p>Simulation Testing</p>
-                    )}
-                  </CardContent>  
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
-                    <Button  
-                      variant="contained"   
-                      sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}  
-                      // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
-                    >   
-                      View Report  
-                    </Button>  
-                  </Box>
-                </Card>
-              </Grid>
-            );
-          }
-  
-          const datePart = parts[0]; 
-          const batchName = parts.slice(1).join('_'); 
-          
-          const date = datePart.substr(0, 10); 
-          const time = datePart.substr(11, 8); 
-          
-          const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`; // MM,DD,YYYY
-          const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`; // HH:MM:SS
-          
-          const formattedTimestamp = `${formattedDate} ${formattedTime}`;
-  
+    </Typography> 
+
+    <Grid container spacing={2} style={{ width: '100%' }}>
+      {reportFiles.map((file) => {
+        const parts = file.filename.split('_');
+
+        if (!file || !file.filename || file.filename.includes('.DS_Store')) {
+          return null;
+        }
+
+        if (parts.length < 2) {
           return (
             <Grid key={file.id} item xs={4}>
-              <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
-                <CardHeader title= {formattedTimestamp} sx ={{font: 'icon'}}/>
-                <CardContent> 
-                  <Typography variant="h6">{batchName}</Typography>
-                  <p>Drone Count: {file.drone_count}</p>  
-                  {file.contains_fuzzy && (
-                    <p>Fuzzy Testing {file.contains_fuzzy}</p>
-                  )}
-                  {!file.contains_fuzzy && ( 
-                    <p>Simulation Testing</p>
-                  )}
-                </CardContent>  
-                <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
-                  <Button  
-                    variant="contained"   
-                    sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}  
-                    // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
-                  >   
-                    View Report  
-                  </Button>  
+              <Card className={classes.lightBlueCard}> {/* Apply class for blue background */}
+                <CardHeader title="Invalid Report Data" sx={{ font: 'icon' }} />
+                <CardContent>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                    {' '}
+                    Invalid data format: {file.filename}{' '}
+                  </Typography>
+                  <p>Drone Count: {file.drone_count}</p>
+                  {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
+                  {!file.contains_fuzzy && <p>Simulation Testing</p>}
+                </CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
+                  <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}>
+                    View Report
+                  </Button>
                 </Box>
               </Card>
-            </Grid>
+            </Grid> 
           );
-        })}
-      </Grid>
-    </div>
-  ); 
-      }
+        }
+
+        const datePart = parts[0];
+        const batchName = parts.slice(1).join('_');
+
+        const date = datePart.substr(0, 10);
+        const time = datePart.substr(11, 8);
+
+        const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`;
+        const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
+
+        const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+
+        return (
+          <Grid key={file.id} item xs={4}>
+            <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none' }}>
+              <CardHeader title={formattedTimestamp} sx={{ font: 'icon' }} />
+              <CardContent>
+                <Typography variant="body1">{batchName}</Typography>
+                <p>Drone Count: {file.drone_count}</p>
+                {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
+                {!file.contains_fuzzy && <p>Simulation Testing</p>}
+              </CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
+                <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}>
+                  View Report
+                </Button>
+              </Box>
+            </Card>
+          </Grid> 
+          
+        );
+      })}
+    </Grid> 
+    </>
+  );
+} 

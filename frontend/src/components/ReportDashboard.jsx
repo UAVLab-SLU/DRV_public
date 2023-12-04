@@ -72,9 +72,15 @@ const style = {
     
   return (
     <div className='dashboard'>
-      <Grid container spacing={2}> 
+      <Grid container spacing={2}>  
+      
         {reportFiles.map(file => {
-          const parts = file.filename.split('_'); 
+          const parts = file.filename.split('_');  
+
+          if (!file || !file.filename || file.filename.includes('.DS_Store')) {
+            return null;
+          } 
+          
           if (parts.length < 2) {
             return (
               <Grid key={file.id} item xs={4}>

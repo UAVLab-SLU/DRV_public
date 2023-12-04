@@ -36,7 +36,11 @@ def list_reports():
     #print(os.listdir(reports_path))  #Debugging line
     report_files = []
     for file in os.listdir(reports_path):
+        if file == '.DS_Store':
+            continue #skip ds store files entirely, we dont want them
+
         file_path = os.path.join(reports_path, file)
+        
         if os.path.isdir(file_path):
             #Find 'Fuzzy' files
             fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]

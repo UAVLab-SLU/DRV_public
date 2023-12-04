@@ -2,10 +2,13 @@ import logging
 import os.path
 import threading
 import time
-
+import base64
+import sys
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
 
+##UNCOMMENT LINE IF TESTING ON LOCAL MACHINE
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 
 app = Flask(__name__, template_folder="./templates")
@@ -28,7 +31,42 @@ task_number = 1
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
-    reports_path = "C:/Users/Kaleb/Desktop/jsTest/report"
+    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
+        return 'Reports directory not found', 404
+    #print("Listing items in:", reports_path) #Debugging line
+    #print(os.listdir(reports_path))  #Debugging line
+    report_files = []
+    for file in os.listdir(reports_path):
+        file_path = os.path.join(reports_path, file)
+        if os.path.isdir(file_path):
+            #Find 'Fuzzy' files
+            fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]
+            contains_fuzzy = len(fuzzy_files) > 0
+            #Determine the path to count Drone files
+            if contains_fuzzy:
+                first_fuzzy_path = os.path.join(file_path, fuzzy_files[0])
+                #Check if the first 'Fuzzy' file is a directory
+                if os.path.isdir(first_fuzzy_path):
+                    flytopoints_path = os.path.join(first_fuzzy_path, 'FlyToPoints')
+                else:
+                    flytopoints_path = os.path.join(file_path, 'FlyToPoints')
+            else:
+                flytopoints_path = os.path.join(file_path, 'FlyToPoints')
+            #Count Drones
+            drone_count = 0
+            if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
+                drone_count = sum(1 for f in os.listdir(flytopoints_path) if f.startswith('FlyToPoints_Drone'))
+            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy, 'drone_count': drone_count})
+        else:
+            report_files.append({'filename': file, 'contains_fuzzy': False, 'drone_count': 0})
+    return {'reports': report_files}
+
+"""
+@app.route('/list-reports', methods=['GET'])
+def list_reports():
+    # Reports file
+    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
     if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
         return 'Reports directory not found', 404
     #print("Listing items in:", reports_path) #Debugging line
@@ -44,28 +82,6 @@ def list_reports():
             report_files.append({'filename': file})
     return {'reports': report_files}
 
-"""
-def list_reports():
-
-    #Reports file
-
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-
-    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
-        return 'Reports directory not found', 404
-
-    report_files = []
-
-    for file in os.listdir(reports_path):
-        file_path = os.path.join(reports_path, file)
-
-        if os.path.isfile(file_path):
-            contains_fuzzy = 'Fuzzy' in file
-            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy})
-
-    return {'reports': report_files} #report_files is a list of tuples containing the filename and if it has fuzzy testing
-"""
-
 @app.route('/get-file-path/<filename>', methods=['GET'])
 def get_file_path(filename):
     #construct the full path to the file
@@ -73,7 +89,7 @@ def get_file_path(filename):
 
     #return the file path
     return file_path
-
+"""
 """
 #make a report data function that takes the fileName.
 @app.route('/report-data/<filename>', methods=['GET'])
@@ -98,6 +114,50 @@ def report_data(filename):
         return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
 """
 
+@app.route('/list-folder-contents-<foldername>', methods=['GET'])
+def list_folder_contents(foldername):
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+    folder_name = request.args.get(foldername)
+    folder_path = os.path.join(base_directory, folder_name)
+
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    folder_contents = []
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        file_content = None
+        file_type = None
+
+        if os.path.isfile(item_path):
+            file_type = 'file'
+            if item.endswith('.txt') or item.endswith('.html'):
+                # For text and HTML files, read as text
+                with open(item_path, 'r', encoding='utf-8') as file:
+                    file_content = file.read()
+            elif item.endswith('.png'):
+                # For PNG images, encode the content in base64
+                with open(item_path, 'rb') as file:
+                    file_content = base64.b64encode(file.read()).decode('utf-8')
+            else:
+                # For other file types, you may add more conditions
+                continue
+
+            folder_contents.append({
+                'name': item,
+                'type': file_type,
+                'content': file_content,
+                'file_extension': item.split('.')[-1]
+            })
+        elif os.path.isdir(item_path):
+            file_type = 'directory'
+            folder_contents.append({
+                'name': item,
+                'type': file_type
+            })
+
+    return jsonify(folder_contents)
+
 
 @app.route('/addTask', methods=['POST'])
 def add_task():
@@ -111,8 +171,11 @@ def add_task():
 
 @app.route('/currentRunning', methods=['GET'])
 def get_current_running():
-    return task_dispatcher.get_current_task_batch()
-
+    current_task_batch = task_dispatcher.get_current_task_batch()
+    if current_task_batch == "None":
+        return f"{'None'}, {task_dispatcher.mission_queue.qsize()}"
+    else:
+        return f"{'Running'}, {task_dispatcher.mission_queue.qsize()}"
 
 @app.route('/report')
 @app.route('/report/<path:dir_name>')

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
+<<<<<<< HEAD
+=======
+//import Typography from '@mui/material/Typography';
+>>>>>>> origin/issue52DisplayMainReport
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';

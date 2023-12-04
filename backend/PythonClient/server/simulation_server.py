@@ -36,7 +36,7 @@ def list_reports():
     #print(os.listdir(reports_path))  #Debugging line
     report_files = []
     for file in os.listdir(reports_path):
-        if file == '.DS_Store':
+        if 'store' in file.lower():
             continue #skip ds store files entirely, we dont want them
 
         file_path = os.path.join(reports_path, file)

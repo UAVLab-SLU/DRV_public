@@ -22,7 +22,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import AlertTitle from '@mui/material/AlertTitle';
 import { wait } from '@testing-library/user-event/dist/utils';
-
+import Snackbar from '@mui/material/Snackbar';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 
 const style = {
   position: 'absolute',
@@ -498,8 +499,45 @@ export default function FuzzyDashboard(parameter) {
   }
   
   };
+
+
+  const [snackBarState, setSnackBarState] = React.useState({
+    open: false,
+  });
+
+  const handleSnackBarVisibility = (val) => {
+    setSnackBarState(prevState => ({
+      ...prevState,
+      open: val
+    }))
+  }
+  const handleClickAway = () => {
+    // Prevent closing when clicking outside the box
+    handleSnackBarVisibility(true);
+  };
+  useEffect(() => {
+    // Trigger the Snackbar to be open when the component mounts
+    handleSnackBarVisibility(true);
+  }, []);
   return (
     <div>
+    <Snackbar
+      open={snackBarState.open}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      autoHideDuration={60000}
+      onClose={() => handleSnackBarVisibility(false)}
+    >
+      <Alert
+        onClose={() => handleSnackBarVisibility(false)}
+        severity="info"
+        sx={{ maxHeight: '150px', maxWidth: '40%' }}
+      >
+        {"Dashboard changes are under development! While we are in the process of adding new features, please select your files using the 'SELECT SIMULATION DATA DIRECTORY' button. Your files will be on your local machine under the 'Airsim' folder in your Documents folder. You can either upload the 'reports' folder to get all of your results or you can select the individual folders for each test you would like to upload."}
+      </Alert>
+    </Snackbar>
       <Box>
       <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
         Acceptance Test Report

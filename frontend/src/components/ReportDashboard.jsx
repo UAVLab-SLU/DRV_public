@@ -70,47 +70,79 @@ const style = {
     fetchData();
   }, []); 
     
-    return (
-      <div className='dashboard'>
-        <Grid container spacing={2}> 
-         {reportFiles.map(file => (
-           <Grid key={file.id} item xs={4}>
+  return (
+    <div className='dashboard'>
+      <Grid container spacing={2}> 
+        {reportFiles.map(file => {
+          const parts = file.filename.split('_'); 
+          if (parts.length < 2) {
+            return (
+              <Grid key={file.id} item xs={4}>
+                <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
+                  <CardHeader title= "Invalid Report Data" sx ={{font: 'icon'}}/>
+                  <CardContent> 
+                    <p>Invalid data format: {file.filename}</p>
+                    <p>Drone Count: {file.drone_count}</p>  
+                    {file.contains_fuzzy && (
+                      <p>Fuzzy Testing {file.contains_fuzzy}</p>
+                    )}
+                    {!file.contains_fuzzy && ( 
+                      <p>Simulation Testing</p>
+                    )}
+                  </CardContent>  
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
+                    <Button  
+                      variant="contained"   
+                      sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}  
+                      // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
+                    >   
+                      View Report  
+                    </Button>  
+                  </Box>
+                </Card>
+              </Grid>
+            );
+          }
   
-             <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
-               <CardHeader title= "Report" sx ={{font: 'icon'}}/>
+          const datePart = parts[0]; 
+          const batchName = parts.slice(1).join('_'); 
+          
+          const date = datePart.substr(0, 10); 
+          const time = datePart.substr(11, 8); 
+          
+          const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`; // MM,DD,YYYY
+          const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`; // HH:MM:SS
+          
+          const formattedTimestamp = `${formattedDate} ${formattedTime} ${batchName}`;
   
-               <CardContent> 
-
-                <p>{file.filename}</p>
-                 <p>Drone Count: {file.drone_count}</p>  
-
-
-                 {file.contains_fuzzy && (
-                <p>Fuzzy Testing {file.contains_fuzzy}</p>
-                )}
-
-                {!file.contains_fuzzy && ( 
-               <p>Simulation Testing</p>
-                 )}
-                 
-                 
-               </CardContent>  
-               <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
-               <Button  
-               variant="contained"   
-               sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem' }}  
-               // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
-               >   
-               View File  
-               </Button>  
-               </Box>
-             </Card>
-  
-           </Grid>
-         ))} 
-
-       </Grid>
-      </div>
-    );
-  
-  }
+          return (
+            <Grid key={file.id} item xs={4}>
+              <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
+                <CardHeader title= "Report" sx ={{font: 'icon'}}/>
+                <CardContent> 
+                  <p>{formattedTimestamp}</p>
+                  <p>Drone Count: {file.drone_count}</p>  
+                  {file.contains_fuzzy && (
+                    <p>Fuzzy Testing {file.contains_fuzzy}</p>
+                  )}
+                  {!file.contains_fuzzy && ( 
+                    <p>Simulation Testing</p>
+                  )}
+                </CardContent>  
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}> 
+                  <Button  
+                    variant="contained"   
+                    sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}  
+                    // onClick={() => navigateToReport(file.filename)} OnClick yet to be complete  
+                  >   
+                    View Report  
+                  </Button>  
+                </Box>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </div>
+  ); 
+      }

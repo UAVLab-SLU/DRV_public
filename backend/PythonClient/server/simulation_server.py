@@ -2,9 +2,13 @@ import logging
 import os.path
 import threading
 import time
+import sys
 
 from flask import Flask, request, abort, send_file, render_template, Response
 from flask_cors import CORS
+
+##UNCOMMENT LINE IF TESTING ON LOCAL MACHINE
+##sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 
@@ -38,8 +42,11 @@ def add_task():
 
 @app.route('/currentRunning', methods=['GET'])
 def get_current_running():
-    return task_dispatcher.get_current_task_batch()
-
+    current_task_batch = task_dispatcher.get_current_task_batch()
+    if current_task_batch == "None":
+        return f"{'None'}, {task_dispatcher.mission_queue.qsize()}"
+    else:
+        return f"{'Running'}, {task_dispatcher.mission_queue.qsize()}"
 
 @app.route('/report')
 @app.route('/report/<path:dir_name>')

@@ -7,8 +7,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import  { useState } from 'react';
+import  { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 const StyledButton = styled(Button)`
   align-items: center;
@@ -57,6 +58,24 @@ const Home = () => {
   const [text, setText] = useState('Please select a requirement identifier');
   const [title, setTitle] = useState('');
   let requirement_id="";
+  const [backendInfo, setBackendInfo] = useState({ 
+    numQueuedTasks: 0,
+    backendStatus: 'idle'
+  });
+  const getStatusStyle = () => {
+    switch (backendInfo.backendStatus) {
+      case 'idle':
+        return { color: 'green' }; // Green color and a checkmark icon
+      case 'running':
+        return { color: 'blue'}; // Blue color and a rotating arrow icon
+      case 'error':
+        return { color: 'red' }; // Red color and a cross icon
+      default:
+        return { color: 'gray' }; // Gray color and an information 
+    }
+  }; 
+  const statusStyle = getStatusStyle();
+
   const handleReqIdChange = (event) => {
     setSelectedValue(event.target.value);
     // requirement_id=event.target.value;
@@ -72,7 +91,52 @@ const Home = () => {
       setTitle("sUAS Mission in Windy Weather with Path Accuracy")
     } 
   };
+
+  useEffect(() => {
+      const callOnOpen = () => {
+      fetch('http://localhost:5000/currentRunning')
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('No response from server/something went wrong');
+          }
+          return res.text();
+        })
+        .then((data) => {
+          const [status, queueSize] = data.split(', ');
+          console.log('Simulation Status,', status, 'Queue Size:', queueSize);
+          if (status === "None") {
+            setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
+          } else if (status === "Running") {
+            setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+          setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
+        });
+    };
+    callOnOpen();
+  }, []);
+
   return (
+    <React.Fragment>
+        <Typography style={{width: 1000}}>
+        <Grid  spacing={5} direction="row" style={{ marginTop: '15px', paddingTop: '15px', paddingLeft: '290px'}}>
+          <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5} >     
+            <Typography>   
+                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+            </Typography>  
+          </Box>
+          <div style={{position: 'relative'}}> 
+              <div style={{position: 'absolute', left: 280, top: -80}}>
+                  <Typography>  
+                      Queued Tasks: {backendInfo.numQueuedTasks}
+                  </Typography>    
+              </div> 
+          </div>
+          </Grid>
+        </Typography>
+      
     <Box
       sx={{
         display: 'flex',
@@ -84,14 +148,13 @@ const Home = () => {
         '& > :not(style)': {
           m: 1,
           width: 1000,
-          height: 350,
+          // height: 350,
         },
       }}
     >
       {
         <React.Fragment>
         <FormControl>
-          
         <InputLabel id="demo-simple-select-label">Requirement ID</InputLabel>
         <Select
           labelId="req-id"
@@ -110,6 +173,7 @@ const Home = () => {
         </Typography>
         </div>
         {/* <h3>{text}</h3> */}
+        
         <div style={{ marginTop: '3em' }}>
         <Typography variant="h5" component="h4">
           {selectedvalue != '' ? <React.Fragment>Title: {title}</React.Fragment> : null}
@@ -125,10 +189,16 @@ const Home = () => {
       </React.Fragment>
       
       }
+      <div>
+      {/* <Typography variant="h6"> Status:</Typography>   */}
+                    
+      </div>
       <StyledLink to='/simulation' state={{req:selectedvalue.toString(), descs:text.toString(), title:title.toString()}}>
         <StyledButton variant='contained' disabled={text=="Please select a requirement identifier"? true : false}>Start Scenario Configuration</StyledButton>
       </StyledLink>
     </Box>
+    </React.Fragment>
+    
   );
 };
 

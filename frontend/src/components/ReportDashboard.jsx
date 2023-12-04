@@ -81,7 +81,7 @@ const style = {
                 <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
                   <CardHeader title= "Invalid Report Data" sx ={{font: 'icon'}}/>
                   <CardContent> 
-                    <p>Invalid data format: {file.filename}</p>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}> Invalid data format: {file.filename} </Typography>
                     <p>Drone Count: {file.drone_count}</p>  
                     {file.contains_fuzzy && (
                       <p>Fuzzy Testing {file.contains_fuzzy}</p>
@@ -113,14 +113,14 @@ const style = {
           const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`; // MM,DD,YYYY
           const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`; // HH:MM:SS
           
-          const formattedTimestamp = `${formattedDate} ${formattedTime} ${batchName}`;
+          const formattedTimestamp = `${formattedDate} ${formattedTime}`;
   
           return (
             <Grid key={file.id} item xs={4}>
               <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none'}}>
-                <CardHeader title= "Report" sx ={{font: 'icon'}}/>
+                <CardHeader title= {formattedTimestamp} sx ={{font: 'icon'}}/>
                 <CardContent> 
-                  <p>{formattedTimestamp}</p>
+                  <Typography variant="h6">{batchName}</Typography>
                   <p>Drone Count: {file.drone_count}</p>  
                   {file.contains_fuzzy && (
                     <p>Fuzzy Testing {file.contains_fuzzy}</p>

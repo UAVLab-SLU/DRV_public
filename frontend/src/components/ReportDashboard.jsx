@@ -67,7 +67,6 @@ const style = {
           console.error('Error fetching report data:', error);
         });
     };
-    // Call fetchData once when the component mounts
     fetchData();
   }, []); 
     

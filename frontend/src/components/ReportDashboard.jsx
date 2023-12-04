@@ -88,15 +88,16 @@ const useStyles = makeStyles((theme) => ({
   return (  
     <>
     <Typography variant="h4" fontWeight="bold" style={{
-      textAlign: 'center',
-      marginTop: '20px', // Adjust top margin as needed 
-      marginBottom: "rem"
+      textAlign: 'center', 
+     // marginLeft: '500px',
+      marginTop: '20px',
+      marginBottom: "2rem"
     }}>
       Acceptance Report 
 
     </Typography> 
 
-    <Grid container spacing={2} style={{ width: '100%' }}>
+    <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-end'}}>
       {reportFiles.map((file) => {
         const parts = file.filename.split('_');
 
@@ -142,17 +143,18 @@ const useStyles = makeStyles((theme) => ({
         return (
           <Grid key={file.id} item xs={4}>
             <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none' }}>
-            <CardHeader
-        title={
-          <>
-            <Typography variant="h5">{formattedTimestamp}</Typography>
-            <Typography variant="body1" color="textSecondary">
-              {batchName}
-            </Typography>
-          </>
-        }
-          sx={{ font: 'icon' }}
-        />
+            <CardHeader 
+            title={ 
+            <> 
+            <Typography variant="h5">{formattedTimestamp}</Typography> 
+            <Typography variant="body1" color="textSecondary"> 
+            {'['}{batchName}{']'} {/* Display batchName inside brackets */} 
+            </Typography> 
+            </> 
+            } 
+            sx={{ font: 'icon' }} 
+            />
+       
               <CardContent>
                 <p>Drone Count: {file.drone_count}</p>
                 {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}

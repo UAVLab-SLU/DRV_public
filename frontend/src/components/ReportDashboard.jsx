@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
     <>
     <Typography variant="h4" fontWeight="bold" style={{
       textAlign: 'center',
-      marginTop: '10px', // Adjust top margin as needed 
+      marginTop: '20px', // Adjust top margin as needed 
       marginBottom: "rem"
     }}>
       Acceptance Report 
@@ -142,9 +142,18 @@ const useStyles = makeStyles((theme) => ({
         return (
           <Grid key={file.id} item xs={4}>
             <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none' }}>
-              <CardHeader title={formattedTimestamp} sx={{ font: 'icon' }} />
+            <CardHeader
+        title={
+          <>
+            <Typography variant="h5">{formattedTimestamp}</Typography>
+            <Typography variant="body1" color="textSecondary">
+              {batchName}
+            </Typography>
+          </>
+        }
+          sx={{ font: 'icon' }}
+        />
               <CardContent>
-                <Typography variant="body1">{batchName}</Typography>
                 <p>Drone Count: {file.drone_count}</p>
                 {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
                 {!file.contains_fuzzy && <p>Simulation Testing</p>}

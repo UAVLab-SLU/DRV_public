@@ -9,6 +9,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import  { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 const StyledButton = styled(Button)`
   align-items: center;
@@ -118,6 +119,24 @@ const Home = () => {
   }, []);
 
   return (
+    <React.Fragment>
+        <Typography style={{width: 1000}}>
+        <Grid  spacing={5} direction="row" style={{ marginTop: '15px', paddingTop: '15px', paddingLeft: '290px'}}>
+          <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5} >     
+            <Typography>   
+                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+            </Typography>  
+          </Box>
+          <div style={{position: 'relative'}}> 
+              <div style={{position: 'absolute', left: 280, top: -80}}>
+                  <Typography>  
+                      Queued Tasks: {backendInfo.numQueuedTasks}
+                  </Typography>    
+              </div> 
+          </div>
+          </Grid>
+        </Typography>
+      
     <Box
       sx={{
         display: 'flex',
@@ -135,20 +154,6 @@ const Home = () => {
     >
       {
         <React.Fragment>
-          <Typography style={{float: 'right', margin: '15px'}}>
-            <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5} >     
-              <Typography>   
-                  Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-              </Typography>  
-            </Box>
-            <div style={{position: 'relative'}}> 
-                <div style={{position: 'absolute', left: 280, top: -80}}>
-                    <Typography>  
-                        Queued Tasks: {backendInfo.numQueuedTasks}
-                    </Typography>    
-                </div> 
-            </div>
-          </Typography>
         <FormControl>
         <InputLabel id="demo-simple-select-label">Requirement ID</InputLabel>
         <Select
@@ -192,6 +197,7 @@ const Home = () => {
         <StyledButton variant='contained' disabled={text=="Please select a requirement identifier"? true : false}>Start Scenario Configuration</StyledButton>
       </StyledLink>
     </Box>
+    </React.Fragment>
     
   );
 };

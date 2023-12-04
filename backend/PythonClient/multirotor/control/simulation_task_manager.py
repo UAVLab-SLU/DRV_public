@@ -397,7 +397,7 @@ class SimulationTaskManager:
                 start_threads.append(threading.Thread(target=monitor_instance.start))
                 stop_threads.append(threading.Thread(target=monitor_instance.stop))
         return start_threads, stop_threads
-
+    
     @staticmethod
     def __get_class_instance(class_name, module_name):
         module = importlib.import_module("PythonClient.multirotor." + module_name + "." + class_name)

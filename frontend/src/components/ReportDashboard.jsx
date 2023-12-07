@@ -126,6 +126,9 @@ const style = {
               {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
               {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
             </Container>
+            <Button variant="contained" color="primary" onClick={redirectToFuzzyDashboard} style={{ marginTop: '10px' }}>
+            Go to Fuzzy Dashboard
+            </Button>
           </Typography>
         </Box>
         <Grid container spacing={2}> 

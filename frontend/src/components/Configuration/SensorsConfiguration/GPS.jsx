@@ -26,7 +26,7 @@ const defaultGps = {
   };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(defaultGps) 
+    const[gps, setGps] = React.useState(sensor.gPSObj) 
     
 
     React.useEffect(() => {
@@ -58,7 +58,7 @@ export default function GPS (sensor) {
 
 
     const handleReset = () => {
-        setGps(defaultGps);
+        setGps(sensor.gPSObj);
       };
     return(
         <div>  
@@ -353,7 +353,7 @@ export default function GPS (sensor) {
                 
                     
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Grid item xs={3}><Button onClick={() => setGps(defaultGps)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={3}><Button onClick={() => setGps(sensor.gPSObj)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
                         <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                     </Grid>  

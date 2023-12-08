@@ -10,6 +10,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 
 const defaultGps = {
     EphTimeConstant: 0.9,
@@ -59,9 +62,32 @@ export default function GPS (sensor) {
 
     const handleReset = () => {
         setGps(sensor.gPSObj);
-      };
+    
+    };
+
+    const [snackBarState, setSnackBarState] = React.useState({
+        open: true,
+    });
+
+    const handleSnackBarVisibility = (val) => {
+        setSnackBarState(prevState => ({
+            ...prevState,
+            open: val
+        }))
+    }
     return(
-        <div>  
+        <div> 
+            <Snackbar open={snackBarState.open} 
+        anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+        }} 
+        autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+        <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+             {"GPS Changes is under Developement !"}
+        </Alert>
+    </Snackbar>
+     
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
                     {gps.Key}
                 </Typography> 

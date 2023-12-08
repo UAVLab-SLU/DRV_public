@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import CardMedia from '@mui/material/CardMedia'
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';

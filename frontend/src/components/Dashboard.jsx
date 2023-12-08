@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
@@ -14,15 +14,14 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
-//import Card from '@mui/material/Card'; 
-import { Card, CardContent } from '@mui/material';
+import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia'
 import Modal from '@mui/material/Modal';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import AlertTitle from '@mui/material/AlertTitle';
-import PropTypes from 'prop-types'; 
+
 
 const style = {
   position: 'absolute',
@@ -34,7 +33,7 @@ const style = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
-};  
+};
 
 export default function Dashboard(parameter) {
   const navigate = useNavigate(); 
@@ -379,35 +378,6 @@ export default function Dashboard(parameter) {
       }
     }
   }
-  const YourComponent = () => {
-    const [folderDirectories, setFolderDirectories] = useState([]);
-  const componenet = () => {
-    const handleDirectorySelect = (selectedFiles) => {
-      console.log('Selected Files:', selectedFiles);
-    };
-
-  
-    useEffect(() => {
-      const interval = setInterval(() => {
-        fetch('http://localhost:5000/folderData') // This is the temp folder path, will change once it is implemented
-          .then((res) => {
-            if (!res.ok) {
-              throw Error('Could not fetch the data for that resource');
-            }
-            return res.text(); // Assuming the server response is JSON
-          })
-          .then((data) => {
-            console.log('Fetched Folder Directories:', data);
-            setFolderDirectories(data);
-            handleDirectorySelect({ target: { files: data } });
-          })
-          .catch((error) => {
-            console.error('Error fetching folder data:', error.message);
-          });
-      }, 2000);
-        return () => clearInterval(interval);
-    }, []); 
-  };
   
   return (
     <div>
@@ -417,8 +387,8 @@ export default function Dashboard(parameter) {
         <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
       
         <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
-         <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> </Paper>
-         <div>UPLOAD FILE CONTENTS</div><br/><br/> 
+        {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
+        {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
         <Button variant="contained" component="label">
         Select Simulation Data Directory
         <input hidden type="file" webkitdirectory="" multiple onChange={handleDirectorySelect} />
@@ -430,7 +400,6 @@ export default function Dashboard(parameter) {
                         <AlertTitle>Warning</AlertTitle>
                         <strong>Violation Detected</strong>
                     </Alert>  : null}
-      
       <Box sx={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -440,8 +409,8 @@ export default function Dashboard(parameter) {
           height: "100%",
         },
       }}>
+        
       </Box>
-      
       <Box sx={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -612,7 +581,7 @@ export default function Dashboard(parameter) {
             )
           })}
           </ul>
-          </Paper> : null} 
+          </Paper> : null} */}
       </Box>
       <Box sx={{
         display: 'flex',
@@ -633,7 +602,7 @@ export default function Dashboard(parameter) {
           width: "100%",
           height: "100%",
         },
-      }}>*/}
+      }}>
         {PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : A drone should not deviate more than {deviation != null ? deviation : 'X'} meters from its planned flight path</div>
@@ -816,5 +785,4 @@ export default function Dashboard(parameter) {
       </div>
     </div>
   )
-}
 }

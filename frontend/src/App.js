@@ -2,7 +2,7 @@ import { Provider } from 'react-redux';
 import Home from './pages/Home';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Wizard from './pages/Wizard';
-import Dashboard from './components/Dashboard';
+//import Dashboard from './components/Dashboard';
 import FuzzyDashboard from './components/FuzzyDashboard';
 import ReportDashboard from './components/ReportDashboard';
 

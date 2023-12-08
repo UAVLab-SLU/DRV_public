@@ -157,7 +157,7 @@ const useStyles = makeStyles((theme) => ({
         </Button>
       )}
     </Typography> 
-    <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-end'}}>
+    <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start'}}>
       {reportFiles.map((file) => {
         const parts = file.filename.split('_');
 

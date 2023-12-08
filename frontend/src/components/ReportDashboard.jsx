@@ -127,9 +127,9 @@ const useStyles = makeStyles((theme) => ({
         <Alert
           onClose={() => handleSnackBarVisibility(false)}
           severity="info"
-          sx={{ maxHeight: '150px', maxWidth: '40%' }}
+          sx={{ maxHeight: '150px', maxWidth: '100%' }}
         >
-          {"Enhancements to the view test report details are in progress! As we are implementing new features, please use the “SELECT SIMULATION DATA DIRECTORY” button to select the files you wish to upload. These files should be located within the ‘Airsim’ folder under your Documents folder on your local machine. You can either upload the entire ‘reports’ folder to access all results or choose specific folders for each test you want to upload."}
+          {"No reports found"}
         </Alert>
       </Snackbar>
     )}

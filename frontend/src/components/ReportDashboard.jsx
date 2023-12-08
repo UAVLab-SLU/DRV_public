@@ -62,7 +62,15 @@ const useStyles = makeStyles((theme) => ({
 
     const [reportFiles, setReportFiles] = React.useState([]);  
    // const isFuzzy = file.filename.includes('Fuzzy'); 
-    const classes = useStyles(); 
+    const classes = useStyles();  
+
+    const navigate = useNavigate(); 
+    const redirectToHome = () => {
+      navigate('/')
+    }
+    const redirectToFuzzyDashboard = () => {
+      navigate('/dashboard')
+    }
 
     useEffect(() => {
     const fetchData = () => {
@@ -93,8 +101,16 @@ const useStyles = makeStyles((theme) => ({
       marginTop: '20px',
       marginBottom: "2rem"
     }}>
-      Acceptance Report 
-
+      Acceptance Report  
+      <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
+      
+      <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
+        {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
+        {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
+      </Container>
+      <Button variant="contained" color="primary" onClick={redirectToFuzzyDashboard} style={{ marginTop: '10px' }}>
+      Go to Fuzzy Dashboard
+      </Button>
     </Typography> 
 
     <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-end'}}>

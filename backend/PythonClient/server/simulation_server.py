@@ -8,7 +8,7 @@ from flask import Flask, request, abort, send_file, render_template, Response, j
 from flask_cors import CORS
 
 ##UNCOMMENT LINE IF TESTING ON LOCAL MACHINE
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+#sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 
 app = Flask(__name__, template_folder="./templates")
@@ -38,7 +38,11 @@ def list_reports():
     #print(os.listdir(reports_path))  #Debugging line
     report_files = []
     for file in os.listdir(reports_path):
+        if 'store' in file.lower():
+            continue #skip ds store files entirely, we dont want them
+
         file_path = os.path.join(reports_path, file)
+        
         if os.path.isdir(file_path):
             #Find 'Fuzzy' files
             fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]

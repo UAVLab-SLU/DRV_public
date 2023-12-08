@@ -535,7 +535,7 @@ export default function FuzzyDashboard(parameter) {
         severity="info"
         sx={{ maxHeight: '150px', maxWidth: '40%' }}
       >
-        {"Dashboard changes are under development! While we are in the process of adding new features, please select your files using the 'SELECT SIMULATION DATA DIRECTORY' button. Your files will be on your local machine under the 'Airsim' folder in your Documents folder. You can either upload the 'reports' folder to get all of your results or you can select the individual folders for each test you would like to upload."}
+        {"Enhancements to the view test report details are in progress! As we are implementing new features, please use the “SELECT SIMULATION DATA DIRECTORY” button to select the files you wish to upload. These files should be located within the ‘Airsim’ folder under your Documents folder on your local machine. You can either upload the entire ‘reports’ folder to access all results or choose specific folders for each test you want to upload."}
       </Alert>
     </Snackbar>
       <Box>

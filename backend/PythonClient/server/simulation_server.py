@@ -4,13 +4,11 @@ import threading
 import time
 import base64
 import sys
-
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
 
 ##UNCOMMENT LINE IF TESTING ON LOCAL MACHINE
-##sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-
+#sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 
 app = Flask(__name__, template_folder="./templates")
@@ -67,11 +65,12 @@ def list_reports():
         else:
             report_files.append({'filename': file, 'contains_fuzzy': False, 'drone_count': 0})
     return {'reports': report_files}
+
 """
+@app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
     reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    
     if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
         return 'Reports directory not found', 404
     #print("Listing items in:", reports_path) #Debugging line
@@ -86,29 +85,6 @@ def list_reports():
         else:
             report_files.append({'filename': file})
     return {'reports': report_files}
-"""
-
-"""
-def list_reports():
-
-    #Reports file
-
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-
-    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
-        return 'Reports directory not found', 404
-
-    report_files = []
-
-    for file in os.listdir(reports_path):
-        file_path = os.path.join(reports_path, file)
-
-        if os.path.isfile(file_path):
-            contains_fuzzy = 'Fuzzy' in file
-            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy})
-
-    return {'reports': report_files} #report_files is a list of tuples containing the filename and if it has fuzzy testing
-"""
 
 @app.route('/get-file-path/<filename>', methods=['GET'])
 def get_file_path(filename):
@@ -117,7 +93,7 @@ def get_file_path(filename):
 
     #return the file path
     return file_path
-
+"""
 """
 #make a report data function that takes the fileName.
 @app.route('/report-data/<filename>', methods=['GET'])
@@ -142,10 +118,10 @@ def report_data(filename):
         return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
 """
 
-@app.route('/list-folder-contents', methods=['GET'])
-def list_folder_contents():
+@app.route('/list-folder-contents-<foldername>', methods=['GET'])
+def list_folder_contents(foldername):
     base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    folder_name = request.args.get('folder')
+    folder_name = request.args.get(foldername)
     folder_path = os.path.join(base_directory, folder_name)
 
     if not os.path.exists(folder_path) or not os.path.isdir(folder_path):

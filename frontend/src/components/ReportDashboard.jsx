@@ -31,6 +31,7 @@ import FuzzyDashboard from './FuzzyDashboard';
 import React, { useEffect } from 'react';
 //import { Card, CardHeader, CardContent } from '@material-ui/core';
 import { makeStyles } from '@mui/styles';
+import Snackbar from '@mui/material/Snackbar';
 
 
 const useStyles = makeStyles((theme) => ({ 
@@ -91,10 +92,47 @@ const useStyles = makeStyles((theme) => ({
         });
     };
     fetchData();
-  }, []); 
+  }, []);
+  const [snackBarState, setSnackBarState] = React.useState({
+    open: false,
+  });
+
+  const handleSnackBarVisibility = (val) => {
+    setSnackBarState(prevState => ({
+      ...prevState,
+      open: val
+    }))
+  }
+  const handleClickAway = () => {
+    // Prevent closing when clicking outside the box
+    handleSnackBarVisibility(true);
+  };
+  useEffect(() => {
+    // Trigger the Snackbar to be open when the component mounts
+    handleSnackBarVisibility(true);
+  }, []);
     
   return (  
     <>
+    {reportFiles.length === 0 && (
+      <Snackbar
+        open={snackBarState.open}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        autoHideDuration={60000}
+        onClose={() => handleSnackBarVisibility(false)}
+      >
+        <Alert
+          onClose={() => handleSnackBarVisibility(false)}
+          severity="info"
+          sx={{ maxHeight: '150px', maxWidth: '40%' }}
+        >
+          {"Enhancements to the view test report details are in progress! As we are implementing new features, please use the “SELECT SIMULATION DATA DIRECTORY” button to select the files you wish to upload. These files should be located within the ‘Airsim’ folder under your Documents folder on your local machine. You can either upload the entire ‘reports’ folder to access all results or choose specific folders for each test you want to upload."}
+        </Alert>
+      </Snackbar>
+    )}
     <Typography variant="h4" fontWeight="bold" style={{
       textAlign: 'center', 
      // marginLeft: '500px',
@@ -108,11 +146,17 @@ const useStyles = makeStyles((theme) => ({
         {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
         {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
       </Container>
-      <Button variant="contained" color="primary" onClick={redirectToFuzzyDashboard} style={{ marginTop: '10px' }}>
-      Go to Fuzzy Dashboard
-      </Button>
+      {reportFiles.length === 0 && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={redirectToFuzzyDashboard}
+          style={{ marginTop: '10px' }}
+        >
+          Go to Fuzzy Dashboard
+        </Button>
+      )}
     </Typography> 
-
     <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-end'}}>
       {reportFiles.map((file) => {
         const parts = file.filename.split('_');
@@ -136,7 +180,8 @@ const useStyles = makeStyles((theme) => ({
                   {!file.contains_fuzzy && <p>Simulation Testing</p>}
                 </CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
-                  <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}>
+                  <Button variant="contained" 
+                    sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }} >
                     View Report
                   </Button>
                 </Box>
@@ -177,7 +222,7 @@ const useStyles = makeStyles((theme) => ({
                 {!file.contains_fuzzy && <p>Simulation Testing</p>}
               </CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
-                <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }}>
+                <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }} onClick={redirectToFuzzyDashboard}>
                   View Report
                 </Button>
               </Box>

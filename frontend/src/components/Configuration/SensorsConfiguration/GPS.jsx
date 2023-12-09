@@ -10,6 +10,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 
 const defaultGps = {
     EphTimeConstant: 0.9,
@@ -26,7 +29,7 @@ const defaultGps = {
   };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(defaultGps) 
+    const[gps, setGps] = React.useState(sensor.gPSObj) 
     
 
     React.useEffect(() => {
@@ -58,10 +61,33 @@ export default function GPS (sensor) {
 
 
     const handleReset = () => {
-        setGps(defaultGps);
-      };
+        setGps(sensor.gPSObj);
+    
+    };
+
+    const [snackBarState, setSnackBarState] = React.useState({
+        open: true,
+    });
+
+    const handleSnackBarVisibility = (val) => {
+        setSnackBarState(prevState => ({
+            ...prevState,
+            open: val
+        }))
+    }
     return(
-        <div>  
+        <div> 
+            <Snackbar open={snackBarState.open} 
+        anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+        }} 
+        autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+        <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+             {"GPS Changes is under Developement !"}
+        </Alert>
+    </Snackbar>
+     
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
                     {gps.Key}
                 </Typography> 
@@ -353,7 +379,7 @@ export default function GPS (sensor) {
                 
                     
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Grid item xs={3}><Button onClick={() => setGps(defaultGps)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={3}><Button onClick={() => setGps(sensor.gPSObj)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
                         <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                     </Grid>  

@@ -13,13 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 export default function Barometer (sensor) {
     console.log('In barometer')
     const [barometer, setBarometer] = React.useState({
-        ...sensor.barometerObj,
-        PressureFactorSigma: '0.001825',
-        PressureFactorTau: '3600',
-        UncorrelatedNoiseSigma: '2.7',
-        UpdateLatency: '0',
-        UpdateFrequency: '50',
-        StartupDelay: '0'
+        ...sensor.barometerObj
     });
     
 

@@ -90,15 +90,28 @@ export default function HorizontalLinearStepper(data) {
     }
     if(activeStep === steps.length -1) {
       mainJson.Drones.map(drone => {
+
         delete drone["id"]
         delete drone["droneName"]
         delete drone.Sensors.Barometer["Key"]
         delete drone.Sensors.Magnetometer["Key"]
         delete drone.Sensors.GPS["Key"]
+        console.log('gps data EphTimeConstant-----', drone.Sensors.GPS["EphTimeConstant"])
+        delete drone.Sensors.GPS["EphTimeConstant"]
+        drone.Sensors.GPS["EpvTimeConstant"] ? delete drone.Sensors.GPS["EpvTimeConstant"]: null
+        drone.Sensors.GPS["EphInitial"] ? delete drone.Sensors.GPS["EphInitial"]: null
+        drone.Sensors.GPS["EpvInitial"] ? delete drone.Sensors.GPS["EpvInitial"]: null
+        drone.Sensors.GPS["EphFinal"] ? delete drone.Sensors.GPS["EphFinal"]: null
+        drone.Sensors.GPS["EpvFinal"] ? delete drone.Sensors.GPS["EpvFinal"]: null
+        drone.Sensors.GPS["EphMin3d"] ? delete drone.Sensors.GPS["EphMin3d"]: null
+        drone.Sensors.GPS["EphMin2d"] ? delete drone.Sensors.GPS["EphMin2d"]: null
+        drone.Sensors.GPS["UpdateLatency"] ? delete drone.Sensors.GPS["UpdateLatency"]: null
+        drone.Sensors.GPS["StartupDelay"] ? delete drone.Sensors.GPS["StartupDelay"]: null
         // delete drone.Cameras.CaptureSettings.map(capt => {
         //   delete capt["key"]
         // })
       })
+
       delete mainJson.environment["time"]
       mainJson.monitors.circular_deviation_monitor["enable"] == true ? delete mainJson.monitors.circular_deviation_monitor["enable"] : delete mainJson.monitors.circular_deviation_monitor
       mainJson.monitors.collision_monitor["enable"] == true ? delete mainJson.monitors.collision_monitor["enable"] : delete mainJson.monitors.collision_monitor
@@ -112,7 +125,7 @@ export default function HorizontalLinearStepper(data) {
       mainJson.monitors.battery_monitor["enable"] == true ? delete mainJson.monitors.battery_monitor["enable"] : delete mainJson.monitors.battery_monitor
       delete mainJson.environment["enableFuzzy"]
       console.log('mainJson-----', JSON.stringify(mainJson))
-      navigate('/dashboard', {
+      navigate('/report-dashboard', {
         state: {mainJson: mainJson}
       })
       fetch('http://127.0.0.1:5000/addTask', { 

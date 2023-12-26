@@ -13,13 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 export default function Barometer (sensor) {
     console.log('In barometer')
     const [barometer, setBarometer] = React.useState({
-        ...sensor.barometerObj,
-        PressureFactorSigma: '0.001825',
-        PressureFactorTau: '3600',
-        UncorrelatedNoiseSigma: '2.7',
-        UpdateLatency: '0',
-        UpdateFrequency: '50',
-        StartupDelay: '0'
+        ...sensor.barometerObj
     });
     
 
@@ -44,6 +38,19 @@ export default function Barometer (sensor) {
             ...prevState,
             [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
         }))
+    }
+
+    const setDefaultBarometer = () => {
+        setBarometer(prevState => ({
+            ...prevState,
+            ...sensor.barometerObj,
+            PressureFactorSigma: '0.001825',
+            PressureFactorTau: '3600',
+            UncorrelatedNoiseSigma: '2.7',
+            UpdateLatency: '0',
+            UpdateFrequency: '50',
+            StartupDelay: '0'
+    }))
     }
 
     return (
@@ -79,7 +86,8 @@ export default function Barometer (sensor) {
                         </Grid>
                     </Grid>
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Button variant="outlined" onClick={closeModal}>Ok</Button> &nbsp;&nbsp;&nbsp;
+                        <Grid item xs={3}><Button onClick={() => setDefaultBarometer()} style={{paddingLeft:'1px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                 </Typography>
             </Box>

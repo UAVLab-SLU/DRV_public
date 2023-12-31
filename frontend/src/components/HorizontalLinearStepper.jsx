@@ -96,7 +96,6 @@ export default function HorizontalLinearStepper(data) {
         delete drone.Sensors.Barometer["Key"]
         delete drone.Sensors.Magnetometer["Key"]
         delete drone.Sensors.GPS["Key"]
-        console.log('gps data EphTimeConstant-----', drone.Sensors.GPS["EphTimeConstant"])
         delete drone.Sensors.GPS["EphTimeConstant"]
         drone.Sensors.GPS["EpvTimeConstant"] ? delete drone.Sensors.GPS["EpvTimeConstant"]: null
         drone.Sensors.GPS["EphInitial"] ? delete drone.Sensors.GPS["EphInitial"]: null
@@ -107,6 +106,11 @@ export default function HorizontalLinearStepper(data) {
         drone.Sensors.GPS["EphMin2d"] ? delete drone.Sensors.GPS["EphMin2d"]: null
         drone.Sensors.GPS["UpdateLatency"] ? delete drone.Sensors.GPS["UpdateLatency"]: null
         drone.Sensors.GPS["StartupDelay"] ? delete drone.Sensors.GPS["StartupDelay"]: null
+        drone.Sensors.Magnetometer["NoiseSigma"] ? delete drone.Sensors.Magnetometer["NoiseSigma"]: null
+        drone.Sensors.Magnetometer["ScaleFactor"] ? delete drone.Sensors.Magnetometer["ScaleFactor"]: null
+        // (drone.Sensors.Magnetometer["NoiseBias"] || drone.Sensors.Magnetometer["NoiseBias"] == 0) ? delete drone.Sensors.Magnetometer["NoiseBias"]: null
+        // drone.Sensors.Magnetometer["UpdateLatency"] ? delete drone.Sensors.Magnetometer["UpdateLatency"]: console.log('its not there')
+        // drone.Sensors.Magnetometer["StartupDelay"] ? delete drone.Sensors.Magnetometer["StartupDelay"]: null
         // delete drone.Cameras.CaptureSettings.map(capt => {
         //   delete capt["key"]
         // })

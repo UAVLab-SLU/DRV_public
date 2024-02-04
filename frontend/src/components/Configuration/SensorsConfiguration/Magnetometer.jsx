@@ -12,8 +12,9 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
 export default function Magnetometer (sensor) {
-    const [magnetometer, setMagnetometer]  = React.useState(sensor.magnetometerObj)
-
+    const [magnetometer, setMagnetometer]  = React.useState({
+        ...sensor.magnetometerObj
+    });
     const handleChangeSwitch = (val) => {
         setMagnetometer(prevState => ({
                 ...prevState,
@@ -49,6 +50,20 @@ export default function Magnetometer (sensor) {
             ...prevState,
             open: val
         }))
+    }
+
+    const setDefaultMagnetometer = () => {
+        setMagnetometer(prevState => ({
+            ...prevState,
+            ...sensor.magnetometerObj,
+            UpdateFrequency: '50',
+            NoiseSigma: '0.0001',
+            NoiseBias: '0.001',
+            UpdateLatency: '0',
+            StartupDelay: '0',
+            ScaleFactor: '1'
+        }))
+        
     }
 
     return(
@@ -166,7 +181,7 @@ export default function Magnetometer (sensor) {
                         </Grid>
                     </Grid>    
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Grid item xs={3}><Button onClick={() => handleReset()} style={{paddingLeft:'1px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={3}><Button onClick={() => setDefaultMagnetometer()} style={{paddingLeft:'1px', margin: '5px'}}> Reset to Default </Button></Grid>
                         <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                 </Typography>  

@@ -158,6 +158,7 @@ class SimulationTaskManager:
                 json.dump(raw_request_json, f, indent=4)
 
     def __populate_drone_and_mission_settings(self, new_setting_dot_json, raw_request_json):
+        print(new_setting_dot_json)
         for single_drone_setting in raw_request_json["Drones"]:
             # Must-exist params for setting.json or mission dispatch
             single_drone_setting_copy = copy.deepcopy(single_drone_setting)
@@ -180,10 +181,17 @@ class SimulationTaskManager:
 
             diff_dict = self.__find_diff(single_drone_setting_copy, self.__DEFAULT_DRONE_FULL_LENGTH)
 
-            # If Barometer settings exist in the input JSON, directly use them.
-            if "Sensors" in single_drone_setting and "Barometer" in single_drone_setting["Sensors"]:
+            if "Sensors" in single_drone_setting:
                 diff_dict["Sensors"] = diff_dict.get("Sensors", {})
-                diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
+                if "Barometer" in single_drone_setting["Sensors"]:
+                    diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
+                if "Magnetometer" in single_drone_setting["Sensors"]:
+                    diff_dict["Sensors"]["Magnetometer"] = single_drone_setting["Sensors"]["Magnetometer"]
+                    print("Magnetometer", single_drone_setting["Sensors"]["Magnetometer"])
+
+                print("Sensors", diff_dict["Sensors"])
+
+                
 
             new_one_drone_json = {
                 drone_name: dict(FlightController="SimpleFlight", X=drone_x, Y=drone_y, Z=drone_z)

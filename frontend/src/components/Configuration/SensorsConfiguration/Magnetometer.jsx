@@ -65,7 +65,7 @@ export default function Magnetometer (sensor) {
     </Snackbar>
             <Box>
                 <Typography variant="h6" component="h2">
-                    {magnetometer.Key || "Magnetometer"}
+                    {magnetometer.Key || ""}
                 </Typography> 
                 <Typography>
                     <Grid container spacing={2} direction="row">

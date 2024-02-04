@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import tooltip from '@mui/material/Tooltip';
 import Tooltip from '@mui/material/Tooltip';
 
 export default function Barometer (sensor) {

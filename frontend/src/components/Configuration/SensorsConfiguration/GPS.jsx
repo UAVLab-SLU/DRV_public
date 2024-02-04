@@ -30,18 +30,26 @@ export default function GPS (sensor) {
 
     React.useEffect(() => {
         sensor.updateJson(gps, sensor.name)  
-          }, [gps]);
+          }, [gps]); 
+
+    React.useEffect(() => {
+            setGps({
+              ...gps, 
+              ...defaultGps
+            });
+          }, []); 
 
     const closeModal = () => {
         sensor.closeModal(gps, sensor.name)
     }
 
-    const handleChangeSwitch = (val) => {
-        setGps(prevState => ({
-                ...prevState,
-                Enabled: val.target.checked
-        }))
-    }  
+    //const handleChangeSwitch = (val) => {
+     //   setGps(prevState => ({
+       //         ...prevState,
+        //        Enabled: val.target.checked
+       // }))
+    //} 
+      
     const tooltips = {
         EphTimeConstant: "Tooltip text...",
         EpvTimeConstant: "Tooltip text...",
@@ -61,7 +69,7 @@ export default function GPS (sensor) {
     return(
         <div>  
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
-                    {gps.Key}
+                    {gps.Key || "GPS"}
                 </Typography> 
 
                 <Grid container spacing={2} direction="row">

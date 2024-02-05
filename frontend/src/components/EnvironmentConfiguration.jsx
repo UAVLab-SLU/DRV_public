@@ -295,39 +295,32 @@ export default function EnvironmentConfiguration (env) {
         }
     }    
     //new added
-    useEffect(() => {
-        const interval = setInterval(() => {
-          fetch('/currentRunning')
-            .then(res => res.json())
-            .then(data => setBackendInfo(data));
-        }, 2000);
-      
-        return () => clearInterval(interval);
-      }, []);    
-      
-      //new added  
-      useEffect(() => {
-
-        console.log(`
-          <div class="status ${backendInfo.backendStatus}">
-            ${backendInfo.backendStatus}
-          </div>
-          
-          // CSS styles
-      
-        `); 
-        const style = document.createElement('style');
-  
-        style.innerHTML = `
-          .status {
-            // CSS styles  
-          }
-        `;
-        
-        document.head.appendChild(style);
-      
-      }, [backendInfo.backendStatus]); 
-
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //       fetch('http://localhost:5000/currentRunning')
+    //         .then((res) => {
+    //           if (!res.ok) {
+    //             throw new Error('No response from server/something went wrong');
+    //           }
+    //           return res.text();
+    //         })
+    //         .then((data) => {
+    //           const [status, queueSize] = data.split(', ');
+    //           console.log('Simulation Status,', status, 'Queue Size:', queueSize);
+    //           if (status === "None") {
+    //             setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
+    //           } else if (status === "Running") {
+    //             setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
+    //           }
+    //         })
+    //         .catch((error) => {
+    //           console.error('Error fetching data:', error);
+    //           setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
+    //         });
+    //     }, 2000);
+    
+    //     return () => clearInterval(interval);
+    //   }, []);
       
 
 //     return (
@@ -759,41 +752,42 @@ const handleSnackBarVisibility = (val) => {
                             </GoogleMap>
                         </LoadScript>
                     </div> :null}
-                    <Typography variant="h6"> Status:</Typography>  
-                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
-                            {/* Show spinner if status is running */}
-                            <Typography>   
-                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-                            </Typography>  
-                        </Box>
-                        <div style={{position: 'relative'}}> 
-                            <div style={{position: 'absolute', left: 380, top: -80}}>
-                                <Typography>  
-                                    Queued Tasks: {backendInfo.numQueuedTasks}
-                                </Typography>    
-                            </div> 
-                        </div>
+
+                    {/* <Typography variant="h6"> Status:</Typography>  
+                    <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+                         Show spinner if status is running
+                        <Typography>   
+                            Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+                        </Typography>  
+                    </Box>
+                    <div style={{position: 'relative'}}> 
+                        <div style={{position: 'absolute', left: 380, top: -80}}>
+                            <Typography>  
+                                Queued Tasks: {backendInfo.numQueuedTasks}
+                            </Typography>    
+                        </div> 
+                    </div> */}
                     </Typography>
                     {/* </Container> */}
-                 </Box>
-                 <Typography 
-                    animate 
-                    variants={{ 
-                        hidden: { opacity: 0 }, 
-                        visible: { opacity: 1 } 
-                        }} 
-                        > 
-                </Typography> 
-                <Box mb={2}> </Box>
-                <Typography 
-                    variant="h6" 
-                    sx={{ 
-                        opacity: 0, 
-                        transition: 'opacity 0.5s ease-in-out'  
-                        }} 
-                        > 
+                    </Box>
+                    <Typography 
+                        animate 
+                        variants={{ 
+                            hidden: { opacity: 0 }, 
+                            visible: { opacity: 1 } 
+                            }} 
+                            > 
+                    </Typography> 
+                    <Box mb={2}> </Box>
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            opacity: 0, 
+                            transition: 'opacity 0.5s ease-in-out'  
+                            }} 
+                            > 
                         {backendInfo.backendStatus}  
-                </Typography>
+                    </Typography>
             </div>
 )
 }

@@ -187,11 +187,6 @@ class SimulationTaskManager:
                     diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
                 if "Magnetometer" in single_drone_setting["Sensors"]:
                     diff_dict["Sensors"]["Magnetometer"] = single_drone_setting["Sensors"]["Magnetometer"]
-                    print("Magnetometer", single_drone_setting["Sensors"]["Magnetometer"])
-
-                print("Sensors", diff_dict["Sensors"])
-
-                
 
             new_one_drone_json = {
                 drone_name: dict(FlightController="SimpleFlight", X=drone_x, Y=drone_y, Z=drone_z)

@@ -12,7 +12,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
 export default function Magnetometer (sensor) {
-    const [magnetometer, setMagnetometer]  = React.useState(sensor.magnetometerObj)
+    const [magnetometer, setMagnetometer]  = React.useState(sensor.magnetometerObj || {})
 
     const handleChangeSwitch = (val) => {
         setMagnetometer(prevState => ({

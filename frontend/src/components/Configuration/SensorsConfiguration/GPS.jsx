@@ -10,34 +10,34 @@ import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 
 
-const defaultGps = {
-    EphTimeConstant: 0.9,
-    EpvTimeConstant: 0.9,
-    EphInitial: 25, 
-    EpvInitial: 25,
-    EphFinal: 0.1,
-    EpvFinal: 0.1, 
-    EphMin3d: 3,
-    EphMin2d: 4,
-    UpdateLatency: 0.2,
-    UpdateFrequency: 50,
-    StartupDelay: 1  
-  };
+//const defaultGps = {
+  //  EphTimeConstant: 0.9,
+    //EpvTimeConstant: 0.9,
+  //  EphInitial: 25, 
+   // EpvInitial: 25,
+ //   EphFinal: 0.1,
+  //  EpvFinal: 0.1, 
+  //  EphMin3d: 3,
+//    EphMin2d: 4,
+ //   UpdateLatency: 0.2,
+ //   UpdateFrequency: 50,
+ //   StartupDelay: 1  
+ // };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(defaultGps) 
+    const[gps, setGps] = React.useState(sensor.gpsObj || {}) 
     
 
     React.useEffect(() => {
         sensor.updateJson(gps, sensor.name)  
           }, [gps]); 
 
-    React.useEffect(() => {
-            setGps({
-              ...gps, 
-              ...defaultGps
-            });
-          }, []); 
+    //React.useEffect(() => {
+      //      setGps({
+        //      ...gps, 
+          //    ...defaultGps
+       //     });
+        //  }, []); 
 
     const closeModal = () => {
         sensor.closeModal(gps, sensor.name)
@@ -63,13 +63,16 @@ export default function GPS (sensor) {
     } 
 
 
-    const handleReset = () => {
-        setGps(defaultGps);
+    const handleReset = () => {  
+        setGps(sensor.gpsObj);
       };
+    
+   // });  
+
     return(
         <div>  
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
-                    {gps.Key || "GPS"}
+                    {gps.Key || ""}
                 </Typography> 
 
                 <Grid container spacing={2} direction="row">
@@ -205,7 +208,7 @@ export default function GPS (sensor) {
                 
                     
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Grid item xs={3}><Button onClick={() => setGps(defaultGps)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={3}><Button onClick={() =>  handleReset()} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
                         <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                     </Grid>  

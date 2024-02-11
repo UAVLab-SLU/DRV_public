@@ -13,9 +13,9 @@ import Snackbar from '@mui/material/Snackbar';
 
 
 //const defaultBarometer = {   
-  //      PressureFactorSigma: '0.001825',
+       //   PressureFactorSigma: '0.001825',
   //      PressureFactorTau: '3600',
-  //      UncorrelatedNoiseSigma: '2.7',
+        //  UncorrelatedNoiseSigma: '2.7',
  ///      UpdateLatency: '0',
  //       UpdateFrequency: '50',
    //     StartupDelay: '0'
@@ -23,7 +23,9 @@ import Snackbar from '@mui/material/Snackbar';
 //}  
 
 export default function Barometer (sensor) {
-    console.log('In barometer')
+    console.log('In barometer') 
+    console.log(sensor.barometerObj);
+
     const [barometer, setBarometer] = React.useState(sensor.barometerObj);
 
     //    ...sensor.barometerObj,
@@ -67,12 +69,22 @@ export default function Barometer (sensor) {
         sensor.closeModal(barometer, sensor.name)
     }
 
-    const handleChange = (val) => {
-        setBarometer(prevState => ({
-            ...prevState,
-            [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
-        }))
-    } 
+    //const handleChange = (val) => {
+      //  setBarometer(prevState => ({
+        //    ...prevState,
+          //  [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
+       // }))
+   // }  
+
+   const handleChange = (event) => {
+    const { id, value } = event.target;
+  
+    setBarometer((prevBarometer) => ({
+      ...prevBarometer,
+      [id]: value,
+    }));
+  };
+  
 
     const handleReset = () => {  
         setBarometer(sensor.barometerObj);
@@ -121,46 +133,32 @@ export default function Barometer (sensor) {
                         </Tooltip>   
                     </Grid>
                     <Grid item xs={3}>  
-                        <TextField 
-                            id="NoiseSigma" 
-                            label="Noise Sigma" 
-                            type="number" 
-                            InputProps={{  
-                                inputProps: { min: 0, max: Infinity, step: 0.1 },  
-                                onChange: (e) => {  
-                                    let value = parseFloat(e.target.value);   
-                                    value = Math.round(value / 0.1) * 0.1; 
-                                    value = Math.min(Math.max(value, 0), Infinity) 
-                                    // Format the value to a string with 2 decimal places  
-                                    const formattedValue = value.toFixed(2);  
-                                    setBarometer({ ...barometer, UncorrelatedNoiseSigma: formattedValue });  
-                                },  
-                            }}      
-                            value={barometer.UncorrelatedNoiseSigma} 
-                            onChange={handleChange}  
-                            variant="standard"      
-                        />  
+                    <TextField 
+                    id="UncorrelatedNoiseSigma" 
+                    label="Noise Sigma" 
+                    type="number" 
+                    InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={barometer.UncorrelatedNoiseSigma} 
+                    onChange={handleChange} 
+                    variant="standard" 
+                    />
                     </Grid>     
                     <Grid item xs={3}>   
-                        <TextField  
-                            id="PressureFactorSigma"  
-                            label="Pressure Factor Sigma"  
-                            type="number"  
-                            InputProps={{  
-                                inputProps: { min: 0, max: Infinity, step: 0.001 },  
-                                onChange: (e) => {  
-                                    let value = parseFloat(e.target.value);   
-                                    value = Math.round(value / 0.001) * 0.001; 
-                                    value = Math.min(Math.max(value, 0), Infinity) 
-                                    // Format the value to a string with 2 decimal places  
-                                    const formattedValue = value.toFixed(3);  
-                                    setBarometer({ ...barometer, PressureFactorSigma: formattedValue });  
-                                },  
-                            }}    
-                            value={barometer.PressureFactorSigma} 
-                            onChange={handleChange}  
-                            variant="standard" 
-                        />     
+                    <TextField 
+                    id="PressureFactorSigma" 
+                    label="Pressure Factor Sigma" 
+                    type="number" 
+                    InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.00001 },  
+                    
+                    }} 
+                    value={barometer.PressureFactorSigma} 
+                    onChange={handleChange} 
+                    variant="standard" 
+                    />
                     </Grid> 
                     <Grid item xs={3}>
                         <TextField    

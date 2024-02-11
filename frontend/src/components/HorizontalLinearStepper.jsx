@@ -106,11 +106,6 @@ export default function HorizontalLinearStepper(data) {
         drone.Sensors.GPS["EphMin2d"] ? delete drone.Sensors.GPS["EphMin2d"]: null
         drone.Sensors.GPS["UpdateLatency"] ? delete drone.Sensors.GPS["UpdateLatency"]: null
         drone.Sensors.GPS["StartupDelay"] ? delete drone.Sensors.GPS["StartupDelay"]: null
-        drone.Sensors.Magnetometer["NoiseSigma"] ? delete drone.Sensors.Magnetometer["NoiseSigma"]: null
-        drone.Sensors.Magnetometer["ScaleFactor"] ? delete drone.Sensors.Magnetometer["ScaleFactor"]: null
-        drone.Sensors.Magnetometer["NoiseBias"] ? delete drone.Sensors.Magnetometer["NoiseBias"]: null
-        drone.Sensors.Magnetometer["UpdateLatency"] ? delete drone.Sensors.Magnetometer["UpdateLatency"]: console.log('its not there')
-        drone.Sensors.Magnetometer["StartupDelay"] ? delete drone.Sensors.Magnetometer["StartupDelay"]: null
         // delete drone.Cameras.CaptureSettings.map(capt => {
         //   delete capt["key"]
         // })

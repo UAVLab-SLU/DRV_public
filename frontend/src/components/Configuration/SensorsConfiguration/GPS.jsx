@@ -25,7 +25,7 @@ import Tooltip from '@mui/material/Tooltip';
  // };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(sensor.gpsObj || {}) 
+    const[gps, setGps] = React.useState(sensor.gPSObj || {}) 
     
 
     React.useEffect(() => {
@@ -64,7 +64,7 @@ export default function GPS (sensor) {
 
 
     const handleReset = () => {  
-        setGps(sensor.gpsObj);
+        setGps(sensor.gPSObj);
       };
     
    // });  

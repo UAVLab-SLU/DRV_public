@@ -55,12 +55,14 @@ export default function GPS (sensor) {
         EpvTimeConstant: "Tooltip text...",
       }
 
-    const handleChange = (val) => {   
-        setGps(prevState => ({
-            ...prevState,
-            [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
-        }));  
-    } 
+      const handleChange = (event) => {
+        const { id, value } = event.target;
+      
+        setGps((prevGps) => ({
+          ...prevGps,
+          [id]: value,
+        }));
+      };
 
 
     const handleReset = () => {  
@@ -93,14 +95,29 @@ export default function GPS (sensor) {
         
 
          <Grid item xs={3}>
-                <TextField id="EphTimeConstant" onChange={handleChange} label="EphTimeConstant" type="number" variant="standard" value={gps.EphTimeConstant}/>
+                <TextField id="EphTimeConstant" label="EphTimeConstant" type="number" InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EphTimeConstant} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid> 
             
          </Tooltip>  
          
          <Tooltip title={tooltips.EpvTimeConstant}>  
          <Grid item xs={3}>
-                <TextField id="EpvTimeConstant" onChange={handleChange} label="EpvTimeConstant" type="number" variant="standard" value={gps.EpvTimeConstant}/>
+                <TextField id="EpvTimeConstant" label="EpvTimeConstant" type="number"  
+                 InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EpvTimeConstant} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid>  
 
          </Tooltip>    
@@ -114,11 +131,26 @@ export default function GPS (sensor) {
          </Grid> 
 
          <Grid item xs={3}>
-                <TextField id="EphFinal" onChange={handleChange} label="EphFinal" type="number" variant="standard" value={gps.EphFinal}/>
+                <TextField id="EphFinal" label="EphFinal" type="number" InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EphFinal} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid>    
 
          <Grid item xs={2.9}>
-                <TextField id="EpvFinal" onChange={handleChange} label="EpvFinal" type="number" variant="standard" value={gps.EpvFinal} style={{ width: '85%' }}/>
+                <TextField id="EpvFinal" label="EpvFinal" type="number"  
+                InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EpvFinal} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid> 
 
          <Grid item xs={2.9}>
@@ -192,7 +224,15 @@ export default function GPS (sensor) {
                     </Grid> 
 
                     <Grid item xs={4.01}>
-                            <TextField id="UpdateLatency" onChange={handleChange} label="Update Latency (Hz)" type="number" variant="standard" value={gps.UpdateLatency} style={{ width: '155%' }}/>
+                            <TextField id="UpdateLatency" label="Update Latency (Hz)" type="number" style={{ width: '150%' }} 
+                            InputProps={{  
+                                inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.UpdateLatency} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
                     </Grid>
 
                       </Grid>  

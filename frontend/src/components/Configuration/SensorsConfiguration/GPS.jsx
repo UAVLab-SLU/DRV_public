@@ -1,4 +1,3 @@
-
 import * as React from 'react'
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -10,86 +9,72 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
 
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 
-
-const defaultGps = {
-    EphTimeConstant: 0.9,
-    EpvTimeConstant: 0.9,
-    EphInitial: 25, 
-    EpvInitial: 25,
-    EphFinal: 0.1,
-    EpvFinal: 0.1, 
-    EphMin3d: 3,
-    EphMin2d: 4,
-    UpdateLatency: 0.2,
-    UpdateFrequency: 50,
-    StartupDelay: 1  
-  };
+//const defaultGps = {
+  //  EphTimeConstant: 0.9,
+    //EpvTimeConstant: 0.9,
+  //  EphInitial: 25, 
+   // EpvInitial: 25,
+ //   EphFinal: 0.1,
+  //  EpvFinal: 0.1, 
+  //  EphMin3d: 3,
+//    EphMin2d: 4,
+ //   UpdateLatency: 0.2,
+ //   UpdateFrequency: 50,
+ //   StartupDelay: 1  
+ // };
 
 export default function GPS (sensor) {
-    const[gps, setGps] = React.useState(sensor.gPSObj) 
+    const[gps, setGps] = React.useState(sensor.gPSObj || {}) 
     
 
     React.useEffect(() => {
         sensor.updateJson(gps, sensor.name)  
-          }, [gps])
+          }, [gps]); 
+
+    //React.useEffect(() => {
+      //      setGps({
+        //      ...gps, 
+          //    ...defaultGps
+       //     });
+        //  }, []); 
 
     const closeModal = () => {
         sensor.closeModal(gps, sensor.name)
     }
 
-    const handleChangeSwitch = (val) => {
-        setGps(prevState => ({
-                ...prevState,
-                Enabled: val.target.checked
-        }))
-    }  
+    //const handleChangeSwitch = (val) => {
+     //   setGps(prevState => ({
+       //         ...prevState,
+        //        Enabled: val.target.checked
+       // }))
+    //} 
+      
     const tooltips = {
         EphTimeConstant: "Tooltip text...",
         EpvTimeConstant: "Tooltip text...",
-        // etc for other fields
       }
 
-    const handleChange = (val) => {   
-        setGps(prevState => ({
-            ...prevState,
-            [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
-        }));  
-    } 
+      const handleChange = (event) => {
+        const { id, value } = event.target;
+      
+        setGps((prevGps) => ({
+          ...prevGps,
+          [id]: value,
+        }));
+      };
 
 
-    const handleReset = () => {
+    const handleReset = () => {  
         setGps(sensor.gPSObj);
+      };
     
-    };
+   // });  
 
-    const [snackBarState, setSnackBarState] = React.useState({
-        open: true,
-    });
-
-    const handleSnackBarVisibility = (val) => {
-        setSnackBarState(prevState => ({
-            ...prevState,
-            open: val
-        }))
-    }
     return(
-        <div> 
-            <Snackbar open={snackBarState.open} 
-        anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-        }} 
-        autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
-        <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
-             {"GPS Changes is under Developement !"}
-        </Alert>
-    </Snackbar>
-     
+        <div>  
             <Typography variant="h6" component="h2" style={{ marginBottom: '5px' }}>
-                    {gps.Key}
+                    {gps.Key || ""}
                 </Typography> 
 
                 <Grid container spacing={2} direction="row">
@@ -109,166 +94,72 @@ export default function GPS (sensor) {
             <Tooltip title={tooltips.EphTimeConstant}>    
         
 
-            <Grid item xs={3}> 
-            <TextField 
-            id="EphTimeConstant"
-            label="EphTimeConstant"
-            type="number"
-            InputProps={{
-                inputProps: { min: 0, max: 100, step: 0.1 },
-                onChange: (e) => {
-                  let value = parseFloat(e.target.value);
-                  value = Math.round(value / 0.1) * 0.1;
-                  value = Math.min(Math.max(value, 0), 100);
-        
-                  // Format the value to a string with 2 decimal places
-                  const formattedValue = value.toFixed(2);
-        
-                  setGps({ ...gps, EphTimeConstant: formattedValue });
-                },
-              }}
-            value={gps.EphTimeConstant}
-            onChange={handleChange} 
-            variant="standard" 
-            //style={{ marginBottom: '16px' }}  
-            style={{ width: 160 }}
-            /> 
-            </Grid> 
+         <Grid item xs={3}>
+                <TextField id="EphTimeConstant" label="EphTimeConstant" type="number" InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EphTimeConstant} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
+         </Grid> 
             
          </Tooltip>  
          
          <Tooltip title={tooltips.EpvTimeConstant}>  
-         <Grid item xs ={3}> 
-         <TextField 
-         id="EpvTimeConstant"
-         label="EpvTimeConstant"
-         type="number"
-         InputProps={{
-            inputProps: { min: 0, max: 100, step: 0.1 },
-            onChange: (e) => {
-              let value = parseFloat(e.target.value);
-              value = Math.round(value / 0.1) * 0.1;
-              value = Math.min(Math.max(value, 0), 100);
-    
-              // Format the value to a string with 2 decimal places
-              const formattedValue = value.toFixed(2);
-    
-              setGps({ ...gps, EpvTimeConstant: formattedValue });
-            },
-          }}
-         value={gps.EpvTimeConstant}
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-
-         />   
+         <Grid item xs={3}>
+                <TextField id="EpvTimeConstant" label="EpvTimeConstant" type="number"  
+                 InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EpvTimeConstant} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid>  
+
          </Tooltip>    
-         <Grid item xs ={3}>
-         <TextField 
-         id="EphInitial"
-         label="EphInitial"
-         type="number"
-         InputProps={{ inputProps: { min: 0, max: Infinity } }} 
-         value={gps.EphInitial}
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-
-         />    
+         <Grid item xs={3}>
+                <TextField id="EphInitial" onChange={handleChange} label="EphInitial" type="number" variant="standard" value={gps.EphInitial}/>
          </Grid>  
-         <Grid item xs ={3}>
-         <TextField 
-         id="EpvInitial"
-         label="EpvInitial"
-         type="number"
-         InputProps={{ inputProps: { min: 0, max: Infinity} }} 
-         value={gps.EpvInitial}
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-         />    
-         </Grid>        
+         <Grid item xs={3}>
+                <TextField id="EpvInitial" onChange={handleChange} label="EpvIntial" type="number" variant="standard" value={gps.EpvInitial}/>
+         </Grid>     
 
          </Grid> 
 
-
-         <Grid item xs ={3}>
-         <TextField 
-         id="EphFinal"
-         label="EphFinal"
-         type="number"
-         InputProps={{
-            inputProps: { min: 0, max: 100, step: 0.1 },
-            onChange: (e) => {
-              let value = parseFloat(e.target.value);
-              value = Math.round(value / 0.1) * 0.1;
-              value = Math.min(Math.max(value, 0), 100);
-    
-              // Format the value to a string with 2 decimal places
-              const formattedValue = value.toFixed(2);
-    
-              setGps({ ...gps, EphFinal: formattedValue });
-            },
-          }}
-         value={gps.EphFinal}
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-         />    
+         <Grid item xs={3}>
+                <TextField id="EphFinal" label="EphFinal" type="number" InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EphFinal} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid>    
 
-         <Grid item xs = {3}> 
-         <TextField 
-         id="EpvFinal"
-         label="EpvFinal"
-         type="number" 
-         InputProps={{
-            inputProps: { min: 0, max: 100, step: 0.1 },
-            onChange: (e) => {
-              let value = parseFloat(e.target.value);
-              value = Math.round(value / 0.1) * 0.1;
-              value = Math.min(Math.max(value, 0), 100);
-    
-              // Format the value to a string with 2 decimal places
-              const formattedValue = value.toFixed(2);
-    
-              setGps({ ...gps, EpvFinal: formattedValue });
-            },
-          }}
-         value={gps.EpvFinal}
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-         />    
+         <Grid item xs={2.9}>
+                <TextField id="EpvFinal" label="EpvFinal" type="number"  
+                InputProps={{ 
+                        inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.EpvFinal} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
          </Grid> 
 
-         <Grid item xs={3}> 
-         <TextField  
-         id="EphMin3d" 
-         label="EphMin3d" 
-         type="number" 
-         InputProps={{ inputProps: {min: 0, max: Infinity } }} 
-         value={gps.EphMin3d} 
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-         
-         />    
+         <Grid item xs={2.9}>
+                <TextField id="EphMin3d" onChange={handleChange} label="EphMin3d" type="number" variant="standard" value={gps.EphMin3d} />
          </Grid> 
 
-         <Grid item xs={3}> 
-         <TextField  
-         id="EphMin2d" 
-         label="EphMin2d" 
-         type="number" 
-         InputProps={{ inputProps: {min: 0, max: Infinity } }} 
-         value={gps.EphMin2d} 
-         onChange={handleChange} 
-         variant="standard" 
-         style={{ width: 160 }}
-         />  
-         </Grid>    
+         <Grid item xs={3}>
+                <TextField id="EphMin2d" onChange={handleChange} label="EphMin2d" type="number" variant="standard" value={gps.EphMin2d}/>
+         </Grid> 
 
          
          <Grid/>  
@@ -328,44 +219,22 @@ export default function GPS (sensor) {
                     
 
 
-                    <Grid item xs={4}> 
-                     <TextField   
-                      id="StartupDelay"  
-                      label="StartupDelay (s)"  
-                      type="number"  
-                      InputProps={{ inputProps: {min: 0, max: Infinity } }}  
-                      value={gps.StartupDelay}  
-                      onChange={handleChange}   
-                      variant="standard"  
-                      style={{ width: 160 }} 
-                      />   
-                      
-                      </Grid>    
-    
-                      <Grid item xs={4}>  
-                      <TextField   
-                      id="UpdateLatency"  
-                      label="UpdateLatency (s)"  
-                      type="number"  
-                      InputProps={{
-                        inputProps: { min: 0, max: 100, step: 0.1 },
-                        onChange: (e) => {
-                          let value = parseFloat(e.target.value);
-                          value = Math.round(value / 0.1) * 0.1;
-                          value = Math.min(Math.max(value, 0), 100);
-                
-                          // Format the value to a string with 2 decimal places
-                          const formattedValue = value.toFixed(2);
-                
-                          setGps({ ...gps, UpdateLatency: formattedValue });
-                        },
-                      }}  
-                      value={gps.UpdateLatency} 
-                      onChange={handleChange}  
-                      variant="standard"  
-                      style={{ width: 160 }} 
-                      />   
-                      </Grid>    
+                    <Grid item xs={3.99}>
+                            <TextField id="StartupDelay" onChange={handleChange} label="Startup Delay (s)" type="number" variant="standard" value={gps.StartupDelay} style={{ width: '150%' }}/>
+                    </Grid> 
+
+                    <Grid item xs={4.01}>
+                            <TextField id="UpdateLatency" label="Update Latency (Hz)" type="number" style={{ width: '150%' }} 
+                            InputProps={{  
+                                inputProps: { min: 0, max: Infinity, step: 0.1 },  
+                    
+                    }} 
+                    value={gps.UpdateLatency} 
+                    onChange={handleChange} 
+                    variant="standard"  
+                    />
+                    </Grid>
+
                       </Grid>  
                       </Grid>  
                       </Grid> 
@@ -379,7 +248,7 @@ export default function GPS (sensor) {
                 
                     
                     <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
-                        <Grid item xs={3}><Button onClick={() => setGps(sensor.gPSObj)} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
+                        <Grid item xs={3}><Button onClick={() =>  handleReset()} style={{paddingLeft:'25px', margin: '5px'}}> Reset to Default </Button></Grid>
                         <Grid item xs={9}><Button variant="outlined" onClick={closeModal} style={{float:'right'}}>Ok</Button> &nbsp;&nbsp;&nbsp;</Grid>
                     </Grid>
                     </Grid>  

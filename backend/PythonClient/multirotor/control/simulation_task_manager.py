@@ -180,6 +180,27 @@ class SimulationTaskManager:
 
             diff_dict = self.__find_diff(single_drone_setting_copy, self.__DEFAULT_DRONE_FULL_LENGTH)
 
+            
+            #If GPS settings exist in the input JSON, add them to the drone configuration
+            if "Sensors" in single_drone_setting and "GPS" in single_drone_setting["Sensors"]:
+                gps_settings = {
+                    "EphTimeConstant": single_drone_setting["Sensors"]["GPS"].get("EphTimeConstant", 0.9),
+                    "EpvTimeConstant": single_drone_setting["Sensors"]["GPS"].get("EpvTimeConstant", 0.9),
+                    "EphInitial": single_drone_setting["Sensors"]["GPS"].get("EphInitial", 25),
+                    "EpvInitial": single_drone_setting["Sensors"]["GPS"].get("EpvInitial", 25),
+                    "EphFinal": single_drone_setting["Sensors"]["GPS"].get("EphFinal", 0.1),
+                    "EpvFinal": single_drone_setting["Sensors"]["GPS"].get("EpvFinal", 0.1),
+                    "EphMin3d": single_drone_setting["Sensors"]["GPS"].get("EphMin3d", 3),
+                    "EphMin2d": single_drone_setting["Sensors"]["GPS"].get("EphMin2d", 4),
+                    "UpdateLatency": single_drone_setting["Sensors"]["GPS"].get("UpdateLatency", 0.2),
+                    "UpdateFrequency": single_drone_setting["Sensors"]["GPS"].get("UpdateFrequency", 50),
+                    "StartupDelay": single_drone_setting["Sensors"]["GPS"].get("StartupDelay", 1),
+                }
+
+                if "Sensors" not in diff_dict:
+                    diff_dict["Sensors"] = {}
+                diff_dict["Sensors"]["GPS"] = gps_settings
+
             # If Barometer settings exist in the input JSON, directly use them.
             if "Sensors" in single_drone_setting and "Barometer" in single_drone_setting["Sensors"]:
                 diff_dict["Sensors"] = diff_dict.get("Sensors", {})

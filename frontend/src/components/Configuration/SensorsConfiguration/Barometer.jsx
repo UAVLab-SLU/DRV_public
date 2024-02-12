@@ -165,21 +165,11 @@ export default function Barometer (sensor) {
                         id="UpdateLatency"   
                         label="Update Latency (s)"   
                         type="number"   
-                        InputProps={{ 
-                        inputProps: { min: 0, max: Infinity, step: 0.1 }, 
-                        onChange: (e) => { 
-                            let value = parseFloat(e.target.value); 
-                            value = Math.round(value / 0.1) * 0.1; 
-                            value = Math.min(Math.max(value, 0), Infinity); 
-                            // Format the value to a string with 2 decimal places 
-                            const formattedValue = value.toFixed(2); 
-                            setBarometer({ ...barometer, UpdateLatency: formattedValue }); 
-                        }, 
-                        }}   
-                        value={barometer.UpdateLatency}  
-                        onChange={handleChange}   
-                        variant="standard"   
-                        />    
+                        InputProps={{ inputProps: {min: 0, max: Infinity } }}   
+                            value={barometer.UpdateLatency}   
+                            onChange={handleChange}    
+                            variant="standard"   
+                        />     
                     </Grid>  
                     <Grid item xs={3}>
                         <TextField    

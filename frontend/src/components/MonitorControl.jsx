@@ -368,7 +368,9 @@ export default function MonitorControl (monJson) {
             }
         }))
     }
-
+    const environmentJson = (event) => {
+        env.environmentJson(event, env.id);
+    }
     const singleMonitors = [
         {
             name: "Collision",
@@ -601,38 +603,38 @@ export default function MonitorControl (monJson) {
       return(
         <div>
         <div>
-        <input
-          type="checkbox"
-          name="timeOfDay"
-          checked={checkboxValues.timeOfDay}
-          onChange={handleCheckboxChange}
-        />
+            <input
+            type="checkbox"
+            name="timeOfDay"
+            checked={checkboxValues.timeOfDay}
+            onChange={handleCheckboxChange}
+            />
         <label htmlFor="timeOfDay">Time of Day</label>
-        <p>Description: Choose the time of day for the weather report.</p>
+            <p>Description: Choose the time of day for the weather report.</p>
         </div>
 
-      <div>
-        <input
-          type="checkbox"
-          name="position"
-          checked={checkboxValues.position}
-          onChange={handleCheckboxChange}
-        />
+        <div>
+            <input
+                type="checkbox"
+                name="position"
+                checked={checkboxValues.position}
+                onChange={handleCheckboxChange}
+            />
         <label htmlFor="position">Position</label>
         <p>Description: Select the geographical position for the weather report.</p>
-      </div>
+        </div>
 
-      <div>
-        <input
-          type="checkbox"
-          name="wind"
-          checked={checkboxValues.wind}
-          onChange={handleCheckboxChange}
-        />
-        <label htmlFor="wind">Wind</label>
-        <p>Description: Indicate whether wind conditions should be included in the report.</p>
-      </div>
-      </div>
+        <div>
+            <input
+            type="checkbox"
+            name="wind"
+            checked={checkboxValues.wind}
+            onChange={handleCheckboxChange}
+            />
+            <label htmlFor="wind">Wind</label>
+            <p>Description: Indicate whether wind conditions should be included in the report.</p>
+        </div>
+        </div>
       );
       };
     

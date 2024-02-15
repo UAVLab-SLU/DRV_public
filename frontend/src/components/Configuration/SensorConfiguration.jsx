@@ -56,9 +56,9 @@ export default function SensorConfiguration (param) {
             Enabled: true,
             NoiseSigma: 0.005,
             ScaleFactor: 1,
-            NoiseBias: 0, //default value is 0
-            UpdateLatency: 0, //default value is 0
-            StartupDelay: 0, //default value is 0
+            NoiseBias: 0, 
+            UpdateLatency: 0, 
+            StartupDelay: 0, 
             UpdateFrequency: 50,
             Key:"Magnetometer"
         },

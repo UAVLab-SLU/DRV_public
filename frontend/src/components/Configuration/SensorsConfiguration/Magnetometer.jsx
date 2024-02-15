@@ -9,17 +9,18 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip'; 
 import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
+import Alert from '@mui/material/Alert'; 
+
 
 export default function Magnetometer (sensor) {
-    const [magnetometer, setMagnetometer]  = React.useState(sensor.magnetometerObj)
+    const [magnetometer, setMagnetometer]  = React.useState(sensor.magnetometerObj || {})
 
-    const handleChangeSwitch = (val) => {
-        setMagnetometer(prevState => ({
-                ...prevState,
-                Enabled: val.target.checked
-        }))
-    }
+    //const handleChangeSwitch = (val) => {
+     //   setMagnetometer(prevState => ({
+         //       ...prevState,
+       //         Enabled: val.target.checked
+     //   }))
+   // }
 
     React.useEffect(() => {
         sensor.updateJson(magnetometer, sensor.name)
@@ -30,12 +31,14 @@ export default function Magnetometer (sensor) {
         sensor.closeModal(magnetometer, sensor.name)
     }
 
-    const handleChange = (val) => {
-        setMagnetometer(prevState => ({
-            ...prevState,
-            [val.target.id]: val.target.type === "number" ? parseInt(val.target.value, 10) : val.target.value
-        }))
-    }  
+    const handleChange = (event) => {
+        const { id, value } = event.target;
+      
+        setMagnetometer((prevMagnetometer) => ({
+          ...prevMagnetometer,
+          [id]: value,
+        }));
+      }; 
 
     const handleReset = () => {
         setMagnetometer(sensor.magnetometerObj);
@@ -65,7 +68,7 @@ export default function Magnetometer (sensor) {
     </Snackbar>
             <Box>
                 <Typography variant="h6" component="h2">
-                    {magnetometer.Key || "Magnetometer"}
+                    {magnetometer.Key || ""}
                 </Typography> 
                 <Typography>
                     <Grid container spacing={2} direction="row">
@@ -84,63 +87,39 @@ export default function Magnetometer (sensor) {
                                 id="NoiseSigma" 
                                 label="Noise Sigma" 
                                 type="number" 
-                                InputProps={{  
+                                InputProps={{ 
                                     inputProps: { min: 0, max: Infinity, step: 0.001 },  
-                                    onChange: (e) => {  
-                                        let value = parseFloat(e.target.value);   
-                                        value = Math.round(value / 0.001) * 0.001; 
-                                        value = Math.min(Math.max(value, 0), Infinity) 
-                                        // Format the value to a string with 2 decimal places  
-                                        const formattedValue = value.toFixed(3);  
-                                        setMagnetometer({ ...magnetometer, NoiseSigma: formattedValue });  
-                                    },  
-                                }}    
+                                
+                                }} 
                                 value={magnetometer.NoiseSigma} 
-                                onChange={handleChange}  
-                                variant="standard"      
-                            />  
+                                onChange={handleChange} 
+                                variant="standard" 
+                                /> 
                         </Grid>     
                         <Grid item xs={3}>   
                             <TextField  
                                 id="NoiseBias"  
                                 label="Noise Bias"  
                                 type="number"  
-                                InputProps={{  
-                                    inputProps: { min: 0, max: Infinity, step: 0.1 },  
-                                    onChange: (e) => {  
-                                        let value = parseFloat(e.target.value);   
-                                        value = Math.round(value / 0.1) * 0.1; 
-                                        value = Math.min(Math.max(value, 0), Infinity) 
-                                        // Format the value to a string with 2 decimal places  
-                                        const formattedValue = value.toFixed(2);  
-                                        setMagnetometer({ ...magnetometer, NoiseBias: formattedValue });  
-                                    },  
-                                }}   
+                                InputProps={{ 
+                                    inputProps: { min: 0, max: Infinity},  
+                                
+                                }} 
                                 value={magnetometer.NoiseBias} 
-                                onChange={handleChange}  
+                                onChange={handleChange} 
                                 variant="standard" 
-                            />     
+                                />
                         </Grid> 
                         <Grid item xs={3}>
                             <TextField    
                             id="UpdateLatency"   
                             label="Update Latency (s)"   
                             type="number"   
-                            InputProps={{ 
-                            inputProps: { min: 0, max: Infinity, step: 0.1 }, 
-                            onChange: (e) => { 
-                                let value = parseFloat(e.target.value); 
-                                value = Math.round(value / 0.1) * 0.1; 
-                                value = Math.min(Math.max(value, 0), Infinity); 
-                                // Format the value to a string with 2 decimal places 
-                                const formattedValue = value.toFixed(2); 
-                                setMagnetometer({ ...magnetometer, UpdateLatency: formattedValue }); 
-                            }, 
-                            }}   
-                            value={magnetometer.UpdateLatency}  
-                            onChange={handleChange}   
-                            variant="standard"   
-                            />    
+                            InputProps={{ inputProps: {min: 0, max: Infinity } }}   
+                                value={magnetometer.UpdateLatency}   
+                                onChange={handleChange}    
+                                variant="standard"   
+                            />   
                         </Grid>  
                         <Grid item xs={3}>
                             <TextField    

@@ -17,6 +17,8 @@ import MonitorTabels from './MonitorTabels';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import EnvironmentConfiguration from './EnvironmentConfiguration';
+import dayjs from 'dayjs';
 
 export default function MonitorControl (monJson) {
     const [value, setValue] = React.useState('2');
@@ -93,6 +95,33 @@ export default function MonitorControl (monJson) {
         }
     })
 
+    const [envConf, setEnvConf] = React.useState(monJson.mainJsonValue.environment != null ? monJson.mainJsonValue.environment : {
+        enableFuzzy: false,
+        timeOfDayFuzzy: false,
+        positionFuzzy: false,
+        windFuzzy: false,
+        Wind: {
+            Direction: "NE",
+            Velocity: 1,
+            //Type: "None",
+            //WindOrigin: "None",
+        },
+        Origin: {
+            Latitude: 41.980381,
+            Longitude: -87.934524,
+        },
+        TimeOfDay: "10:00:00",
+        UseGeo: true,
+        time:dayjs('2020-01-01 10:00')
+    }); 
+
+    const environmentJson = (event) => {
+        monJson.monitorJson(event, "environment");
+    }    
+    //new added
+    React.useEffect(() => {
+        environmentJson(envConf)
+    }, [envConf])
     const handleBatteruMonitor = (val) => {
         setMonitor(prevState => ({
             ...prevState,
@@ -368,9 +397,6 @@ export default function MonitorControl (monJson) {
             }
         }))
     }
-    const environmentJson = (event) => {
-        env.environmentJson(event, env.id);
-    }
     const singleMonitors = [
         {
             name: "Collision",
@@ -583,60 +609,68 @@ export default function MonitorControl (monJson) {
             isMultipleTable: false
         },
     ]
+    const handleFuzzyWindChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            windFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.positionFuzzy || prevState.timeOfDayFuzzy
+        }))
+    }
 
+    const handleFuzzyPositionChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            positionFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.windFuzzy || prevState.timeOfDayFuzzy
+        }))
+    }
+
+    const handleFuzzyTimeChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            timeOfDayFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.windFuzzy || prevState.positionFuzzy
+        }))
+    }
     const CheckboxComponent = () => {
-        // State to manage checkbox values
-        const [checkboxValues, setCheckboxValues] = React.useState({
-          timeOfDay: false,
-          position: false,
-          wind: false,
-        });
-      
-        // Event handler for checkbox changes
-        const handleCheckboxChange = (event) => {
-          const { name, checked } = event.target;
-          setCheckboxValues((prevValues) => ({
-            ...prevValues,
-            [name]: checked,
-          }));
-        };
+
       return(
         <div>
         <div>
             <input
             type="checkbox"
-            name="timeOfDay"
-            checked={checkboxValues.timeOfDay}
-            onChange={handleCheckboxChange}
+            name="timeOfDayFuzzy"
+            checked={envConf.timeOfDayFuzzy}
+            onChange={handleFuzzyTimeChange}
             />
-        <label htmlFor="timeOfDay">Time of Day</label>
-            <p>Description: Choose the time of day for the weather report.</p>
+        <label htmlFor="timeOfDayFuzzy">Time of Day</label>
+            <p style={{ fontSize: '12px' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
         </div>
 
         <div>
             <input
                 type="checkbox"
                 name="position"
-                checked={checkboxValues.position}
-                onChange={handleCheckboxChange}
+                checked={envConf.positionFuzzy}
+                onChange={handleFuzzyPositionChange}
             />
         <label htmlFor="position">Position</label>
-        <p>Description: Select the geographical position for the weather report.</p>
+        <p style={{ fontSize: '12px' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
         </div>
 
         <div>
             <input
             type="checkbox"
             name="wind"
-            checked={checkboxValues.wind}
-            onChange={handleCheckboxChange}
+            checked={envConf.windFuzzy}
+            onChange={handleFuzzyWindChange}
             />
             <label htmlFor="wind">Wind</label>
-            <p>Description: Indicate whether wind conditions should be included in the report.</p>
+            <p style={{ fontSize: '12px' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
         </div>
         </div>
       );
-      };
+    };
     
     return(
         <div>

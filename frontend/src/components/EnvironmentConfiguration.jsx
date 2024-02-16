@@ -70,6 +70,9 @@ export default function EnvironmentConfiguration (env) {
       }
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
         enableFuzzy: false,
+        timeOfDayFuzzy: false,
+        positionFuzzy: false,
+        windFuzzy: false,
         Wind: {
             Direction: "NE",
             Velocity: 1,

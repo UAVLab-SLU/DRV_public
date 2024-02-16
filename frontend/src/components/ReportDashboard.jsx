@@ -31,6 +31,10 @@ import React, { useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import Snackbar from '@mui/material/Snackbar';
 
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const useStyles = makeStyles((theme) => ({ 
   lightBlueBackground: {
@@ -102,134 +106,110 @@ const useStyles = makeStyles((theme) => ({
     }))
   }
   const handleClickAway = () => {
-    // Prevent closing when clicking outside the box
     handleSnackBarVisibility(true);
   };
   useEffect(() => {
-    // Trigger the Snackbar to be open when the component mounts
     handleSnackBarVisibility(true);
   }, []);
     
-  return (  
+  return (
     <>
-    {reportFiles.length === 0 && (
-      <Snackbar
-        open={snackBarState.open}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        autoHideDuration={60000}
-        onClose={() => handleSnackBarVisibility(false)}
-      >
-        <Alert
-          onClose={() => handleSnackBarVisibility(false)}
-          severity="info"
-          sx={{ maxHeight: '150px', maxWidth: '100%' }}
-        >
-          {"No reports found"}
-        </Alert>
-      </Snackbar>
-    )}
-    <Typography variant="h4" fontWeight="bold" style={{
-      textAlign: 'center', 
-     // marginLeft: '500px',
-      marginTop: '20px',
-      marginBottom: "2rem"
-    }}>
-      Acceptance Report  
-      <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
-      
-      <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
-        {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
-        {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
-      </Container>
       {reportFiles.length === 0 && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={redirectToFuzzyDashboard}
-          style={{ marginTop: '10px' }}
+        <Snackbar
+          open={snackBarState.open}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          autoHideDuration={60000}
+          onClose={() => handleSnackBarVisibility(false)}
         >
-          Go to Fuzzy Dashboard
-        </Button>
+          <Alert
+            onClose={() => handleSnackBarVisibility(false)}
+            severity="info"
+            sx={{ maxHeight: '150px', maxWidth: '100%' }}
+          >
+            {"No reports found"}
+          </Alert>
+        </Snackbar>
       )}
-    </Typography> 
-    <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start'}}>
-      {reportFiles.map((file) => {
-        const parts = file.filename.split('_');
+      <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: "2rem" }}>
+        Acceptance Report
+        <Tooltip title="Home" placement='bottom'><HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} /></Tooltip>
 
-        if (!file || !file.filename || file.filename.includes('.DS_Store')) {
-          return null;
-        }
+        <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
+          {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
+          {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
+        </Container>
+        {reportFiles.length === 0 && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={redirectToFuzzyDashboard}
+            style={{ marginTop: '10px' }}
+          >
+            Go to Fuzzy Dashboard
+          </Button>
+        )}
+      </Typography>
+      <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
+        {reportFiles.map((file) => {
+          const parts = file.filename.split('_');
 
-        if (parts.length < 2) {
+          if (!file || !file.filename || file.filename.includes('.DS_Store')) {
+            return null;
+          }
+
+          if (parts.length < 2) {
+            return (
+              <Grid key={file.id} item xs={12}>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography className={classes.heading}>Invalid Report Data: {file.filename}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography>
+                      <p>Drone Count: {file.drone_count}</p>
+                      <p>Acceptance: {file.pass_count}</p>
+                      {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
+                      {!file.contains_fuzzy && <p>Simulation Testing</p>}
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+            );
+          }
+
+          const datePart = parts[0];
+          const batchName = parts.slice(1).join('_');
+
+          const date = datePart.substr(0, 10);
+          const time = datePart.substr(11, 8);
+
+          const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`;
+          const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
+
+          const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+
           return (
-            <Grid key={file.id} item xs={4}>
-              <Card className={classes.lightBlueCard}> {/* Apply class for blue background */}
-                <CardHeader title="Invalid Report Data" sx={{ font: 'icon' }} />
-                <CardContent>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {' '}
-                    Invalid data format: {file.filename}{' '}
+            <Grid key={file.id} item xs={12}>
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography className={classes.heading}>{formattedTimestamp} [{batchName}]</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography>
+                    <p>Acceptance: {file.pass_count}</p>
+                    <p>Drone Count: {file.drone_count}</p>
+                    {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
+                    {!file.contains_fuzzy && <p>Simulation Testing</p>}
                   </Typography>
-                  <p>Drone Count: {file.drone_count}</p>
-                  {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
-                  {!file.contains_fuzzy && <p>Simulation Testing</p>}
-                </CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
-                  <Button variant="contained" 
-                    sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }} >
-                    View Report
-                  </Button>
-                </Box>
-              </Card>
-            </Grid> 
+                </AccordionDetails>
+              </Accordion>
+            </Grid>
           );
-        }
-
-        const datePart = parts[0];
-        const batchName = parts.slice(1).join('_');
-
-        const date = datePart.substr(0, 10);
-        const time = datePart.substr(11, 8);
-
-        const formattedDate = `${date.substr(5, 2)},${date.substr(8, 2)},${date.substr(0, 4)}`;
-        const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
-
-        const formattedTimestamp = `${formattedDate} ${formattedTime}`;
-
-        return (
-          <Grid key={file.id} item xs={4}>
-            <Card key={file.filename} sx={{ maxWidth: 400, height: 270, border: file.contains_fuzzy ? '1px solid lightgreen' : 'none' }}>
-            <CardHeader 
-            title={ 
-            <> 
-            <Typography variant="h5">{formattedTimestamp}</Typography> 
-            <Typography variant="body1" color="textSecondary"> 
-            {'['}{batchName}{']'} {/* Display batchName inside brackets */} 
-            </Typography> 
-            </> 
-            } 
-            sx={{ font: 'icon' }} 
-            />
-       
-              <CardContent>
-                <p>Drone Count: {file.drone_count}</p>
-                {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
-                {!file.contains_fuzzy && <p>Simulation Testing</p>}
-              </CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '10px' }}>
-                <Button variant="contained" sx={{ minWidth: '120px', marginLeft: '260px', fontSize: '0.8rem', textTransform: 'none' }} onClick={redirectToFuzzyDashboard}>
-                  View Report
-                </Button>
-              </Box>
-            </Card>
-          </Grid> 
-          
-        );
-      })}
-    </Grid> 
+        })}
+      </Grid>
     </>
   );
-} 
+}

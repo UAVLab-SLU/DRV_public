@@ -194,7 +194,8 @@ const sampleData = [
                 </Accordion>
               </Grid>
             );
-          }
+          }  
+          
           const datePart = parts[0];
           const batchName = parts.slice(1).join('_');
   
@@ -210,12 +211,12 @@ const sampleData = [
   
           return (
             <Grid key={file.id} item xs={12}>
-              <Accordion>
+              <Accordion style = {{ border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Grid container alignItems="center">
                     {/* Move the entire content to the left */}
                     <Grid item>
-                      <Typography className={classes.heading}>
+                      <Typography className={classes.heading} style={{ fontWeight: 'bold' }}>
                         {formattedTimestamp} [{batchName}]
                       </Typography>
                     </Grid>   
@@ -235,7 +236,21 @@ const sampleData = [
       />
     </>
   )}
-  {failed && (
+  {file.fail > 0 && (
+  <>
+    <span
+      style={{
+        fontSize: '12px',
+        color: 'red',
+        position: 'absolute',
+        zIndex: 1,
+        top: '50%',  
+        left: '5px',  
+        transform: 'translate(-50%, -50%)',  
+      }}
+    >
+      ❌
+    </span>
     <CircularProgress
       variant="determinate"
       size={30}
@@ -243,35 +258,65 @@ const sampleData = [
       value={Math.round((file.fail / (file.pass + file.fail)) * 100)}
       style={{
         color: 'rgba(255, 0, 0, 0.3)',
+        position: 'absolute',
+        zIndex: 1,
+        top: '50%',  
+        left: '20px',  
+        transform: 'translate(-50%, -50%)',  
       }}
     />
-  )}
-
-  {!failed && (
+  </>
+)}
+{file.fail === 0 && (
+  <>
+    <span
+      style={{
+        fontSize: '12px',
+        color: 'red',
+        position: 'absolute',
+        zIndex: 1,
+        top: '50%',  
+        left: '-38px',  
+        transform: 'translate(-50%, -50%)', 
+        opacity: 0.5,
+      }}
+    >
+      ❌
+    </span>
     <CircularProgress
       variant="determinate"
       size={30}
       thickness={8}
-      value={failed ? Math.round((file.fail / (file.pass + file.fail)) * 100) : 0}
+      value={0}
       style={{
-        color: 'rgba(255, 0, 0, 0.3)',
+        color: 'rgba(255, 0, 0, 0.5)',
+        position: 'absolute',
+        zIndex: 1,
+        top: '50%',  
+        left: '-38px',  
+        transform: 'translate(-50%, -50%)',  
+        opacity: 0.5,
       }}
     />
-  )}
+  </>
+)}
+
 </Grid>
 
                     
                   </Grid>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>
-                    <p>Pass: {file.pass}</p>
-                    <p>Fail: {file.fail}</p>
-                    <p>Drone Count: {file.drone_count}</p>
-                    {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
-                  {!file.contains_fuzzy && <p>Simulation Testing</p>}
-                </Typography>
-              </AccordionDetails>
+  <Grid container justifyContent="space-between">
+    <Typography>
+      <p>Pass: {file.pass}</p>
+      <p>Fail: {file.fail}</p>
+      <p>Drone Count: {file.drone_count}</p>
+      {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
+      {!file.contains_fuzzy && <p>Simulation Testing</p>}
+    </Typography>
+  </Grid>
+</AccordionDetails>
             </Accordion>
           </Grid>
         );

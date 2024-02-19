@@ -165,7 +165,7 @@ const sampleData = [
         Acceptance Report
         <Tooltip title="Home" placement="bottom">
           <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
-        </Tooltip>
+        </Tooltip> 
 
         <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
           {/* ... (existing Container, Paper, and div) */}
@@ -218,19 +218,19 @@ const sampleData = [
                       <Typography className={classes.heading}>
                         {formattedTimestamp} [{batchName}]
                       </Typography>
-                    </Grid>  
-                    <Grid item style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    </Grid>   
+                    <Grid item style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', position: 'relative' }}>
   {passed && (
-    <>
-      <span style={{ fontSize: '12px', color: 'lightgreen', position: 'absolute', zIndex: 1, top: '50%', left: '96%', transform: 'translate(-50%, -50%)'}}>✅</span>
+    <> 
+    <span style={{ fontSize: '12px', color: 'lightgreen', position: 'absolute', zIndex: 1, top: '50%', left: '-0.98%', transform: 'translate(-80%, -50%)' }}>✅</span>
       <CircularProgress
         variant="determinate"
-        size={30} 
-        thickness={8} 
+        size={30}
+        thickness={8}
         value={passedPercent}
         style={{
           color: 'lightgreen',
-          marginLeft: '-30px', 
+          marginLeft: '-18px',
         }}
       />
     </>
@@ -240,13 +240,27 @@ const sampleData = [
       variant="determinate"
       size={30}
       thickness={8}
-      value={failed ? Math.round((file.fail / (file.pass + file.fail)) * 100) : 0}
+      value={Math.round((file.fail / (file.pass + file.fail)) * 100)}
       style={{
-        color: 'rgba(255, 0, 0, 0.3)',  
+        color: 'rgba(255, 0, 0, 0.3)',
       }}
     />
   )}
-</Grid>                    
+
+  {!failed && (
+    <CircularProgress
+      variant="determinate"
+      size={30}
+      thickness={8}
+      value={failed ? Math.round((file.fail / (file.pass + file.fail)) * 100) : 0}
+      style={{
+        color: 'rgba(255, 0, 0, 0.3)',
+      }}
+    />
+  )}
+</Grid>
+
+                    
                   </Grid>
                 </AccordionSummary>
                 <AccordionDetails>

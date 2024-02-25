@@ -65,7 +65,6 @@ export default function DroneConfiguration (droneData)  {
         // != null ? droneData.droneObject : {
         // VehicleType: "SimpleFlight",
 		// DefaultVehicleState: "Armed",
-		// PawnPath: "",
 		// EnableCollisionPassthrogh: false,
 		// EnableCollisions: true,
 		// AllowAPIAlways: true,
@@ -152,15 +151,19 @@ export default function DroneConfiguration (droneData)  {
     const handleDroneTypeChange = (event) => {
         handleSnackBarVisibility(true)
         setselectedDroneType(event.target.value)
-        // setDrone(prevState => ({
-        //     ...prevState,
-        //     droneType: event.target.value
-        // }));
+         setDrone(prevState => ({
+             ...prevState,
+             droneType: event.target.value
+         }));
     };
 
     const handleDroneModelChange = (event) => {
         handleSnackBarVisibility(true)
         setSelectedModel(event.target.value);
+        setDrone(prevState => ({
+            ...prevState,
+            droneModel: event.target.value
+        }));
     };
     
 

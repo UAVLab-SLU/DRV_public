@@ -651,7 +651,7 @@ const handleSnackBarVisibility = (val) => {
                             <Grid item xs={3}>
                                 <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                                     <InputLabel id="Direction">Wind Direction</InputLabel>
-                                    <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection}>
+                                    <Select label="Direction" value={shear.windDirection} onChange={(e) => handleShearWindDirection(e.target.value, index)}>
                                         {Direction.map(function(val) {
                                             return(<MenuItem value={val.value} key={val.id} id="Direction">
                                             <em>{val.value}</em>
@@ -666,8 +666,8 @@ const handleSnackBarVisibility = (val) => {
                                     <TextField id="Velocity" 
                                         label="Wind Velocity (m/s)" 
                                         variant="standard" type="number" 
-                                        onChange={handleWindChange} 
-                                        value={envConf.Wind.Velocity} 
+                                        onChange={(e) => handleShearWindChange(e.target.value, index)} 
+                                        value={shear.windVelocity}  
                                         inputProps={{ min: 0 }}/>
                                 </Grid>
                             </Tooltip>
@@ -677,9 +677,9 @@ const handleSnackBarVisibility = (val) => {
                                     label="Fluctuation %" 
                                     variant="standard" 
                                     type="number" 
-                                    onChange={handleFLuctuationChange} 
-                                    value={selectedFluctuationValue} 
-                                    inputProps={{ min: 0, max: 100, step: 0.1 }} 
+                                    onChange={(e) => handleShearfluctuationPercentageChange(e.target.value, index)} 
+                                    value={shear.fluctuationPercentage} 
+                                    inputProps={{ min: 5, max: 100, step: 0.1 }} 
                                     sx={{ width: '150px' }} />
                                 
                               </Tooltip>       

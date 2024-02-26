@@ -67,7 +67,7 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
 
-      }
+    }
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
         enableFuzzy: false,
         timeOfDayFuzzy: false,
@@ -144,7 +144,7 @@ export default function EnvironmentConfiguration (env) {
     );
 
     // Fluctuation Percentage
-    const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
+    const [fluctuationPercentage, setSelectedFluctuationValue] = React.useState(0.0);
 
     // Check Box Status for Fuzzy Testing
     const [windBoxStatus , setWindBox] = React.useState(true);
@@ -265,7 +265,7 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
   }
-
+  
   const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
             let originValue 
@@ -382,15 +382,66 @@ export default function EnvironmentConfiguration (env) {
     });
   };
 
+  const handleShearWindDirection = (e, id) => {
+    console.log(id)
+    const newArry = windShears.map((shear, index) => {
+    
+        console.log('direction-----', shear)
+        if(id == index) {
+            return {
+                ...shear,
+                windDirection: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearWindChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                windVelocity: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearfluctuationPercentageChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                fluctuationPercentage: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
   // Function to add a new wind shear entry for window
   const addNewWindShear = () => {
-    const newWindShearEntry = { ...windShearData };
+    const newWindShearEntry = { 
+        windDirection: "",
+        windVelocity: 0,
+        fluctuationPercentage: 0,
+     };
     setwindShears([...windShears, newWindShearEntry]);
   };
 
   const [snackBarState, setSnackBarState] = React.useState({
     open: false,
     });
+ 
+
 
 const handleSnackBarVisibility = (val) => {
     setSnackBarState(prevState => ({
@@ -484,7 +535,6 @@ const handleSnackBarVisibility = (val) => {
                     {/* )} */}
                     
 
-
                     {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
                             <Grid item xs={3}>
                                  <Tooltip title="Enter Fluctuation %" placement='bottom'>
@@ -493,7 +543,7 @@ const handleSnackBarVisibility = (val) => {
                                     variant="standard" 
                                     type="number" 
                                     onChange={handleFLuctuationChange} 
-                                    value={selectedFluctuationValue} 
+                                    value={fluctuationPercentage} 
                                     inputProps={{ min: 0, max: 100, step: 0.1 }} 
                                     sx={{ width: '150px' }} />
                                      </Tooltip>
@@ -623,7 +673,7 @@ const handleSnackBarVisibility = (val) => {
                             </Tooltip>
                             <Grid item xs={3}>
                             <Tooltip title="Enter Fluctuation %" placement='bottom'>
-                                <TextField id="Fluctuation %" 
+                            <TextField id="Fluctuation%" 
                                     label="Fluctuation %" 
                                     variant="standard" 
                                     type="number" 
@@ -631,6 +681,7 @@ const handleSnackBarVisibility = (val) => {
                                     value={selectedFluctuationValue} 
                                     inputProps={{ min: 0, max: 100, step: 0.1 }} 
                                     sx={{ width: '150px' }} />
+                                
                               </Tooltip>       
                                 <IconButton onClick={() => deleteWindShear(index)}>
                                     <DeleteOutline color="primary"/>

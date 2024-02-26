@@ -644,7 +644,7 @@ export default function MonitorControl (monJson) {
             onChange={handleFuzzyTimeChange}
             />
         <label htmlFor="timeOfDayFuzzy">Time of Day</label>
-            <p style={{ fontSize: '12px' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
+            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
         </div>
 
         <div>
@@ -655,7 +655,7 @@ export default function MonitorControl (monJson) {
                 onChange={handleFuzzyPositionChange}
             />
         <label htmlFor="position">Position</label>
-        <p style={{ fontSize: '12px' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
+        <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
         </div>
 
         <div>
@@ -666,7 +666,7 @@ export default function MonitorControl (monJson) {
             onChange={handleFuzzyWindChange}
             />
             <label htmlFor="wind">Wind</label>
-            <p style={{ fontSize: '12px' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
+            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
         </div>
         </div>
       );

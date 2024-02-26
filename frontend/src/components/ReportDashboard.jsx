@@ -66,19 +66,33 @@ const useStyles = makeStyles((theme) => ({
 
 const sampleData = [
   {
-    filename: '2022-02-15_batch1',
-    drone_count: 5,
-    pass: 10,
-    fail: 2,  
-    contains_fuzzy: true
-  },
-  {
-    filename: '2022-02-15_batch3',
-    drone_count: 8,
-    pass: 15, 
-    fail: 5, 
-    contains_fuzzy: false
-  },
+    "contains_fuzzy": false,
+    "drone_count": 0,
+    "fail": 0,
+    "filename": ".DS_Store",
+    "pass": 0
+},
+{
+    "contains_fuzzy": true,
+    "drone_count": 1,
+    "fail": 0,
+    "filename": "2023-10-10-15-09-38_Batch_1",
+    "pass": 2
+},
+{
+    "contains_fuzzy": true,
+    "drone_count": 10,
+    "fail": 2,
+    "filename": "2023-10-10-15-13-17_Batch_2",
+    "pass": 8
+},
+{
+    "contains_fuzzy": true,
+    "drone_count": 15,
+    "fail": 5,
+    "filename": "2023-10-10-15-15-35_Batch_3",
+    "pass": 10
+}
 ];
 
   
@@ -261,7 +275,7 @@ const sampleData = [
         position: 'absolute',
         zIndex: 1,
         top: '50%',  
-        left: '20px',  
+        left: '-0.06%',  
         transform: 'translate(-50%, -50%)',  
       }}
     />

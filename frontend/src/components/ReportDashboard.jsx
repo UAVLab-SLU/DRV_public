@@ -269,35 +269,7 @@ const sampleData = [
 )}
 {file.fail === 0 && (
   <>
-    <span
-      style={{
-        fontSize: '12px',
-        color: 'red',
-        position: 'absolute',
-        zIndex: 1,
-        top: '50%',  
-        left: '-38px',  
-        transform: 'translate(-50%, -50%)', 
-        opacity: 0.5,
-      }}
-    >
-      ❌
-    </span>
-    <CircularProgress
-      variant="determinate"
-      size={30}
-      thickness={8}
-      value={0}
-      style={{
-        color: 'rgba(255, 0, 0, 0.5)',
-        position: 'absolute',
-        zIndex: 1,
-        top: '50%',  
-        left: '-38px',  
-        transform: 'translate(-50%, -50%)',  
-        opacity: 0.5,
-      }}
-    />
+    {/* Omitted the "❌" and related CircularProgress */}
   </>
 )}
 

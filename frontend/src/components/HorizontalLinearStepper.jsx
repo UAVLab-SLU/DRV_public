@@ -77,9 +77,8 @@ export default function HorizontalLinearStepper(data) {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const invokePostAPI = () => {
-    console.log('mainJson-----', mainJson)
-    if(mainJson.environment != null && mainJson.environment.enableFuzzy == true) {
+  React.useEffect(() => {
+    if( mainJson.environment != null && mainJson.environment.enableFuzzy == true && mainJson.environment.enableFuzzy != null) {
       setJson(prevState => ({
         ...prevState,
         FuzzyTest: {
@@ -87,7 +86,17 @@ export default function HorizontalLinearStepper(data) {
           precision: 5
         }
       }))
+      delete mainJson.environment["enableFuzzy"]
     }
+    if (mainJson.environment != null && mainJson.environment.enableFuzzy == false && mainJson.FuzzyTest != null) {
+      delete mainJson.FuzzyTest
+    }
+  }, [mainJson])
+
+
+
+  const invokePostAPI = () => {
+    console.log("mainJson-----", mainJson)
     if(activeStep === steps.length -1) {
       mainJson.Drones.map(drone => {
 
@@ -123,6 +132,9 @@ export default function HorizontalLinearStepper(data) {
       mainJson.monitors.drift_monitor["enable"] == true ? delete mainJson.monitors.drift_monitor["enable"] : delete mainJson.monitors.drift_monitor
       mainJson.monitors.battery_monitor["enable"] == true ? delete mainJson.monitors.battery_monitor["enable"] : delete mainJson.monitors.battery_monitor
       delete mainJson.environment["enableFuzzy"]
+      delete mainJson.environment["timeOfDayFuzzy"]
+      delete mainJson.environment["windFuzzy"]
+      delete mainJson.environment["positionFuzzy"]
       console.log('mainJson-----', JSON.stringify(mainJson))
       navigate('/report-dashboard', {
         state: {mainJson: mainJson}
@@ -138,7 +150,6 @@ export default function HorizontalLinearStepper(data) {
       .then(res => console.log(res));
     }
   } 
-  
   const stepsComponent = [
     {
       name:'Environment Configuration',

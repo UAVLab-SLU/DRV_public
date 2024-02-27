@@ -36,7 +36,9 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; 
 
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress'; 
+import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';
+
 //import { Grid } from '@mui/material';
 
 
@@ -156,7 +158,7 @@ const sampleData = [
   
   return (
     <>
-      {reportFiles.length === 0 && (
+      {sampleData.length === 0 && (
         <Snackbar
           open={snackBarState.open}
           anchorOrigin={{
@@ -191,7 +193,7 @@ const sampleData = [
         )}
       </Typography>
       <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
-        {reportFiles.map((file) => {
+        {sampleData.map((file) => {
           const parts = file.filename.split('_');
           const failed = file.fail > 0;
           const passed = file.pass > 0;
@@ -228,16 +230,13 @@ const sampleData = [
             <Accordion style={{ border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}> 
             <AccordionSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container alignItems="center"> 
-            {/* Move the entire content to the left */} 
+            {/* Date and Batch Name */} 
             <Grid item xs> 
-            <Typography className={classes.heading} style={{ fontWeight: 'bold'}}> 
+            <Typography className={classes.heading} style={{ fontWeight: 'bold', marginRight: '9px' }}> 
             {formattedTimestamp} 
-            <div style={{ display: 'inline-block', marginLeft: '9px' }}> 
-            <span style={{ fontStyle: "italic" }}>{batchName}</span> 
-            </div> 
+            <span style={{ fontStyle: 'italic', marginLeft: '9px' }}>{batchName}</span> 
             </Typography> 
             </Grid>
-
 
         <Grid item style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }}>
@@ -280,18 +279,35 @@ const sampleData = [
       </Grid>
     </AccordionSummary>
     <AccordionDetails>
-      <Grid container justifyContent="space-between">
-        <Typography>
-          <p>Pass: {file.pass}</p>
-          <p>Fail: {file.fail}</p>
-          <p>Drone Count: {file.drone_count}</p>
-          {file.contains_fuzzy && <p>Fuzzy Testing {file.contains_fuzzy}</p>}
-          {!file.contains_fuzzy && <p>Simulation Testing</p>}
-        </Typography>
-      </Grid>
-    </AccordionDetails>
-  </Accordion>
-</Grid>
+    <Table style={{ width: '60%' }} align="center">
+  <TableBody>
+    <TableRow style={{ borderBottomWidth: '2px' }}>
+      <TableCell align="center"></TableCell>
+      <TableCell align="center" style={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
+      <TableCell align="center" style={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
+      <TableCell align="center" style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell align="right"></TableCell>
+      <TableCell align="center">{file.pass}</TableCell>
+      <TableCell align="center">{file.fail}</TableCell>
+      <TableCell align="center">{file.drone_count}</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+          {file.contains_fuzzy && ( 
+          <Typography style={{ marginLeft: 'auto' }}> 
+          <p>Fuzzy Testing {file.contains_fuzzy}</p> 
+          </Typography> 
+          )} 
+          {!file.contains_fuzzy && ( 
+          <Typography style={{ marginLeft: 'auto' }}> 
+          <p>Simulation Testing</p> 
+          </Typography> 
+          )} 
+          </AccordionDetails> 
+          </Accordion> 
+          </Grid>
         );
       })}
     </Grid>

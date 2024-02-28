@@ -158,7 +158,7 @@ const sampleData = [
   
   return (
     <>
-      {sampleData.length === 0 && (
+      {reportFiles.length === 0 && (
         <Snackbar
           open={snackBarState.open}
           anchorOrigin={{
@@ -193,7 +193,7 @@ const sampleData = [
         )}
       </Typography>
       <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
-        {sampleData.map((file) => {
+        {reportFiles.map((file) => {
           const parts = file.filename.split('_');
           const failed = file.fail > 0;
           const passed = file.pass > 0;
@@ -279,19 +279,20 @@ const sampleData = [
       </Grid>
     </AccordionSummary>
     <AccordionDetails>
-    <Table style={{ width: '60%' }} align="center">
+    <Table style={{ width: '50%' }} >
   <TableBody>
     <TableRow style={{ borderBottomWidth: '2px' }}>
-      <TableCell align="center"></TableCell>
+      <TableCell align="center"></TableCell> 
+      <TableCell align="center" style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
       <TableCell align="center" style={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
       <TableCell align="center" style={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
-      <TableCell align="center" style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
     </TableRow>
-    <TableRow>
-      <TableCell align="right"></TableCell>
+    <TableRow> 
+      
+      <TableCell align="right"></TableCell> 
+      <TableCell align="center">{file.drone_count}</TableCell>
       <TableCell align="center">{file.pass}</TableCell>
       <TableCell align="center">{file.fail}</TableCell>
-      <TableCell align="center">{file.drone_count}</TableCell>
     </TableRow>
   </TableBody>
 </Table>

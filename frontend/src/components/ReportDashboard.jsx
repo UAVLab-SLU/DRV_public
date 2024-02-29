@@ -279,20 +279,20 @@ const sampleData = [
       </Grid>
     </AccordionSummary>
     <AccordionDetails>
-    <Table style={{ width: '50%' }} >
+    <Table style={{ width: '30%' }} aria-label="simple table" >
   <TableBody>
     <TableRow style={{ borderBottomWidth: '2px' }}>
-      <TableCell align="center"></TableCell> 
-      <TableCell align="center" style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
-      <TableCell align="center" style={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
-      <TableCell align="center" style={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
+      {/* <TableCell align="center"></TableCell>  */}
+      <TableCell  style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
+      <TableCell  style={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
+      <TableCell  style={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
     </TableRow>
     <TableRow> 
       
-      <TableCell align="right"></TableCell> 
-      <TableCell align="center">{file.drone_count}</TableCell>
-      <TableCell align="center">{file.pass}</TableCell>
-      <TableCell align="center">{file.fail}</TableCell>
+      {/* <TableCell align="right"></TableCell>  */}
+      <TableCell >{file.drone_count}</TableCell>
+      <TableCell >{file.pass}</TableCell>
+      <TableCell >{file.fail}</TableCell>
     </TableRow>
   </TableBody>
 </Table>

@@ -21,7 +21,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { wait } from '@testing-library/user-event/dist/utils';
 import PropTypes from 'prop-types'; 
 import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
-import FuzzyDashboard from './FuzzyDashboard'; 
+import FuzzyDashboard from './components/FuzzyDashboard'; 
 import React, { useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import Snackbar from '@mui/material/Snackbar';
@@ -30,43 +30,27 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; 
 import CircularProgress from '@mui/material/CircularProgress'; 
-import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material'; 
+import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';  
+import "./styles.css"
+
 
 
 export default function LandingPage(parameter) { 
 
-    const navigate = useNavigate(); 
-    const redirectToHome = () => {
-        navigate('/');
-    }
-    const redirectToAboutUs = () => {
-        navigate('/about');
-    }
 
     return (
-        <Container>
-           
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={redirectToHome}
-                startIcon={<HomeIcon />} 
-                style={{ marginRight: '20px' }}
-            >
-                Create Simulation
-            </Button>
-
-            {/* "About Us" button */}
-            <Button
-                variant="contained"
-                color="secondary"  
-                onClick={redirectToAboutUs}
-                startIcon={<InfoIcon />}
-            >
-                About Us
-            </Button>
-
-            {/* End of your components */}
-        </Container>
+        <nav className= "nav">   
+        <a href=" /" className = "site-title">  
+            Drone World
+        </a> 
+        <ul>  
+            <li>  
+                <a href = "/">Create Simulation</a>  
+                </li> 
+                <li> 
+                <a href = "/about">About Us</a>
+            </li>
+            </ul>
+        </nav>
     );
 }

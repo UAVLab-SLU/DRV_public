@@ -5,8 +5,9 @@ import Wizard from './pages/Wizard';
 //import Dashboard from './components/Dashboard';
 import FuzzyDashboard from './components/FuzzyDashboard';
 import ReportDashboard from './components/ReportDashboard'; 
-import LandingPage from './components/LandingPage'; 
-import AboutUs from './components/AboutUs';
+import LandingPage from './LandingPage'; 
+import AboutUs from './components/AboutUs'; 
+//import "./styles.css"
 
 
 function App() {

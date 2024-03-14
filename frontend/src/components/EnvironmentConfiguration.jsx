@@ -67,9 +67,12 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
 
-      }
+    }
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
         enableFuzzy: false,
+        timeOfDayFuzzy: false,
+        positionFuzzy: false,
+        windFuzzy: false,
         Wind: {
             Direction: "NE",
             Velocity: 1,
@@ -141,7 +144,7 @@ export default function EnvironmentConfiguration (env) {
     );
 
     // Fluctuation Percentage
-    const [selectedFluctuationValue, setSelectedFluctuationValue] = React.useState(0.0);
+    const [fluctuationPercentage, setSelectedFluctuationValue] = React.useState(0.0);
 
     // Check Box Status for Fuzzy Testing
     const [windBoxStatus , setWindBox] = React.useState(true);
@@ -262,7 +265,7 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
   }
-
+  
   const handleOrigin = (val) => {
         if(val.target.value != "Specify Region") {
             let originValue 
@@ -379,15 +382,66 @@ export default function EnvironmentConfiguration (env) {
     });
   };
 
+  const handleShearWindDirection = (e, id) => {
+    console.log(id)
+    const newArry = windShears.map((shear, index) => {
+    
+        console.log('direction-----', shear)
+        if(id == index) {
+            return {
+                ...shear,
+                windDirection: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearWindChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                windVelocity: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearfluctuationPercentageChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                fluctuationPercentage: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
   // Function to add a new wind shear entry for window
   const addNewWindShear = () => {
-    const newWindShearEntry = { ...windShearData };
+    const newWindShearEntry = { 
+        windDirection: "",
+        windVelocity: 0,
+        fluctuationPercentage: 0,
+     };
     setwindShears([...windShears, newWindShearEntry]);
   };
 
   const [snackBarState, setSnackBarState] = React.useState({
     open: false,
     });
+ 
+
 
 const handleSnackBarVisibility = (val) => {
     setSnackBarState(prevState => ({
@@ -420,8 +474,7 @@ const handleSnackBarVisibility = (val) => {
                                 <Select
                                    label= "Wind Type"
                                    value={selectedWindType}
-                                   onChange={handleWindTypeChange}
-                                   disabled={envConf.enableFuzzy}>
+                                   onChange={handleWindTypeChange}>
                                     {WindType.map(function (val) {
                                         return (
                                             <MenuItem value={val.value} key={val.id}>
@@ -436,7 +489,7 @@ const handleSnackBarVisibility = (val) => {
                     <Grid item xs={3}>
                         <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                             <InputLabel id="Direction">Wind Direction</InputLabel>
-                            <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection} disabled={envConf.enableFuzzy}>
+                            <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection}>
                                 {Direction.map(function(val) {
                                     return(<MenuItem value={val.value} key={val.id} id="Direction">
                                     <em>{val.value}</em>
@@ -476,13 +529,11 @@ const handleSnackBarVisibility = (val) => {
                                 variant="standard" type="number" 
                                 onChange={handleWindChange} 
                                 value={envConf.Wind.Force} 
-                                disabled={envConf.enableFuzzy} 
                                 inputProps={{ min: 0 }}/>
                         </Grid>
                     </Tooltip>
                     {/* )} */}
                     
-
 
                     {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
                             <Grid item xs={3}>
@@ -492,9 +543,8 @@ const handleSnackBarVisibility = (val) => {
                                     variant="standard" 
                                     type="number" 
                                     onChange={handleFLuctuationChange} 
-                                    value={selectedFluctuationValue} 
+                                    value={fluctuationPercentage} 
                                     inputProps={{ min: 0, max: 100, step: 0.1 }} 
-                                    disabled={envConf.enableFuzzy}
                                     sx={{ width: '150px' }} />
                                      </Tooltip>
                                      {(windShears.length<2 && selectedWindType === "Wind Shear") ? (<IconButton onClick={addNewWindShear} color="primary">
@@ -601,7 +651,7 @@ const handleSnackBarVisibility = (val) => {
                             <Grid item xs={3}>
                                 <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                                     <InputLabel id="Direction">Wind Direction</InputLabel>
-                                    <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection} disabled={envConf.enableFuzzy}>
+                                    <Select label="Direction" value={shear.windDirection} onChange={(e) => handleShearWindDirection(e.target.value, index)}>
                                         {Direction.map(function(val) {
                                             return(<MenuItem value={val.value} key={val.id} id="Direction">
                                             <em>{val.value}</em>
@@ -616,23 +666,22 @@ const handleSnackBarVisibility = (val) => {
                                     <TextField id="Velocity" 
                                         label="Wind Velocity (m/s)" 
                                         variant="standard" type="number" 
-                                        onChange={handleWindChange} 
-                                        value={envConf.Wind.Velocity} 
-                                        disabled={envConf.enableFuzzy} 
+                                        onChange={(e) => handleShearWindChange(e.target.value, index)} 
+                                        value={shear.windVelocity}  
                                         inputProps={{ min: 0 }}/>
                                 </Grid>
                             </Tooltip>
                             <Grid item xs={3}>
                             <Tooltip title="Enter Fluctuation %" placement='bottom'>
-                                <TextField id="Fluctuation %" 
+                            <TextField id="Fluctuation%" 
                                     label="Fluctuation %" 
                                     variant="standard" 
                                     type="number" 
-                                    onChange={handleFLuctuationChange} 
-                                    value={selectedFluctuationValue} 
-                                    inputProps={{ min: 0, max: 100, step: 0.1 }} 
-                                    disabled={envConf.enableFuzzy}
+                                    onChange={(e) => handleShearfluctuationPercentageChange(e.target.value, index)} 
+                                    value={shear.fluctuationPercentage} 
+                                    inputProps={{ min: 5, max: 100, step: 0.1 }} 
                                     sx={{ width: '150px' }} />
+                                
                               </Tooltip>       
                                 <IconButton onClick={() => deleteWindShear(index)}>
                                     <DeleteOutline color="primary"/>
@@ -700,7 +749,7 @@ const handleSnackBarVisibility = (val) => {
                                 </LocalizationProvider>
                             </Grid>
                         </Tooltip>
-                        <Grid item xs={3}>
+                        {/* <Grid item xs={3}>
                             <FormGroup>
                                 <FormControlLabel control={
                                     <Switch 
@@ -711,9 +760,9 @@ const handleSnackBarVisibility = (val) => {
                                     />
                                 <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
                             </FormGroup>
-                        </Grid>
+                        </Grid> */}
                         
-                        {envConf.enableFuzzy && (
+                        {/* {envConf.enableFuzzy && (
                         <>
                                 <Grid item xs = {1.5}>
                                     <FormControlLabel
@@ -734,7 +783,7 @@ const handleSnackBarVisibility = (val) => {
                                     />
                                 </Grid>
                         </>
-                        )}
+                        )} */}
                     </Grid>
                     
                     {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>

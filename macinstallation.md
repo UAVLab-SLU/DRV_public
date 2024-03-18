@@ -48,7 +48,7 @@ cd frontend
 2. Install the necessary dependencies by running the following command:
 
 ``` powershell
-npm install --force
+npm install
 ```
 3. Start the frontend server by running the following command:
 

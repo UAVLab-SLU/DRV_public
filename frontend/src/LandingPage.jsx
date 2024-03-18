@@ -78,13 +78,13 @@ export default function LandingPage() {
         <div className={classes.buttonContainer}>
           <Link to="/">
             <Button
-              variant="contained"
+             variant="contained"
               sx={{
                 //backgroundColor: '#ADD8E6',
                 color: 'white',
                 padding: '15px 30px',
                 borderRadius: '10px',
-                backgroundColor: '#87CEEB',
+                //backgroundColor: '#87CEEB',
                 
               }}
             >

@@ -6,7 +6,7 @@ Unfortuantely, Unreal Engine is not compatable with macOS.
 
 ## Backend
 
-To prepare the environment and start the Python backend, follow these steps:
+To prepare the environment and start the backend, follow these steps:
 
 1. Open the terminal and navigate to the project repository.
 ```powershell
@@ -37,7 +37,7 @@ pip3 install -r requirements.txt
 python ./PythonClient/server/simulation_server.py
 ```
 
-This will start the Python backend server and allow it to communicate with the Unreal application.
+This will start the backend server and allow it to communicate with the Unreal application.
 
 ## Frontend
 

@@ -17,6 +17,8 @@ import MonitorTabels from './MonitorTabels';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import EnvironmentConfiguration from './EnvironmentConfiguration';
+import dayjs from 'dayjs';
 
 export default function MonitorControl (monJson) {
     const [value, setValue] = React.useState('2');
@@ -93,6 +95,33 @@ export default function MonitorControl (monJson) {
         }
     })
 
+    const [envConf, setEnvConf] = React.useState(monJson.mainJsonValue.environment != null ? monJson.mainJsonValue.environment : {
+        enableFuzzy: false,
+        timeOfDayFuzzy: false,
+        positionFuzzy: false,
+        windFuzzy: false,
+        Wind: {
+            Direction: "NE",
+            Velocity: 1,
+            //Type: "None",
+            //WindOrigin: "None",
+        },
+        Origin: {
+            Latitude: 41.980381,
+            Longitude: -87.934524,
+        },
+        TimeOfDay: "10:00:00",
+        UseGeo: true,
+        time:dayjs('2020-01-01 10:00')
+    }); 
+
+    const environmentJson = (event) => {
+        monJson.monitorJson(event, "environment");
+    }    
+    //new added
+    React.useEffect(() => {
+        environmentJson(envConf)
+    }, [envConf])
     const handleBatteruMonitor = (val) => {
         setMonitor(prevState => ({
             ...prevState,
@@ -368,7 +397,6 @@ export default function MonitorControl (monJson) {
             }
         }))
     }
-
     const singleMonitors = [
         {
             name: "Collision",
@@ -488,119 +516,6 @@ export default function MonitorControl (monJson) {
             isMultipleTable: false
 
         },
-        // {
-        //     name: "Waypoints",
-        //     value: '2.2',
-        //     description: "Test whether the drones reach their assigned waypoints precisely",
-        //     colorText:monitor.unordered_waypoint_monitor.enable == true ? 'green': null,
-        //     btns: <React.Fragment>{monitor.unordered_waypoint_monitor.enable == true ?
-        //         <><Grid item xs={12}><strong>Configure the acceptable drift when approaching a waypoint </strong></Grid>
-        //         <Tooltip title="The minimum distance between a drone and the destination point to be registered as reached" placement='bottom'>
-        //             <Grid item xs={6}>
-        //                 <TextField label="Drift (meters)" type="number" step="0.1" variant="standard" onChange={handleWayPointThreshChange} value={monitor.unordered_waypoint_monitor.param[0]} />
-        //             </Grid>
-        //         </Tooltip></>:null}
-        //         </React.Fragment>,
-        //     images: null,
-        //     // <div>
-        //     //     <img src="/images/drift_and_waypoint.png" width="70%"/>
-        //     // </div>,
-        //     enableBtn:
-        //     <Grid container direction="row">
-        //         <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
-        //         <FormGroup>
-        //             <FormControlLabel  control={<Switch checked={monitor.unordered_waypoint_monitor.enable} onChange={(e) => {
-        //                 handleChangeSwitch(e, "unordered_waypoint_monitor")
-        //                 handleChangeSwitch(e, "ordered_waypoint_monitor")
-        //                 handleChangeSwitch(e, "drift_monitor")
-        //             }
-        //             } inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.unordered_waypoint_monitor.enable ? "Enabled" : "Disabled"} />
-        //         </FormGroup>
-        //     </Grid>,
-        //     tableData:null,
-        //     isMultipleTable: false
-        // }
-        // ,
-        // {
-        //     name: "Ordered Waypoint Monitor",
-        //     value: '2.3',
-        //     description: "Single drone monitor, monitors if the drone reached given points in 'Square' mission by the given order within (threshold)",
-        //     btns: <React.Fragment>
-        //     <Tooltip title="Enter Threshold in Meters" placement='bottom'>
-        //     <Grid item xs={3}><TextField label="Threshold (meter)" type="number" step="0.1" variant="standard" onChange={handleOrderedPtChange} value={monitor.ordered_waypoint_monitor.param[0]}/></Grid>
-        //     </Tooltip>
-        //     </React.Fragment>,
-        //     images:
-        //     <div>
-        //         <img src="/images/drift_and_waypoint.png" width="70%"/>
-        //     </div>,
-        //     enableBtn:
-        //     <Grid item xs={12}>
-        //         <FormGroup>
-        //             <FormControlLabel control={<Switch checked={monitor.unordered_waypoint_monitor.enable} onChange={(e) => handleChangeSwitch(e, "unordered_waypoint_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.unordered_waypoint_monitor.enable ? "Enabled" : "Disabled"} />
-        //         </FormGroup>
-        //     </Grid>
-        // },
-        // {
-        //     name: "Drift Monitor",
-        //     value:'2.5',
-        //     description: "Single drone monitor, monitors whether the drone reached the destination point within the (threshold) and how much the drone drifted after reaching destination due to wind and acceleration",
-        //     btns:<React.Fragment>
-        //     <Tooltip title="Enter Threshold in Meters" placement='bottom'>
-        //     <Grid item xs={3}>
-        //         <TextField label="Threshold (meter)" type="number" step="0.1" variant="standard" onChange={handleDriftThreshChange} value={monitor.drift_monitor.param[0]}/>
-        //     </Grid>
-        //     </Tooltip>
-        //     </React.Fragment>,
-        //     images:
-        //     <div>
-        //         <img src="/images/drift_and_waypoint.png" width="70%"/>
-        //     </div>,
-        //     enableBtn:
-        //     <Grid item xs={12}>
-        //         <FormGroup>
-        //             <FormControlLabel control={<Switch checked={monitor.drift_monitor.enable} onChange={(e) => handleChangeSwitch(e, "drift_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.drift_monitor.enable ? "Enabled" : "Disabled"} />
-        //         </FormGroup>
-        //     </Grid>
-        // },
-        // {
-        //     name: "Point Deviation Monitor",
-        //     value:'2.4',
-        //     description: "Single drone monitor, monitors the total distance vs. planned distance for any drone with 'Square' missions and produces a graph showing the path",
-        //     btns: null,
-        //     images: null,
-        //     // <div>
-        //     //     <img src="/images/circular_and_point_deviation.png" width="70%"/>
-        //     // </div>,
-        //     enableBtn:
-        //     <Grid item xs={12}>
-        //         <FormGroup>
-        //             <FormControlLabel control={<Switch checked={monitor.point_deviation_monitor.enable} onChange={(e) => handleChangeSwitch(e, "point_deviation_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.point_deviation_monitor.enable ? "Enabled" : "Disabled"} />
-        //         </FormGroup>
-        //     </Grid>
-        // },
-        // {
-        //     name: "Drift Monitor",
-        //     value:'2.5',
-        //     description: "Single drone monitor, monitors whether the drone reached the destination point within the (threshold) and how much the drone drifted after reaching destination due to wind and acceleration",
-        //     btns:<React.Fragment>
-        //     <Tooltip title="Enter Threshold in Meters" placement='bottom'>
-        //     <Grid item xs={3}>
-        //         <TextField label="Deviation (%)" type="number" step="0.1" variant="standard" onChange={handleDriftThreshChange} value={monitor.drift_monitor.param[0]}/>
-        //     </Grid>
-        //     </Tooltip>
-        //     </React.Fragment>,
-        //     images: null,
-        //     // <div>
-        //     //     <img src="/images/drift_and_waypoint.png" width="70%"/>
-        //     // </div>,
-        //     enableBtn:
-        //     <Grid item xs={12}>
-        //         <FormGroup>
-        //             <FormControlLabel control={<Switch checked={monitor.drift_monitor.enable} onChange={(e) => handleChangeSwitch(e, "drift_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.drift_monitor.enable ? "Enabled" : "Disabled"} />
-        //         </FormGroup>
-        //     </Grid>
-        // },
         {
             name: "Airspace",
             value: '2.6',
@@ -693,30 +608,70 @@ export default function MonitorControl (monJson) {
             tableData:null,
             isMultipleTable: false
         },
-        // {
-        //     name: "Battery",
-        //     value: '2.8',
-        //     description: "Drones should never continue flying with bettery level lower than (percentage)",
-        //     btns:
-        //     <React.Fragment>
-        //         <Tooltip title="Battery allowed, in percentage (%)" placement='bottom'>
-        //             <Grid item xs={3}>
-        //                 <TextField id="standard-basic" label="Battery percentage" type="number" step="0.1" variant="standard" onChange={handleBatteruMonitor} value={monitor.battery_monitor.param[0]}></TextField>
-        //             </Grid>
-        //         </Tooltip>
-        //     </React.Fragment>,
-        //     images: null,
-        //     // <img src="/images/min_separation_distance.png" width="70%"/>,
-        //     enableBtn:
-        //         <Grid item xs={12}>
-        //             <FormGroup>
-        //                 <FormControlLabel control={<Switch checked={monitor.battery_monitor.enable} onChange={(e) => handleChangeSwitch(e, "battery_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.battery_monitor.enable ? "Enabled" : "Disabled"} />
-        //             </FormGroup>
-        //         </Grid>,
-        //     tableData:null
-        // }
     ]
+    const handleFuzzyWindChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            windFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.positionFuzzy || prevState.timeOfDayFuzzy
+        }))
+    }
 
+    const handleFuzzyPositionChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            positionFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.windFuzzy || prevState.timeOfDayFuzzy
+        }))
+    }
+
+    const handleFuzzyTimeChange = (val) => {
+        setEnvConf(prevState => ({
+            ...prevState,
+            timeOfDayFuzzy: val.target.checked,
+            enableFuzzy: val.target.checked || prevState.windFuzzy || prevState.positionFuzzy
+        }))
+    }
+    const CheckboxComponent = () => {
+
+      return(
+        <div>
+        <div>
+            <input
+            type="checkbox"
+            name="timeOfDayFuzzy"
+            checked={envConf.timeOfDayFuzzy}
+            onChange={handleFuzzyTimeChange}
+            />
+        <label htmlFor="timeOfDayFuzzy">Time of Day</label>
+            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
+        </div>
+
+        <div>
+            <input
+                type="checkbox"
+                name="position"
+                checked={envConf.positionFuzzy}
+                onChange={handleFuzzyPositionChange}
+            />
+        <label htmlFor="position">Position</label>
+        <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
+        </div>
+
+        <div>
+            <input
+            type="checkbox"
+            name="wind"
+            checked={envConf.windFuzzy}
+            onChange={handleFuzzyWindChange}
+            />
+            <label htmlFor="wind">Wind</label>
+            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
+        </div>
+        </div>
+      );
+    };
+    
     return(
         <div>
             <Box sx={{ width: '100%', border: '1px solid grey', padding: 5, paddingTop: 2, maxHeight: '400px', overflow:'scroll'}}>
@@ -732,47 +687,10 @@ export default function MonitorControl (monJson) {
                                 >
                                     {/* <Tab label="Global Monitors" value="1" /> */}
                                     <Tab label="Test Properties" value="2" />
+                                    <Tab label= "Fuzzy Test Configuration" value ="Fuzzy" />
                                 </Tabs>
                             </Box>
-                            {/* <TabPanel value="1">
-                                <Box sx={{ width: '100%', typography: 'body1' }}>
-                                    <TabContext value={verticalValue}>
-                                        <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
-                                            <Tabs
-                                                orientation="vertical"
-                                                value={verticalValue}
-                                                onChange={handleVerticalChange}
-                                                variant="scrollable"
-                                                scrollButtons="auto"
-                                                sx={{ borderRight: 1, borderColor: 'divider' }}
-                                            >
-                                                {globalMonitors.map(function(single, index) {
-                                                    return <Tab key={index} label={single.name} value={single.value} style={{ justifyContent: "flex-end", alignItems:"flex-end"}} />
-                                                })}
-                                            </Tabs>
-                                            {globalMonitors.map(function(gbl, index) {
-                                                return(
-                                                    <TabPanel key={index} value={gbl.value}>
-                                                        <Container maxWidth="sm">
-                                                            <Typography>
-                                                                <Grid container spacing={2}>
-                                                                        {gbl.description}
-                                                                </Grid>
-                                                                <br/>
-                                                                <Grid container direction="row">
-                                                                    <Grid item xs={3}>
-                                                                        {gbl.btns}
-                                                                    </Grid>
-                                                                </Grid>
-                                                            </Typography>
-                                                        </Container>
-                                                    </TabPanel>
-                                                )
-                                            })}
-                                        </Box>
-                                    </TabContext>
-                                </Box>
-                            </TabPanel> */}
+                            
                             <TabPanel value="2">
                                 <Box sx={{ width: '100%', typography: 'body1' }}>
                                     <TabContext value={verticalValue}>
@@ -845,6 +763,9 @@ export default function MonitorControl (monJson) {
                                         </Box>
                                     </TabContext>
                                 </Box>
+                            </TabPanel>
+                            <TabPanel value="Fuzzy">
+                                    <CheckboxComponent/>
                             </TabPanel>
                         </TabContext>
                     </Box>

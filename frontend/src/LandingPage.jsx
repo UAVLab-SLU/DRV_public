@@ -28,9 +28,9 @@ const useStyles = makeStyles((theme) => ({
   mainContent: {
     padding: '2rem',
   },
-  buttonContainer: {
-    marginTop: '2rem',
-  },
+ // buttonContainer: {
+   // marginTop: '2rem',
+  //},
   navList: {
     listStyleType: 'none', 
     margin: 0,
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '30px', 
    // backgroundColor: 'rgba(255,255,255,0.2)', // Semi-transparent white
     transition: 'background-color 0.3s ease', // Smooth transition
-    backgroundColor: '#87CEEB', // Lighter background on hover
+   // backgroundColor: '#87CEEB', // Lighter background on hover
   },
 }));
 
@@ -64,7 +64,6 @@ export default function LandingPage() {
         </a>
         <ul className={classes.navList}>
           <li className={classes.navListItem}>
-            {/* Use Box component to create a rounded rectangle around the link */}
             <Box component="span">
               <Link to="/about" className={classes.aboutLink}>
                 About Us

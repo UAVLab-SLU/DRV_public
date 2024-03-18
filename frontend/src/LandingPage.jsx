@@ -1,56 +1,99 @@
-import CardMedia from '@mui/material/CardMedia'
-import Box from '@mui/material/Box';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
-import CheckIcon from '@mui/icons-material/Check';
-import List from '@mui/material/List'
-import ClearIcon from '@mui/icons-material/Clear';
-import InfoIcon from '@mui/icons-material/Info';
-import { useLocation } from "react-router-dom";
-import { Container } from '@mui/material';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
-import Modal from '@mui/material/Modal';
-import { useNavigate } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import Tooltip from '@mui/material/Tooltip';
-import AlertTitle from '@mui/material/AlertTitle';
-import { wait } from '@testing-library/user-event/dist/utils';
-import PropTypes from 'prop-types'; 
-import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
-import FuzzyDashboard from './components/FuzzyDashboard'; 
-import React, { useEffect } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
-import Snackbar from '@mui/material/Snackbar';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; 
-import CircularProgress from '@mui/material/CircularProgress'; 
-import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';  
-import "./styles.css"
+import Box from '@mui/material/Box'; // Import Box component
+import Button from '@mui/material/Button';
 
+const useStyles = makeStyles((theme) => ({
+  landingPage: {
+    fontFamily: 'Roboto, sans-serif',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  nav: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.5rem',
+    backgroundColor: '#0000CD', 
+    fontFamily: 'Arial, sans-serif',
+  },
+  siteTitle: {
+    color: '#fff',
+    textDecoration: 'none',
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    fontFamily: 'Arial, sans-serif', 
+  },
+  mainContent: {
+    padding: '2rem',
+  },
+  buttonContainer: {
+    marginTop: '2rem',
+  },
+  navList: {
+    listStyleType: 'none', 
+    margin: 0,
+    padding: 0,
+    fontFamily: 'Arial, sans-serif', 
+  },
+  navListItem: {
+    display: 'inline-block',
+    marginLeft: '1rem',
+  },
+  
+  aboutLink: {
+    textDecoration: 'none',
+    color: '#fff',
+    padding: '0.5rem 1rem',
+    borderRadius: '30px', 
+   // backgroundColor: 'rgba(255,255,255,0.2)', // Semi-transparent white
+    transition: 'background-color 0.3s ease', // Smooth transition
+    backgroundColor: '#87CEEB', // Lighter background on hover
+  },
+}));
 
+export default function LandingPage() {
+  const classes = useStyles();
 
-export default function LandingPage(parameter) { 
-
-
-    return (
-        <nav className= "nav">   
-        <a href=" /" className = "site-title">  
-            Drone World
-        </a> 
-        <ul>  
-            <li>  
-                <a href = "/">Create Simulation</a>  
-                </li> 
-                <li> 
-                <a href = "/about">About Us</a>
-            </li>
-            </ul>
-        </nav>
-    );
+  return (
+    <div className={classes.landingPage}>
+      <nav className={classes.nav}>
+        <a href="/" className={classes.siteTitle}>
+          Drone World
+        </a>
+        <ul className={classes.navList}>
+          <li className={classes.navListItem}>
+            {/* Use Box component to create a rounded rectangle around the link */}
+            <Box component="span">
+              <Link to="/about" className={classes.aboutLink}>
+                About Us
+              </Link>
+            </Box>
+          </li>
+        </ul>
+      </nav>
+      {/* Main content area */}
+      <div className={classes.mainContent} style={{paddingTop: '9rem', color: '#333'}}>
+        <h1>Welcome to Drone World!</h1>
+        <div className={classes.buttonContainer}>
+          <Link to="/">
+            <Button
+              variant="contained"
+              sx={{
+                //backgroundColor: '#ADD8E6',
+                color: 'white',
+                padding: '15px 30px',
+                borderRadius: '10px',
+                backgroundColor: '#87CEEB',
+                
+              }}
+            >
+              Create Simulation
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

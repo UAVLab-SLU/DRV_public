@@ -7,7 +7,7 @@ import FuzzyDashboard from './components/FuzzyDashboard';
 import ReportDashboard from './components/ReportDashboard'; 
 import LandingPage from './LandingPage'; 
 import AboutUs from './components/AboutUs'; 
-//import "./styles.css"
+import "./styles.css"
 
 
 function App() {
@@ -19,8 +19,8 @@ function App() {
         <Route exact path='/dashboard' element={<FuzzyDashboard />} /> 
         <Route exact path = '/report-dashboard' element = {<ReportDashboard/>} />  
         <Route exact path = '/landing-page' element = {<LandingPage/>} />  
-        <Route exact path = '/about-us' element = {<AboutUs/>} /> 
-
+        <Route exact path = '/about-us' element = {<AboutUs/>} />  
+        
       </Routes>
     </Router>
   );

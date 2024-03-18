@@ -107,51 +107,87 @@ def list_reports():
 
     return {'reports': report_files}
 
+# Here is the code that is seperate. It is the file content below.
+# In the frontend, you need to call reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
 
 def encode_file_to_base64(file_path):
     """Encodes a file's content to a base64 string."""
     with open(file_path, 'rb') as file:
         return base64.b64encode(file.read()).decode('utf-8')
 
-def process_directory(folder_name):
-    """Processes a directory, organizing files by extension and encoding as needed."""
-    # Initialize result dictionary with lists for each file type we're handling
-    folder_name = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+def process_reports_directory(reports_folder_path=None):
+    """Processes the 'reports' directory, listing contents of each report subfolder."""
+    if reports_folder_path is None:
+        # Set the default reports path
+        reports_folder_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
     
-    result = {
-        '.txt': [],
-        '.html': [],
-        '.png': []
-    }
+    reports_list = []
 
-    for root, dirs, files in os.walk(folder_name):
-        for file in files:
-            parent_folder = os.path.basename(root)
-            file_path = os.path.join(root, file)
-            file_extension = os.path.splitext(file)[1]
+    # Ensure we're only looking at the first level of subdirectories within 'reports'
+    for report_folder_name in os.listdir(reports_folder_path):
+        report_folder_path = os.path.join(reports_folder_path, report_folder_name)
+        if os.path.isdir(report_folder_path):
+            report_contents = []
+
+            for root, dirs, files in os.walk(report_folder_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    
+                    if file.endswith('.txt'):
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                        report_contents.append(content)
+                    elif file.endswith('.html') or file.endswith('.png'):
+                        base64_content = encode_file_to_base64(file_path)
+                        report_contents.append(base64_content)
+
+            reports_list.append(report_contents)
+    
+    return reports_list
+# def encode_file_to_base64(file_path):
+#     """Encodes a file's content to a base64 string."""
+#     with open(file_path, 'rb') as file:
+#         return base64.b64encode(file.read()).decode('utf-8')
+
+# def process_directory(folder_name):
+#     """Processes a directory, organizing files by extension and encoding as needed."""
+#     # Initialize result dictionary with lists for each file type we're handling
+#     folder_name = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+    
+#     result = {
+#         '.txt': [],
+#         '.html': [],
+#         '.png': []
+#     }
+
+#     for root, dirs, files in os.walk(folder_name):
+#         for file in files:
+#             parent_folder = os.path.basename(root)
+#             file_path = os.path.join(root, file)
+#             file_extension = os.path.splitext(file)[1]
             
-            # Prepare a base file entry dictionary
-            file_entry = {
-                "name": file,
-                "parent": parent_folder
-            }
+#             # Prepare a base file entry dictionary
+#             file_entry = {
+#                 "name": file,
+#                 "parent": parent_folder
+#             }
 
-            # Read and process files based on their extension
-            if file_extension == '.txt':
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                file_entry.update({
-                    "content": content
-                })
-                result['.txt'].append(file_entry)
-            elif file_extension in ['.html', '.png']:
-                base64_content = encode_file_to_base64(file_path)
-                file_entry.update({
-                    "content": base64_content
-                })
-                result[file_extension].append(file_entry)
+#             # Read and process files based on their extension
+#             if file_extension == '.txt':
+#                 with open(file_path, 'r', encoding='utf-8') as f:
+#                     content = f.read()
+#                 file_entry.update({
+#                     "content": content
+#                 })
+#                 result['.txt'].append(file_entry)
+#             elif file_extension in ['.html', '.png']:
+#                 base64_content = encode_file_to_base64(file_path)
+#                 file_entry.update({
+#                     "content": base64_content
+#                 })
+#                 result[file_extension].append(file_entry)
 
-    return result
+#     return result
 
 
 

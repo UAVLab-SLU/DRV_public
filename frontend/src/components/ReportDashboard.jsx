@@ -24,10 +24,7 @@ import PropTypes from 'prop-types';
 //import FuzzyDashboard from '/dashboard';
 import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
 import FuzzyDashboard from './FuzzyDashboard'; 
-//import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-// ReportDashboard.js
 import React, { useEffect } from 'react';
-//import { Card, CardHeader, CardContent } from '@material-ui/core';
 import { makeStyles } from '@mui/styles';
 import Snackbar from '@mui/material/Snackbar';
 
@@ -39,7 +36,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CircularProgress from '@mui/material/CircularProgress'; 
 import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';
 
-//import { Grid } from '@mui/material';
 
 
 const useStyles = makeStyles((theme) => ({ 
@@ -66,36 +62,36 @@ const useStyles = makeStyles((theme) => ({
   },
 }));  
 
-const sampleData = [
-  {
-    "contains_fuzzy": false,
-    "drone_count": 0,
-    "fail": 0,
-    "filename": ".DS_Store",
-    "pass": 0
-},
-{
-    "contains_fuzzy": true,
-    "drone_count": 1,
-    "fail": 0,
-    "filename": "2023-10-10-15-09-38_Batch_1",
-    "pass": 2
-},
-{
-    "contains_fuzzy": true,
-    "drone_count": 10,
-    "fail": 2,
-    "filename": "2023-10-10-15-13-17_Batch_2",
-    "pass": 8
-},
-{
-    "contains_fuzzy": true,
-    "drone_count": 15,
-    "fail": 5,
-    "filename": "2023-10-10-15-15-35_Batch_3",
-    "pass": 10
-}
-];
+//const sampleData = [
+//  {
+//    "contains_fuzzy": false,
+//    "drone_count": 0,
+//    "fail": 0,
+//    "filename": ".DS_Store",
+//    "pass": 0
+//},
+//{
+  //  "contains_fuzzy": true,
+   // "drone_count": 1,
+   // "fail": 0,
+  //  "filename": "2023-10-10-15-09-38_Batch_1",
+  //  "pass": 2
+//},
+//{
+ //   "contains_fuzzy": true,
+ //   "drone_count": 10,
+ //   "fail": 2,
+ //   "filename": "2023-10-10-15-13-17_Batch_2",
+ //   "pass": 8
+//},
+//{
+  //  "contains_fuzzy": true,
+  //  "drone_count": 15,
+  //  "fail": 5,
+  //  "filename": "2023-10-10-15-15-35_Batch_3",
+   // "pass": 10
+//}
+//];
 
   
   export default function ReportDashboard(parameter) {
@@ -134,7 +130,9 @@ const sampleData = [
       // Set the sample data initially
       //setReportFiles(sampleData);
     
-      // Fetch data after setting the sample data
+      // Fetch data after setting the sample data 
+      setReportFiles([]); 
+
       fetchData();
     }, []);
 
@@ -157,8 +155,9 @@ const sampleData = [
     
   
   return (
-    <>
-      {reportFiles.length === 0 && (
+   <>
+    {reportFiles.length === 0 && (
+      <>
         <Snackbar
           open={snackBarState.open}
           anchorOrigin={{
@@ -176,54 +175,64 @@ const sampleData = [
             {"No reports found"}
           </Alert>
         </Snackbar>
-      )}
-      <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-        Acceptance Report
-        <Tooltip title="Home" placement="bottom">
-          <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
-        </Tooltip> 
+
+        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
+          Acceptance Report
+          <Tooltip title="Home" placement="bottom">
+            <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+          </Tooltip>
+        </Typography>
 
         <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
           {/* ... (existing Container, Paper, and div) */}
         </Container>
-        {reportFiles.length === 0 && (
-          <Button variant="contained" color="primary" onClick={redirectToFuzzyDashboard} style={{ marginTop: '10px' }}>
-            Go to Fuzzy Dashboard
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+          <Button variant="contained" color="primary" onClick={redirectToHome}>
+            Return to Home
           </Button>
-        )}
-      </Typography>
-      <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
-        {reportFiles.map((file) => {
-          const parts = file.filename.split('_');
-          const failed = file.fail > 0;
-          const passed = file.pass > 0;
+        </div>
+      </>
+    )}
 
-          if (!file || !file.filename || file.filename.includes('.DS_Store')) {
-            return null;
-          }
+    {reportFiles.length > 0 && (
+      <>
+        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
+          Acceptance Report
+          {/* ... */}
+        </Typography>
+        <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
+          {reportFiles.map((file) => {
+            const parts = file.filename.split('_');
+            const failed = file.fail > 0;
+            const passed = file.pass > 0;
 
-          if (parts.length < 2) {
-            return (
-              <Grid key={file.id} item xs={12}>
-                <Accordion>
-                  {/* ... (other JSX components) */}
-                </Accordion>
-              </Grid>
-            );
-          }  
-          
-          const datePart = parts[0];
-          const batchName = parts.slice(1).join('_');
-  
-          const date = datePart.substr(0, 10);
-          const time = datePart.substr(11, 8);
-  
-          const formattedDate = `${date.substr(5, 2)}-${date.substr(8, 2)}-${date.substr(0, 4)}`;
-          const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
-  
-          const formattedTimestamp = `${formattedDate} ${formattedTime}`;
-  
-          const passedPercent = Math.round((file.pass / (file.pass + file.fail)) * 100);
+            if (!file || !file.filename || file.filename.includes('.DS_Store')) {
+              return null;
+            }
+
+            if (parts.length < 2) {
+              return (
+                <Grid key={file.id} item xs={12}>
+                  <Accordion>
+                    {/* ... (other JSX components) */}
+                  </Accordion>
+                </Grid>
+              );
+            }
+
+            const datePart = parts[0];
+            const batchName = parts.slice(1).join('_');
+
+            const date = datePart.substr(0, 10);
+            const time = datePart.substr(11, 8);
+
+            const formattedDate = `${date.substr(5, 2)}-${date.substr(8, 2)}-${date.substr(0, 4)}`;
+            const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
+
+            const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+
+            const passedPercent = Math.round((file.pass / (file.pass + file.fail)) * 100);
   
           return (
             <Grid key={file.id} item xs={12}> 
@@ -312,6 +321,8 @@ const sampleData = [
         );
       })}
     </Grid>
+    </>
+    )}
   </>
-);
+); 
 }

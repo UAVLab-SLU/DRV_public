@@ -105,7 +105,7 @@ export default function HorizontalLinearStepper(data) {
         delete drone.Sensors.Barometer["Key"]
         delete drone.Sensors.Magnetometer["Key"]
         delete drone.Sensors.GPS["Key"]
-        delete drone.Sensors.GPS["EphTimeConstant"]
+        // delete drone.Sensors.GPS["EphTimeConstant"]
         // drone.Sensors.GPS["EpvTimeConstant"] ? delete drone.Sensors.GPS["EpvTimeConstant"]: null
         // drone.Sensors.GPS["EphInitial"] ? delete drone.Sensors.GPS["EphInitial"]: null
         // drone.Sensors.GPS["EpvInitial"] ? delete drone.Sensors.GPS["EpvInitial"]: null

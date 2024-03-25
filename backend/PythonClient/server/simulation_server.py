@@ -1,8 +1,10 @@
 import logging
-import os.path
+import os #I changed it from os.path to just os. Revert is needed
 import threading
 import time
 import base64
+import json
+import mimetypes
 import sys
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS
@@ -108,88 +110,55 @@ def list_reports():
     return {'reports': report_files}
 
 # Here is the code that is seperate. It is the file content below.
-# In the frontend, you need to call reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+# In the frontend, you need to call process_report_file(fileName)
 
-def encode_file_to_base64(file_path):
-    """Encodes a file's content to a base64 string."""
-    with open(file_path, 'rb') as file:
-        return base64.b64encode(file.read()).decode('utf-8')
+def read_text_file_contents(file_path):
+    """Reads the entire content of a text file."""
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return file.read()
 
-def process_reports_directory(reports_folder_path=None):
-    """Processes the 'reports' directory, listing contents of each report subfolder."""
-    if reports_folder_path is None:
-        # Set the default reports path
-        reports_folder_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    
-    reports_list = []
+def encode_image_to_base64(file_path):
+    """Encodes an image file to a base64 string."""
+    with open(file_path, 'rb') as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
 
-    # Ensure we're only looking at the first level of subdirectories within 'reports'
-    for report_folder_name in os.listdir(reports_folder_path):
-        report_folder_path = os.path.join(reports_folder_path, report_folder_name)
-        if os.path.isdir(report_folder_path):
-            report_contents = []
+def process_report_file(report_file_name):
+    """Processes a specific report file in the AirSim report directory."""
+    reports_folder_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
+    file_path = os.path.join(reports_folder_path, report_file_name)
 
-            for root, dirs, files in os.walk(report_folder_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    
-                    if file.endswith('.txt'):
-                        with open(file_path, 'r', encoding='utf-8') as f:
-                            content = f.read()
-                        report_contents.append(content)
-                    elif file.endswith('.html') or file.endswith('.png'):
-                        base64_content = encode_file_to_base64(file_path)
-                        report_contents.append(base64_content)
+    if not os.path.exists(file_path):
+        print(f"File does not exist: {file_path}")
+        return None
 
-            reports_list.append(report_contents)
-    
-    return reports_list
-# def encode_file_to_base64(file_path):
-#     """Encodes a file's content to a base64 string."""
-#     with open(file_path, 'rb') as file:
-#         return base64.b64encode(file.read()).decode('utf-8')
+    file_type, _ = mimetypes.guess_type(file_path)
+    fuzzy_path = file_path.split(os.sep)[-2]  # Assuming fuzzy path is second to last in path
+    fuzzy_value = fuzzy_path.split("_")[-1]  # Assuming fuzzy value is last in fuzzy path
 
-# def process_directory(folder_name):
-#     """Processes a directory, organizing files by extension and encoding as needed."""
-#     # Initialize result dictionary with lists for each file type we're handling
-#     folder_name = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    
-#     result = {
-#         '.txt': [],
-#         '.html': [],
-#         '.png': []
-#     }
+    # Initial dictionary for the file
+    file_dict = {
+        "name": report_file_name,
+        "type": file_type,
+        "fuzzyPath": fuzzy_path,
+        "fuzzyValue": fuzzy_value
+    }
 
-#     for root, dirs, files in os.walk(folder_name):
-#         for file in files:
-#             parent_folder = os.path.basename(root)
-#             file_path = os.path.join(root, file)
-#             file_extension = os.path.splitext(file)[1]
-            
-#             # Prepare a base file entry dictionary
-#             file_entry = {
-#                 "name": file,
-#                 "parent": parent_folder
-#             }
+    if file_type == 'text/plain':
+        content = read_text_file_contents(file_path)
+        file_dict.update({
+            "content": content,
+            "infoContent": {},  # Placeholder
+            "passContent": {},  # Placeholder
+            "failContent": {}   # Placeholder
+        })
+    elif file_type == 'image/png':
+        img_content = encode_image_to_base64(file_path)
+        file_dict.update({
+            "imgContent": img_content,
+            "path": file_path.replace("_plot.png", "_interactive.html")
+        })
 
-#             # Read and process files based on their extension
-#             if file_extension == '.txt':
-#                 with open(file_path, 'r', encoding='utf-8') as f:
-#                     content = f.read()
-#                 file_entry.update({
-#                     "content": content
-#                 })
-#                 result['.txt'].append(file_entry)
-#             elif file_extension in ['.html', '.png']:
-#                 base64_content = encode_file_to_base64(file_path)
-#                 file_entry.update({
-#                     "content": base64_content
-#                 })
-#                 result[file_extension].append(file_entry)
-
-#     return result
-
-
+    return file_dict
 
 
 @app.route('/addTask', methods=['POST'])

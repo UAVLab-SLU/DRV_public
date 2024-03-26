@@ -76,7 +76,7 @@ export default function LandingPage() {
       <div className={classes.mainContent} style={{paddingTop: '9rem', color: '#333'}}>
         <h1>Welcome to Drone World!</h1>
         <div className={classes.buttonContainer}>
-          <Link to="/">
+          <Link to="/home">
             <Button
              variant="contained"
               sx={{

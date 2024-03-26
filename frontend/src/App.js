@@ -14,11 +14,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route exact path='/' element={<Home />} />
+        <Route exact path='/home' element={<Home />} />
         <Route exact path='/simulation' element={<Wizard/>} />
         <Route exact path='/dashboard' element={<FuzzyDashboard />} /> 
         <Route exact path = '/report-dashboard' element = {<ReportDashboard/>} />  
-        <Route exact path = '/landing-page' element = {<LandingPage/>} />  
+        <Route exact path = '/' element = {<LandingPage/>} />  
         <Route exact path = '/about-us' element = {<AboutUs/>} />  
         
       </Routes>

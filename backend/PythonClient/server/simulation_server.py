@@ -121,7 +121,10 @@ def encode_image_to_base64(file_path):
     """Encodes an image file to a base64 string."""
     with open(file_path, 'rb') as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+    
 
+
+@app.route('/process-report/<report_file_name>', methods=['GET'])
 def process_report_file(report_file_name):
     """Processes a specific report file in the AirSim report directory."""
     reports_folder_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")

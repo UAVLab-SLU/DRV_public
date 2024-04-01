@@ -131,14 +131,13 @@ def process_report_file(report_file_name):
     file_path = os.path.join(reports_folder_path, report_file_name)
 
     if not os.path.exists(file_path):
-        print(f"File does not exist: {file_path}")
-        return None
+        return jsonify({"error": "File does not exist"}), 404
 
     file_type, _ = mimetypes.guess_type(file_path)
-    fuzzy_path = file_path.split(os.sep)[-2]  # Assuming fuzzy path is second to last in path
-    fuzzy_value = fuzzy_path.split("_")[-1]  # Assuming fuzzy value is last in fuzzy path
+    #get the parent directory correctly
+    fuzzy_path = os.path.dirname(file_path).split(os.sep)[-1]
+    fuzzy_value = fuzzy_path.split("_")[-1] if "_" in fuzzy_path else "unknown"
 
-    # Initial dictionary for the file
     file_dict = {
         "name": report_file_name,
         "type": file_type,
@@ -146,22 +145,26 @@ def process_report_file(report_file_name):
         "fuzzyValue": fuzzy_value
     }
 
-    if file_type == 'text/plain':
-        content = read_text_file_contents(file_path)
-        file_dict.update({
-            "content": content,
-            "infoContent": {},  # Placeholder
-            "passContent": {},  # Placeholder
-            "failContent": {}   # Placeholder
-        })
-    elif file_type == 'image/png':
-        img_content = encode_image_to_base64(file_path)
-        file_dict.update({
-            "imgContent": img_content,
-            "path": file_path.replace("_plot.png", "_interactive.html")
-        })
+    try:
+        if file_type == 'text/plain':
+            content = read_text_file_contents(file_path)
+            file_dict.update({
+                "content": content,
+                "infoContent": {},  # 
+                "passContent": {},  # 
+                "failContent": {}   # 
+            })
+        elif file_type == 'image/png':
+            img_content = encode_image_to_base64(file_path)
+            file_dict.update({
+                "imgContent": img_content,
+                "path": file_path.replace("_plot.png", "_interactive.html")
+            })
+    except Exception as e:
+        # Handle unexpected errors to avoid a 500 Internal Server Error response
+        return jsonify({"error": "Error processing file", "message": str(e)}), 500
 
-    return file_dict
+    return jsonify(file_dict)
 
 
 @app.route('/addTask', methods=['POST'])

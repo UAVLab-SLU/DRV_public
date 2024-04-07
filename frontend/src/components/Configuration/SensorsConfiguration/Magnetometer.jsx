@@ -33,10 +33,10 @@ export default function Magnetometer (sensor) {
 
     const handleChange = (event) => {
         const { id, value } = event.target;
-      
+        const parsedValue = event.target.type === 'number' ? parseFloat(value) : value;
         setMagnetometer((prevMagnetometer) => ({
           ...prevMagnetometer,
-          [id]: value,
+          [id]: parsedValue,
         }));
       }; 
 

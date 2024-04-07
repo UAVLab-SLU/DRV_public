@@ -1,15 +1,16 @@
 //import React from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
-import Box from '@mui/material/Box'; // Import Box component
-import Button from '@mui/material/Button';
+import Box from '@mui/material/Box'; 
+import Button from '@mui/material/Button'; 
+import ReportDashboard from './components/ReportDashboard';
 
 const useStyles = makeStyles((theme) => ({
   landingPage: {
     fontFamily: 'Roboto, sans-serif',
     color: '#fff',
-    textAlign: 'center',
-  },
+    //textAlign: 'center',
+  }, 
   nav: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -28,9 +29,11 @@ const useStyles = makeStyles((theme) => ({
   mainContent: {
     padding: '2rem',
   },
- // buttonContainer: {
-   // marginTop: '2rem',
-  //},
+  buttonContainer: {  
+    position: 'absolute',
+    marginTop: '5rem', 
+    top: '1rem', 
+  },   
   navList: {
     listStyleType: 'none', 
     margin: 0,
@@ -47,9 +50,9 @@ const useStyles = makeStyles((theme) => ({
     color: '#fff',
     padding: '0.5rem 1rem',
     borderRadius: '30px', 
-   // backgroundColor: 'rgba(255,255,255,0.2)', // Semi-transparent white
-    transition: 'background-color 0.3s ease', // Smooth transition
-   // backgroundColor: '#87CEEB', // Lighter background on hover
+   // backgroundColor: 'rgba(255,255,255,0.2)', 
+    transition: 'background-color 0.3s ease', 
+   // backgroundColor: '#87CEEB', 
   },
 }));
 
@@ -74,22 +77,35 @@ export default function LandingPage() {
       </nav>
       {/* Main content area */}
       <div className={classes.mainContent} style={{paddingTop: '9rem', color: '#333'}}>
-        <h1>Welcome to Drone World!</h1>
-        <div className={classes.buttonContainer}>
-          <Link to="/">
+       
+        <div className={classes.buttonContainer} style={{ color: '#333', position: 'right'}}> 
+        <Link to="/">
             <Button
              variant="contained"
               sx={{
                 //backgroundColor: '#ADD8E6',
                 color: 'white',
                 padding: '15px 30px',
-                borderRadius: '10px',
+                borderRadius: '10px', 
+                textAlign: 'right' 
+                //right: '15rem'
                 //backgroundColor: '#87CEEB',
-                
               }}
-            >
+            > 
               Create Simulation
             </Button>
+          </Link> 
+          <h1>Report History:</h1> 
+
+          <Link to= "/report-dashboard">
+            <div
+             
+            >  
+             {/* Contents of the LandingPage */}
+            {/* Embed the ReportDashboard component */}
+            <ReportDashboard />
+           
+            </div> 
           </Link>
         </div>
       </div>

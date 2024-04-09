@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, Typography } from '@mui/material';
 import FuzzyDashboard from './FuzzyDashboard'; 
 import React, { useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
-import Snackbar from '@mui/material/Snackbar';
+import Snackbar from '@mui/material/Snackbar'; 
 
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -35,6 +35,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import CircularProgress from '@mui/material/CircularProgress'; 
 import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 
 
@@ -94,7 +95,7 @@ const useStyles = makeStyles((theme) => ({
 //];
 
   
-  export default function ReportDashboard(parameter) {
+  export default function ReportDashboard(showTitle) {
 
     const [reportFiles, setReportFiles] = React.useState([]);  
    // const isFuzzy = file.filename.includes('Fuzzy'); 
@@ -152,10 +153,22 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
-    
   
-  return (
-   <>
+  const acceptanceReportTypography = (
+    <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem', color:'#000000'}}>
+      <Link to="/report-dashboard" style={{ textDecoration: 'none', color: '#000000' }}>
+        Acceptance Report
+      </Link>
+      <Tooltip title="Home" placement="bottom">
+        <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+      </Tooltip>
+    </Typography>
+  );
+  
+   
+  return ( 
+   <>         
+   {acceptanceReportTypography}
     {reportFiles.length === 0 && (
       <>
         <Snackbar
@@ -176,12 +189,6 @@ const useStyles = makeStyles((theme) => ({
           </Alert>
         </Snackbar>
 
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-          Acceptance Report
-          <Tooltip title="Home" placement="bottom">
-            <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
-          </Tooltip>
-        </Typography>
 
         <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
           {/* ... (existing Container, Paper, and div) */}
@@ -196,11 +203,8 @@ const useStyles = makeStyles((theme) => ({
     )}
 
     {reportFiles.length > 0 && (
-      <>
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-          Acceptance Report
-          {/* ... */}
-        </Typography>
+      <> 
+    
         <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
           {reportFiles.map((file) => {
             const parts = file.filename.split('_');

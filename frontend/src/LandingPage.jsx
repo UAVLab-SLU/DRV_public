@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ReportDashboard from './components/ReportDashboard';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   landingPage: {
     fontFamily: 'Roboto, sans-serif',
     color: '#fff',
+    display: 'flex',
+    flexDirection: 'column', // Center content vertically
+    alignItems: 'center', // Center content horizontally
+    minHeight: '100vh', // Make sure the page fills the viewport
   },
   nav: {
     display: 'flex',
@@ -17,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
     padding: '1.5rem',
     backgroundColor: '#0000CD',
     fontFamily: 'Arial, sans-serif',
+    width: '100%',
   },
   siteTitle: {
     color: '#fff',
@@ -27,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
   },
   mainContent: {
     padding: '2rem',
+    //textAlign: 'center', 
   },
   buttonContainer: {
     display: 'flex',
@@ -50,6 +56,24 @@ const useStyles = makeStyles((theme) => ({
     color: '#fff',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
+    cursor: 'pointer', 
+  },
+  acceptanceReportLink: {
+    textDecoration: 'underline',
+    color: '#800080', 
+    cursor: 'pointer', 
+    fontWeight: 'bold', 
+    display: 'block', 
+    marginBottom: '1rem', 
+  },
+  reportDashboardTitle: {
+    textDecoration: 'underline', 
+    color: '#800080', 
+    fontWeight: 'bold',
+    fontSize: '1.5rem', 
+    marginBottom: '1rem', 
+    cursor: 'pointer', 
+    textAlign: 'center',  
   },
 }));
 
@@ -73,6 +97,10 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
+  const handleAccordionToggle = () => {
+    console.log('Accordion toggled');
+  };
+
   return (
     <div className={classes.landingPage}>
       <nav className={classes.nav}>
@@ -81,42 +109,42 @@ export default function LandingPage() {
         </a>
         <ul className={classes.navList}>
           <li className={classes.navListItem}>
-            <Box component="span">
-              <Link to="/about" className={classes.aboutLink}>
-                About Us
-              </Link>
+            <Box component="span" onClick={handleAccordionToggle}>
+              About Us
             </Box>
           </li>
         </ul>
       </nav>
       <div className={classes.mainContent}>
-        <div className={classes.buttonContainer}>
-          <Link to="/">
-            <Button
-              variant="contained"
-              sx={{
-                color: 'white',
-                padding: '15px 30px',
-                borderRadius: '10px',
-              }}
-            >
-              Create Simulation
-            </Button>
-          </Link>
-        </div>
-        <h1 style={{ marginTop: '3rem' }}></h1>
-        {filesPresent ? (
-          <Link to="/report-dashboard">
-            <div>
-              <ReportDashboard />
-            </div>
-          </Link>
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <h2>No batch files present in the report dashboard</h2>
+  <div className={classes.buttonContainer}>
+    <Button
+      variant="contained"
+      sx={{
+        color: 'white',
+        padding: '15px 30px',
+        borderRadius: '10px',
+      }}
+    >
+      Create Simulation
+    </Button>
+  </div>
+  {filesPresent ? (
+    <div onClick={handleAccordionToggle}>
+      <h2 className={classes.reportDashboardTitle}>
+        <Link to="/report-dashboard" className={classes.reportDashboardTitle}> 
+          <div style={{ textAlign: 'center'}}>
           </div>
-        )}
-      </div>
+        </Link>
+      </h2>
+      <ReportDashboard />
+    </div>
+  ) : (
+    <div style={{ textAlign: 'center' }}>
+      <h2>No batch files present in the report dashboard</h2>
+    </div>
+  )}
+</div>
+
     </div>
   );
 }

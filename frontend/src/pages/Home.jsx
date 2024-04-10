@@ -170,8 +170,8 @@ const Home = () => {
     
 
     {/*Remove this code when implementing the header About us. Widen the component. Add a close button.*/}
-    {/* Button to open Modal */}
-    <Button onClick={() => setOpen(true)} style={{ marginTop: 20, marginBottom: 20 }}>About Us (Move this to Nav Bar later)</Button>
+    {/* Button to test Modal*/}
+    {/* <Button onClick={() => setOpen(true)} style={{ marginTop: 20, marginBottom: 20 }}>About Us (Move this to Nav Bar later)</Button> */}
 
     {/* Modal Component */}
     <Modal

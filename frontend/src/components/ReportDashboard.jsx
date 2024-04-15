@@ -283,16 +283,6 @@ const useStyles = makeStyles((theme) => ({
     </div>
   )}
 </div>
-          {/* Button to open file */}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => openFile(file.filename)} // Add this onClick handler
-        style={{ marginLeft: '8px' }} // Adjust styling as needed
-      >
-        Open File
-      </Button>
-
         </Grid>
       </Grid>
     </AccordionSummary>

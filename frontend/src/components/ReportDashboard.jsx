@@ -129,7 +129,6 @@ const useStyles = makeStyles((theme) => ({
       // Set the sample data initially
       //setReportFiles(sampleData);
     
-      // Fetch data after setting the sample data 
       setReportFiles([]); 
 
       fetchData();

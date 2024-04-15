@@ -264,6 +264,7 @@ const useStyles = makeStyles((theme) => ({
         <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: 'red' }}>❌</span>
       </div>
     </div>
+    
   )}
   {passed && (
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
@@ -282,7 +283,15 @@ const useStyles = makeStyles((theme) => ({
     </div>
   )}
 </div>
-
+          {/* Button to open file */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => openFile(file.filename)} // Add this onClick handler
+        style={{ marginLeft: '8px' }} // Adjust styling as needed
+      >
+        Open File
+      </Button>
 
         </Grid>
       </Grid>

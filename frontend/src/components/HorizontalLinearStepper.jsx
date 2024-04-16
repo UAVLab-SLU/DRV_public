@@ -77,9 +77,8 @@ export default function HorizontalLinearStepper(data) {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const invokePostAPI = () => {
-    console.log('mainJson-----', mainJson)
-    if(mainJson.environment != null && mainJson.environment.enableFuzzy == true) {
+  React.useEffect(() => {
+    if( mainJson.environment != null && mainJson.environment.enableFuzzy == true && mainJson.environment.enableFuzzy != null) {
       setJson(prevState => ({
         ...prevState,
         FuzzyTest: {
@@ -87,18 +86,40 @@ export default function HorizontalLinearStepper(data) {
           precision: 5
         }
       }))
+      delete mainJson.environment["enableFuzzy"]
     }
+    if (mainJson.environment != null && mainJson.environment.enableFuzzy == false && mainJson.FuzzyTest != null) {
+      delete mainJson.FuzzyTest
+    }
+  }, [mainJson])
+
+
+
+  const invokePostAPI = () => {
+    console.log("mainJson-----", mainJson)
     if(activeStep === steps.length -1) {
       mainJson.Drones.map(drone => {
+
         delete drone["id"]
         delete drone["droneName"]
         delete drone.Sensors.Barometer["Key"]
         delete drone.Sensors.Magnetometer["Key"]
         delete drone.Sensors.GPS["Key"]
+        // delete drone.Sensors.GPS["EphTimeConstant"]
+        // drone.Sensors.GPS["EpvTimeConstant"] ? delete drone.Sensors.GPS["EpvTimeConstant"]: null
+        // drone.Sensors.GPS["EphInitial"] ? delete drone.Sensors.GPS["EphInitial"]: null
+        // drone.Sensors.GPS["EpvInitial"] ? delete drone.Sensors.GPS["EpvInitial"]: null
+        // drone.Sensors.GPS["EphFinal"] ? delete drone.Sensors.GPS["EphFinal"]: null
+        // drone.Sensors.GPS["EpvFinal"] ? delete drone.Sensors.GPS["EpvFinal"]: null
+        // drone.Sensors.GPS["EphMin3d"] ? delete drone.Sensors.GPS["EphMin3d"]: null
+        // drone.Sensors.GPS["EphMin2d"] ? delete drone.Sensors.GPS["EphMin2d"]: null
+        // drone.Sensors.GPS["UpdateLatency"] ? delete drone.Sensors.GPS["UpdateLatency"]: null
+        // drone.Sensors.GPS["StartupDelay"] ? delete drone.Sensors.GPS["StartupDelay"]: null
         // delete drone.Cameras.CaptureSettings.map(capt => {
         //   delete capt["key"]
         // })
       })
+
       delete mainJson.environment["time"]
       mainJson.monitors.circular_deviation_monitor["enable"] == true ? delete mainJson.monitors.circular_deviation_monitor["enable"] : delete mainJson.monitors.circular_deviation_monitor
       mainJson.monitors.collision_monitor["enable"] == true ? delete mainJson.monitors.collision_monitor["enable"] : delete mainJson.monitors.collision_monitor
@@ -111,8 +132,11 @@ export default function HorizontalLinearStepper(data) {
       mainJson.monitors.drift_monitor["enable"] == true ? delete mainJson.monitors.drift_monitor["enable"] : delete mainJson.monitors.drift_monitor
       mainJson.monitors.battery_monitor["enable"] == true ? delete mainJson.monitors.battery_monitor["enable"] : delete mainJson.monitors.battery_monitor
       delete mainJson.environment["enableFuzzy"]
+      delete mainJson.environment["timeOfDayFuzzy"]
+      delete mainJson.environment["windFuzzy"]
+      delete mainJson.environment["positionFuzzy"]
       console.log('mainJson-----', JSON.stringify(mainJson))
-      navigate('/dashboard', {
+      navigate('/report-dashboard', {
         state: {mainJson: mainJson}
       })
       fetch('http://127.0.0.1:5000/addTask', { 
@@ -126,7 +150,6 @@ export default function HorizontalLinearStepper(data) {
       .then(res => console.log(res));
     }
   } 
-  
   const stepsComponent = [
     {
       name:'Environment Configuration',

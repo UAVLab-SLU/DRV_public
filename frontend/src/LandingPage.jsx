@@ -10,9 +10,9 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Roboto, sans-serif',
     color: '#fff',
     display: 'flex',
-    flexDirection: 'column', // Center content vertically
-    alignItems: 'center', // Center content horizontally
-    minHeight: '100vh', // Make sure the page fills the viewport
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    minHeight: '100vh', 
   },
   nav: {
     display: 'flex',
@@ -74,7 +74,14 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: '1rem', 
     cursor: 'pointer', 
     textAlign: 'center',  
-  },
+  }, 
+
+  createSimulationLink: {
+    textDecoration: 'none', // Remove underline
+    display: 'block', // Make the link behave as a block element
+    width: 'fit-content', // Fit the link's width to the content
+},
+
 }));
 
 export default function LandingPage() {
@@ -116,7 +123,8 @@ export default function LandingPage() {
         </ul>
       </nav>
       <div className={classes.mainContent}>
-  <div className={classes.buttonContainer}>
+  <Link to="/" div className={classes.buttonContainer} style = {{textDecoration: 'none', 
+    }}>
     <Button
       variant="contained"
       sx={{
@@ -124,10 +132,11 @@ export default function LandingPage() {
         padding: '15px 30px',
         borderRadius: '10px',
       }}
-    >
-      Create Simulation
+    > 
+   
+      Create Simulation 
     </Button>
-  </div>
+  </Link>
   {filesPresent ? (
     <div onClick={handleAccordionToggle}>
       <h2 className={classes.reportDashboardTitle}>

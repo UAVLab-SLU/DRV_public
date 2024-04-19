@@ -552,11 +552,11 @@ const handleShearWindDirection = (e, index) => {
      };
     setwindShears([...windShears, newWindShearEntry]);
   };
-
+*/
   const [snackBarState, setSnackBarState] = React.useState({
     open: false,
     });
- */
+ 
     const addNewWindShear = () => {
         const newWindShearEntry = {
           windDirection: "",

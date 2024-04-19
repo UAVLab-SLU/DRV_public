@@ -235,6 +235,36 @@ export default function EnvironmentConfiguration (env) {
   };
   */}
 
+  const handleWindTypeChange = (event) => {
+    setFuzzyAlert(false);
+    handleSnackBarVisibility(true);
+    const newWindType = event.target.value;
+    setSelectedWindType(newWindType);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        Type: newWindType,
+        Fluctuation: newWindType === "Turbulent Wind" ? fluctuationPercentage : 0,
+      },
+    }));
+  };
+  
+  const handleFLuctuationChange = (event) => {
+    const newFlucValue = event.target.value;
+    setSelectedFluctuationValue(newFlucValue);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        Fluctuation: newFlucValue,
+      },
+    }));
+  };
+
+  /*
   const handleFLuctuationChange = (event) => {
       const newFlucValue = event.target.value;
       setSelectedFluctuationValue(newFlucValue);
@@ -253,9 +283,10 @@ export default function EnvironmentConfiguration (env) {
               Type: newWindType,
               },
           }));
-      */}
+      }
   };
-    
+
+  */
   const handleDirection = (val) => {
         setEnvConf(prevState => ({
             ...prevState,

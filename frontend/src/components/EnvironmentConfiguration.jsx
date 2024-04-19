@@ -170,6 +170,7 @@ export default function EnvironmentConfiguration (env) {
             TimeOfDay: val.$H + ':' + val.$m + ':' + val.$s
         }))
     }
+    /*
     const handleWindChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -179,6 +180,16 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     } 
+    */
+    const handleWindChange = (val) => {
+        setEnvConf((prevState) => ({
+          ...prevState,
+          Wind: {
+            ...prevState.Wind,
+            Velocity: val.target.type === "number" ? parseFloat(val.target.value) : 0,
+          },
+        }));
+      };
     const handleOriginChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,

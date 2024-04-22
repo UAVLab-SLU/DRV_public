@@ -411,5 +411,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5500) #Change to 5000 before pushing.
+    app.run(host='0.0.0.0', port=5000) #Change to 5000 before pushing.
     # makes it discoverable by other devices in the network

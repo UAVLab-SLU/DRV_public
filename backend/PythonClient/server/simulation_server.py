@@ -33,6 +33,7 @@ task_number = 1
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
+    
     reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
 
     if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
@@ -111,7 +112,113 @@ def list_reports():
 
 # Here is the code that is seperate. It is the file content below.
 # In the frontend, you need to call process_report_file(fileName)
+
+
+
 @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
+def list_folder_contents(folder_name):
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
+
+    if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    result = {
+        "name": 0,
+        "UnorderedWaypointMonitor": [],
+        "CircularDeviationMonitor": [],
+        "CollisionMonitor": [],
+        "LandspaceMonitor": [],
+        "OrderedWaypointMonitor": [],
+        "PointDeviationMonitor": [],
+        "MinSepDistMonitor": [],
+        "NoFlyZoneMonitor": []
+    }
+
+    for root, dirs, files in os.walk(base_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            fuzzy_path_value = None
+            paths = file_path.split(os.sep)
+            if len(paths) > 1:
+                fuzzy_path_value = paths[-2]
+
+            fuzzy_value_array = fuzzy_path_value.split("_") if fuzzy_path_value else []
+
+            if file.endswith('.txt'):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_contents = f.read()
+                    info_content = get_info_contents(file_contents, "INFO", {})
+                    pass_content = get_info_contents(file_contents, "PASS", {})
+                    fail_content = get_info_contents(file_contents, "FAIL", {})
+
+                    file_data = {
+                        "name": file,
+                        "type": "text/plain",
+                        "fuzzyPath": fuzzy_path_value,
+                        "fuzzyValue": fuzzy_value_array,
+                        "content": file_contents,
+                        "infoContent": info_content,
+                        "passContent": pass_content,
+                        "failContent": fail_content
+                    }
+
+                    # Append file data based on monitor types
+                    if "UnorderedWaypointMonitor" in file_path:
+                        result["UnorderedWaypointMonitor"].append(file_data)
+                    elif "CircularDeviationMonitor" in file_path:
+                        result["CircularDeviationMonitor"].append(file_data)
+                    elif "CollisionMonitor" in file_path:
+                        result["CollisionMonitor"].append(file_data)
+                    elif "LandspaceMonitor" in file_path:
+                        result["LandspaceMonitor"].append(file_data)
+                    elif "OrderedWaypointMonitor" in file_path:
+                        result["OrderedWaypointMonitor"].append(file_data)
+                    elif "PointDeviationMonitor" in file_path:
+                        result["PointDeviationMonitor"].append(file_data)
+                    elif "MinSepDistMonitor" in file_path:
+                        result["MinSepDistMonitor"].append(file_data)
+                    elif "NoFlyZoneMonitor" in file_path:
+                        result["NoFlyZoneMonitor"].append(file_data)
+
+            elif file.endswith('.png') or file.endswith('.html'):
+                file_data = {
+                    "name": file,
+                    "type": "image/png" if file.endswith('.png') else "text/html",
+                    "fuzzyPath": fuzzy_path_value,
+                    "fuzzyValue": fuzzy_value_array
+                }
+
+                if file.endswith('.png'):
+                    with open(file_path, 'rb') as image_file:
+                        base64_encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                        file_data["imgContent"] = base64_encoded_image
+                    file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
+                else:
+                    file_data["path"] = file_path
+
+                # Append file data based on monitor types
+                if "UnorderedWaypointMonitor" in file_path:
+                    result["UnorderedWaypointMonitor"].append(file_data)
+                elif "CircularDeviationMonitor" in file_path:
+                    result["CircularDeviationMonitor"].append(file_data)
+                elif "CollisionMonitor" in file_path:
+                    result["CollisionMonitor"].append(file_data)
+                elif "LandspaceMonitor" in file_path:
+                    result["LandspaceMonitor"].append(file_data)
+                elif "OrderedWaypointMonitor" in file_path:
+                    result["OrderedWaypointMonitor"].append(file_data)
+                elif "PointDeviationMonitor" in file_path:
+                    result["PointDeviationMonitor"].append(file_data)
+                elif "MinSepDistMonitor" in file_path:
+                    result["MinSepDistMonitor"].append(file_data)
+                elif "NoFlyZoneMonitor" in file_path:
+                    result["NoFlyZoneMonitor"].append(file_data)
+
+    return jsonify(result)
+
+
+
+""" @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
 def list_folder_contents(folder_name):
     base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
 
@@ -219,7 +326,7 @@ def get_info_contents(file_contents, keyword, default_value):
                 key = parts[2]
                 value = parts[3] if len(parts) >= 4 else ''
                 info_contents[key] = value.strip()
-    return info_contents if info_contents else default_value
+    return info_contents if info_contents else default_value """
 
 @app.route('/addTask', methods=['POST'])
 def add_task():
@@ -304,5 +411,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5500) #Change to 5000 before pushing.
     # makes it discoverable by other devices in the network

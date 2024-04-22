@@ -113,8 +113,6 @@ def list_reports():
 # Here is the code that is seperate. It is the file content below.
 # In the frontend, you need to call process_report_file(fileName)
 
-
-
 @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
 def list_folder_contents(folder_name):
     base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
@@ -137,6 +135,7 @@ def list_folder_contents(folder_name):
     for root, dirs, files in os.walk(base_directory):
         for file in files:
             file_path = os.path.join(root, file)
+
             fuzzy_path_value = None
             paths = file_path.split(os.sep)
             if len(paths) > 1:
@@ -155,14 +154,13 @@ def list_folder_contents(folder_name):
                         "name": file,
                         "type": "text/plain",
                         "fuzzyPath": fuzzy_path_value,
-                        "fuzzyValue": fuzzy_value_array,
+                        "fuzzyValue": fuzzy_path_value,
                         "content": file_contents,
                         "infoContent": info_content,
                         "passContent": pass_content,
                         "failContent": fail_content
                     }
 
-                    # Append file data based on monitor types
                     if "UnorderedWaypointMonitor" in file_path:
                         result["UnorderedWaypointMonitor"].append(file_data)
                     elif "CircularDeviationMonitor" in file_path:
@@ -185,18 +183,15 @@ def list_folder_contents(folder_name):
                     "name": file,
                     "type": "image/png" if file.endswith('.png') else "text/html",
                     "fuzzyPath": fuzzy_path_value,
-                    "fuzzyValue": fuzzy_value_array
+                    "fuzzyValue": fuzzy_path_value
                 }
 
                 if file.endswith('.png'):
-                    with open(file_path, 'rb') as image_file:
-                        base64_encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-                        file_data["imgContent"] = base64_encoded_image
+                    file_data["imgContent"] = None
                     file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
                 else:
                     file_data["path"] = file_path
 
-                # Append file data based on monitor types
                 if "UnorderedWaypointMonitor" in file_path:
                     result["UnorderedWaypointMonitor"].append(file_data)
                 elif "CircularDeviationMonitor" in file_path:
@@ -216,6 +211,17 @@ def list_folder_contents(folder_name):
 
     return jsonify(result)
 
+def get_info_contents(file_contents, keyword, default_value):
+    info_contents = {}
+    lines = file_contents.split('\n')
+    for line in lines:
+        if line.startswith(keyword):
+            parts = line.split(';')
+            if len(parts) >= 3:
+                key = parts[2]
+                value = parts[3] if len(parts) >= 4 else ''
+                info_contents[key] = value.strip()
+    return info_contents if info_contents else default_value
 
 
 """ @app.route('/list-folder-contents/<folder_name>', methods=['GET'])

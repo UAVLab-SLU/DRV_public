@@ -64,6 +64,208 @@ export default function FuzzyDashboard(parameter) {
 
   const names = [{name:0},{name:5},{name:10}]
 
+  const tempJson = {
+    "CircularDeviationMonitor": [],
+    "CollisionMonitor": [
+        {
+            "content": "INFO;14:46:50;Drone 2;CollisionMonitor started\nPASS;14:48:17;Drone 2;No collision detected\n",
+            "failContent": {},
+            "fuzzyPath": "CollisionMonitor",
+            "fuzzyValue": "CollisionMonitor",
+            "infoContent": {
+                "Drone 2": "CollisionMonitor started"
+            },
+            "name": "Drone 2_log.txt",
+            "passContent": {
+                "Drone 2": "No collision detected"
+            },
+            "type": "text/plain"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 3;CollisionMonitor started\nPASS;14:48:17;Drone 3;No collision detected\n",
+            "failContent": {},
+            "fuzzyPath": "CollisionMonitor",
+            "fuzzyValue": "CollisionMonitor",
+            "infoContent": {
+                "Drone 3": "CollisionMonitor started"
+            },
+            "name": "Drone 3_log.txt",
+            "passContent": {
+                "Drone 3": "No collision detected"
+            },
+            "type": "text/plain"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 1;CollisionMonitor started\nPASS;14:48:17;Drone 1;No collision detected\n",
+            "failContent": {},
+            "fuzzyPath": "CollisionMonitor",
+            "fuzzyValue": "CollisionMonitor",
+            "infoContent": {
+                "Drone 1": "CollisionMonitor started"
+            },
+            "name": "Drone 1_log.txt",
+            "passContent": {
+                "Drone 1": "No collision detected"
+            },
+            "type": "text/plain"
+        }
+    ],
+    "LandspaceMonitor": [
+        {
+            "content": "INFO;14:46:50;Drone 2;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 2;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 2;Landspace monitor started\nPASS;14:48:16;Drone 2;No landing violations detected\n",
+            "failContent": {},
+            "fuzzyPath": "LandspaceMonitor",
+            "fuzzyValue": "LandspaceMonitor",
+            "infoContent": {
+                "Drone 2": "Landspace monitor started"
+            },
+            "name": "Drone 2_log.txt",
+            "passContent": {
+                "Drone 2": "No landing violations detected"
+            },
+            "type": "text/plain"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 3;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 3;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 3;Landspace monitor started\nPASS;14:48:16;Drone 3;No landing violations detected\n",
+            "failContent": {},
+            "fuzzyPath": "LandspaceMonitor",
+            "fuzzyValue": "LandspaceMonitor",
+            "infoContent": {
+                "Drone 3": "Landspace monitor started"
+            },
+            "name": "Drone 3_log.txt",
+            "passContent": {
+                "Drone 3": "No landing violations detected"
+            },
+            "type": "text/plain"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 1;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 1;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 1;Landspace monitor started\nPASS;14:48:16;Drone 1;No landing violations detected\n",
+            "failContent": {},
+            "fuzzyPath": "LandspaceMonitor",
+            "fuzzyValue": "LandspaceMonitor",
+            "infoContent": {
+                "Drone 1": "Landspace monitor started"
+            },
+            "name": "Drone 1_log.txt",
+            "passContent": {
+                "Drone 1": "No landing violations detected"
+            },
+            "type": "text/plain"
+        }
+    ],
+    "MinSepDistMonitor": [
+        {
+            "content": "INFO;14:46:50;['Drone 1', 'Drone 2', 'Drone 3'];MinSepDistMonitor started, checking breach of lateral: 1 meters, horizontal : 1 meters, for every 1 seconds\nPASS;14:48:20;['Drone 1', 'Drone 2', 'Drone 3'];The minimum separation distance was not breached\n",
+            "failContent": {},
+            "fuzzyPath": "MinSepDistMonitor",
+            "fuzzyValue": "MinSepDistMonitor",
+            "infoContent": {
+                "['Drone 1', 'Drone 2', 'Drone 3']": "MinSepDistMonitor started, checking breach of lateral: 1 meters, horizontal : 1 meters, for every 1 seconds"
+            },
+            "name": "log.txt",
+            "passContent": {
+                "['Drone 1', 'Drone 2', 'Drone 3']": "The minimum separation distance was not breached"
+            },
+            "type": "text/plain"
+        }
+    ],
+    "NoFlyZoneMonitor": [],
+    "OrderedWaypointMonitor": [],
+    "PointDeviationMonitor": [
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "name": "Drone 1_interactive.html",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 1_interactive.html",
+            "type": "text/html"
+        },
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "imgContent": null,
+            "name": "Drone 3_plot.png",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 3_interactive.html",
+            "type": "image/png"
+        },
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "imgContent": null,
+            "name": "Drone 2_plot.png",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 2_interactive.html",
+            "type": "image/png"
+        },
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "name": "Drone 3_interactive.html",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 3_interactive.html",
+            "type": "text/html"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 2;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 2;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 2;Mission task finished\nPASS;14:48:16;Drone 2;No deviation violation (<15 meters)\n",
+            "failContent": {},
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "infoContent": {
+                "Drone 2": "Mission task finished"
+            },
+            "name": "Drone 2_log.txt",
+            "passContent": {
+                "Drone 2": "No deviation violation (<15 meters)"
+            },
+            "type": "text/plain"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 3;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 3;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 3;Mission task finished\nPASS;14:48:16;Drone 3;No deviation violation (<15 meters)\n",
+            "failContent": {},
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "infoContent": {
+                "Drone 3": "Mission task finished"
+            },
+            "name": "Drone 3_log.txt",
+            "passContent": {
+                "Drone 3": "No deviation violation (<15 meters)"
+            },
+            "type": "text/plain"
+        },
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "name": "Drone 2_interactive.html",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 2_interactive.html",
+            "type": "text/html"
+        },
+        {
+            "content": "INFO;14:46:50;Drone 1;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 1;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 1;Mission task finished\nPASS;14:48:16;Drone 1;No deviation violation (<15 meters)\n",
+            "failContent": {},
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "infoContent": {
+                "Drone 1": "Mission task finished"
+            },
+            "name": "Drone 1_log.txt",
+            "passContent": {
+                "Drone 1": "No deviation violation (<15 meters)"
+            },
+            "type": "text/plain"
+        },
+        {
+            "fuzzyPath": "PointDeviationMonitor",
+            "fuzzyValue": "PointDeviationMonitor",
+            "imgContent": null,
+            "name": "Drone 1_plot.png",
+            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 1_interactive.html",
+            "type": "image/png"
+        }
+    ],
+    "UnorderedWaypointMonitor": [],
+    "name": 0
+  }
+
+
   const handleOpen = (img) => {
     setOpen(true);
     setSelectedImage(img.imgContent)
@@ -213,285 +415,350 @@ export default function FuzzyDashboard(parameter) {
   }, 
   [UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
   )
-    
-  React.useEffect(() => {}, [fileArray])
-  const handleDirectorySelect = (event) => {
-    const files = event.target.files;
-    let name = [];
-    for (let i = 0; i < files.length; i++) {
-      const fileReader = new FileReader();
-      const file = files[i];
-      console.log('file----', file)
-      const data = [...fileArray]
-      let path = file.webkitRelativePath
-      let fuzzyPathValue = null
-      let paths = path.split("/")
-      console.log('paths----', paths)
-      if(paths.length > 1) {
-        fuzzyPathValue = paths[1]
-        setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
-      }
-      let fuzzyValueArray = fuzzyPathValue.split("_")
-      let exist = false
-      name.map(testName => {
-        if(testName.name == fuzzyValueArray[2]) {
-          exist = true;
-        }
-      }) 
-      if(!exist) {
-        name.push({name:fuzzyValueArray[2]})
-      }
-      console.log('fuzzyPathValue---', fuzzyPathValue)
-      if (file.type === 'text/plain') {
-        fileReader.onload = () => {
-          const fileContents = fileReader.result;
-          if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
-            setUnorderedWaypointMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
-            let info = getInfoContents(fileContents);
-            console.log('info----', info)
-            setCircularDeviationMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("CollisionMonitor")) {
-            setCollisionMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("LandspaceMonitor")) {
-            setLandspaceMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
-            setOrderedWaypointMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
-            setPointDeviationMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
-            setMinSepDistMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
-            setNoFlyZoneMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                content:fileContents,
-                infoContent:getInfoContents(fileContents, "INFO", new Map()),
-                passContent:getInfoContents(fileContents, "PASS", new Map()),
-                failContent:getInfoContents(fileContents, "FAIL", new Map()),
-                fuzzyPath:fuzzyPathValue,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          
-        };
-        fileReader.readAsText(file);
-      } else if (file.type === 'image/png') {
-        console.log("its image")
-        fileReader.onload = () => {
-          const fileContents = fileReader.result;
-          if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setUnorderedWaypointMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setCircularDeviationMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("CollisionMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setCollisionMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("LandspaceMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setLandspaceMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setOrderedWaypointMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setPointDeviationMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setMinSepDistMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-          if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
-            let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
-            setNoFlyZoneMonitor(prevState => [
-              ...prevState,
-              {
-                name:file.name,
-                type:file.type,
-                imgContent:URL.createObjectURL(file),
-                path:htmlfile,
-                fuzzyValue: fuzzyValueArray[2]
-              }
-            ])
-          }
-        }
-        fileReader.readAsText(file);
-      } else if (file.type === '') {
-        const directoryReader = new FileReader();
-        directoryReader.onload = () => {
-          handleDirectorySelect({target: {files: directoryReader.result}});
-        };
-        directoryReader.readAsArrayBuffer(file);
-      }
-    }
-    // setTestNames([name]);
-    console.log('name----', name)
-    // handleDirectorySelectFuzzy(name);
+
+  const dictOfFunctions = {
+    "UnorderedWaypointMonitor": setUnorderedWaypointMonitor,
+    "CircularDeviationMonitor": setCircularDeviationMonitor,
+    "CollisionMonitor": setCollisionMonitor,
+    "LandspaceMonitor": setLandspaceMonitor,
+    "OrderedWaypointMonitor": setOrderedWaypointMonitor,
+    "PointDeviationMonitor": setPointDeviationMonitor,
+    "MinSepDistMonitor": setMinSepDistMonitor,
+    "NoFlyZoneMonitor": setNoFlyZoneMonitor
   }
+    
+  //React.useEffect(() => {}, [fileArray])
+  const handleDirectorySelect = () => {
+    const jsonFile = tempJson;
+    //const files = event.target.files;
+    let name = [];
+    // Iterate through all the keys in the json file
+    for (let key in jsonFile) {
+      console.log('key----', key)
+      if ( (jsonFile[key] !== undefined)){
+        console.log('jsonFile[key]---', jsonFile[key])
+
+        //Iterate throguh all the subkeys in the json file
+        for (let i = 0; i < jsonFile[key].length; i++) {
+          if(jsonFile[key][i].type === 'text/plain'){
+            dictOfFunctions[key](prevState => [...prevState, {
+                            name:jsonFile[key][i].name,
+                            type:jsonFile[key][i].type,
+                            content:jsonFile[key][i].content,
+                            infoContent:getInfoContents(jsonFile[key][i].content, "INFO", new Map()),
+                            passContent:getInfoContents(jsonFile[key][i].content, "PASS", new Map()),
+                            failContent:getInfoContents(jsonFile[key][i].content, "FAIL", new Map()),
+                            fuzzyPath:jsonFile[key][i].fuzzyPath,
+                            fuzzyValue: jsonFile[key][i].fuzzyValue
+                            }
+                        ])
+          }
+          else if (jsonFile[key][i].type === "image/png") {
+            dictOfFunctions[key](prevState => [...prevState,
+                          {
+                            name:jsonFile[key][i].name,
+                            type:jsonFile[key][0].type,
+                            imgContent:null,
+                            path:jsonFile[key][0].path,
+                            fuzzyValue: jsonFile[key][0].fuzzyValue
+                          }
+          ])
+          }
+        }
+    }
+    else if (jsonFile[key].length === 0){
+      dictOfFunctions[key]([])
+    }
+  }
+  
+    console.log("Json file", jsonFile)
+    console.log("UnorderedWaypointMonitor", UnorderedWaypointMonitor)
+    console.log("CollisionMonitor", CollisionMonitor)
+    console.log("CircularDeviationMonitor", CircularDeviationMonitor)
+    console.log("LandspaceMonitor", LandspaceMonitor)
+    console.log("OrderedWaypointMonitor", OrderedWaypointMonitor)
+    console.log("PointDeviationMonitor", PointDeviationMonitor)
+    console.log("MinSepDistMonitor", MinSepDistMonitor)
+    console.log("NoFlyZoneMonitor", NoFlyZoneMonitor)  
+  };
+  React.useEffect(() => {
+    handleDirectorySelect();
+  }, [])
+      //for (let i = 0; i < files.length; i++) {
+      // const fileReader = new FileReader();
+      // const file = files[i];
+      // console.log('file----', file)
+      // const data = [...fileArray]
+      // let path = file.webkitRelativePath
+      // let fuzzyPathValue = null
+      // let paths = path.split("/")
+      // console.log('paths----', paths)
+      // if(paths.length > 1) {
+      //   fuzzyPathValue = paths[1]
+      //   setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
+      // }
+      // let fuzzyValueArray = fuzzyPathValue.split("_")
+      // let exist = false
+      // name.map(testName => {
+      //   if(testName.name == fuzzyValueArray[2]) {
+      //     exist = true;
+      //   }
+      // }) 
+      // if(!exist) {
+      //   name.push({name:fuzzyValueArray[2]})
+      // }
+  //     }
+  //     console.log('fuzzyPathValue---', fuzzyPathValue)
+  //     if (file.type === 'text/plain') {
+  //       fileReader.onload = () => {
+  //         const fileContents = fileReader.result;
+  //         if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
+  //           setUnorderedWaypointMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
+  //           let info = getInfoContents(fileContents);
+  //           console.log('info----', info)
+  //           setCircularDeviationMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("CollisionMonitor")) {
+  //           setCollisionMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("LandspaceMonitor")) {
+  //           setLandspaceMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
+  //           setOrderedWaypointMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
+  //           setPointDeviationMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
+  //           setMinSepDistMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
+  //           setNoFlyZoneMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               content:fileContents,
+  //               infoContent:getInfoContents(fileContents, "INFO", new Map()),
+  //               passContent:getInfoContents(fileContents, "PASS", new Map()),
+  //               failContent:getInfoContents(fileContents, "FAIL", new Map()),
+  //               fuzzyPath:fuzzyPathValue,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+          
+  //       };
+  //       fileReader.readAsText(file);
+  //     } else if (file.type === 'image/png') {
+  //       console.log("its image")
+  //       fileReader.onload = () => {
+  //         const fileContents = fileReader.result;
+  //         if(file.webkitRelativePath.includes("UnorderedWaypointMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setUnorderedWaypointMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("CircularDeviationMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setCircularDeviationMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("CollisionMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setCollisionMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("LandspaceMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setLandspaceMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("OrderedWaypointMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setOrderedWaypointMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("PointDeviationMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setPointDeviationMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("MinSepDistMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setMinSepDistMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //         if(file.webkitRelativePath.includes("NoFlyZoneMonitor")) {
+  //           let htmlfile = file.webkitRelativePath.replace("_plot.png", "_interactive.html")
+  //           setNoFlyZoneMonitor(prevState => [
+  //             ...prevState,
+  //             {
+  //               name:file.name,
+  //               type:file.type,
+  //               imgContent:URL.createObjectURL(file),
+  //               path:htmlfile,
+  //               fuzzyValue: fuzzyValueArray[2]
+  //             }
+  //           ])
+  //         }
+  //       }
+  //       fileReader.readAsText(file);
+  //     } else if (file.type === '') {
+  //       const directoryReader = new FileReader();
+  //       directoryReader.onload = () => {
+  //         handleDirectorySelect({target: {files: directoryReader.result}});
+  //       };
+  //       directoryReader.readAsArrayBuffer(file);
+  //     }
+  //   }
+  //   // setTestNames([name]);
+  //   console.log('name----', name)
+  //   // handleDirectorySelectFuzzy(name);
+  // }
   const [folderDirectories, setFolderDirectories] = useState([]);
   const componenet = () => {
     const handleDirectorySelect = (selectedFiles) => {
@@ -546,9 +813,8 @@ export default function FuzzyDashboard(parameter) {
         <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
         {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
         {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
-        <Button variant="contained" component="label">
+        <Button variant="contained" component="label" onClick = {handleDirectorySelect()}>
         Select Simulation Data Directory
-        <input hidden type="file" webkitdirectory="" multiple onChange={handleDirectorySelect} />
         </Button>
       </Container>
       </Typography>
@@ -584,7 +850,7 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {fuzzy.CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall avoid collisions with other drones and the environment</div>
           </Typography>

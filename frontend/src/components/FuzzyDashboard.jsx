@@ -59,7 +59,7 @@ export default function FuzzyDashboard(parameter) {
   const [selectedImage, setSelectedImage] = React.useState();
   const [htmlLink, setHtmlLink] = React.useState();
   const [voilation, setVoilation] = React.useState(false)
-  const [isFuzzyList, setIsFuzzyList] = React.useState(false);
+  const [isFuzzyList, setIsFuzzyList] = React.useState(true);
   const [fuzzyTest, setFuzzyTest] = React.useState([]);
 
   const names = [{name:0},{name:5},{name:10}]
@@ -428,85 +428,85 @@ export default function FuzzyDashboard(parameter) {
   }
     
   //React.useEffect(() => {}, [fileArray])
-  const handleDirectorySelect = () => {
-    const jsonFile = tempJson;
-    //const files = event.target.files;
-    let name = [];
-    // Iterate through all the keys in the json file
-    for (let key in jsonFile) {
-      console.log('key----', key)
-      if ( (jsonFile[key] !== undefined)){
-        console.log('jsonFile[key]---', jsonFile[key])
+  // const handleDirectorySelect = () => {
+  //   const jsonFile = tempJson;
+  //   const files = event.target.files;
+  //   let name = [];
+  // //   // Iterate through all the keys in the json file
+  // //   for (let key in jsonFile) {
+  // //     console.log('key----', key)
+  // //     if ( (jsonFile[key] !== undefined)){
+  // //       console.log('jsonFile[key]---', jsonFile[key])
 
-        //Iterate throguh all the subkeys in the json file
-        for (let i = 0; i < jsonFile[key].length; i++) {
-          if(jsonFile[key][i].type === 'text/plain'){
-            dictOfFunctions[key](prevState => [...prevState, {
-                            name:jsonFile[key][i].name,
-                            type:jsonFile[key][i].type,
-                            content:jsonFile[key][i].content,
-                            infoContent:getInfoContents(jsonFile[key][i].content, "INFO", new Map()),
-                            passContent:getInfoContents(jsonFile[key][i].content, "PASS", new Map()),
-                            failContent:getInfoContents(jsonFile[key][i].content, "FAIL", new Map()),
-                            fuzzyPath:jsonFile[key][i].fuzzyPath,
-                            fuzzyValue: jsonFile[key][i].fuzzyValue
-                            }
-                        ])
-          }
-          else if (jsonFile[key][i].type === "image/png") {
-            dictOfFunctions[key](prevState => [...prevState,
-                          {
-                            name:jsonFile[key][i].name,
-                            type:jsonFile[key][0].type,
-                            imgContent:null,
-                            path:jsonFile[key][0].path,
-                            fuzzyValue: jsonFile[key][0].fuzzyValue
-                          }
-          ])
-          }
-        }
-    }
-    else if (jsonFile[key].length === 0){
-      dictOfFunctions[key]([])
-    }
-  }
+  // //       //Iterate throguh all the subkeys in the json file
+  // //       for (let i = 0; i < jsonFile[key].length; i++) {
+  // //         if(jsonFile[key][i].type === 'text/plain'){
+  // //           dictOfFunctions[key](prevState => [...prevState, {
+  // //                           name:jsonFile[key][i].name,
+  // //                           type:jsonFile[key][i].type,
+  // //                           content:jsonFile[key][i].content,
+  // //                           infoContent:getInfoContents(jsonFile[key][i].content, "INFO", new Map()),
+  // //                           passContent:getInfoContents(jsonFile[key][i].content, "PASS", new Map()),
+  // //                           failContent:getInfoContents(jsonFile[key][i].content, "FAIL", new Map()),
+  // //                           fuzzyPath:jsonFile[key][i].fuzzyPath,
+  // //                           fuzzyValue: jsonFile[key][i].fuzzyValue
+  // //                           }
+  // //                       ])
+  // //         }
+  // //         else if (jsonFile[key][i].type === "image/png") {
+  // //           dictOfFunctions[key](prevState => [...prevState,
+  // //                         {
+  // //                           name:jsonFile[key][i].name,
+  // //                           type:jsonFile[key][0].type,
+  // //                           imgContent:null,
+  // //                           path:jsonFile[key][0].path,
+  // //                           fuzzyValue: jsonFile[key][0].fuzzyValue
+  // //                         }
+  // //         ])
+  // //         }
+  // //       }
+  // //   }
+  // //   else if (jsonFile[key].length === 0){
+  // //     dictOfFunctions[key]([])
+  // //   }
+  // // }
   
-    console.log("Json file", jsonFile)
-    console.log("UnorderedWaypointMonitor", UnorderedWaypointMonitor)
-    console.log("CollisionMonitor", CollisionMonitor)
-    console.log("CircularDeviationMonitor", CircularDeviationMonitor)
-    console.log("LandspaceMonitor", LandspaceMonitor)
-    console.log("OrderedWaypointMonitor", OrderedWaypointMonitor)
-    console.log("PointDeviationMonitor", PointDeviationMonitor)
-    console.log("MinSepDistMonitor", MinSepDistMonitor)
-    console.log("NoFlyZoneMonitor", NoFlyZoneMonitor)  
-  };
-  React.useEffect(() => {
-    handleDirectorySelect();
-  }, [])
-      //for (let i = 0; i < files.length; i++) {
-      // const fileReader = new FileReader();
-      // const file = files[i];
-      // console.log('file----', file)
-      // const data = [...fileArray]
-      // let path = file.webkitRelativePath
-      // let fuzzyPathValue = null
-      // let paths = path.split("/")
-      // console.log('paths----', paths)
-      // if(paths.length > 1) {
-      //   fuzzyPathValue = paths[1]
-      //   setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
-      // }
-      // let fuzzyValueArray = fuzzyPathValue.split("_")
-      // let exist = false
-      // name.map(testName => {
-      //   if(testName.name == fuzzyValueArray[2]) {
-      //     exist = true;
-      //   }
-      // }) 
-      // if(!exist) {
-      //   name.push({name:fuzzyValueArray[2]})
-      // }
+  // //   console.log("Json file", jsonFile)
+  // //   console.log("UnorderedWaypointMonitor", UnorderedWaypointMonitor)
+  // //   console.log("CollisionMonitor", CollisionMonitor)
+  // //   console.log("CircularDeviationMonitor", CircularDeviationMonitor)
+  // //   console.log("LandspaceMonitor", LandspaceMonitor)
+  // //   console.log("OrderedWaypointMonitor", OrderedWaypointMonitor)
+  // //   console.log("PointDeviationMonitor", PointDeviationMonitor)
+  // //   console.log("MinSepDistMonitor", MinSepDistMonitor)
+  // //   console.log("NoFlyZoneMonitor", NoFlyZoneMonitor)  
+  // // };
+  // // React.useEffect(() => {
+  // //   handleDirectorySelect();
+  // // }, [])
+  //     for (let i = 0; i < files.length; i++) {
+  //     const fileReader = new FileReader();
+  //     const file = files[i];
+  //     console.log('file----', file)
+  //     const data = [...fileArray]
+  //     let path = file.webkitRelativePath
+  //     let fuzzyPathValue = null
+  //     let paths = path.split("/")
+  //     console.log('paths----', paths)
+  //     if(paths.length > 1) {
+  //       fuzzyPathValue = paths[1]
+  //       setIsFuzzyList(fuzzyPathValue.includes('Fuzzy')? true : false);
+  //     }
+  //     let fuzzyValueArray = fuzzyPathValue.split("_")
+  //     let exist = false
+  //     name.map(testName => {
+  //       if(testName.name == fuzzyValueArray[2]) {
+  //         exist = true;
+  //       }
+  //     }) 
+  //     if(!exist) {
+  //       name.push({name:fuzzyValueArray[2]})
+  //     }
   //     }
   //     console.log('fuzzyPathValue---', fuzzyPathValue)
   //     if (file.type === 'text/plain') {
@@ -813,7 +813,7 @@ export default function FuzzyDashboard(parameter) {
         <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
         {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
         {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
-        <Button variant="contained" component="label" onClick = {handleDirectorySelect()}>
+        <Button variant="contained" component="label">
         Select Simulation Data Directory
         </Button>
       </Container>
@@ -835,11 +835,11 @@ export default function FuzzyDashboard(parameter) {
       }}>{isFuzzyList == true ? <React.Fragment>
         {fuzzyTest.length > 0 ? 
           <React.Fragment>
-            {fuzzyTest.map(function(fuzzy, id){
+            {fuzzyTest.map(function(tempJson, id){
               return (
                 <Paper key={id} elevation={3} style={{margin:'25px', padding:20}}>
                   <Typography variant="h6" component="h2">
-                    <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Fuzzed Parameter : Wind Velocity = {fuzzy.name} meters/s</div>
+                    <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Fuzzed Parameter : Wind Velocity = {tempJson.name} meters/s</div>
                   </Typography>
                   <Box sx={{
         display: 'flex',
@@ -850,12 +850,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {tempJson.CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall avoid collisions with other drones and the environment</div>
           </Typography>
           <ul>
-          {fuzzy.CollisionMonitor.map(function(file, index) {
+          {tempJson.CollisionMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                
@@ -866,7 +866,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.CollisionMonitor.map(function(file, index) {
+          {tempJson.CollisionMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -892,12 +892,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {fuzzy.LandspaceMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {tempJson.LandspaceMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drone shall always land at safe locations</div>
           </Typography>
           <ul>
-          {fuzzy.LandspaceMonitor.map(function(file, index) {
+          {tempJson.LandspaceMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 
@@ -909,7 +909,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.LandspaceMonitor.map(function(file, index) {
+          {tempJson.LandspaceMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
 
@@ -936,12 +936,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {fuzzy.UnorderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {tempJson.UnorderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall reach all waypoints in the mission</div>
           </Typography>
           <ul>
-          {fuzzy.UnorderedWaypointMonitor.map(function(file, index) {
+          {tempJson.UnorderedWaypointMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {/* {file.infoContent.map((info, i) => { */}
@@ -956,7 +956,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
          <Grid container spacing={2} direction="row" >
-          {fuzzy.UnorderedWaypointMonitor.map(function(file, index) {
+          {tempJson.UnorderedWaypointMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1016,12 +1016,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {fuzzy.PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {tempJson.PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : A drone should not deviate more than {deviation != null ? deviation : 'X'} meters from its planned flight path</div>
           </Typography>
           <ul>
-          {fuzzy.PointDeviationMonitor.map(function(file, index) {
+          {tempJson.PointDeviationMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath, 'success'))}
@@ -1032,7 +1032,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.PointDeviationMonitor.map(function(file, index) {
+          {tempJson.PointDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
@@ -1050,7 +1050,7 @@ export default function FuzzyDashboard(parameter) {
           </ul>
 
           <ul>
-          {fuzzy.CircularDeviationMonitor.map(function(file, index) {
+          {tempJson.CircularDeviationMonitor.map(function(file, index) {
             return ( file.type=== 'text/plain' ? 
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath,"success"))}
@@ -1060,7 +1060,7 @@ export default function FuzzyDashboard(parameter) {
             ) 
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.CircularDeviationMonitor.map(function(file, index) {
+          {tempJson.CircularDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1088,13 +1088,13 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {fuzzy.MinSepDistMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {tempJson.MinSepDistMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           {/*<div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones shall always maintain the lateral distance of {lateral != null ? lateral : 'X'} meters and separation distance of {horizontal != null ? horizontal : 'Y'} meters</div>*/}
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones shall always maintain the separation distance of {horizontal != null ? horizontal : 'Y'} meters</div>
           </Typography>
           <ul>
-          {fuzzy.MinSepDistMonitor.map(function(file, index) {
+          {tempJson.MinSepDistMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {/* {file.infoContent.map((info, i) => {
@@ -1114,7 +1114,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.MinSepDistMonitor.map(function(file, index) {
+          {tempJson.MinSepDistMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1130,12 +1130,12 @@ export default function FuzzyDashboard(parameter) {
           })}</Grid>
           </ul>
           </Paper> : null}
-          {fuzzy.NoFlyZoneMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
+          {tempJson.NoFlyZoneMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones entered in specified fly zones </div>
           </Typography>
           <ul>
-          {fuzzy.NoFlyZoneMonitor.map(function(file, index) {
+          {tempJson.NoFlyZoneMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath,"success"))}
@@ -1144,7 +1144,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {fuzzy.NoFlyZoneMonitor.map(function(file, index) {
+          {tempJson.NoFlyZoneMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  

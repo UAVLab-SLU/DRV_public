@@ -31,15 +31,17 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Arial, sans-serif',
   },
   mainContent: {
-    padding: '2rem',
+    padding: '2rem', 
+    marginTop: '7rem'
     //textAlign: 'center', 
   },
   buttonContainer: {
+    position: 'absolute', 
+    top: '8rem', 
+    right: '4rem', 
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '1rem',
-    marginRight: '1.6rem',
-    top: '1rem'
   },
   navList: {
     listStyleType: 'none',
@@ -77,9 +79,9 @@ const useStyles = makeStyles((theme) => ({
   }, 
 
   createSimulationLink: {
-    textDecoration: 'none', // Remove underline
-    display: 'block', // Make the link behave as a block element
-    width: 'fit-content', // Fit the link's width to the content
+    textDecoration: 'none', 
+    display: 'block', 
+    width: 'fit-content',
 },
 
 }));
@@ -140,8 +142,9 @@ export default function LandingPage() {
   {filesPresent ? (
     <div onClick={handleAccordionToggle}>
       <h2 className={classes.reportDashboardTitle}>
-        <Link to="/report-dashboard" className={classes.reportDashboardTitle}> 
-          <div style={{ textAlign: 'center'}}>
+        <Link to="/report-dashboard" className={classes.reportDashboardTitle}>
+          <div style={{ textAlign: 'center' }}>
+            {/* Content here */}
           </div>
         </Link>
       </h2>

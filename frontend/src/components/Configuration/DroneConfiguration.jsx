@@ -24,16 +24,6 @@ const droneTypes = [
     {value:'MultiRotor', label:'Multi Rotor'}
 ]
 
-{/* Old stuff from draft PR
-
-const droneModels = [
-    {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
-    {value: 'DJI', label: 'DJI'},
-    {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
-]
-
-*/}
-
 //{/*            
 const droneModels = {
     FixedWing: [

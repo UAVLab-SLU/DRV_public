@@ -153,7 +153,7 @@ const useStyles = makeStyles((theme) => ({
     handleSnackBarVisibility(true);
   }, []);
   const getFolderContents = (filename) => {
-    fetch(`http://localhost:5000/list-folder-contents/${filename}`, { method: 'GET' })
+    fetch(`http://localhost:5000/list-folder-contents/${filename}`, {method: 'post', headers: { 'Content-Type': 'application/json' }, body:{},})
       .then((res) => {
         if (!res.ok) {
           throw new Error('No response from server/something went wrong');

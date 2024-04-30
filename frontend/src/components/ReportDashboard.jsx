@@ -152,7 +152,27 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
-    
+  
+  const handleButtonClick = (filename) => {
+    console.log('Button clicked:', filename);
+    // const fetchData = () => {
+    //   fetch('http://localhost:5000/list-folder-contents/${filename}', { method: 'GET' })
+    //     .then((res) => {
+    //       if (!res.ok) {
+    //         throw new Error('No response from server/something went wrong');
+    //       }
+    //       return res.json();
+    //     })
+    //     .then((data) => {
+    //       // 'data.reports' containing filename and fuzzy info
+    //       console.log('File Json: ', data)
+    //       return data;
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error fetching report data:', error);
+    //     });
+    //};
+  }
   
   return (
    <>
@@ -283,15 +303,6 @@ const useStyles = makeStyles((theme) => ({
     </div>
   )}
 </div>
-          {/* Button to open file */}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => openFile(file.filename)} // Add this onClick handler
-        style={{ marginLeft: '8px' }} // Adjust styling as needed
-      >
-        Open File
-      </Button>
 
         </Grid>
       </Grid>
@@ -324,6 +335,12 @@ const useStyles = makeStyles((theme) => ({
           <p>Simulation Testing</p> 
           </Typography> 
           )} 
+            {/* New button for the bottom right corner */}
+          <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
+            <Button variant="contained" color="primary" onClick={() => handleButtonClick(file.filename)}>
+              Simulation Data
+            </Button>
+          </div>
           </AccordionDetails> 
           </Accordion> 
           </Grid>

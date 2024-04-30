@@ -30,8 +30,7 @@ task_number = 1
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
-"""
-#No base64 on any image or HTML files.
+
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
@@ -114,7 +113,8 @@ def list_reports():
 
 # Here is the code that is seperate. It is the file content below.
 # In the frontend, you need to call process_report_file(fileName)
-
+"""
+#No base64 of image or html
 @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
 def list_folder_contents(folder_name):
     base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)

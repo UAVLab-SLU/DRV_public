@@ -30,6 +30,7 @@ task_number = 1
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
+#No base64 on any image or HTML files.
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
@@ -112,7 +113,7 @@ def list_reports():
 
 # Here is the code that is seperate. It is the file content below.
 # In the frontend, you need to call process_report_file(fileName)
-
+"""
 @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
 def list_folder_contents(folder_name):
     base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
@@ -222,6 +223,358 @@ def get_info_contents(file_contents, keyword, default_value):
                 value = parts[3] if len(parts) >= 4 else ''
                 info_contents[key] = value.strip()
     return info_contents if info_contents else default_value
+"""
+#base64 of all
+@app.route('/list-folder-contents/<folder_name>', methods=['POST'])
+def list_folder_contents(folder_name):
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
+
+    if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    result = {
+        "name": 0,
+        "UnorderedWaypointMonitor": [],
+        "CircularDeviationMonitor": [],
+        "CollisionMonitor": [],
+        "LandspaceMonitor": [],
+        "OrderedWaypointMonitor": [],
+        "PointDeviationMonitor": [],
+        "MinSepDistMonitor": [],
+        "NoFlyZoneMonitor": []
+    }
+
+    for root, dirs, files in os.walk(base_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+
+            fuzzy_path_value = None
+            paths = file_path.split(os.sep)
+            if len(paths) > 1:
+                fuzzy_path_value = paths[-2]
+
+            fuzzy_value_array = fuzzy_path_value.split("_") if fuzzy_path_value else []
+
+            if file.endswith('.txt'):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_contents = f.read()
+                    info_content = get_info_contents(file_contents, "INFO", {})
+                    pass_content = get_info_contents(file_contents, "PASS", {})
+                    fail_content = get_info_contents(file_contents, "FAIL", {})
+
+                    file_data = {
+                        "name": file,
+                        "type": "text/plain",
+                        "fuzzyPath": fuzzy_path_value,
+                        "fuzzyValue": fuzzy_path_value,
+                        "content": file_contents,
+                        "infoContent": info_content,
+                        "passContent": pass_content,
+                        "failContent": fail_content
+                    }
+
+                    if "UnorderedWaypointMonitor" in file_path:
+                        result["UnorderedWaypointMonitor"].append(file_data)
+                    elif "CircularDeviationMonitor" in file_path:
+                        result["CircularDeviationMonitor"].append(file_data)
+                    elif "CollisionMonitor" in file_path:
+                        result["CollisionMonitor"].append(file_data)
+                    elif "LandspaceMonitor" in file_path:
+                        result["LandspaceMonitor"].append(file_data)
+                    elif "OrderedWaypointMonitor" in file_path:
+                        result["OrderedWaypointMonitor"].append(file_data)
+                    elif "PointDeviationMonitor" in file_path:
+                        result["PointDeviationMonitor"].append(file_data)
+                    elif "MinSepDistMonitor" in file_path:
+                        result["MinSepDistMonitor"].append(file_data)
+                    elif "NoFlyZoneMonitor" in file_path:
+                        result["NoFlyZoneMonitor"].append(file_data)
+
+            elif file.endswith('.png') or file.endswith('.html'):
+                file_data = {
+                    "name": file,
+                    "type": "image/png" if file.endswith('.png') else "text/html",
+                    "fuzzyPath": fuzzy_path_value,
+                    "fuzzyValue": fuzzy_path_value
+                }
+
+                if file.endswith('.png'):
+                    with open(file_path, "rb") as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                        file_data["imgContent"] = encoded_string
+                    file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
+                else:
+                    with open(file_path, "r", encoding='utf-8') as html_file:
+                        encoded_string = base64.b64encode(html_file.read().encode('utf-8')).decode('utf-8')
+                        file_data["htmlContent"] = encoded_string
+                    file_data["path"] = file_path
+
+                if "UnorderedWaypointMonitor" in file_path:
+                    result["UnorderedWaypointMonitor"].append(file_data)
+                elif "CircularDeviationMonitor" in file_path:
+                    result["CircularDeviationMonitor"].append(file_data)
+                elif "CollisionMonitor" in file_path:
+                    result["CollisionMonitor"].append(file_data)
+                elif "LandspaceMonitor" in file_path:
+                    result["LandspaceMonitor"].append(file_data)
+                elif "OrderedWaypointMonitor" in file_path:
+                    result["OrderedWaypointMonitor"].append(file_data)
+                elif "PointDeviationMonitor" in file_path:
+                    result["PointDeviationMonitor"].append(file_data)
+                elif "MinSepDistMonitor" in file_path:
+                    result["MinSepDistMonitor"].append(file_data)
+                elif "NoFlyZoneMonitor" in file_path:
+                    result["NoFlyZoneMonitor"].append(file_data)
+
+    return jsonify(result)
+
+def get_info_contents(file_contents, keyword, default_value):
+    info_contents = {}
+    lines = file_contents.split('\n')
+    for line in lines:
+        if line.startswith(keyword):
+            parts = line.split(';')
+            if len(parts) >= 3:
+                key = parts[2]
+                value = parts[3] if len(parts) >= 4 else ''
+                info_contents[key] = value.strip()
+    return info_contents if info_contents else default_value
+
+#base64 of png
+"""
+@app.route('/list-folder-contents/<folder_name>', methods=['POST'])
+def list_folder_contents(folder_name):
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
+
+    if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    result = {
+        "name": 0,
+        "UnorderedWaypointMonitor": [],
+        "CircularDeviationMonitor": [],
+        "CollisionMonitor": [],
+        "LandspaceMonitor": [],
+        "OrderedWaypointMonitor": [],
+        "PointDeviationMonitor": [],
+        "MinSepDistMonitor": [],
+        "NoFlyZoneMonitor": []
+    }
+
+    for root, dirs, files in os.walk(base_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+
+            fuzzy_path_value = None
+            paths = file_path.split(os.sep)
+            if len(paths) > 1:
+                fuzzy_path_value = paths[-2]
+
+            fuzzy_value_array = fuzzy_path_value.split("_") if fuzzy_path_value else []
+
+            if file.endswith('.txt'):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_contents = f.read()
+                    info_content = get_info_contents(file_contents, "INFO", {})
+                    pass_content = get_info_contents(file_contents, "PASS", {})
+                    fail_content = get_info_contents(file_contents, "FAIL", {})
+
+                    file_data = {
+                        "name": file,
+                        "type": "text/plain",
+                        "fuzzyPath": fuzzy_path_value,
+                        "fuzzyValue": fuzzy_path_value,
+                        "content": file_contents,
+                        "infoContent": info_content,
+                        "passContent": pass_content,
+                        "failContent": fail_content
+                    }
+
+                    if "UnorderedWaypointMonitor" in file_path:
+                        result["UnorderedWaypointMonitor"].append(file_data)
+                    elif "CircularDeviationMonitor" in file_path:
+                        result["CircularDeviationMonitor"].append(file_data)
+                    elif "CollisionMonitor" in file_path:
+                        result["CollisionMonitor"].append(file_data)
+                    elif "LandspaceMonitor" in file_path:
+                        result["LandspaceMonitor"].append(file_data)
+                    elif "OrderedWaypointMonitor" in file_path:
+                        result["OrderedWaypointMonitor"].append(file_data)
+                    elif "PointDeviationMonitor" in file_path:
+                        result["PointDeviationMonitor"].append(file_data)
+                    elif "MinSepDistMonitor" in file_path:
+                        result["MinSepDistMonitor"].append(file_data)
+                    elif "NoFlyZoneMonitor" in file_path:
+                        result["NoFlyZoneMonitor"].append(file_data)
+
+            elif file.endswith('.png') or file.endswith('.html'):
+                file_data = {
+                    "name": file,
+                    "type": "image/png" if file.endswith('.png') else "text/html",
+                    "fuzzyPath": fuzzy_path_value,
+                    "fuzzyValue": fuzzy_path_value
+                }
+
+                if file.endswith('.png'):
+                    with open(file_path, "rb") as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                        file_data["imgContent"] = encoded_string
+                    file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
+                else:
+                    file_data["path"] = file_path
+
+                if "UnorderedWaypointMonitor" in file_path:
+                    result["UnorderedWaypointMonitor"].append(file_data)
+                elif "CircularDeviationMonitor" in file_path:
+                    result["CircularDeviationMonitor"].append(file_data)
+                elif "CollisionMonitor" in file_path:
+                    result["CollisionMonitor"].append(file_data)
+                elif "LandspaceMonitor" in file_path:
+                    result["LandspaceMonitor"].append(file_data)
+                elif "OrderedWaypointMonitor" in file_path:
+                    result["OrderedWaypointMonitor"].append(file_data)
+                elif "PointDeviationMonitor" in file_path:
+                    result["PointDeviationMonitor"].append(file_data)
+                elif "MinSepDistMonitor" in file_path:
+                    result["MinSepDistMonitor"].append(file_data)
+                elif "NoFlyZoneMonitor" in file_path:
+                    result["NoFlyZoneMonitor"].append(file_data)
+
+    return jsonify(result)
+
+def get_info_contents(file_contents, keyword, default_value):
+    info_contents = {}
+    lines = file_contents.split('\n')
+    for line in lines:
+        if line.startswith(keyword):
+            parts = line.split(';')
+            if len(parts) >= 3:
+                key = parts[2]
+                value = parts[3] if len(parts) >= 4 else ''
+                info_contents[key] = value.strip()
+    return info_contents if info_contents else default_value
+"""
+
+#base64 of the FIRST image. 
+"""
+@app.route('/list-folder-contents/<folder_name>', methods=['POST'])
+def list_folder_contents(folder_name):
+    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", folder_name)
+
+    if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
+        return jsonify({'error': 'Folder not found'}), 404
+
+    result = {
+        "name": 0,
+        "UnorderedWaypointMonitor": [],
+        "CircularDeviationMonitor": [],
+        "CollisionMonitor": [],
+        "LandspaceMonitor": [],
+        "OrderedWaypointMonitor": [],
+        "PointDeviationMonitor": [],
+        "MinSepDistMonitor": [],
+        "NoFlyZoneMonitor": []
+    }
+
+    first_png_found = False
+
+    for root, dirs, files in os.walk(base_directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+
+            fuzzy_path_value = None
+            paths = file_path.split(os.sep)
+            if len(paths) > 1:
+                fuzzy_path_value = paths[-2]
+
+            fuzzy_value_array = fuzzy_path_value.split("_") if fuzzy_path_value else []
+
+            if file.endswith('.txt'):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_contents = f.read()
+                    info_content = get_info_contents(file_contents, "INFO", {})
+                    pass_content = get_info_contents(file_contents, "PASS", {})
+                    fail_content = get_info_contents(file_contents, "FAIL", {})
+
+                    file_data = {
+                        "name": file,
+                        "type": "text/plain",
+                        "fuzzyPath": fuzzy_path_value,
+                        "fuzzyValue": fuzzy_path_value,
+                        "content": file_contents,
+                        "infoContent": info_content,
+                        "passContent": pass_content,
+                        "failContent": fail_content
+                    }
+
+                    if "UnorderedWaypointMonitor" in file_path:
+                        result["UnorderedWaypointMonitor"].append(file_data)
+                    elif "CircularDeviationMonitor" in file_path:
+                        result["CircularDeviationMonitor"].append(file_data)
+                    elif "CollisionMonitor" in file_path:
+                        result["CollisionMonitor"].append(file_data)
+                    elif "LandspaceMonitor" in file_path:
+                        result["LandspaceMonitor"].append(file_data)
+                    elif "OrderedWaypointMonitor" in file_path:
+                        result["OrderedWaypointMonitor"].append(file_data)
+                    elif "PointDeviationMonitor" in file_path:
+                        result["PointDeviationMonitor"].append(file_data)
+                    elif "MinSepDistMonitor" in file_path:
+                        result["MinSepDistMonitor"].append(file_data)
+                    elif "NoFlyZoneMonitor" in file_path:
+                        result["NoFlyZoneMonitor"].append(file_data)
+
+            elif file.endswith('.png') or file.endswith('.html'):
+                file_data = {
+                    "name": file,
+                    "type": "image/png" if file.endswith('.png') else "text/html",
+                    "fuzzyPath": fuzzy_path_value,
+                    "fuzzyValue": fuzzy_path_value
+                }
+
+                if file.endswith('.png'):
+                    if not first_png_found:
+                        with open(file_path, "rb") as image_file:
+                            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                            file_data["imgContent"] = encoded_string
+                            first_png_found = True
+                    else:
+                        file_data["imgContent"] = None
+                    file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
+                else:
+                    file_data["path"] = file_path
+
+                if "UnorderedWaypointMonitor" in file_path:
+                    result["UnorderedWaypointMonitor"].append(file_data)
+                elif "CircularDeviationMonitor" in file_path:
+                    result["CircularDeviationMonitor"].append(file_data)
+                elif "CollisionMonitor" in file_path:
+                    result["CollisionMonitor"].append(file_data)
+                elif "LandspaceMonitor" in file_path:
+                    result["LandspaceMonitor"].append(file_data)
+                elif "OrderedWaypointMonitor" in file_path:
+                    result["OrderedWaypointMonitor"].append(file_data)
+                elif "PointDeviationMonitor" in file_path:
+                    result["PointDeviationMonitor"].append(file_data)
+                elif "MinSepDistMonitor" in file_path:
+                    result["MinSepDistMonitor"].append(file_data)
+                elif "NoFlyZoneMonitor" in file_path:
+                    result["NoFlyZoneMonitor"].append(file_data)
+
+    return jsonify(result)
+
+def get_info_contents(file_contents, keyword, default_value):
+    info_contents = {}
+    lines = file_contents.split('\n')
+    for line in lines:
+        if line.startswith(keyword):
+            parts = line.split(';')
+            if len(parts) >= 3:
+                key = parts[2]
+                value = parts[3] if len(parts) >= 4 else ''
+                info_contents[key] = value.strip()
+    return info_contents if info_contents else default_value
+"""
 
 
 """ @app.route('/list-folder-contents/<folder_name>', methods=['GET'])
@@ -417,5 +770,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) #Change to 5000 before pushing.
+    app.run(host='0.0.0.0', port=5000) 
     # makes it discoverable by other devices in the network

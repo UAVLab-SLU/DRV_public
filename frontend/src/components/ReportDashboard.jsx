@@ -152,26 +152,25 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
-  
+  const getFolderContents = (filename) => {
+    fetch(`http://localhost:5000/list-folder-contents/${filename}`, { method: 'GET' })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('No response from server/something went wrong');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log('File Json: ', data);
+        return data;
+      })
+      .catch((error) => {
+        console.error('Error fetching report data:', error);
+      });
+  };
   const handleButtonClick = (filename) => {
-    console.log('Button clicked:', filename);
-    // const fetchData = () => {
-    //   fetch('http://localhost:5000/list-folder-contents/${filename}', { method: 'GET' })
-    //     .then((res) => {
-    //       if (!res.ok) {
-    //         throw new Error('No response from server/something went wrong');
-    //       }
-    //       return res.json();
-    //     })
-    //     .then((data) => {
-    //       // 'data.reports' containing filename and fuzzy info
-    //       console.log('File Json: ', data)
-    //       return data;
-    //     })
-    //     .catch((error) => {
-    //       console.error('Error fetching report data:', error);
-    //     });
-    //};
+      console.log('Button clicked:', filename);
+      getFolderContents(filename);
   }
   
   return (

@@ -329,17 +329,20 @@ def list_folder_contents(folder_name):
 
     return jsonify(result)
 
-def get_info_contents(file_contents, keyword, default_value):
-    info_contents = {}
-    lines = file_contents.split('\n')
-    for line in lines:
-        if line.startswith(keyword):
-            parts = line.split(';')
-            if len(parts) >= 3:
-                key = parts[2]
-                value = parts[3] if len(parts) >= 4 else ''
-                info_contents[key] = value.strip()
-    return info_contents if info_contents else default_value
+def get_info_contents(file_contents, keyword, drone_map):
+    content_array = file_contents.split("\n")
+    for content in content_array:
+        content_split = content.split(";")
+        if keyword in content and len(content_split) == 4:
+            key = content_split[2].strip()
+            value = content_split[3].strip()
+            if key not in drone_map:
+                drone_map[key] = [value]
+            else:
+                drone_map[key].append(value)
+    return drone_map
+
+
 
 #base64 of png
 """
@@ -771,5 +774,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) 
+    app.run(host='0.0.0.0', port=5500) 
     # makes it discoverable by other devices in the network

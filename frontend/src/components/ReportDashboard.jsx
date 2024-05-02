@@ -152,8 +152,8 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
-  const getFolderContents = (filename) => {
-    fetch(`http://localhost:5000/list-folder-contents/${filename}`, {method: 'post', headers: { 'Content-Type': 'application/json' }, body:{},})
+  const getFolderContents = (file) => {
+    fetch(`http://localhost:5000/list-folder-contents/${file.filename}`, {method: 'post', headers: { 'Content-Type': 'application/json' }, body:{},})
       .then((res) => {
         if (!res.ok) {
           throw new Error('No response from server/something went wrong');
@@ -162,15 +162,17 @@ const useStyles = makeStyles((theme) => ({
       })
       .then((data) => {
         console.log('File Json: ', data);
+        navigate('/dashboard', {state:{data: data, fuzzy: file.contains_fuzzy}})
         return data;
       })
       .catch((error) => {
         console.error('Error fetching report data:', error);
       });
   };
-  const handleButtonClick = (filename) => {
-      console.log('Button clicked:', filename);
-      getFolderContents(filename);
+  const handleButtonClick = (file) => {
+      console.log('Button clicked:', file);
+      getFolderContents(file);
+
   }
   
   return (
@@ -336,7 +338,7 @@ const useStyles = makeStyles((theme) => ({
           )} 
             {/* New button for the bottom right corner */}
           <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
-            <Button variant="contained" color="primary" onClick={() => handleButtonClick(file.filename)}>
+            <Button variant="contained" color="primary" onClick={() => handleButtonClick(file)}>
               Simulation Data
             </Button>
           </div>

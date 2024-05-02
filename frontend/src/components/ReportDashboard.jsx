@@ -265,6 +265,9 @@ const useStyles = makeStyles((theme) => ({
             <Typography className={classes.heading} style={{ fontWeight: 'bold', marginRight: '9px' }}> 
             {formattedTimestamp} 
             <span style={{ fontStyle: 'italic', marginLeft: '9px' }}>{batchName}</span> 
+            {file.contains_fuzzy && (
+              <Chip label="Fuzzy Test" style={{ marginLeft: '9px', backgroundColor: 'lightgreen', color: 'black' }} />
+            )}
             </Typography> 
             </Grid>
 
@@ -326,16 +329,6 @@ const useStyles = makeStyles((theme) => ({
     </TableRow>
   </TableBody>
 </Table>
-          {file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Fuzzy Testing {file.contains_fuzzy}</p> 
-          </Typography> 
-          )} 
-          {!file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Simulation Testing</p> 
-          </Typography> 
-          )} 
             {/* New button for the bottom right corner */}
           <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
             <Button variant="contained" color="primary" onClick={() => handleButtonClick(file)}>

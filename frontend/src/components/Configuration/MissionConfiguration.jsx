@@ -213,9 +213,9 @@ export default function MissionConfiguration (mission) {
     const setDroneJson = (json, index) => {
         console.log('set drone json---', json, index)
         // Ensure the "Z" property has a default value if not provided
-    if (json.Z === undefined || json.Z === null || json.Z === '') {
-        json.Z = 2;
-    }
+    //if (json.Z === undefined || json.Z === null || json.Z === '') {
+        //json.Z = 2;
+    //}
         // json = {...json, id: index, droneName:json.Name}
         // droneArray.splice(index, 1);
         // droneArray.push(json)

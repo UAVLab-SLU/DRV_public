@@ -82,6 +82,7 @@ export default function EnvironmentConfiguration (env) {
         Origin: {
             Latitude: 41.980381,
             Longitude: -87.934524,
+            Height: 2,
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
@@ -855,6 +856,11 @@ const handleSnackBarVisibility = (val) => {
                     <Grid item xs={3}>
                         <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
                     </Grid>
+
+                    <Grid item xs={3}>
+        <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}
+        helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>
+    </Grid>
                     
                     {/*<Grid item xs={3}>*/}
                     {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}

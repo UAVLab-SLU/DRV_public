@@ -291,7 +291,7 @@ def list_folder_contents(folder_name):
                     elif "NoFlyZoneMonitor" in file_path:
                         result["NoFlyZoneMonitor"].append(file_data)
 
-            elif file.endswith('.png') or file.endswith('.html'):
+            elif file.endswith('.png'): #removed: or file.endswith('.html')
                 file_data = {
                     "name": file,
                     "type": "image/png" if file.endswith('.png') else "text/html",

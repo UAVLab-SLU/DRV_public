@@ -190,10 +190,8 @@ class GeoUtil:
     @staticmethod
     def get_elevation(lat, lng):
         #curl -L -X GET 'https://maps.googleapis.com/maps/api/elevation/json?locations=39.7391536%2C-104.9847034&key=AIzaSyAZg02ECdzNzTvjTLbIRr61eh-P9mCq2ac'
-        key = "AIzaSyDl5tkiX4Z8CKS8NNngmYLwpnGCtig9DCg"
-        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key={key}"
+        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key=AIzaSyDl5tkiX4Z8CKS8NNngmYLwpnGCtig9DCg"
         response = requests.get(url).json()
-
         if 'results' in response:
             return response['results'][0]['elevation']
         else:

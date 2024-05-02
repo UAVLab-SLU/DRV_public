@@ -251,10 +251,12 @@ def list_folder_contents(folder_name):
 
             fuzzy_path_value = None
             paths = file_path.split(os.sep)
-            if len(paths) > 1:
+            if len(paths) > 1 and paths[-2].startswith("Fuzzy_Wind_"):
                 fuzzy_path_value = paths[-2]
-
-            fuzzy_value_array = fuzzy_path_value.split("_") if fuzzy_path_value else []
+                fuzzy_value = fuzzy_path_value.split("_")[-1]
+            else:
+                fuzzy_path_value = ""
+                fuzzy_value = ""
 
             if file.endswith('.txt'):
                 with open(file_path, 'r', encoding='utf-8') as f:
@@ -267,7 +269,7 @@ def list_folder_contents(folder_name):
                         "name": file,
                         "type": "text/plain",
                         "fuzzyPath": fuzzy_path_value,
-                        "fuzzyValue": fuzzy_path_value,
+                        "fuzzyValue": fuzzy_value,
                         "content": file_contents,
                         "infoContent": info_content,
                         "passContent": pass_content,
@@ -291,24 +293,18 @@ def list_folder_contents(folder_name):
                     elif "NoFlyZoneMonitor" in file_path:
                         result["NoFlyZoneMonitor"].append(file_data)
 
-            elif file.endswith('.png'): #removed: or file.endswith('.html')
+            elif file.endswith('.png'):
                 file_data = {
                     "name": file,
-                    "type": "image/png" if file.endswith('.png') else "text/html",
+                    "type": "image/png",
                     "fuzzyPath": fuzzy_path_value,
-                    "fuzzyValue": fuzzy_path_value
+                    "fuzzyValue": fuzzy_value
                 }
 
-                if file.endswith('.png'):
-                    with open(file_path, "rb") as image_file:
-                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                        file_data["imgContent"] = encoded_string
-                    file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
-                else:
-                    with open(file_path, "r", encoding='utf-8') as html_file:
-                        encoded_string = base64.b64encode(html_file.read().encode('utf-8')).decode('utf-8')
-                        file_data["htmlContent"] = encoded_string
-                    file_data["path"] = file_path
+                with open(file_path, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                    file_data["imgContent"] = encoded_string
+                file_data["path"] = file_path.replace("_plot.png", "_interactive.html")
 
                 if "UnorderedWaypointMonitor" in file_path:
                     result["UnorderedWaypointMonitor"].append(file_data)

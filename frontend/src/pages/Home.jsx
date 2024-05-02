@@ -70,12 +70,7 @@ const Home = () => {
 
   useEffect(() => {
     const callOnOpen = () => {
-      fetch('http://localhost:5500//list-folder-contents/2023-11-16-14-46-44_Batch_3', {
-        method: 'post',
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-        },
-       })
+      fetch('http://localhost:5000/currentRunning')
         .then((res) => {
           if (!res.ok) {
             throw new Error('No response from server/something went wrong');

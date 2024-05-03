@@ -137,7 +137,6 @@ export default function LandingPage() {
           <li className={classes.navListItem}>
 
             <Box component="span" onClick={handleAccordionToggle}>
-              About Us 
               </Box>
 
             <Box component="span">

@@ -4,13 +4,18 @@ import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
-import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography'; 
+import {useEffect} from 'react'; 
+import ReportDashboard from './components/ReportDashboard'; 
 
 const useStyles = makeStyles((theme) => ({
   landingPage: {
     fontFamily: 'Roboto, sans-serif',
     color: '#fff',
-    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    minHeight: '100vh', 
   },
   nav: {
     display: 'flex',
@@ -19,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
     padding: '1.5rem',
     backgroundColor: '#0000CD',
     fontFamily: 'Arial, sans-serif',
+    width: '100%',
   },
   siteTitle: {
     color: '#fff',
@@ -28,7 +34,17 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Arial, sans-serif',
   },
   mainContent: {
-    padding: '2rem',
+    padding: '2rem', 
+    marginTop: '7rem'
+    //textAlign: 'center', 
+  },
+  buttonContainer: {
+    position: 'absolute', 
+    top: '8rem', 
+    right: '4rem', 
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: '1rem',
   },
   navList: {
     listStyleType: 'none',
@@ -45,8 +61,32 @@ const useStyles = makeStyles((theme) => ({
     color: '#fff',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
-    transition: 'background-color 0.3s ease',
+    cursor: 'pointer', 
   },
+  acceptanceReportLink: {
+    textDecoration: 'underline',
+    color: '#800080', 
+    cursor: 'pointer', 
+    fontWeight: 'bold', 
+    display: 'block', 
+    marginBottom: '1rem', 
+  },
+  reportDashboardTitle: {
+    textDecoration: 'underline', 
+    color: '#800080', 
+    fontWeight: 'bold',
+    fontSize: '1.5rem', 
+    marginBottom: '1rem', 
+    cursor: 'pointer', 
+    textAlign: 'center',  
+  }, 
+
+  createSimulationLink: {
+    textDecoration: 'none', 
+    display: 'block', 
+    width: 'fit-content',
+},
+
 }));
 
 const modalStyle = {
@@ -64,6 +104,27 @@ const modalStyle = {
 
 export default function LandingPage() {
   const classes = useStyles();
+  const [filesPresent, setFilesPresent] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/list-reports', { method: 'GET' });
+      
+        const data = await response.json();
+        const batchFiles = data.reports.filter(file => file.filename.includes('Batch'));
+        setFilesPresent(batchFiles.length > 0);
+      } catch (error) {
+        console.error('Error fetching report data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAccordionToggle = () => {
+    console.log('Accordion toggled');
+  };
   const [open, setOpen] = useState(false);
 
   return (
@@ -74,6 +135,10 @@ export default function LandingPage() {
         </a>
         <ul className={classes.navList}>
           <li className={classes.navListItem}>
+
+            <Box component="span" onClick={handleAccordionToggle}>
+              </Box>
+
             <Box component="span">
               <Button
                 className={classes.aboutLink}
@@ -86,6 +151,39 @@ export default function LandingPage() {
           </li>
         </ul>
       </nav>
+      <div className={classes.mainContent}>
+  <Link to="/" div className={classes.buttonContainer} style = {{textDecoration: 'none', 
+    }}>
+    <Button
+      variant="contained"
+      sx={{
+        color: 'white',
+        padding: '15px 30px',
+        borderRadius: '10px',
+      }}
+    > 
+   
+      Create Simulation 
+    </Button>
+  </Link>
+  {filesPresent ? (
+    <div onClick={handleAccordionToggle}>
+      <h2 className={classes.reportDashboardTitle}>
+        <Link to="/report-dashboard" className={classes.reportDashboardTitle}>
+          <div style={{ textAlign: 'center' }}>
+            {/* Content here */}
+          </div>
+        </Link>
+      </h2>
+      <ReportDashboard />
+    </div>
+  ) : (
+    <div style={{ textAlign: 'center' }}>
+      <h2>No batch files present in the report dashboard</h2>
+    </div>
+  )}
+</div>
+
 
       {/* Main content area */}
       <div className={classes.mainContent} style={{ paddingTop: '9rem', color: '#333' }}>

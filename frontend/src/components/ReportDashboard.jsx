@@ -26,21 +26,32 @@ import { Card, CardContent, CardHeader, Typography } from '@mui/material';
 import FuzzyDashboard from './FuzzyDashboard'; 
 import React, { useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
-import Snackbar from '@mui/material/Snackbar';
+import Snackbar from '@mui/material/Snackbar'; 
 
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; 
 
 import CircularProgress from '@mui/material/CircularProgress'; 
 import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';
+import { Link } from 'react-router-dom'; 
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
 
 
 
 const useStyles = makeStyles((theme) => ({ 
   lightBlueBackground: {
     backgroundColor: '#e3f2fd', 
+  }, 
+  cardMedia: {
+    width: '80%', 
+    height: 'auto', 
+  }, 
+  fullWidthBox: {
+    width: '100vw', 
+    margin: 0, 
+    padding: 0, 
   },
   card: {
     maxWidth: 400,
@@ -48,11 +59,17 @@ const useStyles = makeStyles((theme) => ({
     border: '1px solid lightgreen', 
     backgroundColor: '#e3f2fd', 
     boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
+  }, 
+  fullScreenContainer: {
+    width: '50%',
+    padding: 0,  
+    margin: 0
   },
   invalidData: {
     fontWeight: 'bold',
     color: 'red', 
-  },
+  },  
+
   button: {
     backgroundColor: '#1976d2', 
     color: '#fff', 
@@ -94,7 +111,7 @@ const useStyles = makeStyles((theme) => ({
 //];
 
   
-  export default function ReportDashboard(parameter) {
+  export default function ReportDashboard(showTitle) {
 
     const [reportFiles, setReportFiles] = React.useState([]);  
    // const isFuzzy = file.filename.includes('Fuzzy'); 
@@ -174,9 +191,32 @@ const useStyles = makeStyles((theme) => ({
       getFolderContents(file);
 
   }
+
   
-  return (
-   <>
+  const acceptanceReportTypography = (
+    <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem', color:'#000000'}}>
+      <Link to="/report-dashboard" style={{ textDecoration: 'none', color: '#000000' }}>
+        Acceptance Report
+      </Link>
+      <Tooltip title="Home" placement="bottom">
+        <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+      </Tooltip>
+    </Typography>
+  );
+  
+   
+  return ( 
+   <>      
+   <Box className={classes.fullWidthBox}>
+      <CardMedia
+       // component="iframe" 
+      //  src="your-embedded-content-url"
+       // className={classes.cardMedia}
+       // title="Embedded Content"
+      />
+    </Box> 
+
+   {acceptanceReportTypography}
     {reportFiles.length === 0 && (
       <>
         <Snackbar
@@ -197,14 +237,8 @@ const useStyles = makeStyles((theme) => ({
           </Alert>
         </Snackbar>
 
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-          Acceptance Report
-          <Tooltip title="Home" placement="bottom">
-            <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
-          </Tooltip>
-        </Typography>
 
-        <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
+        <Container maxWidth="x1" style={{ padding: '10px', alignContent: 'center' }}>
           {/* ... (existing Container, Paper, and div) */}
         </Container>
 
@@ -217,11 +251,8 @@ const useStyles = makeStyles((theme) => ({
     )}
 
     {reportFiles.length > 0 && (
-      <>
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-          Acceptance Report
-          {/* ... */}
-        </Typography>
+      <> 
+    
         <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
           {reportFiles.map((file) => {
             const parts = file.filename.split('_');
@@ -257,7 +288,7 @@ const useStyles = makeStyles((theme) => ({
   
           return (
             <Grid key={file.id} item xs={12}> 
-            <Accordion style={{ border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}> 
+            <Accordion style={{border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}> 
             <AccordionSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container alignItems="center"> 
             {/* Date and Batch Name */} 
@@ -340,7 +371,8 @@ const useStyles = makeStyles((theme) => ({
           </Grid>
         );
       })}
-    </Grid>
+    </Grid> 
+    
     </>
     )}
   </>

@@ -233,21 +233,8 @@ def list_folder_contents(folder_name):
     if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
         return jsonify({'error': 'Folder not found'}), 404
 
-    result = {}
-
-    for item in os.listdir(base_directory):
-        item_path = os.path.join(base_directory, item)
-        if os.path.isdir(item_path):
-            if item.startswith("Fuzzy_Wind_"):
-                fuzzy_number = item.split("_")[-1]
-                result[f"Fuzzy_Wind_{fuzzy_number}"] = process_directory(item_path, item)
-            else:
-                result[item] = process_directory(item_path, "")
-
-    return jsonify(result)
-
-def process_directory(directory, fuzzy_path_value):
     result = {
+        "name": folder_name,
         "UnorderedWaypointMonitor": [],
         "CircularDeviationMonitor": [],
         "CollisionMonitor": [],
@@ -258,6 +245,18 @@ def process_directory(directory, fuzzy_path_value):
         "NoFlyZoneMonitor": []
     }
 
+    fuzzy_folders = [dir_name for dir_name in os.listdir(base_directory) if dir_name.startswith("Fuzzy_Wind_")]
+
+    if fuzzy_folders:
+        for fuzzy_folder in fuzzy_folders:
+            fuzzy_directory = os.path.join(base_directory, fuzzy_folder)
+            process_directory(fuzzy_directory, result, fuzzy_folder)
+    else:
+        process_directory(base_directory, result, "")
+
+    return jsonify(result)
+
+def process_directory(directory, result, fuzzy_path_value):
     for root, dirs, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
@@ -328,21 +327,6 @@ def process_directory(directory, fuzzy_path_value):
                     result["MinSepDistMonitor"].append(file_data)
                 elif "NoFlyZoneMonitor" in file_path:
                     result["NoFlyZoneMonitor"].append(file_data)
-
-    return result
-
-def get_info_contents(file_contents, keyword, drone_map):
-    content_array = file_contents.split("\n")
-    for content in content_array:
-        content_split = content.split(";")
-        if keyword in content and len(content_split) == 4:
-            key = content_split[2].strip()
-            value = content_split[3].strip()
-            if key not in drone_map:
-                drone_map[key] = [value]
-            else:
-                drone_map[key].append(value)
-    return drone_map
 
 def get_info_contents(file_contents, keyword, drone_map):
     content_array = file_contents.split("\n")
@@ -786,5 +770,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) 
+    app.run(host='0.0.0.0', port=5500) 
     # makes it discoverable by other devices in the network

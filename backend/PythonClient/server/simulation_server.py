@@ -233,8 +233,21 @@ def list_folder_contents(folder_name):
     if not os.path.exists(base_directory) or not os.path.isdir(base_directory):
         return jsonify({'error': 'Folder not found'}), 404
 
+    result = {}
+
+    for item in os.listdir(base_directory):
+        item_path = os.path.join(base_directory, item)
+        if os.path.isdir(item_path):
+            if item.startswith("Fuzzy_Wind_"):
+                fuzzy_number = item.split("_")[-1]
+                result[f"Fuzzy_Wind_{fuzzy_number}"] = process_directory(item_path, item)
+            else:
+                result[item] = process_directory(item_path, "")
+
+    return jsonify(result)
+
+def process_directory(directory, fuzzy_path_value):
     result = {
-        "name": 0,
         "UnorderedWaypointMonitor": [],
         "CircularDeviationMonitor": [],
         "CollisionMonitor": [],
@@ -245,18 +258,11 @@ def list_folder_contents(folder_name):
         "NoFlyZoneMonitor": []
     }
 
-    for root, dirs, files in os.walk(base_directory):
+    for root, dirs, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
 
-            fuzzy_path_value = None
-            paths = file_path.split(os.sep)
-            if len(paths) > 1 and paths[-2].startswith("Fuzzy_Wind_"):
-                fuzzy_path_value = paths[-2]
-                fuzzy_value = fuzzy_path_value.split("_")[-1]
-            else:
-                fuzzy_path_value = ""
-                fuzzy_value = ""
+            fuzzy_value = fuzzy_path_value.split("_")[-1] if fuzzy_path_value else ""
 
             if file.endswith('.txt'):
                 with open(file_path, 'r', encoding='utf-8') as f:
@@ -323,7 +329,7 @@ def list_folder_contents(folder_name):
                 elif "NoFlyZoneMonitor" in file_path:
                     result["NoFlyZoneMonitor"].append(file_data)
 
-    return jsonify(result)
+    return result
 
 def get_info_contents(file_contents, keyword, drone_map):
     content_array = file_contents.split("\n")
@@ -338,8 +344,18 @@ def get_info_contents(file_contents, keyword, drone_map):
                 drone_map[key].append(value)
     return drone_map
 
-
-
+def get_info_contents(file_contents, keyword, drone_map):
+    content_array = file_contents.split("\n")
+    for content in content_array:
+        content_split = content.split(";")
+        if keyword in content and len(content_split) == 4:
+            key = content_split[2].strip()
+            value = content_split[3].strip()
+            if key not in drone_map:
+                drone_map[key] = [value]
+            else:
+                drone_map[key].append(value)
+    return drone_map
 #base64 of png
 """
 @app.route('/list-folder-contents/<folder_name>', methods=['POST'])
@@ -770,5 +786,5 @@ def get_map():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5500) 
+    app.run(host='0.0.0.0', port=5000) 
     # makes it discoverable by other devices in the network

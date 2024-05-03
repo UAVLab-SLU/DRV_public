@@ -87,6 +87,7 @@ export default function EnvironmentConfiguration (env) {
         UseGeo: true,
         time:dayjs('2020-01-01 10:00')
     }); 
+    
     const handleChangeSwitch = (val) => {
         setEnvConf(prevState => ({
                 ...prevState,
@@ -170,6 +171,7 @@ export default function EnvironmentConfiguration (env) {
             TimeOfDay: val.$H + ':' + val.$m + ':' + val.$s
         }))
     }
+    /*
     const handleWindChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -179,6 +181,16 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     } 
+    */
+    const handleWindChange = (val) => {
+        setEnvConf((prevState) => ({
+          ...prevState,
+          Wind: {
+            ...prevState.Wind,
+            Velocity: val.target.type === "number" ? parseFloat(val.target.value) : 0,
+          },
+        }));
+      };
     const handleOriginChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -235,6 +247,36 @@ export default function EnvironmentConfiguration (env) {
   };
   */}
 
+  const handleWindTypeChange = (event) => {
+    setFuzzyAlert(false);
+    handleSnackBarVisibility(true);
+    const newWindType = event.target.value;
+    setSelectedWindType(newWindType);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        Type: newWindType,
+        Fluctuation: newWindType === "Turbulent Wind" ? fluctuationPercentage : 0,
+      },
+    }));
+  };
+  
+  const handleFLuctuationChange = (event) => {
+    const newFlucValue = event.target.value;
+    setSelectedFluctuationValue(newFlucValue);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        Fluctuation: newFlucValue,
+      },
+    }));
+  };
+
+  /*
   const handleFLuctuationChange = (event) => {
       const newFlucValue = event.target.value;
       setSelectedFluctuationValue(newFlucValue);
@@ -253,9 +295,10 @@ export default function EnvironmentConfiguration (env) {
               Type: newWindType,
               },
           }));
-      */}
+      }
   };
-    
+
+  */
   const handleDirection = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -381,7 +424,7 @@ export default function EnvironmentConfiguration (env) {
         fluctuationPercentage: 0,
     });
   };
-
+/*
   const handleShearWindDirection = (e, id) => {
     console.log(id)
     const newArry = windShears.map((shear, index) => {
@@ -425,9 +468,82 @@ const handleShearfluctuationPercentageChange = (e, id) => {
         }
     })
     setwindShears(newArry)
-}
+} */
+const handleShearWindDirection = (e, index) => {
+    const newArry = windShears.map((shear, i) => {
+      if (i === index) {
+        return {
+          ...shear,
+          windDirection: e,
+        };
+      }
+      return shear;
+    });
+    setwindShears(newArry);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        [`Wind${index + 1}`]: {
+          ...prevState.Wind[`Wind${index + 1}`],
+          Direction: e,
+        },
+      },
+    }));
+  };
+  
+  const handleShearWindChange = (e, index) => {
+    const newArry = windShears.map((shear, i) => {
+      if (i === index) {
+        return {
+          ...shear,
+          windVelocity: e,
+        };
+      }
+      return shear;
+    });
+    setwindShears(newArry);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        [`Wind${index + 1}`]: {
+          ...prevState.Wind[`Wind${index + 1}`],
+          Force: e,
+        },
+      },
+    }));
+  };
+  
+  const handleShearfluctuationPercentageChange = (e, index) => {
+    const newArry = windShears.map((shear, i) => {
+      if (i === index) {
+        return {
+          ...shear,
+          fluctuationPercentage: e,
+        };
+      }
+      return shear;
+    });
+    setwindShears(newArry);
+  
+    setEnvConf((prevState) => ({
+      ...prevState,
+      Wind: {
+        ...prevState.Wind,
+        [`Wind${index + 1}`]: {
+          ...prevState.Wind[`Wind${index + 1}`],
+          Fluctuation: e,
+        },
+      },
+    }));
+  };
+
 
   // Function to add a new wind shear entry for window
+  /*
   const addNewWindShear = () => {
     const newWindShearEntry = { 
         windDirection: "",
@@ -436,11 +552,32 @@ const handleShearfluctuationPercentageChange = (e, id) => {
      };
     setwindShears([...windShears, newWindShearEntry]);
   };
-
+*/
   const [snackBarState, setSnackBarState] = React.useState({
     open: false,
     });
  
+    const addNewWindShear = () => {
+        const newWindShearEntry = {
+          windDirection: "",
+          windVelocity: 0,
+          fluctuationPercentage: 0,
+        };
+        setwindShears([...windShears, newWindShearEntry]);
+      
+        setEnvConf((prevState) => ({
+          ...prevState,
+          Wind: {
+            ...prevState.Wind,
+            [`Wind${windShears.length + 1}`]: {
+              Type: "Wind Shear",
+              Direction: "",
+              Force: 0,
+              Fluctuation: 0,
+            },
+          },
+        }));
+      };
 
 
 const handleSnackBarVisibility = (val) => {

@@ -62,12 +62,12 @@ export default function FuzzyDashboard() {
   const [open, setOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState();
   const [htmlLink, setHtmlLink] = React.useState();
-  const [voilation, setVoilation] = React.useState(false)
+  const [voilation, setVoilation] = React.useState(location.state.file.fail > 0 ? true : false)
   const [isFuzzyList, setIsFuzzyList] = React.useState(location.state.file.fuzzy);
   const [fuzzyTest, setFuzzyTest] = React.useState([]);
   const [fileName, setFileName] = React.useState(location.state.file.fileName)
 
-  const names = [{name:0},{name:5},{name:10}]
+  const names = [{name:0},{name:7},{name:14}]
 
   const handleOpen = (img) => {
     setOpen(true);
@@ -106,9 +106,6 @@ export default function FuzzyDashboard() {
     return droneMap;
   }
   const returnContentsItem = (colorCode, keyValue, info, icon, fuzzyValue, severity_val) => {
-    // if(severity_val == 'error' && Object.keys(info)){
-    //   setVoilation(true)
-    // }
     for (const mapKey of Object.keys(info)) {
       console.log(mapKey);
       console.log(info[mapKey])
@@ -117,12 +114,10 @@ export default function FuzzyDashboard() {
       <React.Fragment>
         <Grid container spacing={2} direction="row" style={{fontFamily:"sans-serif"}}>
           <h4>{mapKey}</h4>&nbsp;&nbsp;
-          {/* <h5>( Fuzzed Parameter : Wind Velocity = {fuzzyValueArray[2]} meters/s)</h5> */}
           </Grid>
         {info[mapKey].map((val, id) => {
         return (
           <React.Fragment key={keyValue} >
-          {/* <List sx={{ width: '100%', bgcolor: 'background.paper', position:'relative' }} key={keyValue}> */}
           <List key={keyValue}>
             <ListItem>
               <Alert variant="filled" severity={severity_val} style={{width:'100%'}}>
@@ -219,83 +214,83 @@ export default function FuzzyDashboard() {
 
   useEffect(() => {
     // if(fuzzyTest) {
-      names.map(id=> {
-        console.log('ddd......', id)
-            let unordered=[];
-            let circular = [];
-          let collision = [];
-          let landscape = [];
-          let orderWay = [];
-          let pointDev = [];
-          let minSep = [];
-          let nonFly = [];
-          resp.UnorderedWaypointMonitor.map(unorder => {
-            if(id.name == unorder.fuzzyValue) {
-                unordered.push(unorder)
-            }
-          })
-          resp.CircularDeviationMonitor.map(circularDev => {
-            console.log('circularDev-----', circularDev)
-                  if(id.name == circularDev.fuzzyValue) {
-                    circular.push(circularDev);
-                  }
-          })
-          resp.CollisionMonitor.map(coll => {
-            if(id.name == coll.fuzzyValue) {
-              collision.push(coll);
-            }
-          })
-          resp.LandspaceMonitor.map(land => {
-            if(id.name == land.fuzzyValue) {
-              landscape.push(land);
-            }
-          })
-          resp.OrderedWaypointMonitor.map( order => {
-            if(id.name == order.fuzzyValue) {
-              orderWay.push(order);
-            }
-          })
-          resp.PointDeviationMonitor.map(point => {
-            if(id.name == point.fuzzyValue) {
-              pointDev.push(point);
-            }
-          })
-          resp.MinSepDistMonitor.map(min => {
-            if(id.name == min.fuzzyValue) {
-              minSep.push(min);
-            }
-          })
-          resp.NoFlyZoneMonitor.map(zone => {
-            if(id.name == zone.fuzzyVale) {
-              nonFly.push(zone)
-            }
-          })
-          setFuzzyTest(prevState => [
-            ...prevState,
-            {
-                "name":id.name,
-                "UnorderedWaypointMonitor": unordered,
-                "CircularDeviationMonitor": circular,
-                "CollisionMonitor" : resp.CollisionMonitor,
-                "LandspaceMonitor": resp.LandspaceMonitor,
-                "OrderedWaypointMonitor": resp.OrderedWaypointMonitor,
-                "PointDeviationMonitor": resp.PointDeviationMonitor,
-                "MinSepDistMonitor": resp.MinSepDistMonitor,
-                "NoFlyZoneMonitor":resp.NoFlyZoneMonitor
-            }
-          ])
-      })  
+      // names.map(id=> {
+      //   console.log('ddd......', id)
+      //       let unordered=[];
+      //       let circular = [];
+      //     let collision = [];
+      //     let landscape = [];
+      //     let orderWay = [];
+      //     let pointDev = [];
+      //     let minSep = [];
+      //     let nonFly = [];
+      //     resp.UnorderedWaypointMonitor.map(unorder => {
+      //       if(id.name == unorder.fuzzyValue) {
+      //           unordered.push(unorder)
+      //       }
+      //     })
+      //     resp.CircularDeviationMonitor.map(circularDev => {
+      //       console.log('circularDev-----', circularDev)
+      //             if(id.name == circularDev.fuzzyValue) {
+      //               circular.push(circularDev);
+      //             }
+      //     })
+      //     resp.CollisionMonitor.map(coll => {
+      //       if(id.name == coll.fuzzyValue) {
+      //         collision.push(coll);
+      //       }
+      //     })
+      //     resp.LandspaceMonitor.map(land => {
+      //       if(id.name == land.fuzzyValue) {
+      //         landscape.push(land);
+      //       }
+      //     })
+      //     resp.OrderedWaypointMonitor.map( order => {
+      //       if(id.name == order.fuzzyValue) {
+      //         orderWay.push(order);
+      //       }
+      //     })
+      //     resp.PointDeviationMonitor.map(point => {
+      //       if(id.name == point.fuzzyValue) {
+      //         pointDev.push(point);
+      //       }
+      //     })
+      //     resp.MinSepDistMonitor.map(min => {
+      //       if(id.name == min.fuzzyValue) {
+      //         minSep.push(min);
+      //       }
+      //     })
+      //     resp.NoFlyZoneMonitor.map(zone => {
+      //       if(id.name == zone.fuzzyVale) {
+      //         nonFly.push(zone)
+      //       }
+      //     })
+      //     setFuzzyTest(prevState => [
+      //       ...prevState,
+      //       {
+      //           "name":id.name,
+      //           "UnorderedWaypointMonitor": unordered,
+      //           "CircularDeviationMonitor": circular,
+      //           "CollisionMonitor" : collision,
+      //           "LandspaceMonitor": landscape,
+      //           "OrderedWaypointMonitor": orderWay,
+      //           "PointDeviationMonitor": pointDev,
+      //           "MinSepDistMonitor": minSep,
+      //           "NoFlyZoneMonitor":nonFly
+      //       }
+      //     ])
+      // })  
       
     // } 
     // if(!fuzzyTest) {
-      // setCircularDeviationMonitor(resp.CircularDeviationMonitor)
-      // setCollisionMonitor(resp.CollisionMonitor)
-      // setLandspaceMonitor(resp.LandspaceMonitor)
-      // setMinSepDistMonitor(resp.MinSepDistMonitor)
-      // setNoFlyZoneMonitor(resp.NoFlyZoneMonitor)
-      // setOrderedWaypointMonitor(resp.OrderedWaypointMonitor)
-      // setPointDeviationMonitor(resp.PointDeviationMonitor)
-      // setUnorderedWaypointMonitor(resp.UnorderedWaypointMonitor)
+      setCircularDeviationMonitor(resp.CircularDeviationMonitor)
+      setCollisionMonitor(resp.CollisionMonitor)
+      setLandspaceMonitor(resp.LandspaceMonitor)
+      setMinSepDistMonitor(resp.MinSepDistMonitor)
+      setNoFlyZoneMonitor(resp.NoFlyZoneMonitor)
+      setOrderedWaypointMonitor(resp.OrderedWaypointMonitor)
+      setPointDeviationMonitor(resp.PointDeviationMonitor)
+      setUnorderedWaypointMonitor(resp.UnorderedWaypointMonitor)
     // }
    
     // handleDirectorySelectFuzzy()
@@ -641,8 +636,13 @@ export default function FuzzyDashboard() {
       </Typography>
       </Box>
       <Box>
-          <Link style={{float:'right', cursor:'pointer', fontSize:'20px', paddingRight: '15px'}} onClick={redirectToReportDashboard}>Back</Link>
+      <Typography variant="h4" style={{padding:'10px', fontWeight: 700, marginTop: '5px', alignContent:'right'}}>
+        <Container maxWidth="sm" style={{padding:'10px', alignContent:'right'}}>
+          <Link style={{cursor:'pointer', fontSize:'20px', paddingRight: '15px'}} onClick={redirectToReportDashboard}>Back</Link>=
+        </Container>
+      </Typography>
       </Box>
+      
       
       {voilation ? <Alert severity="warning">
                         <AlertTitle>Warning</AlertTitle>

@@ -24,6 +24,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { wait } from '@testing-library/user-event/dist/utils';
 import Snackbar from '@mui/material/Snackbar';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Link from '@mui/material/Link'
 
 const style = {
   position: 'absolute',
@@ -37,15 +38,18 @@ const style = {
   p: 4,
 };
 
-export default function FuzzyDashboard(parameter) {
+export default function FuzzyDashboard() {
   const navigate = useNavigate(); 
   const location = useLocation();
-  const deviation = location.state != null ? location.state.mainJson.monitors != null ?  
-      location.state.mainJson.monitors.circular_deviation_monitor != null ? location.state.mainJson.monitors.circular_deviation_monitor.param[0] : null : null : null
-  const horizontal = location.state != null ? location.state.mainJson.monitors != null ?  
-      location.state.mainJson.monitors.min_sep_dist_monitor != null ? location.state.mainJson.monitors.min_sep_dist_monitor.param[0] : null : null : null
-  const lateral = location.state != null ? location.state.mainJson.monitors != null ?  
-      location.state.mainJson.monitors.min_sep_dist_monitor != null ? location.state.mainJson.monitors.min_sep_dist_monitor.param[1] : null : null : null  
+  const resp = location.state.data
+  console.log('fuzzy dashboard', location.state.data)
+  console.log('fuzzy----', location.state.fuzzy)
+  const deviation = location.state != null ? location.state.mainJson != null ? location.state.mainJson.monitors != null ?  
+      location.state.mainJson.monitors.circular_deviation_monitor != null ? location.state.mainJson.monitors.circular_deviation_monitor.param[0] : null : null : null : null
+  const horizontal = location.state != null ? location.state.mainJson != null ? location.state.mainJson.monitors != null ?  
+      location.state.mainJson.monitors.min_sep_dist_monitor != null ? location.state.mainJson.monitors.min_sep_dist_monitor.param[0] : null : null : null : null
+  const lateral = location.state != null ? location.state.mainJson != null ? location.state.mainJson.monitors != null ?  
+      location.state.mainJson.monitors.min_sep_dist_monitor != null ? location.state.mainJson.monitors.min_sep_dist_monitor.param[1] : null : null : null  : null
   const [fileArray, setFileArray] = React.useState([])
   const [CircularDeviationMonitor, setCircularDeviationMonitor] = React.useState([])
   const [CollisionMonitor, setCollisionMonitor] = React.useState([])
@@ -59,212 +63,11 @@ export default function FuzzyDashboard(parameter) {
   const [selectedImage, setSelectedImage] = React.useState();
   const [htmlLink, setHtmlLink] = React.useState();
   const [voilation, setVoilation] = React.useState(false)
-  const [isFuzzyList, setIsFuzzyList] = React.useState(true);
+  const [isFuzzyList, setIsFuzzyList] = React.useState(location.state.file.fuzzy);
   const [fuzzyTest, setFuzzyTest] = React.useState([]);
+  const [fileName, setFileName] = React.useState(location.state.file.fileName)
 
   const names = [{name:0},{name:5},{name:10}]
-
-  const tempJson = {
-    "CircularDeviationMonitor": [],
-    "CollisionMonitor": [
-        {
-            "content": "INFO;14:46:50;Drone 2;CollisionMonitor started\nPASS;14:48:17;Drone 2;No collision detected\n",
-            "failContent": {},
-            "fuzzyPath": "CollisionMonitor",
-            "fuzzyValue": "CollisionMonitor",
-            "infoContent": {
-                "Drone 2": "CollisionMonitor started"
-            },
-            "name": "Drone 2_log.txt",
-            "passContent": {
-                "Drone 2": "No collision detected"
-            },
-            "type": "text/plain"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 3;CollisionMonitor started\nPASS;14:48:17;Drone 3;No collision detected\n",
-            "failContent": {},
-            "fuzzyPath": "CollisionMonitor",
-            "fuzzyValue": "CollisionMonitor",
-            "infoContent": {
-                "Drone 3": "CollisionMonitor started"
-            },
-            "name": "Drone 3_log.txt",
-            "passContent": {
-                "Drone 3": "No collision detected"
-            },
-            "type": "text/plain"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 1;CollisionMonitor started\nPASS;14:48:17;Drone 1;No collision detected\n",
-            "failContent": {},
-            "fuzzyPath": "CollisionMonitor",
-            "fuzzyValue": "CollisionMonitor",
-            "infoContent": {
-                "Drone 1": "CollisionMonitor started"
-            },
-            "name": "Drone 1_log.txt",
-            "passContent": {
-                "Drone 1": "No collision detected"
-            },
-            "type": "text/plain"
-        }
-    ],
-    "LandspaceMonitor": [
-        {
-            "content": "INFO;14:46:50;Drone 2;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 2;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 2;Landspace monitor started\nPASS;14:48:16;Drone 2;No landing violations detected\n",
-            "failContent": {},
-            "fuzzyPath": "LandspaceMonitor",
-            "fuzzyValue": "LandspaceMonitor",
-            "infoContent": {
-                "Drone 2": "Landspace monitor started"
-            },
-            "name": "Drone 2_log.txt",
-            "passContent": {
-                "Drone 2": "No landing violations detected"
-            },
-            "type": "text/plain"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 3;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 3;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 3;Landspace monitor started\nPASS;14:48:16;Drone 3;No landing violations detected\n",
-            "failContent": {},
-            "fuzzyPath": "LandspaceMonitor",
-            "fuzzyValue": "LandspaceMonitor",
-            "infoContent": {
-                "Drone 3": "Landspace monitor started"
-            },
-            "name": "Drone 3_log.txt",
-            "passContent": {
-                "Drone 3": "No landing violations detected"
-            },
-            "type": "text/plain"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 1;Landing space geolocation: [[1, 1], [2, 2]]\nINFO;14:46:50;Drone 1;Landing space cartesian location: [(9900145.925622167, -4561220.343661562, 0), (10011465.416415442, -4447884.4720193315, 0)]\nINFO;14:46:50;Drone 1;Landspace monitor started\nPASS;14:48:16;Drone 1;No landing violations detected\n",
-            "failContent": {},
-            "fuzzyPath": "LandspaceMonitor",
-            "fuzzyValue": "LandspaceMonitor",
-            "infoContent": {
-                "Drone 1": "Landspace monitor started"
-            },
-            "name": "Drone 1_log.txt",
-            "passContent": {
-                "Drone 1": "No landing violations detected"
-            },
-            "type": "text/plain"
-        }
-    ],
-    "MinSepDistMonitor": [
-        {
-            "content": "INFO;14:46:50;['Drone 1', 'Drone 2', 'Drone 3'];MinSepDistMonitor started, checking breach of lateral: 1 meters, horizontal : 1 meters, for every 1 seconds\nPASS;14:48:20;['Drone 1', 'Drone 2', 'Drone 3'];The minimum separation distance was not breached\n",
-            "failContent": {},
-            "fuzzyPath": "MinSepDistMonitor",
-            "fuzzyValue": "MinSepDistMonitor",
-            "infoContent": {
-                "['Drone 1', 'Drone 2', 'Drone 3']": "MinSepDistMonitor started, checking breach of lateral: 1 meters, horizontal : 1 meters, for every 1 seconds"
-            },
-            "name": "log.txt",
-            "passContent": {
-                "['Drone 1', 'Drone 2', 'Drone 3']": "The minimum separation distance was not breached"
-            },
-            "type": "text/plain"
-        }
-    ],
-    "NoFlyZoneMonitor": [],
-    "OrderedWaypointMonitor": [],
-    "PointDeviationMonitor": [
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "name": "Drone 1_interactive.html",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 1_interactive.html",
-            "type": "text/html"
-        },
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "imgContent": null,
-            "name": "Drone 3_plot.png",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 3_interactive.html",
-            "type": "image/png"
-        },
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "imgContent": null,
-            "name": "Drone 2_plot.png",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 2_interactive.html",
-            "type": "image/png"
-        },
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "name": "Drone 3_interactive.html",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 3_interactive.html",
-            "type": "text/html"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 2;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 2;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 2;Mission task finished\nPASS;14:48:16;Drone 2;No deviation violation (<15 meters)\n",
-            "failContent": {},
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "infoContent": {
-                "Drone 2": "Mission task finished"
-            },
-            "name": "Drone 2_log.txt",
-            "passContent": {
-                "Drone 2": "No deviation violation (<15 meters)"
-            },
-            "type": "text/plain"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 3;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 3;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 3;Mission task finished\nPASS;14:48:16;Drone 3;No deviation violation (<15 meters)\n",
-            "failContent": {},
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "infoContent": {
-                "Drone 3": "Mission task finished"
-            },
-            "name": "Drone 3_log.txt",
-            "passContent": {
-                "Drone 3": "No deviation violation (<15 meters)"
-            },
-            "type": "text/plain"
-        },
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "name": "Drone 2_interactive.html",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 2_interactive.html",
-            "type": "text/html"
-        },
-        {
-            "content": "INFO;14:46:50;Drone 1;speed 4 m/s with wind 45.0 degrees clock wise from north, speed 1.0 m/s\nINFO;14:46:50;Drone 1;Register drone location every 0.02 seconds\nINFO;14:48:16;Drone 1;Mission task finished\nPASS;14:48:16;Drone 1;No deviation violation (<15 meters)\n",
-            "failContent": {},
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "infoContent": {
-                "Drone 1": "Mission task finished"
-            },
-            "name": "Drone 1_log.txt",
-            "passContent": {
-                "Drone 1": "No deviation violation (<15 meters)"
-            },
-            "type": "text/plain"
-        },
-        {
-            "fuzzyPath": "PointDeviationMonitor",
-            "fuzzyValue": "PointDeviationMonitor",
-            "imgContent": null,
-            "name": "Drone 1_plot.png",
-            "path": "/Users/kaleb/Documents/AirSim/report/2023-11-16-14-46-44_Batch_3/FlyToPoints/PointDeviationMonitor/Drone 1_interactive.html",
-            "type": "image/png"
-        }
-    ],
-    "UnorderedWaypointMonitor": [],
-    "name": 0
-  }
-
 
   const handleOpen = (img) => {
     setOpen(true);
@@ -275,8 +78,8 @@ export default function FuzzyDashboard(parameter) {
       setOpen(false)
   };
 
-  const redirectToHome = () => {
-    navigate('/')
+  const redirectToReportDashboard = () => {
+    navigate('/report-dashboard')
   }
   
   const getInfoContents = (fileContents, keyMatch, droneMap) => {
@@ -303,9 +106,12 @@ export default function FuzzyDashboard(parameter) {
     return droneMap;
   }
   const returnContentsItem = (colorCode, keyValue, info, icon, fuzzyValue, severity_val) => {
-    for (const mapKey of info.keys()) {
+    // if(severity_val == 'error' && Object.keys(info)){
+    //   setVoilation(true)
+    // }
+    for (const mapKey of Object.keys(info)) {
       console.log(mapKey);
-      console.log(info.get(mapKey))
+      console.log(info[mapKey])
       let fuzzyValueArray = fuzzyValue.split("_")
       return (
       <React.Fragment>
@@ -313,7 +119,7 @@ export default function FuzzyDashboard(parameter) {
           <h4>{mapKey}</h4>&nbsp;&nbsp;
           {/* <h5>( Fuzzed Parameter : Wind Velocity = {fuzzyValueArray[2]} meters/s)</h5> */}
           </Grid>
-        {info.get(mapKey).map((val, id) => {
+        {info[mapKey].map((val, id) => {
         return (
           <React.Fragment key={keyValue} >
           {/* <List sx={{ width: '100%', bgcolor: 'background.paper', position:'relative' }} key={keyValue}> */}
@@ -334,157 +140,174 @@ export default function FuzzyDashboard(parameter) {
       </React.Fragment>)
     }
   }
-  const handleDirectorySelectFuzzy = () => {
-    wait(1000);
-    console.log('fuzztTestNames----- in handleDirectorySelectFuzzy', names)
+  // const handleDirectorySelectFuzzy = () => {
+  //   wait(1000);
+  //   console.log('fuzztTestNames----- in handleDirectorySelectFuzzy', names)
   
-    setFuzzyTest([]);
-    names.map(id=> {
-      let unordered=[];
-      let circular = [];
-    let collision = [];
-    let landscape = [];
-    let orderWay = [];
-    let pointDev = [];
-    let minSep = [];
-    let nonFly = [];
-      UnorderedWaypointMonitor.map(unorder => {
-        console.log('UnorderedWaypointMonitor---', UnorderedWaypointMonitor)
-        console.log('un  unorder.fuzzyValue', unorder.fuzzyValue)
-        if(id.name == unorder.fuzzyValue) {
-          console.log('inside unod')
-          unordered.push(unorder)
-        }
-        console.log('unordered----', unordered)
-      })
-      CircularDeviationMonitor.map(circularDev => {
-        if(id.name == circularDev.fuzzyValue) {
-          circular.push(circularDev);
-        }
-      })
-      CollisionMonitor.map(coll => {
-        console.log('CollisionMonitor---', CollisionMonitor)
-        if(id.name == coll.fuzzyValue) {
-          collision.push(coll);
-        }
-      })
-      LandspaceMonitor.map(land => {
-        if(id.name == land.fuzzyValue) {
-          landscape.push(land);
-        }
-      })
-      OrderedWaypointMonitor.map( order => {
-        if(id.name == order.fuzzyValue) {
-          orderWay.push(order);
-        }
-      })
-      PointDeviationMonitor.map(point => {
-        if(id.name == point.fuzzyValue) {
-          pointDev.push(point);
-        }
-      })
-      MinSepDistMonitor.map(min => {
-        if(id.name == min.fuzzyValue) {
-          minSep.push(min);
-        }
-      })
-      NoFlyZoneMonitor.map(zone => {
-        if(id.name == zone.fuzzyVale) {
-          nonFly.push(zone)
-        }
-      })
-      setFuzzyTest(prevState => [
-        ...prevState,
-        {
-            "name":id.name,
-            "UnorderedWaypointMonitor": unordered,
-            "CircularDeviationMonitor": circular,
-            "CollisionMonitor" : collision,
-            "LandspaceMonitor": landscape,
-            "OrderedWaypointMonitor": orderWay,
-            "PointDeviationMonitor": pointDev,
-            "MinSepDistMonitor": minSep,
-            "NoFlyZoneMonitor":nonFly
-        }
-      ])
-    })
-  }
+  //   setFuzzyTest([]);
+  //   names.map(id=> {
+  //     let unordered=[];
+  //     let circular = [];
+  //   let collision = [];
+  //   let landscape = [];
+  //   let orderWay = [];
+  //   let pointDev = [];
+  //   let minSep = [];
+  //   let nonFly = [];
+  //     UnorderedWaypointMonitor.map(unorder => {
+  //       console.log('UnorderedWaypointMonitor---', UnorderedWaypointMonitor)
+  //       console.log('un  unorder.fuzzyValue', unorder.fuzzyValue)
+  //       if(id.name == unorder.fuzzyValue) {
+  //         console.log('inside unod')
+  //         unordered.push(unorder)
+  //       }
+  //       console.log('unordered----', unordered)
+  //     })
+  //     CircularDeviationMonitor.map(circularDev => {
+  //       if(id.name == circularDev.fuzzyValue) {
+  //         circular.push(circularDev);
+  //       }
+  //     })
+  //     CollisionMonitor.map(coll => {
+  //       console.log('CollisionMonitor---', CollisionMonitor)
+  //       if(id.name == coll.fuzzyValue) {
+  //         collision.push(coll);
+  //       }
+  //     })
+  //     LandspaceMonitor.map(land => {
+  //       if(id.name == land.fuzzyValue) {
+  //         landscape.push(land);
+  //       }
+  //     })
+  //     OrderedWaypointMonitor.map( order => {
+  //       if(id.name == order.fuzzyValue) {
+  //         orderWay.push(order);
+  //       }
+  //     })
+  //     PointDeviationMonitor.map(point => {
+  //       if(id.name == point.fuzzyValue) {
+  //         pointDev.push(point);
+  //       }
+  //     })
+  //     MinSepDistMonitor.map(min => {
+  //       if(id.name == min.fuzzyValue) {
+  //         minSep.push(min);
+  //       }
+  //     })
+  //     NoFlyZoneMonitor.map(zone => {
+  //       if(id.name == zone.fuzzyVale) {
+  //         nonFly.push(zone)
+  //       }
+  //     })
+  //     setFuzzyTest(prevState => [
+  //       ...prevState,
+  //       {
+  //           "name":id.name,
+  //           "UnorderedWaypointMonitor": unordered,
+  //           "CircularDeviationMonitor": circular,
+  //           "CollisionMonitor" : collision,
+  //           "LandspaceMonitor": landscape,
+  //           "OrderedWaypointMonitor": orderWay,
+  //           "PointDeviationMonitor": pointDev,
+  //           "MinSepDistMonitor": minSep,
+  //           "NoFlyZoneMonitor":nonFly
+  //       }
+  //     ])
+  //   })
+  // }
+
 
   useEffect(() => {
-    handleDirectorySelectFuzzy()
+    // if(fuzzyTest) {
+      names.map(id=> {
+        console.log('ddd......', id)
+            let unordered=[];
+            let circular = [];
+          let collision = [];
+          let landscape = [];
+          let orderWay = [];
+          let pointDev = [];
+          let minSep = [];
+          let nonFly = [];
+          resp.UnorderedWaypointMonitor.map(unorder => {
+            if(id.name == unorder.fuzzyValue) {
+                unordered.push(unorder)
+            }
+          })
+          resp.CircularDeviationMonitor.map(circularDev => {
+            console.log('circularDev-----', circularDev)
+                  if(id.name == circularDev.fuzzyValue) {
+                    circular.push(circularDev);
+                  }
+          })
+          resp.CollisionMonitor.map(coll => {
+            if(id.name == coll.fuzzyValue) {
+              collision.push(coll);
+            }
+          })
+          resp.LandspaceMonitor.map(land => {
+            if(id.name == land.fuzzyValue) {
+              landscape.push(land);
+            }
+          })
+          resp.OrderedWaypointMonitor.map( order => {
+            if(id.name == order.fuzzyValue) {
+              orderWay.push(order);
+            }
+          })
+          resp.PointDeviationMonitor.map(point => {
+            if(id.name == point.fuzzyValue) {
+              pointDev.push(point);
+            }
+          })
+          resp.MinSepDistMonitor.map(min => {
+            if(id.name == min.fuzzyValue) {
+              minSep.push(min);
+            }
+          })
+          resp.NoFlyZoneMonitor.map(zone => {
+            if(id.name == zone.fuzzyVale) {
+              nonFly.push(zone)
+            }
+          })
+          setFuzzyTest(prevState => [
+            ...prevState,
+            {
+                "name":id.name,
+                "UnorderedWaypointMonitor": unordered,
+                "CircularDeviationMonitor": circular,
+                "CollisionMonitor" : resp.CollisionMonitor,
+                "LandspaceMonitor": resp.LandspaceMonitor,
+                "OrderedWaypointMonitor": resp.OrderedWaypointMonitor,
+                "PointDeviationMonitor": resp.PointDeviationMonitor,
+                "MinSepDistMonitor": resp.MinSepDistMonitor,
+                "NoFlyZoneMonitor":resp.NoFlyZoneMonitor
+            }
+          ])
+      })  
+      
+    // } 
+    // if(!fuzzyTest) {
+      // setCircularDeviationMonitor(resp.CircularDeviationMonitor)
+      // setCollisionMonitor(resp.CollisionMonitor)
+      // setLandspaceMonitor(resp.LandspaceMonitor)
+      // setMinSepDistMonitor(resp.MinSepDistMonitor)
+      // setNoFlyZoneMonitor(resp.NoFlyZoneMonitor)
+      // setOrderedWaypointMonitor(resp.OrderedWaypointMonitor)
+      // setPointDeviationMonitor(resp.PointDeviationMonitor)
+      // setUnorderedWaypointMonitor(resp.UnorderedWaypointMonitor)
+    // }
+   
+    // handleDirectorySelectFuzzy()
   }, 
-  [UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
-  )
-
-  const dictOfFunctions = {
-    "UnorderedWaypointMonitor": setUnorderedWaypointMonitor,
-    "CircularDeviationMonitor": setCircularDeviationMonitor,
-    "CollisionMonitor": setCollisionMonitor,
-    "LandspaceMonitor": setLandspaceMonitor,
-    "OrderedWaypointMonitor": setOrderedWaypointMonitor,
-    "PointDeviationMonitor": setPointDeviationMonitor,
-    "MinSepDistMonitor": setMinSepDistMonitor,
-    "NoFlyZoneMonitor": setNoFlyZoneMonitor
-  }
+  //[UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
+  [])
     
-  //React.useEffect(() => {}, [fileArray])
-  // const handleDirectorySelect = () => {
-  //   const jsonFile = tempJson;
+  // React.useEffect(() => {}, [fileArray])
+  // const handleDirectorySelect = (event) => {
   //   const files = event.target.files;
   //   let name = [];
-  // //   // Iterate through all the keys in the json file
-  // //   for (let key in jsonFile) {
-  // //     console.log('key----', key)
-  // //     if ( (jsonFile[key] !== undefined)){
-  // //       console.log('jsonFile[key]---', jsonFile[key])
-
-  // //       //Iterate throguh all the subkeys in the json file
-  // //       for (let i = 0; i < jsonFile[key].length; i++) {
-  // //         if(jsonFile[key][i].type === 'text/plain'){
-  // //           dictOfFunctions[key](prevState => [...prevState, {
-  // //                           name:jsonFile[key][i].name,
-  // //                           type:jsonFile[key][i].type,
-  // //                           content:jsonFile[key][i].content,
-  // //                           infoContent:getInfoContents(jsonFile[key][i].content, "INFO", new Map()),
-  // //                           passContent:getInfoContents(jsonFile[key][i].content, "PASS", new Map()),
-  // //                           failContent:getInfoContents(jsonFile[key][i].content, "FAIL", new Map()),
-  // //                           fuzzyPath:jsonFile[key][i].fuzzyPath,
-  // //                           fuzzyValue: jsonFile[key][i].fuzzyValue
-  // //                           }
-  // //                       ])
-  // //         }
-  // //         else if (jsonFile[key][i].type === "image/png") {
-  // //           dictOfFunctions[key](prevState => [...prevState,
-  // //                         {
-  // //                           name:jsonFile[key][i].name,
-  // //                           type:jsonFile[key][0].type,
-  // //                           imgContent:null,
-  // //                           path:jsonFile[key][0].path,
-  // //                           fuzzyValue: jsonFile[key][0].fuzzyValue
-  // //                         }
-  // //         ])
-  // //         }
-  // //       }
-  // //   }
-  // //   else if (jsonFile[key].length === 0){
-  // //     dictOfFunctions[key]([])
-  // //   }
-  // // }
-  
-  // //   console.log("Json file", jsonFile)
-  // //   console.log("UnorderedWaypointMonitor", UnorderedWaypointMonitor)
-  // //   console.log("CollisionMonitor", CollisionMonitor)
-  // //   console.log("CircularDeviationMonitor", CircularDeviationMonitor)
-  // //   console.log("LandspaceMonitor", LandspaceMonitor)
-  // //   console.log("OrderedWaypointMonitor", OrderedWaypointMonitor)
-  // //   console.log("PointDeviationMonitor", PointDeviationMonitor)
-  // //   console.log("MinSepDistMonitor", MinSepDistMonitor)
-  // //   console.log("NoFlyZoneMonitor", NoFlyZoneMonitor)  
-  // // };
-  // // React.useEffect(() => {
-  // //   handleDirectorySelect();
-  // // }, [])
-  //     for (let i = 0; i < files.length; i++) {
+  //   for (let i = 0; i < files.length; i++) {
   //     const fileReader = new FileReader();
   //     const file = files[i];
   //     console.log('file----', file)
@@ -506,7 +329,6 @@ export default function FuzzyDashboard(parameter) {
   //     }) 
   //     if(!exist) {
   //       name.push({name:fuzzyValueArray[2]})
-  //     }
   //     }
   //     console.log('fuzzyPathValue---', fuzzyPathValue)
   //     if (file.type === 'text/plain') {
@@ -760,35 +582,35 @@ export default function FuzzyDashboard(parameter) {
   //   // handleDirectorySelectFuzzy(name);
   // }
   const [folderDirectories, setFolderDirectories] = useState([]);
-  const componenet = () => {
-    const handleDirectorySelect = (selectedFiles) => {
-    console.log('Selected Files:', selectedFiles);
-  }
+  // const componenet = () => {
+  //   const handleDirectorySelect = (selectedFiles) => {
+  //   console.log('Selected Files:', selectedFiles);
+  // }
   
-  };
+  // };
 
 
-  const [snackBarState, setSnackBarState] = React.useState({
-    open: false,
-  });
+  // const [snackBarState, setSnackBarState] = React.useState({
+  //   open: false,
+  // });
 
-  const handleSnackBarVisibility = (val) => {
-    setSnackBarState(prevState => ({
-      ...prevState,
-      open: val
-    }))
-  }
-  const handleClickAway = () => {
-    // Prevent closing when clicking outside the box
-    handleSnackBarVisibility(true);
-  };
-  useEffect(() => {
-    // Trigger the Snackbar to be open when the component mounts
-    handleSnackBarVisibility(true);
-  }, []);
+  // const handleSnackBarVisibility = (val) => {
+  //   setSnackBarState(prevState => ({
+  //     ...prevState,
+  //     open: val
+  //   }))
+  // }
+  // const handleClickAway = () => {
+  //   // Prevent closing when clicking outside the box
+  //   handleSnackBarVisibility(true);
+  // };
+  // useEffect(() => {
+  //   // Trigger the Snackbar to be open when the component mounts
+  //   handleSnackBarVisibility(true);
+  // }, []);
   return (
     <div>
-    <Snackbar
+    {/* <Snackbar
       open={snackBarState.open}
       anchorOrigin={{
         vertical: 'top',
@@ -804,21 +626,24 @@ export default function FuzzyDashboard(parameter) {
       >
         {"Enhancements to the view test report details are in progress! As we are implementing new features, please use the “SELECT SIMULATION DATA DIRECTORY” button to select the files you wish to upload. These files should be located within the ‘Airsim’ folder under your Documents folder on your local machine. You can either upload the entire ‘reports’ folder to access all results or choose specific folders for each test you want to upload."}
       </Alert>
-    </Snackbar>
+    </Snackbar> */}
       <Box>
-      <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700}}>
-        Acceptance Test Report
-        <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
-      
+      <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700, marginTop: '5px'}}>
+        {fileName} Detailed Report
         <Container maxWidth="sm" style={{padding:'10px', alignContent:'center'}}>
         {/* <Paper variant="outlined" square style={{textAlign:'center', padding:'10px'}}> */}
         {/* <div>UPLOAD FILE CONTENTS</div><br/><br/> */}
-        <Button variant="contained" component="label">
+        {/* <Button variant="contained" component="label">
         Select Simulation Data Directory
-        </Button>
+        <input hidden type="file" webkitdirectory="" multiple onChange={handleDirectorySelect} />
+        </Button> */}
       </Container>
       </Typography>
       </Box>
+      <Box>
+          <Link style={{float:'right', cursor:'pointer', fontSize:'20px', paddingRight: '15px'}} onClick={redirectToReportDashboard}>Back</Link>
+      </Box>
+      
       {voilation ? <Alert severity="warning">
                         <AlertTitle>Warning</AlertTitle>
                         <strong>Violation Detected</strong>
@@ -835,11 +660,11 @@ export default function FuzzyDashboard(parameter) {
       }}>{isFuzzyList == true ? <React.Fragment>
         {fuzzyTest.length > 0 ? 
           <React.Fragment>
-            {fuzzyTest.map(function(tempJson, id){
+            {fuzzyTest.map(function(fuzzy, id){
               return (
                 <Paper key={id} elevation={3} style={{margin:'25px', padding:20}}>
                   <Typography variant="h6" component="h2">
-                    <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Fuzzed Parameter : Wind Velocity = {tempJson.name} meters/s</div>
+                    <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Fuzzed Parameter : Wind Velocity = {fuzzy.name} meters/s</div>
                   </Typography>
                   <Box sx={{
         display: 'flex',
@@ -850,15 +675,14 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {tempJson.CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {fuzzy.CollisionMonitor.length > 0 ?<Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall avoid collisions with other drones and the environment</div>
           </Typography>
           <ul>
-          {tempJson.CollisionMonitor.map(function(file, index) {
+          {fuzzy.CollisionMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
-               
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath, 'success'))}
                 {(returnContentsItem('darkred', index, file.failContent, <ClearIcon/>, file.fuzzyPath, 'error'))}
                 
@@ -866,7 +690,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.CollisionMonitor.map(function(file, index) {
+          {fuzzy.CollisionMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -875,7 +699,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                    image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -892,12 +716,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {tempJson.LandspaceMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {fuzzy.LandspaceMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drone shall always land at safe locations</div>
           </Typography>
           <ul>
-          {tempJson.LandspaceMonitor.map(function(file, index) {
+          {fuzzy.LandspaceMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 
@@ -909,7 +733,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.LandspaceMonitor.map(function(file, index) {
+          {fuzzy.LandspaceMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
 
@@ -919,7 +743,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                    image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -936,12 +760,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {tempJson.UnorderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {fuzzy.UnorderedWaypointMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test: Drones shall reach all waypoints in the mission</div>
           </Typography>
           <ul>
-          {tempJson.UnorderedWaypointMonitor.map(function(file, index) {
+          {fuzzy.UnorderedWaypointMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {/* {file.infoContent.map((info, i) => { */}
@@ -956,7 +780,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
          <Grid container spacing={2} direction="row" >
-          {tempJson.UnorderedWaypointMonitor.map(function(file, index) {
+          {fuzzy.UnorderedWaypointMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -965,7 +789,7 @@ export default function FuzzyDashboard(parameter) {
                  {/* <img src={file.imgContent} width="30%"/> */}
                  <CardMedia
                    component="img"
-                   image={file.imgContent}/>
+                   image={`data:image/png;base64 , ${file.imgContent}`}/>
                </Card></Grid> }
               </React.Fragment>
             )
@@ -1016,12 +840,12 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {tempJson.PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {fuzzy.PointDeviationMonitor.length > 0 ? <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : A drone should not deviate more than {deviation != null ? deviation : 'X'} meters from its planned flight path</div>
           </Typography>
           <ul>
-          {tempJson.PointDeviationMonitor.map(function(file, index) {
+          {fuzzy.PointDeviationMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath, 'success'))}
@@ -1032,7 +856,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.PointDeviationMonitor.map(function(file, index) {
+          {fuzzy.PointDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  <Grid item xs={4} style={{cursor:'pointer'}} onClick={() => handleOpen(file)}>
@@ -1040,7 +864,7 @@ export default function FuzzyDashboard(parameter) {
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
                       component="img"
-                      image={file.imgContent}/>
+                      image={`data:image/png;base64 , ${file.imgContent}`}/>
                   </Card>
                   </Grid>
                 }
@@ -1050,7 +874,7 @@ export default function FuzzyDashboard(parameter) {
           </ul>
 
           <ul>
-          {tempJson.CircularDeviationMonitor.map(function(file, index) {
+          {fuzzy.CircularDeviationMonitor.map(function(file, index) {
             return ( file.type=== 'text/plain' ? 
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath,"success"))}
@@ -1060,7 +884,7 @@ export default function FuzzyDashboard(parameter) {
             ) 
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.CircularDeviationMonitor.map(function(file, index) {
+          {fuzzy.CircularDeviationMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1069,7 +893,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1088,13 +912,13 @@ export default function FuzzyDashboard(parameter) {
           height: "100%",
         },
       }}>
-        {tempJson.MinSepDistMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
+        {fuzzy.MinSepDistMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           {/*<div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones shall always maintain the lateral distance of {lateral != null ? lateral : 'X'} meters and separation distance of {horizontal != null ? horizontal : 'Y'} meters</div>*/}
             <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones shall always maintain the separation distance of {horizontal != null ? horizontal : 'Y'} meters</div>
           </Typography>
           <ul>
-          {tempJson.MinSepDistMonitor.map(function(file, index) {
+          {fuzzy.MinSepDistMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {/* {file.infoContent.map((info, i) => {
@@ -1114,7 +938,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.MinSepDistMonitor.map(function(file, index) {
+          {fuzzy.MinSepDistMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1123,19 +947,19 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
           })}</Grid>
           </ul>
           </Paper> : null}
-          {tempJson.NoFlyZoneMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
+          {fuzzy.NoFlyZoneMonitor.length > 0 ?  <Paper elevation={3} style={{margin:'25px', padding:20}}>
           <Typography variant="h5" component="h2">
           <div style={{fontFamily: 'sans-serif', fontWeight: 700}}>Acceptance Test : Drones entered in specified fly zones </div>
           </Typography>
           <ul>
-          {tempJson.NoFlyZoneMonitor.map(function(file, index) {
+          {fuzzy.NoFlyZoneMonitor.map(function(file, index) {
             return (file.type=== 'text/plain' ?
               <React.Fragment key={index}>
                 {(returnContentsItem('darkgreen', index, file.passContent, <CheckIcon />, file.fuzzyPath,"success"))}
@@ -1144,7 +968,7 @@ export default function FuzzyDashboard(parameter) {
             )
           })}
           <Grid container spacing={2} direction="row" >
-          {tempJson.NoFlyZoneMonitor.map(function(file, index) {
+          {fuzzy.NoFlyZoneMonitor.map(function(file, index) {
             return (
               <React.Fragment key={index}>
                 {file.type === 'text/plain' ?  null :  
@@ -1153,7 +977,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1209,7 +1033,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1261,7 +1085,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1307,7 +1131,7 @@ export default function FuzzyDashboard(parameter) {
                  {/* <img src={file.imgContent} width="30%"/> */}
                  <CardMedia
                    component="img"
-                   image={file.imgContent}/>
+                    image={`data:image/png;base64 , ${file.imgContent}`}/>
                </Card></Grid> }
               </React.Fragment>
             )
@@ -1391,7 +1215,7 @@ export default function FuzzyDashboard(parameter) {
                     {/* <img src={file.imgContent} width="30%"/> */}
                     <CardMedia
                       component="img"
-                      image={file.imgContent}/>
+                       image={`data:image/png;base64 , ${file.imgContent}`}/>
                   </Card>
                   </Grid>
                 }
@@ -1433,7 +1257,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1487,7 +1311,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1517,7 +1341,7 @@ export default function FuzzyDashboard(parameter) {
                   {/* <img src={file.imgContent} width="30%"/> */}
                   <CardMedia
                     component="img"
-                    image={file.imgContent}/>
+                     image={`data:image/png;base64 , ${file.imgContent}`}/>
                 </Card></Grid>}
               </React.Fragment>
             )
@@ -1537,7 +1361,7 @@ export default function FuzzyDashboard(parameter) {
             aria-describedby="modal-modal-description"
         >
             <Box sx={style}>
-                <img src={selectedImage} width="100%" />
+                <img src={`data:image/png;base64, ${selectedImage}`} width="100%" />
                 {/* <a href={htmlLink}>Redirect to Html page</a> */}
             </Box>
         </Modal>

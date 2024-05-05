@@ -212,7 +212,6 @@ export default function MissionConfiguration (mission) {
 
     const setDroneJson = (json, index) => {
         console.log('set drone json---', json, index)
-
         // json = {...json, id: index, droneName:json.Name}
         // droneArray.splice(index, 1);
         // droneArray.push(json)

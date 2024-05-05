@@ -179,7 +179,7 @@ const useStyles = makeStyles((theme) => ({
       })
       .then((data) => {
         console.log('File Json: ', data);
-        navigate('/dashboard', {state:{data: data, fuzzy: file.contains_fuzzy}})
+        navigate('/dashboard', {state:{data: data, file: {fuzzy: file.contains_fuzzy, fileName: file.filename}}})
         return data;
       })
       .catch((error) => {

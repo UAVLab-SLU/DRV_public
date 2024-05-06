@@ -178,9 +178,9 @@ export default function LandingPage() {
       <ReportDashboard />
     </div>
   ) : (
-    <div style={{ textAlign: 'center' }}>
-      <h2>No batch files present in the report dashboard</h2>
-    </div>
+    <div style={{ textAlign: 'center', color: '#4d4d4d' }}>
+  <h2 style={{ fontSize: '2em' }}>Welcome to Drone World!</h2>
+</div>
   )}
 </div>
 

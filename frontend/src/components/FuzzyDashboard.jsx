@@ -42,8 +42,6 @@ export default function FuzzyDashboard() {
   const navigate = useNavigate(); 
   const location = useLocation();
   const resp = location.state.data
-  console.log('fuzzy dashboard', location.state.data)
-  console.log('fuzzy----', location.state.fuzzy)
   const deviation = location.state != null ? location.state.mainJson != null ? location.state.mainJson.monitors != null ?  
       location.state.mainJson.monitors.circular_deviation_monitor != null ? location.state.mainJson.monitors.circular_deviation_monitor.param[0] : null : null : null : null
   const horizontal = location.state != null ? location.state.mainJson != null ? location.state.mainJson.monitors != null ?  
@@ -81,30 +79,29 @@ export default function FuzzyDashboard() {
   const redirectToReportDashboard = () => {
     navigate('/report-dashboard')
   }
-  
-  const getInfoContents = (fileContents, keyMatch, droneMap) => {
-    const content_array = fileContents.split("\n");
-    let infoContent = [];
-    content_array.map(content => {
-      let content_split = content.split(";");
-      if(content.includes(keyMatch) && content_split.length == 4) {
-        if(keyMatch == "FAIL") {
-          setVoilation(true)
-        }
-        if(droneMap.get(content_split[2]) == null) {
-          droneMap.set(content_split[2], [content_split[3]])
-        } else {
-          let val = []
-          val = droneMap.get(content_split[2])
-          val = val.concat([content_split[3]])
-          droneMap.set(content_split[2], val)
-        }
+  // const getInfoContents = (fileContents, keyMatch, droneMap) => {
+  //   const content_array = fileContents.split("\n");
+  //   let infoContent = [];
+  //   content_array.map(content => {
+  //     let content_split = content.split(";");
+  //     if(content.includes(keyMatch) && content_split.length == 4) {
+  //       if(keyMatch == "FAIL") {
+  //         setVoilation(true)
+  //       }
+  //       if(droneMap.get(content_split[2]) == null) {
+  //         droneMap.set(content_split[2], [content_split[3]])
+  //       } else {
+  //         let val = []
+  //         val = droneMap.get(content_split[2])
+  //         val = val.concat([content_split[3]])
+  //         droneMap.set(content_split[2], val)
+  //       }
         
-        infoContent.push(content_split[2] + ": " + content_split[3])
-      }
-    })
-    return droneMap;
-  }
+  //       infoContent.push(content_split[2] + ": " + content_split[3])
+  //     }
+  //   })
+  //   return droneMap;
+  // }
   const returnContentsItem = (colorCode, keyValue, info, icon, fuzzyValue, severity_val) => {
     for (const mapKey of Object.keys(info)) {
       console.log(mapKey);
@@ -213,76 +210,73 @@ export default function FuzzyDashboard() {
 
 
   useEffect(() => {
-    // if(fuzzyTest) {
-      // names.map(id=> {
-      //   console.log('ddd......', id)
-      //       let unordered=[];
-      //       let circular = [];
-      //     let collision = [];
-      //     let landscape = [];
-      //     let orderWay = [];
-      //     let pointDev = [];
-      //     let minSep = [];
-      //     let nonFly = [];
-      //     resp.UnorderedWaypointMonitor.map(unorder => {
-      //       if(id.name == unorder.fuzzyValue) {
-      //           unordered.push(unorder)
-      //       }
-      //     })
-      //     resp.CircularDeviationMonitor.map(circularDev => {
-      //       console.log('circularDev-----', circularDev)
-      //             if(id.name == circularDev.fuzzyValue) {
-      //               circular.push(circularDev);
-      //             }
-      //     })
-      //     resp.CollisionMonitor.map(coll => {
-      //       if(id.name == coll.fuzzyValue) {
-      //         collision.push(coll);
-      //       }
-      //     })
-      //     resp.LandspaceMonitor.map(land => {
-      //       if(id.name == land.fuzzyValue) {
-      //         landscape.push(land);
-      //       }
-      //     })
-      //     resp.OrderedWaypointMonitor.map( order => {
-      //       if(id.name == order.fuzzyValue) {
-      //         orderWay.push(order);
-      //       }
-      //     })
-      //     resp.PointDeviationMonitor.map(point => {
-      //       if(id.name == point.fuzzyValue) {
-      //         pointDev.push(point);
-      //       }
-      //     })
-      //     resp.MinSepDistMonitor.map(min => {
-      //       if(id.name == min.fuzzyValue) {
-      //         minSep.push(min);
-      //       }
-      //     })
-      //     resp.NoFlyZoneMonitor.map(zone => {
-      //       if(id.name == zone.fuzzyVale) {
-      //         nonFly.push(zone)
-      //       }
-      //     })
-      //     setFuzzyTest(prevState => [
-      //       ...prevState,
-      //       {
-      //           "name":id.name,
-      //           "UnorderedWaypointMonitor": unordered,
-      //           "CircularDeviationMonitor": circular,
-      //           "CollisionMonitor" : collision,
-      //           "LandspaceMonitor": landscape,
-      //           "OrderedWaypointMonitor": orderWay,
-      //           "PointDeviationMonitor": pointDev,
-      //           "MinSepDistMonitor": minSep,
-      //           "NoFlyZoneMonitor":nonFly
-      //       }
-      //     ])
-      // })  
-      
-    // } 
-    // if(!fuzzyTest) {
+    if(isFuzzyList) {
+      names.map(id=> {
+        let unordered=[];
+        let circular = [];
+        let collision = [];
+        let landscape = [];
+        let orderWay = [];
+        let pointDev = [];
+        let minSep = [];
+        let nonFly = [];
+        resp.UnorderedWaypointMonitor.map(unorder => {
+          if(id.name == unorder.fuzzyValue) {
+              unordered.push(unorder)
+          }
+        })
+        resp.CircularDeviationMonitor.map(circularDev => {
+          if(id.name == circularDev.fuzzyValue) {
+            circular.push(circularDev);
+          }
+        })
+        resp.CollisionMonitor.map(coll => {
+          if(id.name == coll.fuzzyValue) {
+            collision.push(coll);
+          }
+        })
+        resp.LandspaceMonitor.map(land => {
+          if(id.name == land.fuzzyValue) {
+            landscape.push(land);
+          }
+        })
+        resp.OrderedWaypointMonitor.map( order => {
+          if(id.name == order.fuzzyValue) {
+            orderWay.push(order);
+          }
+        })
+        resp.PointDeviationMonitor.map(point => {
+          if(id.name == point.fuzzyValue) {
+            pointDev.push(point);
+          }
+        })
+        resp.MinSepDistMonitor.map(min => {
+          if(id.name == min.fuzzyValue) {
+            minSep.push(min);
+          }
+        })
+        resp.NoFlyZoneMonitor.map(zone => {
+          if(id.name == zone.fuzzyVale) {
+            nonFly.push(zone)
+          }
+        })
+        setFuzzyTest(prevState => [
+          ...prevState,
+          {
+              "name":id.name,
+              "UnorderedWaypointMonitor": unordered,
+              "CircularDeviationMonitor": circular,
+              "CollisionMonitor" : collision,
+              "LandspaceMonitor": landscape,
+              "OrderedWaypointMonitor": orderWay,
+              "PointDeviationMonitor": pointDev,
+              "MinSepDistMonitor": minSep,
+              "NoFlyZoneMonitor":nonFly
+          }
+        ])
+      })  
+    } 
+    if(!isFuzzyList) {
       setCircularDeviationMonitor(resp.CircularDeviationMonitor)
       setCollisionMonitor(resp.CollisionMonitor)
       setLandspaceMonitor(resp.LandspaceMonitor)
@@ -291,12 +285,11 @@ export default function FuzzyDashboard() {
       setOrderedWaypointMonitor(resp.OrderedWaypointMonitor)
       setPointDeviationMonitor(resp.PointDeviationMonitor)
       setUnorderedWaypointMonitor(resp.UnorderedWaypointMonitor)
-    // }
-   
+    }
     // handleDirectorySelectFuzzy()
   }, 
   //[UnorderedWaypointMonitor, CollisionMonitor, CircularDeviationMonitor, LandspaceMonitor, OrderedWaypointMonitor, PointDeviationMonitor, MinSepDistMonitor]
-  [])
+  [isFuzzyList])
     
   // React.useEffect(() => {}, [fileArray])
   // const handleDirectorySelect = (event) => {

@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
+import "../styles.css"
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
-
+import { makeStyles } from '@mui/styles';
+import HomeIcon from '@mui/icons-material/Home';
+import Tooltip from '@mui/material/Tooltip';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 const useStyles = makeStyles((theme) => ({
-  landingPage: {
-    fontFamily: 'Roboto, sans-serif',
-    color: '#fff',
-    textAlign: 'center',
-  },
   nav: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -26,9 +24,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '1.5rem',
     fontWeight: 'bold',
     fontFamily: 'Arial, sans-serif',
-  },
-  mainContent: {
-    padding: '2rem',
   },
   navList: {
     listStyleType: 'none',
@@ -48,7 +43,6 @@ const useStyles = makeStyles((theme) => ({
     transition: 'background-color 0.3s ease',
   },
 }));
-
 const modalStyle = {
   position: 'absolute',
   top: '50%',
@@ -62,13 +56,16 @@ const modalStyle = {
   p: 4,
 };
 
-export default function LandingPage() {
+function NavigationBar() {
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-
+  const [open, setOpen] = useState(false); // State for modal
+  // const navigate = useNavigate(); 
+  // const redirectToHome = () => {
+  //   navigate('/')
+  // }
   return (
-    <div className={classes.landingPage}>
-      {/* <nav className={classes.nav}>
+    <div>
+      <nav className={classes.nav}>
         <a href="/" className={classes.siteTitle}>
           Drone World
         </a>
@@ -80,33 +77,17 @@ export default function LandingPage() {
                 onClick={() => setOpen(true)}
                 style={{ color: '#fff' }}
               >
-                About Us
+                About Us &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               </Button>
+              {/* <Tooltip title="Home" placement="bottom">
+            <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+          </Tooltip> */}
             </Box>
           </li>
         </ul>
-      </nav> */}
-
-      {/* Main content area */}
-      <div className={classes.mainContent} style={{ paddingTop: '9rem', color: '#333' }}>
-        <h1>Welcome to Drone World!</h1>
-        <div className={classes.buttonContainer}>
-          <Link to="/home">
-            <Button
-              variant="contained"
-              sx={{
-                padding: '15px 30px',
-                borderRadius: '10px',
-              }}
-            >
-              Create Simulation
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* About Us Modal */}
-      <Modal
+      </nav>
+    {/* About Us Modal */}
+    <Modal
         open={open}
         onClose={() => setOpen(false)}
         aria-labelledby="modal-modal-title"
@@ -142,3 +123,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+export default NavigationBar;

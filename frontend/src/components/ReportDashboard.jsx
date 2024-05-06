@@ -169,6 +169,29 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
+  const getFolderContents = (file) => {
+    fetch(`http://localhost:5000/list-folder-contents/${file.filename}`, {method: 'post', headers: { 'Content-Type': 'application/json' }, body:{},})
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('No response from server/something went wrong');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log('File Json: ', data);
+        navigate('/dashboard', {state:{data: data, file: {fuzzy: file.contains_fuzzy, fileName: file.filename, fail: file.fail}}})
+        return data;
+      })
+      .catch((error) => {
+        console.error('Error fetching report data:', error);
+      });
+  };
+  const handleButtonClick = (file) => {
+      console.log('Button clicked:', file);
+      getFolderContents(file);
+
+  }
+
   
   const acceptanceReportTypography = (
     <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem', color:'#000000'}}>
@@ -273,6 +296,9 @@ const useStyles = makeStyles((theme) => ({
             <Typography className={classes.heading} style={{ fontWeight: 'bold', marginRight: '9px' }}> 
             {formattedTimestamp} 
             <span style={{ fontStyle: 'italic', marginLeft: '9px' }}>{batchName}</span> 
+            {file.contains_fuzzy && (
+              <Chip label="Fuzzy Test" style={{ marginLeft: '9px', backgroundColor: 'lightgreen', color: 'black' }} />
+            )}
             </Typography> 
             </Grid>
 
@@ -293,6 +319,7 @@ const useStyles = makeStyles((theme) => ({
         <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: 'red' }}>❌</span>
       </div>
     </div>
+    
   )}
   {passed && (
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
@@ -311,7 +338,6 @@ const useStyles = makeStyles((theme) => ({
     </div>
   )}
 </div>
-
 
         </Grid>
       </Grid>
@@ -334,16 +360,11 @@ const useStyles = makeStyles((theme) => ({
     </TableRow>
   </TableBody>
 </Table>
-          {file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Fuzzy Testing {file.contains_fuzzy}</p> 
-          </Typography> 
-          )} 
-          {!file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Simulation Testing</p> 
-          </Typography> 
-          )} 
+          <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
+            <Link style={{ cursor: 'pointer', fontSize: '18px', paddingRight: '15px' }} onClick={() => handleButtonClick(file)}>
+              Simulation Data
+            </Link>
+          </div>
           </AccordionDetails> 
           </Accordion> 
           </Grid>

@@ -34,13 +34,13 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: 'Arial, sans-serif',
   },
   mainContent: {
-    padding: '2rem',
-    marginTop: '7rem',
+    padding: '1rem',
+    // marginTop: '3rem',
   },
   buttonContainer: {
     position: 'absolute',
-    top: '8rem',
-    right: '4rem',
+    top: '6rem',
+    right: '2rem',
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '1rem',

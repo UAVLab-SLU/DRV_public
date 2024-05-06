@@ -129,7 +129,7 @@ export default function LandingPage() {
 
   return (
     <div className={classes.landingPage}>
-      <nav className={classes.nav}>
+      {/* <nav className={classes.nav}>
         <a href="/" className={classes.siteTitle}>
           Drone World
         </a>
@@ -183,7 +183,6 @@ export default function LandingPage() {
     </div>
   )}
 </div>
-
 
       {/* Main content area */}
       <div className={classes.mainContent} style={{ paddingTop: '9rem', color: '#333' }}>

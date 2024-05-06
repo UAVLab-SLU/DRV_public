@@ -34,64 +34,74 @@ task_number = 1
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Reports file
-    
     reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-
     if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
         return 'Reports directory not found', 404
-
-    def count_pass_fail_from_log(directory):
-        pass_count = fail_count = 0
-        # Navigate to the specific directory structure for GlobalMonitors -> MinSepDistMonitor -> log.txt
-        for root, dirs, files in os.walk(directory):
-            if 'GlobalMonitors' in dirs:
-                global_monitors_path = os.path.join(root, 'GlobalMonitors')
-                min_sep_dist_monitor_path = os.path.join(global_monitors_path, 'MinSepDistMonitor')
-                log_file_path = os.path.join(min_sep_dist_monitor_path, 'log.txt')
-                if os.path.exists(log_file_path):
-                    with open(log_file_path, 'r') as log_file:
-                        for line in log_file:
-                            if 'PASS' in line:
-                                try:
-                                    items_list = eval(line.split(';')[2])
-                                    pass_count += len(items_list)
-                                except SyntaxError:
-                                    pass  # Handle potential eval errors safely
-                            elif 'FAIL' in line:
-                                try:
-                                    items_list = eval(line.split(';')[2])
-                                    fail_count += len(items_list)
-                                except SyntaxError:
-                                    pass
-                    break  # Stop searching once log.txt is found and processed
-        return pass_count, fail_count
-
+    def check_monitor_pass_fail(directory, monitor):
+        monitor_pass = True
+        monitor_path = os.path.join(directory, monitor)
+        if os.path.exists(monitor_path) and os.path.isdir(monitor_path):
+            for file_name in os.listdir(monitor_path):
+                if file_name.endswith('.txt'):
+                    log_path = os.path.join(monitor_path, file_name)
+                    with open(log_path, 'r') as file:
+                        for line in file:
+                            if 'FAIL' in line:
+                                monitor_pass = False
+                                break
+                    if not monitor_pass:
+                        break
+        return monitor_pass
+    def count_drone_files(directory):
+        flytopoints_path = os.path.join(directory, 'FlyToPoints')
+        if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
+            collision_monitor_path = os.path.join(flytopoints_path, 'CollisionMonitor')
+            if os.path.exists(collision_monitor_path) and os.path.isdir(collision_monitor_path):
+                return len([f for f in os.listdir(collision_monitor_path) if f.endswith('.txt')])
+        return 0
+    monitors = ['CollisionMonitor', 'LandspaceMonitor', 'NoFlyZoneMonitor', 'PointDeviationMonitor']
+    global_monitors = ['MinSepDistMonitor']
     report_files = []
     for file in os.listdir(reports_path):
         file_path = os.path.join(reports_path, file)
         if os.path.isdir(file_path):
-            # Find 'Fuzzy' files
-            fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]
-            contains_fuzzy = len(fuzzy_files) > 0
-
-            # Determine the path to count Drone files
+            pass_count = fail_count = 0
+            contains_fuzzy = any('fuzzy' in sub.lower() for sub in os.listdir(file_path))
+            paths_to_check = []
             if contains_fuzzy:
-                first_fuzzy_path = os.path.join(file_path, fuzzy_files[0])
-                if os.path.isdir(first_fuzzy_path):
-                    flytopoints_path = os.path.join(first_fuzzy_path, 'FlyToPoints')
-                else:
-                    flytopoints_path = os.path.join(file_path, 'FlyToPoints')
+                # Check each fuzzy subdirectory
+                for subdir in os.listdir(file_path):
+                    if 'fuzzy' in subdir.lower():
+                        subdir_path = os.path.join(file_path, subdir)
+                        paths_to_check.append(subdir_path)
             else:
-                flytopoints_path = os.path.join(file_path, 'FlyToPoints')
-
-            # Count Drones
+                # If no fuzzy subdirectory, check the main directory
+                paths_to_check.append(file_path)
             drone_count = 0
-            if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
-                drone_count = sum(1 for f in os.listdir(flytopoints_path) if f.startswith('FlyToPoints_Drone'))
-
-            # Count PASS and FAIL from log.txt
-            pass_count, fail_count = count_pass_fail_from_log(file_path)
-
+            for path in paths_to_check:
+                drone_count = max(drone_count, count_drone_files(path))
+            all_monitors_pass = True
+            for path in paths_to_check:
+                flytopoints_path = os.path.join(path, 'FlyToPoints')
+                if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
+                    for monitor in monitors:
+                        if not check_monitor_pass_fail(flytopoints_path, monitor):
+                            all_monitors_pass = False
+                            break
+                    if not all_monitors_pass:
+                        break
+                global_monitors_path = os.path.join(path, 'GlobalMonitors')
+                if os.path.exists(global_monitors_path) and os.path.isdir(global_monitors_path):
+                    for monitor in global_monitors:
+                        if not check_monitor_pass_fail(global_monitors_path, monitor):
+                            all_monitors_pass = False
+                            break
+                    if not all_monitors_pass:
+                        break
+            if all_monitors_pass:
+                pass_count = drone_count
+            else:
+                fail_count = drone_count
             report_files.append({
                 'filename': file,
                 'contains_fuzzy': contains_fuzzy,
@@ -100,7 +110,6 @@ def list_reports():
                 'fail': fail_count
             })
         else:
-            # For non-directory files, you could adjust handling if needed
             report_files.append({
                 'filename': file,
                 'contains_fuzzy': False,
@@ -108,9 +117,7 @@ def list_reports():
                 'pass': 0,
                 'fail': 0
             })
-
     return {'reports': report_files}
-
 #Folder content with base64
 @app.route('/list-folder-contents/<folder_name>', methods=['POST'])
 def list_folder_contents(folder_name):

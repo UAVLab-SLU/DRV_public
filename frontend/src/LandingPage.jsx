@@ -150,8 +150,8 @@ export default function LandingPage() {
             </Box>
           </li>
         </ul>
-      </nav>
-      <div className={classes.mainContent}>
+       </nav> */}
+  <div className={classes.mainContent}>
   <Link to="/" div className={classes.buttonContainer} style = {{textDecoration: 'none', 
     }}>
     <Button

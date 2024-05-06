@@ -360,11 +360,10 @@ const useStyles = makeStyles((theme) => ({
     </TableRow>
   </TableBody>
 </Table>
-            {/* New button for the bottom right corner */}
           <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
-            <Button variant="contained" color="primary" onClick={() => handleButtonClick(file)}>
+            <Link style={{ cursor: 'pointer', fontSize: '18px', paddingRight: '15px' }} onClick={() => handleButtonClick(file)}>
               Simulation Data
-            </Button>
+            </Link>
           </div>
           </AccordionDetails> 
           </Accordion> 

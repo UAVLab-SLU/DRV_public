@@ -630,9 +630,21 @@ export default function FuzzyDashboard() {
       </Box>
       <Box>
       <Typography variant="h4" style={{padding:'10px', fontWeight: 700, marginTop: '5px', alignContent:'right'}}>
-        <Container maxWidth="sm" style={{padding:'10px', alignContent:'right'}}>
-          <Link style={{cursor:'pointer', fontSize:'20px', paddingRight: '15px'}} onClick={redirectToReportDashboard}>Back</Link>
-        </Container>
+        <Link
+      style={{
+        cursor: 'pointer',
+        fontSize: '20px',
+        position: 'relative',
+        top: 0,
+        right: 0,
+        float: 'right'
+      }}
+      onClick={redirectToReportDashboard}
+    >
+      Back
+    </Link>
+          {/* <Link style={{cursor:'pointer', fontSize:'20px', paddingRight: '15px'}} onClick={redirectToReportDashboard}>Back</Link> */}
+        {/* </Container> */}
       </Typography>
       </Box>
       {voilation ? <Alert severity="warning">

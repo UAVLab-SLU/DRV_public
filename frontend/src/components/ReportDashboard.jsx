@@ -40,9 +40,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 
+
 const useStyles = makeStyles((theme) => ({ 
   lightBlueBackground: {
     backgroundColor: '#e3f2fd', 
+
   }, 
   cardMedia: {
     width: '80%', 
@@ -52,6 +54,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100vw', 
     margin: 0, 
     padding: 0, 
+
   },
   card: {
     maxWidth: 400,
@@ -64,11 +67,14 @@ const useStyles = makeStyles((theme) => ({
     width: '50%',
     padding: 0,  
     margin: 0
+
   },
   invalidData: {
     fontWeight: 'bold',
     color: 'red', 
+
   },  
+
 
   button: {
     backgroundColor: '#1976d2', 
@@ -111,6 +117,7 @@ const useStyles = makeStyles((theme) => ({
 //];
 
   
+
   export default function ReportDashboard(showTitle) {
 
     const [reportFiles, setReportFiles] = React.useState([]);  
@@ -169,6 +176,7 @@ const useStyles = makeStyles((theme) => ({
   useEffect(() => {
     handleSnackBarVisibility(true);
   }, []);
+
   const getFolderContents = (file) => {
     fetch(`http://localhost:5000/list-folder-contents/${file.filename}`, {method: 'post', headers: { 'Content-Type': 'application/json' }, body:{},})
       .then((res) => {
@@ -217,6 +225,7 @@ const useStyles = makeStyles((theme) => ({
     </Box> 
 
    {acceptanceReportTypography}
+
     {reportFiles.length === 0 && (
       <>
         <Snackbar
@@ -239,6 +248,7 @@ const useStyles = makeStyles((theme) => ({
 
 
         <Container maxWidth="x1" style={{ padding: '10px', alignContent: 'center' }}>
+
           {/* ... (existing Container, Paper, and div) */}
         </Container>
 
@@ -251,8 +261,10 @@ const useStyles = makeStyles((theme) => ({
     )}
 
     {reportFiles.length > 0 && (
+
       <> 
     
+
         <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
           {reportFiles.map((file) => {
             const parts = file.filename.split('_');
@@ -289,6 +301,7 @@ const useStyles = makeStyles((theme) => ({
           return (
             <Grid key={file.id} item xs={12}> 
             <Accordion style={{border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}> 
+
             <AccordionSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container alignItems="center"> 
             {/* Date and Batch Name */} 
@@ -299,6 +312,7 @@ const useStyles = makeStyles((theme) => ({
             {file.contains_fuzzy && (
               <Chip label="Fuzzy Test" style={{ marginLeft: '9px', backgroundColor: 'lightgreen', color: 'black' }} />
             )}
+
             </Typography> 
             </Grid>
 
@@ -319,7 +333,7 @@ const useStyles = makeStyles((theme) => ({
         <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: 'red' }}>❌</span>
       </div>
     </div>
-    
+
   )}
   {passed && (
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
@@ -365,13 +379,14 @@ const useStyles = makeStyles((theme) => ({
               Simulation Data
             </Link>
           </div>
+
           </AccordionDetails> 
           </Accordion> 
           </Grid>
         );
       })}
     </Grid> 
-    
+
     </>
     )}
   </>

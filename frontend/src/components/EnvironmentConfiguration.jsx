@@ -88,7 +88,7 @@ export default function EnvironmentConfiguration (env) {
         UseGeo: true,
         time:dayjs('2020-01-01 10:00')
     }); 
-    
+
     const handleChangeSwitch = (val) => {
         setEnvConf(prevState => ({
                 ...prevState,
@@ -192,6 +192,7 @@ export default function EnvironmentConfiguration (env) {
           },
         }));
       };
+
     const handleOriginChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -299,7 +300,6 @@ export default function EnvironmentConfiguration (env) {
       }
   };
 
-  */
   const handleDirection = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -543,6 +543,51 @@ const handleShearWindDirection = (e, index) => {
   };
 
 
+  const handleShearWindDirection = (e, id) => {
+    console.log(id)
+    const newArry = windShears.map((shear, index) => {
+    
+        console.log('direction-----', shear)
+        if(id == index) {
+            return {
+                ...shear,
+                windDirection: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearWindChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                windVelocity: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
+const handleShearfluctuationPercentageChange = (e, id) => {
+    const newArry = windShears.map((shear, index) => {
+        if(id == index) {
+            return {
+                ...shear,
+                fluctuationPercentage: e
+            }
+        } else {
+            return shear
+        }
+    })
+    setwindShears(newArry)
+}
+
   // Function to add a new wind shear entry for window
   /*
   const addNewWindShear = () => {
@@ -558,6 +603,7 @@ const handleShearWindDirection = (e, index) => {
     open: false,
     });
  
+
     const addNewWindShear = () => {
         const newWindShearEntry = {
           windDirection: "",
@@ -856,11 +902,11 @@ const handleSnackBarVisibility = (val) => {
                     <Grid item xs={3}>
                         <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
                     </Grid>
-
                     <Grid item xs={3}>
         <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}
         helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>
     </Grid>
+
                     
                     {/*<Grid item xs={3}>*/}
                     {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}

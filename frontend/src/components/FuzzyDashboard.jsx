@@ -599,6 +599,7 @@ export default function FuzzyDashboard() {
   return (
     <div>
     {/* <Snackbar
+
       open={snackBarState.open}
       anchorOrigin={{
         vertical: 'top',
@@ -614,7 +615,9 @@ export default function FuzzyDashboard() {
       >
         {"Enhancements to the view test report details are in progress! As we are implementing new features, please use the “SELECT SIMULATION DATA DIRECTORY” button to select the files you wish to upload. These files should be located within the ‘Airsim’ folder under your Documents folder on your local machine. You can either upload the entire ‘reports’ folder to access all results or choose specific folders for each test you want to upload."}
       </Alert>
+
     </Snackbar> */}
+
       <Box>
       <Typography variant="h4" style={{textAlign:'center', padding:'10px', fontWeight: 700, marginTop: '5px'}}>
         {fileName} Detailed Report

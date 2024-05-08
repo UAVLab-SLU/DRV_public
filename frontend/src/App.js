@@ -7,12 +7,15 @@ import FuzzyDashboard from './components/FuzzyDashboard';
 import ReportDashboard from './components/ReportDashboard'; 
 import LandingPage from './LandingPage'; 
 import AboutUs from './components/AboutUs'; 
+
 import NavigationBar from './pages/NavigationBar';
+
 import "./styles.css"
 
 
 function App() {
   return (
+
     <div>
       <NavigationBar />
       <Router>
@@ -27,6 +30,7 @@ function App() {
         </Routes>
       </Router>
     </div>
+
   );
 }
 

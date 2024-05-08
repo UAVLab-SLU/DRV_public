@@ -1,21 +1,27 @@
+
 import React, { useEffect } from 'react'; 
 import { useState } from 'react';
+
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
+
 import Typography from '@mui/material/Typography'; 
 import ReportDashboard from './components/ReportDashboard'; 
+
 
 const useStyles = makeStyles((theme) => ({
   landingPage: {
     fontFamily: 'Roboto, sans-serif',
     color: '#fff',
+
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     minHeight: '100vh',
+
   },
   nav: {
     display: 'flex',
@@ -25,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
     //backgroundColor: '#0000CD',
     fontFamily: 'Arial, sans-serif',
     width: '100%',
+
   },
   siteTitle: {
     color: '#fff',
@@ -44,6 +51,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'flex-end',
     marginTop: '1rem',
+
   },
   navList: {
     listStyleType: 'none',
@@ -83,6 +91,7 @@ const useStyles = makeStyles((theme) => ({
     textDecoration: 'none',
     display: 'block',
     width: 'fit-content',
+
   },
 }));
 
@@ -96,11 +105,14 @@ const modalStyle = {
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
+
   padding: '4',
+
 };
 
 export default function LandingPage() {
   const classes = useStyles();
+
   const [filesPresent, setFilesPresent] = useState(false); 
   const [open, setOpen] = useState(false);
 
@@ -133,17 +145,20 @@ export default function LandingPage() {
           <li className={classes.navListItem}>
             <Box component="span" onClick={handleAccordionToggle}></Box>
 
+
             <Box component="span">
               <Button
                 className={classes.aboutLink}
                 onClick={() => setOpen(true)}
                 style={{ color: '#fff' }}
               >
+
               </Button>
             </Box>
           </li>
         </ul>
       </nav>
+
 
       <div className={classes.mainContent}>
         <Link to="/home" className={classes.buttonContainer} style={{ textDecoration: 'none' }}>
@@ -178,12 +193,14 @@ export default function LandingPage() {
       </div>
 
       <div className={classes.mainContent} style={{ paddingTop: '9rem' }}>
+
         <div className={classes.buttonContainer}>
           <Link to="/home">
             <Button
               variant="contained"
               sx={{
                 color: 'white',
+
                 padding: '15px 30px',
                 borderRadius: '10px',
               }}
@@ -196,3 +213,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

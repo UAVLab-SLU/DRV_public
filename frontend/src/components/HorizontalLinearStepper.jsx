@@ -3,11 +3,14 @@ import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import styled from '@emotion/styled';
 import MissionConfiguration from './Configuration/MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
+import CesiumMap from './cesium/CesiumMap';
 import MonitorControl from './MonitorControl'
 import Home from '../pages/Home';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +20,14 @@ import Tooltip from '@mui/material/Tooltip';
 
 
 const StyledButton = styled(Button)`
-  border-radius: 25px;font-size: 18px; font-weight: bolder
+  font-size: 18px;
+  font-weight: bolder;
+  color: white;
+  background-color: #8B4513;
+  width: 200px;
+  &:hover {
+    background-color: #A0522D;
+  }
 `;
 
 const steps = [
@@ -30,6 +40,7 @@ export default function HorizontalLinearStepper(data) {
   const navigate = useNavigate(); 
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
+  const [activeTab, setActiveTab] = React.useState(0);
   const [mainJson, setJson] = React.useState({
     Drones:null,
     environment: null,
@@ -58,6 +69,10 @@ export default function HorizontalLinearStepper(data) {
       [id]: envJson
     }))
   }
+
+  const handleTabChange = (event, newValue) => {
+    setActiveStep(newValue);
+  };
 
   const handleNext = () => {
     let newSkipped = skipped;
@@ -168,13 +183,42 @@ export default function HorizontalLinearStepper(data) {
     }
   ];
 
+  const StyledTab = styled(Tab)(({ theme }) => ({
+    textTransform: 'none',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 8,
+    // to-do: use global variables for tab colors
+    color: '#8B4513', // Shade of brown
+    backgroundColor: '#F5F5DC', // Beige background
+    transition: 'background-color 0.3s, color 0.3s',
+    '&:hover': {
+      backgroundColor: '#DEB887', // Light brown when hovered
+      color: '#FFFFFF',
+    },
+    '&.Mui-selected': {
+      backgroundColor: '#A0522D', // Darker brown when selected
+      color: '#FFFFFF',
+      borderBottom: '5px solid #FFB500',
+    },
+  }));
+  
+  const StyledTabs = styled(Tabs)({
+    minHeight: '48px',
+    '.MuiTabs-indicator': {
+      display: 'none',
+    },
+  });
+
   return (
-    <Box sx={{ width: '95%' }}>
-      <Typography sx={{mb: 1 }}  variant="h4" component="h4">Requirement
-      <Tooltip title="Home" placement='bottom'><HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px'}} onClick={redirectToHome}/></Tooltip>
-      </Typography>
-      <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography>
-      <Stepper activeStep={activeStep} style={{padding:20}}>
+    <Box sx={{ width: '100vw' , height:'100vh' }}>
+        <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
+          <Tooltip title="Home" placement='bottom'>
+            <HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px', color: 'white'}} onClick={redirectToHome}/>
+          </Tooltip>
+        </Typography>
+        <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography>
+        {/* <Stepper activeStep={activeStep} style={{padding:20}}>
         {steps.map((label, index) => {
           const stepProps = {};
           const labelProps = {};
@@ -187,42 +231,65 @@ export default function HorizontalLinearStepper(data) {
             </Step>
           );
         })}
-      </Stepper>
-      {activeStep === steps.length ? (
-        <React.Fragment>
-          Redirect to dashboard //TODO
-          {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <Button onClick={handleReset}>Reset</Button>
-          </Box> */}
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
+      </Stepper>     */}
+        
+        <Box sx={{ display: 'flex', width: '100vw', alignItems: 'start'}} >
+          <Box sx={{ width: '50%', overflow: 'auto',}}>
+            <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
+              <StyledTab label="Environment Configuration" />
+              <StyledTab label="Mission Configuration" />
+              <StyledTab label="Test Configuration" />
+            </StyledTabs>
+            <div>
+              {activeStep === 0 && <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson} />}
+              {activeStep === 1 && <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} />}
+              {activeStep === 2 && <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} />}
+            </div>
+          </Box>
+          <Box sx={{ width: '50%', overflow: 'hidden', border: 1, borderColor: 'yellow'}}>
+            <Typography 
+            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
+            variant="h5" component="h5">Drone Count: 1</Typography>
+            <CesiumMap></CesiumMap>
+          </Box>
+        </Box>
+        
+        {activeStep === steps.length ? (
+          <React.Fragment>
+            Redirect to dashboard //TODO
+            {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+              <Box sx={{ flex: '1 1 auto' }} />
+              <Button onClick={handleReset}>Reset</Button>
+            </Box> */}
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
           {/* <Typography sx={{ mt: 2, mb: 1 }}  variant="h4" component="h4">Requirement</Typography>
           <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography> */}
-          {stepsComponent.map((compo, index) => {
-            return (
-                (compo.id) === (activeStep + 1) ?  (compo.comp): ''
-             )
-          })}
-          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-            <StyledButton
-              color='inherit'
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              sx={{ mr: 1 }}
-              variant='outlined'
-            >
-              Back
-            </StyledButton>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <StyledButton variant='outlined' onClick={handleNext}>
-              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-            </StyledButton>
-          </Box>
-        </React.Fragment>
-      )}
-    </Box>
+            {/* {stepsComponent.map((compo, index) => {
+              return (
+                  (compo.id) === (activeStep + 1) ?  (compo.comp): ''
+              )
+            })} */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
+              bottom: 8, left: 12, right: 12, }}>
+              <StyledButton
+                color='inherit'
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                sx={{ mr: 1 }}
+                variant='outlined'
+              >
+                Back
+              </StyledButton>
+
+              <StyledButton variant='outlined' onClick={handleNext}>
+                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+              </StyledButton>
+            </Box>
+          </React.Fragment>
+        )}
+      </Box>
   );
 }

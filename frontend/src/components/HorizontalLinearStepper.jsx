@@ -211,14 +211,14 @@ export default function HorizontalLinearStepper(data) {
   });
 
   return (
-    <Box sx={{ width: '100vw' , height:'100vh' }}>
+    <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
         <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
           <Tooltip title="Home" placement='bottom'>
             <HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px', color: 'white'}} onClick={redirectToHome}/>
           </Tooltip>
         </Typography>
-        <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography>
-        {/* <Stepper activeStep={activeStep} style={{padding:20}}>
+        <Typography sx={{ mt: 2, mb: 1, color: 'white' }}  variant="h6" component="h4">{data.desc}</Typography>
+        {/* <Stepper activeStep={activeStep} style={{padding:20}}> 
         {steps.map((label, index) => {
           const stepProps = {};
           const labelProps = {};
@@ -233,12 +233,12 @@ export default function HorizontalLinearStepper(data) {
         })}
       </Stepper>     */}
         
-        <Box sx={{ display: 'flex', width: '100vw', alignItems: 'start'}} >
-          <Box sx={{ width: '50%', overflow: 'auto',}}>
+        <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
+          <Box sx={{ width: '48%'}}>
             <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
-              <StyledTab label="Environment Configuration" />
-              <StyledTab label="Mission Configuration" />
-              <StyledTab label="Test Configuration" />
+              <StyledTab label="Environment" />
+              <StyledTab label="Mission" />
+              <StyledTab label="Test" />
             </StyledTabs>
             <div>
               {activeStep === 0 && <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson} />}
@@ -246,7 +246,7 @@ export default function HorizontalLinearStepper(data) {
               {activeStep === 2 && <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} />}
             </div>
           </Box>
-          <Box sx={{ width: '50%', overflow: 'hidden', border: 1, borderColor: 'yellow'}}>
+          <Box sx={{ width: '52%', overflow: 'hidden', border: 1, borderColor: 'yellow'}}>
             <Typography 
             sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
             variant="h5" component="h5">Drone Count: 1</Typography>

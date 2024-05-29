@@ -12,7 +12,6 @@ const style = {
   justifyContent: 'center',
   width: '100vw',
   height: '100vh',
-  p: 4,
 };
 
 const requirementsArray = [

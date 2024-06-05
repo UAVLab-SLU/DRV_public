@@ -477,6 +477,14 @@ export default function EnvironmentConfiguration (env) {
                 display: 'none', // Hides the default underline indicator
             },
       });
+
+        const StyledSelect = styled(Select)(({ theme }) => ({
+            backgroundColor: '#F5F5DC',
+                '& .MuiInputBase-input': {
+                    padding: '6px 8px',
+                    height: '1em',
+                }
+        }));
     
   return (
     <div>
@@ -501,14 +509,23 @@ export default function EnvironmentConfiguration (env) {
                     aria-label="Vertical Configuration Tabs"
                     sx={{ borderRight: 1, borderColor: 'divider' }}
                     >
-                    <StyledTab label="Wind" />
                     <StyledTab label="Region" />
-                    <StyledTab label="Time of Day" />
+                    <StyledTab label="Wind" />
                 </StyledTabs>
             </Grid>
 
-            <Grid item xs={9} sx={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                {selectedTab === 0 && (
+            <Grid item xs={9}
+            sx={{
+                maxHeight: '60vh', 
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': {
+                  display: 'none'  // This hides the scrollbar in Webkit browsers
+                },
+                scrollbarWidth: 'none',  // This hides the scrollbar in Firefox
+                msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
+              }}
+            >
+                {selectedTab === 1 && (
                     <WindSettings
                         envConf={envConf}
                         handleWindTypeChange={handleWindTypeChange}
@@ -525,130 +542,217 @@ export default function EnvironmentConfiguration (env) {
                     />
                 )}
 
-                {selectedTab === 1 && (
-                    <Grid>
-                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>  
-                            <Grid item xs={3} >
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="Origin">Region</InputLabel>
-                                    <Select label="Region" value={envConf.Origin.Name} onChange={handleOrigin} >
+                {selectedTab === 0 && (
+                    <Grid container spacing={5} direction="column" >
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="origin-label" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: 'pink' }}>Region</InputLabel>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <StyledSelect
+                                        label="Region"
+                                        value={envConf.Origin.Name}
+                                        input={<OutlinedInput/>}
+                                        MenuProps= {{
+                                            sx: {
+                                                '& .MuiPaper-root': {
+                                                    backgroundColor: '#F5F5DC',
+                                                }
+                                            }
+                                        }}
+                                        onChange={handleOrigin}
+                                        fullWidth
+                                        >
                                         {Origin.map(function(val) {
                                             return(<MenuItem value={val.value} key={val.id} >
-                                            <em>{val.value}</em>
-                                        </MenuItem>)
+                                                <em>{val.value}</em>
+                                            </MenuItem>)
                                         })}
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Grid item xs={3}>
-                                <TextField id="Latitude" label="Latitude" variant="standard" type="number" 
-                                inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Latitude}
-                                disabled={envConf.Origin.Name=="Specify Region" ? false : true} 
-                                />
-                            </Grid>
-
-                            <Grid item xs={3}>
-                                <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
-                            </Grid>
-                        
-                            {/*<Grid item xs={3}>*/}
-                            {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}
-                            {/*    helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>*/}
-                            {/*</Grid>*/}
-                            {/* <Grid item xs={3}>
-                                <Typography id="standard-basic" label="Wind">Time of Day</Typography>
-                            </Grid> */}
-                        </Grid>
-
-                        <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
-                            <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
-                                <Grid item xs={3}>
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <Stack spacing={3}>
-                                        <TimePicker
-                                        ampm={false}
-                                        openTo="hours"
-                                        views={['hours', 'minutes', 'seconds']}
-                                        inputFormat="HH:mm:ss"
-                                        mask="__:__:__"
-                                        label="Time of Day"
-                                        value={envConf.time}
-                                        onChange={handleTimeChange}
-                                        renderInput={(params) => <TextField {...params} 
-                                        helperText="Enter Time of Day (24 Hour Format)"/>}
-                                        />
-                                        </Stack>
-                                    </LocalizationProvider>
+                                    </StyledSelect>
                                 </Grid>
-                            </Tooltip>
-                            {/* <Grid item xs={3}>
-                                <FormGroup>
-                                    <FormControlLabel control={
-                                        <Switch 
-                                            checked={envConf.enableFuzzy} 
-                                            onChange={handleChangeSwitch} 
-                                            inputProps={{ 'aria-label': 'controlled' }} />}  
-                                            label="Enable Fuzzy Test" 
-                                        />
-                                    <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
-                                </FormGroup>
-                            </Grid> */}
-                            
-                            {/* {envConf.enableFuzzy && (
-                            <>
-                                    <Grid item xs = {1.5}>
-                                        <FormControlLabel
-                                            control={<Checkbox checked = {windBoxStatus} onChange= {() => handleCheckboxChange('wind')} />}
-                                            label="Wind"
-                                        />
-                                    </Grid>
-                                    <Grid item xs = {1.5}>
-                                        <FormControlLabel
-                                        control={<Checkbox checked = {timeBoxStatus} onChange= {() => handleCheckboxChange('time')}/>}
-                                        label="Time of Day"
-                                        />
-                                    </Grid>
-                                    <Grid item xs = {1.7}>
-                                        <FormControlLabel
-                                            control={<Checkbox checked = {positionBoxStatus} onChange= {() => handleCheckboxChange('position')}/>}
-                                            label="Initial Position"
-                                        />
-                                    </Grid>
-                            </>
-                            )} */}
+                            </Grid>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="latitude-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                        Latitude
+                                    </InputLabel>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <TextField
+                                        sx = {{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Latitude"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ step: ".0001" }}
+                                        onChange={handleOriginChange}
+                                        value={envConf.Origin.Latitude}
+                                        disabled={envConf.Origin.Name=="Specify Region" ? false : true}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="longitude-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                        Longitude
+                                    </InputLabel>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <TextField
+                                        sx = {{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Longitude"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ step: ".0001" }}
+                                        onChange={handleOriginChange}
+                                        value={envConf.Origin.Longitude}
+                                        disabled={envConf.Origin.Name=="Specify Region" ? false : true}
+                                        fullWidth
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="time-of-day-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                        Time of day
+                                    </InputLabel>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <Stack spacing={3} 
+                                                sx = {{
+                                                    backgroundColor: '#F5F5DC',
+                                                    '& .MuiOutlinedInput-root': {
+                                                        '& .MuiInputBase-input': {
+                                                            padding: '6px 8px',
+                                                        },
+                                                    },
+                                                }}>
+                                                <TimePicker
+                                                    ampm={false}
+                                                    openTo="hours"
+                                                    views={['hours', 'minutes', 'seconds']}
+                                                    inputFormat="HH:mm:ss"
+                                                    mask="__:__:__"
+                                                    value={envConf.time}
+                                                    onChange={handleTimeChange}
+                                                    renderInput={(params) => <TextField {...params} 
+                                                    // helperText="Enter Time of Day (24 Hour Format)"
+                                                    />}
+                                                    />
+                                            </Stack>
+                                        </LocalizationProvider>
+                                    </Tooltip>
+                                </Grid>
+                            </Grid>
                         </Grid>
                         
-                        {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>
-                            <LoadScript googlMapsApiKey={YOUR_API_KEY}>
-                                <GoogleMap
-                                id="map"
-                                mapContainerStyle={{ height: "100%", width: "100%" }}
-                                zoom={15}
-                                center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
-                                onClick={onMapClick}
-                                >
-                                {currentPosition.lat && currentPosition.lng && (
-                                    <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
-                                )}
-                                </GoogleMap>
-                            </LoadScript>
-                        </div> :null}
-
-                        {/* <Typography variant="h6"> Status:</Typography>  
-                        <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
-                            Show spinner if status is running
-                            <Typography>   
-                                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-                            </Typography>  
-                        </Box>
-                        <div style={{position: 'relative'}}> 
-                            <div style={{position: 'absolute', left: 380, top: -80}}>
-                                <Typography>  
-                                    Queued Tasks: {backendInfo.numQueuedTasks}
-                                </Typography>    
-                            </div> 
-                        </div> */}
                     </Grid>
+                
+                        
+                    //         {/*<Grid item xs={3}>*/}
+                    //         {/*    <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}*/}
+                    //         {/*    helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>*/}
+                    //         {/*</Grid>*/}
+                    //         {/* <Grid item xs={3}>
+                    //             <Typography id="standard-basic" label="Wind">Time of Day</Typography>
+                    //         </Grid> */}
+                    //     </Grid>
+
+                    //     <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
+                    //         {/* <Grid item xs={3}>
+                    //             <FormGroup>
+                    //                 <FormControlLabel control={
+                    //                     <Switch 
+                    //                         checked={envConf.enableFuzzy} 
+                    //                         onChange={handleChangeSwitch} 
+                    //                         inputProps={{ 'aria-label': 'controlled' }} />}  
+                    //                         label="Enable Fuzzy Test" 
+                    //                     />
+                    //                 <FormHelperText>Please enable this feature if you would like the system to automatically run tests at various wind velocities</FormHelperText>
+                    //             </FormGroup>
+                    //         </Grid> */}
+                            
+                    //         {/* {envConf.enableFuzzy && (
+                    //         <>
+                    //                 <Grid item xs = {1.5}>
+                    //                     <FormControlLabel
+                    //                         control={<Checkbox checked = {windBoxStatus} onChange= {() => handleCheckboxChange('wind')} />}
+                    //                         label="Wind"
+                    //                     />
+                    //                 </Grid>
+                    //                 <Grid item xs = {1.5}>
+                    //                     <FormControlLabel
+                    //                     control={<Checkbox checked = {timeBoxStatus} onChange= {() => handleCheckboxChange('time')}/>}
+                    //                     label="Time of Day"
+                    //                     />
+                    //                 </Grid>
+                    //                 <Grid item xs = {1.7}>
+                    //                     <FormControlLabel
+                    //                         control={<Checkbox checked = {positionBoxStatus} onChange= {() => handleCheckboxChange('position')}/>}
+                    //                         label="Initial Position"
+                    //                     />
+                    //                 </Grid>
+                    //         </>
+                    //         )} */}
+                    //     </Grid>
+                        
+                    //     {envConf.Origin.Name == "Specify Region" ? <div style={{width: '100%', height: '450px'}}>
+                    //         <LoadScript googlMapsApiKey={YOUR_API_KEY}>
+                    //             <GoogleMap
+                    //             id="map"
+                    //             mapContainerStyle={{ height: "100%", width: "100%" }}
+                    //             zoom={15}
+                    //             center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
+                    //             onClick={onMapClick}
+                    //             >
+                    //             {currentPosition.lat && currentPosition.lng && (
+                    //                 <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
+                    //             )}
+                    //             </GoogleMap>
+                    //         </LoadScript>
+                    //     </div> :null}
+
+                    //     {/* <Typography variant="h6"> Status:</Typography>  
+                    //     <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={300} mb={5} >     
+                    //         Show spinner if status is running
+                    //         <Typography>   
+                    //             Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+                    //         </Typography>  
+                    //     </Box>
+                    //     <div style={{position: 'relative'}}> 
+                    //         <div style={{position: 'absolute', left: 380, top: -80}}>
+                    //             <Typography>  
+                    //                 Queued Tasks: {backendInfo.numQueuedTasks}
+                    //             </Typography>    
+                    //         </div> 
+                    //     </div> */}
+                    // </Grid>
                 )}
             </Grid>
         </Grid>

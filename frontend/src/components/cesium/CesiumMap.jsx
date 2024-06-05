@@ -26,7 +26,7 @@
 // export default App;
 
 
-// worked showing building names
+// handling left click
 import React, { useRef, useEffect } from 'react';
 import { Viewer, CameraFlyTo, Cesium3DTileset } from 'resium';
 import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, Cartographic } from 'cesium';

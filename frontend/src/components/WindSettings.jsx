@@ -43,7 +43,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                     <Grid item xs={4}>
                         <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: 'pink' }}>Wind Type</InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <StyledSelect
                             value={selectedWindType}
                             input={<OutlinedInput/>}
@@ -74,7 +74,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                             Wind Direction
                         </InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <StyledSelect
                             labelId="direction-label"
                             input={<OutlinedInput/>}
@@ -124,7 +124,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                             Wind Velocity (m/s)
                         </InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                             <TextField
                                 sx = {{
@@ -156,7 +156,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                                 Fluctuation %
                             </InputLabel>
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={6}>
                             <Tooltip title="Enter Fluctuation %" placement='bottom'>
                                 <TextField id="Fluctuation %" fullWidth
                                     variant="outlined" 
@@ -183,7 +183,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             )}
 
             {(windShears.length<2 && selectedWindType === "Wind Shear") ? (
-            <Grid item xs={12}><IconButton onClick={addNewWindShear} color="primary">
+            <Grid item xs={12}><IconButton onClick={addNewWindShear} color="warning">
                 <AddIcon />
             </IconButton> </Grid>) : null} 
 
@@ -288,7 +288,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                             Wind Direction
                         </InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <StyledSelect fullWidth
                             labelId="direction-label"
                             input={<OutlinedInput/>}
@@ -325,7 +325,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                             Wind Velocity (m/s)
                         </InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
                             <TextField id="Force" fullWidth
                                 variant="outlined" type="number" 
@@ -357,7 +357,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                             Fluctuation %
                         </InputLabel>
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={6}>
                         <Tooltip title="Enter Fluctuation %" placement='bottom'>
                             <TextField id="Fluctuation %" fullWidth
                                 variant="outlined" 
@@ -386,7 +386,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
 
             <Grid item xs={12}>
             <IconButton onClick={() => deleteWindShear(index)}>
-                    <DeleteOutline color="primary"/>
+                    <DeleteOutline color="error"/>
                 </IconButton>
             </Grid>      
             </React.Fragment> 

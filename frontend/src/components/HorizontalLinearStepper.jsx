@@ -46,6 +46,8 @@ export default function HorizontalLinearStepper(data) {
     environment: null,
     monitors: null
   })
+  const [lat, setLat] = React.useState(null);
+  const [long, setLong] = React.useState(null);
 
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
 
@@ -210,6 +212,12 @@ export default function HorizontalLinearStepper(data) {
     },
   });
 
+  const onLocationSelect = (latitude, longitude) => {
+    console.log("Selected Coordinates:", latitude, longitude);
+    setLat(latitude);
+    setLong(longitude);
+  };
+
   return (
     <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
         <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
@@ -234,7 +242,7 @@ export default function HorizontalLinearStepper(data) {
       </Stepper>     */}
         
         <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
-          <Box sx={{ width: '48%'}}>
+          <Box sx={{ width: '45%'}}>
             <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
               <StyledTab label="Environment" />
               <StyledTab label="Mission" />
@@ -246,11 +254,15 @@ export default function HorizontalLinearStepper(data) {
               {activeStep === 2 && <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} />}
             </div>
           </Box>
-          <Box sx={{ width: '52%', overflow: 'hidden', border: 1, borderColor: 'yellow'}}>
+          <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
             <Typography 
             sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h5" component="h5">Drone Count: 1</Typography>
-            <CesiumMap></CesiumMap>
+            variant="h6" component="h5">Latitude: {lat}; Longitude: {long}</Typography>
+            {/* <Typography 
+            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
+            variant="h6" component="h5"></Typography> */}
+            <CesiumMap onLocationSelect={onLocationSelect}/> 
+
           </Box>
         </Box>
         

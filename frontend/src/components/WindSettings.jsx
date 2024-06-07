@@ -41,7 +41,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: 'pink' }}>Wind Type</InputLabel>
+                        <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Wind Type</InputLabel>
                     </Grid>
                     <Grid item xs={6}>
                         <StyledSelect
@@ -70,7 +70,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Direction
                         </InputLabel>
                     </Grid>
@@ -120,7 +120,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Velocity (m/s)
                         </InputLabel>
                     </Grid>
@@ -152,7 +152,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                 <Grid item xs={12}>
                     <Grid container alignItems="center" direction="row">
                         <Grid item xs={4}>
-                            <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                            <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                 Fluctuation %
                             </InputLabel>
                         </Grid>
@@ -284,7 +284,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Direction
                         </InputLabel>
                     </Grid>
@@ -321,7 +321,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Velocity (m/s)
                         </InputLabel>
                     </Grid>
@@ -353,7 +353,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             <Grid item xs={12}>
                 <Grid container alignItems="center" direction="row">
                     <Grid item xs={4}>
-                        <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                        <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Fluctuation %
                         </InputLabel>
                     </Grid>

@@ -13,6 +13,7 @@ import DroneConfiguration from './DroneConfiguration'
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
+import Snackbar from '@mui/material/Snackbar';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -100,6 +101,11 @@ export default function MissionConfiguration (mission) {
         //     Yaw: 0
         // }
     }]);
+
+    const [snackBarState, setSnackBarState] = React.useState({
+        open: true,
+    });
+
     const setDrone = () => {
         droneArray.push({
             id: (droneCount), 
@@ -232,49 +238,81 @@ export default function MissionConfiguration (mission) {
         console.log('droneArray----Missin Config', droneArray)
     }
 
+    const handleSnackBarVisibility = (val) => {
+        setSnackBarState(prevState => ({
+            ...prevState,
+            open: val
+        }))
+    }
+
     return (
-        <Box sx={{border:1, borderRadius: 3, maxHeight: (mission.windowHeight)-200, overflow:'scroll', padding: 3}} >
-            {/* <Container fixed> */}
-            <Grid container  direction="row" style={{padding: '12px'}} ><strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong></Grid>
-                    <Alert severity="info">
-                        <AlertTitle>Info</AlertTitle>
-                        Please make sure that no two sUAS (small unmanned aircraft system) have the same Home Geolocation
-                    </Alert>
-                    <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px'}}>
-                        Number of sUAS &nbsp;&nbsp;
-                        <ButtonGroup size="small" aria-label="small outlined button group" >
-                        {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
-                            
-                            {droneCount && <Button style={{fontSize:'15px'}} variant="contained" color="primary">{droneCount}</Button>}
-                            <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
-                        </ButtonGroup>
-                    </Grid>
-                    <div>
-                        {droneArray.map((drone, index) => 
-                        (<div key={index}>
-                            <div>
-                                {/* <div key={drone.id}>{drone.name}</div> */}
-                            <div className={classes.root}>
-                                <Accordion>
-                                    <AccordionSummary
-                                    expandIcon={<ExpandMore />}
-                                    aria-controls="panel1a-content"
-                                    id="panel1a-header"
-                                    >
-                                    <Typography className={classes.heading}>{drone.droneName}</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                    <Typography>
-                                        <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
-                                    </Typography>
-                                    </AccordionDetails>
-                                </Accordion>
-                            </div>
-                            </div>
-                        </div>)
-                        )}
-                    </div>
-            {/* </Container> */}
-        </Box>
+        <div>
+            <Snackbar open={snackBarState.open} 
+            anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right'
+            }} 
+            autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
+                <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
+                    <AlertTitle>Info</AlertTitle>
+                    Please make sure that no two sUAS (small unmanned aircraft system) have the same Home Geolocation
+                </Alert>
+            </Snackbar>
+            <Box 
+            sx={{
+                maxHeight: '60vh', 
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': {
+                display: 'none'  // This hides the scrollbar in Webkit browsers
+                },
+                scrollbarWidth: 'none',  // This hides the scrollbar in Firefox
+                msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
+            }}
+            >
+                <Grid container  direction="row" style={{padding: '12px'}} >
+                    <strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong>
+                </Grid>
+                <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px'}}>
+                    Number of sUAS &nbsp;&nbsp;
+                    <ButtonGroup size="small" aria-label="small outlined button group" >
+                    {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
+                        
+                        {droneCount && <Button style={{fontSize:'15px'}} variant="contained" color="primary">{droneCount}</Button>}
+                        <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
+                    </ButtonGroup>
+                </Grid>
+                <div>
+                    {droneArray.map((drone, index) => 
+                    (<div key={index}>
+                        <div>
+                            {/* <div key={drone.id}>{drone.name}</div> */}
+                        <div className={classes.root}>
+                            <Accordion>
+                                <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                                sx={{backgroundColor: '#7c501a'}}
+                                >
+                                <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails 
+                                sx={{ 
+                                    backgroundColor: '#321F01', 
+                                    backdropFilter: 'blur(30px)'
+                                }}
+                                >
+                                <Typography>
+                                    <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                                </Typography>
+                                </AccordionDetails>
+                            </Accordion>
+                        </div>
+                        </div>
+                    </div>)
+                    )}
+                </div>
+            </Box>
+        </div>
     )
 }

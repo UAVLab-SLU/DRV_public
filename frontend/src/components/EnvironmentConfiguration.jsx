@@ -516,7 +516,7 @@ export default function EnvironmentConfiguration (env) {
 
             <Grid item xs={9}
             sx={{
-                maxHeight: '60vh', 
+                maxHeight: '65vh', 
                 overflowY: 'auto',
                 '&::-webkit-scrollbar': {
                   display: 'none'  // This hides the scrollbar in Webkit browsers
@@ -547,7 +547,7 @@ export default function EnvironmentConfiguration (env) {
                         <Grid item xs={12}>
                             <Grid container alignItems="center" direction="row">
                                 <Grid item xs={4}>
-                                    <InputLabel id="origin-label" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: 'pink' }}>Region</InputLabel>
+                                    <InputLabel id="origin-label" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Region</InputLabel>
                                 </Grid>
                                 <Grid item xs={6}>
                                     <StyledSelect
@@ -577,7 +577,7 @@ export default function EnvironmentConfiguration (env) {
                         <Grid item xs={12}>
                             <Grid container alignItems="center" direction="row">
                                 <Grid item xs={4}>
-                                    <InputLabel id="latitude-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                    <InputLabel id="latitude-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                         Latitude
                                     </InputLabel>
                                 </Grid>
@@ -607,7 +607,7 @@ export default function EnvironmentConfiguration (env) {
                         <Grid item xs={12}>
                             <Grid container alignItems="center" direction="row">
                                 <Grid item xs={4}>
-                                    <InputLabel id="longitude-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                    <InputLabel id="longitude-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                         Longitude
                                     </InputLabel>
                                 </Grid>
@@ -637,7 +637,7 @@ export default function EnvironmentConfiguration (env) {
                         <Grid item xs={12}>
                             <Grid container alignItems="center" direction="row">
                                 <Grid item xs={4}>
-                                    <InputLabel id="time-of-day-label" sx={{ marginRight: 2, flexShrink: 0, color: 'pink', width: '200px' }}>
+                                    <InputLabel id="time-of-day-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                         Time of day
                                     </InputLabel>
                                 </Grid>

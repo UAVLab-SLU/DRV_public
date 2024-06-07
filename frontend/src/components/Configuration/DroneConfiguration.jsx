@@ -12,6 +12,9 @@ import SensorConfiguration from './SensorConfiguration'
 import Tooltip from '@mui/material/Tooltip';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import styled from '@emotion/styled';
+import { OutlinedInput } from '@mui/material';
+import Typography from '@mui/material/Typography';
 
 const flightPaths = [
     {value:'fly_in_circle', label:'Circle', id:1},
@@ -222,6 +225,16 @@ export default function DroneConfiguration (droneData)  {
             open: val
         }))
     }
+
+    const StyledSelect = styled(Select)(({ theme }) => ({
+        backgroundColor: '#F5F5DC',
+            '& .MuiInputBase-input': {
+                padding: '6px 8px',
+                height: '1em',
+            }, 
+        margin: 0
+    }));
+
     return (
         <div>
             <Snackbar open={snackBarState.open} 
@@ -234,112 +247,213 @@ export default function DroneConfiguration (droneData)  {
                      Drone Type and Drone Model Changes is under Developement !
                 </Alert>
             </Snackbar>
-            <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 2 }}>
-                <Container fixed >
-                    <Grid container spacing={1}>
-                        <Grid item xs={3}>
-                            <TextField label="Name" id="Name" value={drone.droneName} variant="standard" onChange={handleChange}/>
-                        </Grid>
-
-                        <Grid item xs={3} alignItems="flex-end">
-                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
-                                <InputLabel id="flight-path">Mission</InputLabel>
-                                <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
-                                    {flightPaths.map(function(val) {
-                                        return(<MenuItem value={val.value} key={val.id}>
-                                            <em>{val.label}</em>
-                                        </MenuItem>)
-                                    })}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        {/*Drone Type selections */}
-
-                        <Grid item xs={3} alignItems="flex-end">
-                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
-                                <InputLabel id="drone-type">Drone Type</InputLabel>
-                                <Select label="Select Drone Type" value={selectedDroneType} onChange={handleDroneTypeChange}>
-                                    {droneTypes.map(val => (
-                                        <MenuItem value={val.value} key={val.value}>
-                                            <em>{val.label}</em>
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        {/*The Drone Models */}
-                        <Grid item xs={3} alignItems="flex-end">
-                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
-                                <InputLabel id="drone-model">Drone Model</InputLabel>
-                                <Select label="Select Drone Model" value={selectedModel} onChange={handleDroneModelChange}>
-                                    {droneModels[selectedDroneType].map(val => (
-                                        <MenuItem value={val.value} key={val.value}>
-                                            <em>{val.label}</em>
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-
-                        {/* */}
-
-
-                        {/*The Bottom Row of stuff */}
-                        <Grid container direction="row">
-                            {/* <Grid item xs={3}> */}
-                                <FormControl variant="standard" sx={{ minWidth: 150 }}>
-                                    <InputLabel id="home-location">Home Location</InputLabel>
-                                    {/* <Select label="Home Location" value={selectedLoc} onChange={handleLocChange} disabled>
-                                        {locations.map(function(val) {
-                                            return(<MenuItem value={val.value} key={val.id}>
-                                            <em>{val.value}</em>
-                                        </MenuItem>)
-                                        })}
-                                    </Select> */}
-                                </FormControl>
-
-                            {/* </Grid> */}
-                            {selectedLoc == 'GeoLocation' ? 
-                                <React.Fragment>
-                                    <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
-                                    <Grid item xs={3}>
-                                        <TextField id="X" label="Latitude" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange}/>
-                                    </Grid>
-                                    </Tooltip>
-                                    <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
-                                    <Grid item xs={3}>
-                                        <TextField id="Y" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Y} onChange={handleChange}/>
-                                    </Grid>
-                                    </Tooltip>
-                                    <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
-                                    <Grid item xs={3}>
-                                        <TextField id="Z" label="Height" variant="standard" type="number" inputProps={{ step: "1" }} value={drone.Z} onChange={handleChange}/>
-                                    </Grid>
-                                    </Tooltip>
-                                </React.Fragment> : 
-                                <React.Fragment>
-                                    <Grid item xs={3}>
-                                        <TextField id="X" label="X" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange} />
-                                    </Grid>
-                                    <Grid item xs={3}>
-                                        <TextField id="Y" label="Y" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Y} onChange={handleChange} />
-                                    </Grid>
-                                    <Grid item xs={3}> 
-                                        <TextField id="Z" label="Z" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Z} disabled/>
-                                    </Grid>
-                                </React.Fragment>
-                            }
-                        </Grid>
+            
+            <Container maxWidth="md">
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
+                            Drone Settings
+                        </Typography>
                     </Grid>
-                    <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/>
-                    <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
+        
+                    {/* Drone Name Field */}
+                    {/* <CustomGrid container item xs={12} direction="row"> */}
+                        <Grid item xs={4}>
+                            <InputLabel id="name" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                Name
+                            </InputLabel>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                sx = {{
+                                    backgroundColor: '#F5F5DC',
+                                    '& .MuiOutlinedInput-root': {
+                                        '& .MuiInputBase-input': {
+                                            padding: '6px 8px',
+                                        },
+                                    },
+                                }}
+                                id="name"
+                                variant="outlined"
+                                onChange={handleChange}
+                                value={drone.droneName}
+                                fullWidth disabled
+                            />
+                        </Grid>
+                    {/* </CustomGrid> */}
+
+                    {/* Drone Type Field */}
+                    {/* <CustomGrid container item xs={12} direction="row"> */}
+                        <Grid item xs={4}>
+                            <InputLabel id="drone-type" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Drone Type</InputLabel>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <StyledSelect
+                                value={selectedDroneType}
+                                input={<OutlinedInput/>}
+                                MenuProps= {{
+                                    sx: {
+                                        '& .MuiPaper-root': {
+                                            backgroundColor: '#F5F5DC',
+                                        }
+                                    }
+                                }}
+                                onChange={handleDroneTypeChange}
+                                fullWidth
+                                >
+                                {droneTypes.map(val => (
+                                    <MenuItem value={val.value} key={val.value}>
+                                        <em>{val.label}</em>
+                                    </MenuItem>
+                                ))}
+                            </StyledSelect>
+                        </Grid>
+                    {/* </CustomGrid> */}
+
+                    {/* Drone Model Field */}
+                    {/* <CustomGrid container item xs={12} direction="row"> */}
+                        <Grid item xs={4}>
+                            <InputLabel id="drone-model" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>
+                                Drone Model
+                            </InputLabel>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <StyledSelect
+                            value={selectedModel}
+                            input={<OutlinedInput/>}
+                            MenuProps= {{
+                                sx: {
+                                    '& .MuiPaper-root': {
+                                        backgroundColor: '#F5F5DC',
+                                    }
+                                }
+                            }}
+                            onChange={handleDroneModelChange}
+                            fullWidth
+                            >
+                                {droneModels[selectedDroneType].map(val => (
+                                    <MenuItem value={val.value} key={val.value}>
+                                        <em>{val.label}</em>
+                                    </MenuItem>
+                                ))}
+                            </StyledSelect>
+                        </Grid>
+                    {/* </CustomGrid> */}
+
+                    <Grid item xs={12}>
+                        <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
+                            Home Location
+                        </Typography>
+                    </Grid>
+
+                    {selectedLoc == 'GeoLocation' ?
+                    <React.Fragment>
+                        {/* <CustomGrid container item xs={12} direction="row"> */}
+                            <Grid item xs={4}>
+                                    <InputLabel id="X-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                        Latitude
+                                    </InputLabel>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
+                                    <TextField
+                                        sx = {{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="X"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ step: ".0001" }}
+                                        onChange={handleChange}
+                                        value={drone.X}
+                                        fullWidth
+                                    />
+                                </Tooltip>
+                            </Grid>
+                        {/* </CustomGrid> */}
+                        
+                        {/* <CustomGrid container item xs={12} direction="row"> */}
+                            <Grid item xs={4}>
+                                <InputLabel id="Y-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                    Longitude
+                                </InputLabel>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
+                                    <TextField
+                                        sx = {{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Y"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ step: ".0001" }}
+                                        onChange={handleChange}
+                                        value={drone.Y}
+                                        fullWidth
+                                    />
+                                </Tooltip>
+                            </Grid>
+                        {/* </CustomGrid> */}
+
+                        {/* <CustomGrid container item xs={12} direction="row"> */}
+                            <Grid item xs={4}>
+                                <InputLabel id="Z-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                    Height
+                                </InputLabel>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
+                                    <TextField
+                                        sx = {{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Z"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ step: "1" }}
+                                        onChange={handleChange}
+                                        value={drone.Z}
+                                        fullWidth
+                                    />
+                                </Tooltip>
+                            </Grid>
+                        {/* </CustomGrid> */}
+                    </React.Fragment>: 
+                    <React.Fragment>
+                        <Grid item xs={3}>
+                            <TextField id="X" label="X" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange} />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField id="Y" label="Y" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Y} onChange={handleChange} />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField id="Z" label="Z" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Z} disabled/>
+                        </Grid>
+                    </React.Fragment>
+                    } 
+                </Grid>
+                <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/>
+                <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
                     {/* <Button variant="outlined" onClick={sendJson}>Ok</Button> &nbsp;&nbsp;&nbsp; */}
                     {/* <Button variant="contained">OK</Button> */}
                     </Grid>
-                </Container>
-            </Box>
+            </Container>
         </div>
     )
 }

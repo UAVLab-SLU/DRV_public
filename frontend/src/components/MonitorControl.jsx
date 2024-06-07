@@ -17,13 +17,31 @@ import MonitorTabels from './MonitorTabels';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import EnvironmentConfiguration from './EnvironmentConfiguration';
 import dayjs from 'dayjs';
+import styled from '@emotion/styled';
+import { makeStyles } from '@mui/styles';
+import EnvironmentConfiguration from './EnvironmentConfiguration';
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        padding: '5px'
+      },
+    transparentBackground: {
+        backgroundColor: 'transparent !important'
+      },
+      backdropFilter: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'sepia(100%)',
+        '-webkitBackdropFilter': 'sepia(100%)',
+      }
+}));
 
 export default function MonitorControl (monJson) {
     const [value, setValue] = React.useState('2');
     const [verticalValue, setVerticalValue] = React.useState('1.1');
     const [zoneCount, setZoneCount] = React.useState(1);
+    const classes = useStyles();
 
     const handleIncrement = () => {
         setZoneCount(zoneCount +1)
@@ -671,97 +689,157 @@ export default function MonitorControl (monJson) {
         </div>
       );
     };
+
+    const StyledTabs = styled(Tabs)({
+        minHeight: '30px',
+        '.MuiTabs-indicator': {
+            display: 'none', // Hides the default underline indicator
+        },
+    });
+
+    const StyledTab = styled(Tab)(({ theme }) => ({
+        textTransform: 'none',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginRight: 20,
+        marginBottom: 8,
+        padding: '5px',
+        minHeight: '15px',
+        minWidth: '10px',
+        color: '#8B4513', // Shade of brown
+        backgroundColor: '#F5F5DC', // Beige background
+        transition: 'background-color 0.3s, color 0.3s',
+        '&:hover': {
+            backgroundColor: '#DEB887', // Light brown when hovered
+            color: '#FFFFFF',
+        },
+        '&.Mui-selected': {
+            backgroundColor: '#A0522D', // Darker brown when selected
+            color: '#FFFFFF',
+            borderRight: '5px solid #FFB500',
+        },
+    }));
+
+    const HeaderTab = styled(Tab)(({theme}) => ({
+        textTransform: 'none',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginRight: 8,
+        // to-do: use global variables for tab colors
+        color: '#8B4513', // Shade of brown
+        backgroundColor: '#F5F5DC', // Beige background
+        transition: 'background-color 0.3s, color 0.3s',
+        '&:hover': {
+        backgroundColor: '#DEB887', // Light brown when hovered
+        color: '#FFFFFF',
+        },
+        '&.Mui-selected': {
+        backgroundColor: '#A0522D', // Darker brown when selected
+        color: '#FFFFFF',
+        borderBottom: '5px solid #FFB500',
+        },
+    }));
     
     return(
         <div>
-            <Box sx={{ width: '100%', border: '1px solid grey', padding: 5, paddingTop: 2, maxHeight: '400px', overflow:'scroll'}}>
+            <Container
+            sx={{ width: '100%', paddingTop: 2, boxSizing: 'border-box'}}
+            classes={{ root: classes.backdropFilter }}
+            >
                 {/* <Container style={{overflow: 'scroll', height:'80%'}} > */}
                     <Box sx={{ width: '100%', typography: 'body1' }}>
                         <TabContext value={value}>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <Tabs
+                                <StyledTabs
                                     value={value}
                                     onChange={handleChange}
                                     variant="scrollable"
                                     scrollButtons="auto"
                                 >
                                     {/* <Tab label="Global Monitors" value="1" /> */}
-                                    <Tab label="Test Properties" value="2" />
-                                    <Tab label= "Fuzzy Test Configuration" value ="Fuzzy" />
-                                </Tabs>
+                                    <HeaderTab label="Test Properties" value="2" />
+                                    <HeaderTab label= "Fuzzy Test Configuration" value ="Fuzzy" />
+                                </StyledTabs>
                             </Box>
                             
                             <TabPanel value="2">
                                 <Box sx={{ width: '100%', typography: 'body1' }}>
-                                    <TabContext value={verticalValue}>
-                                        <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
-                                            <Tabs
-                                                orientation="vertical"
-                                                value={verticalValue}
-                                                onChange={handleVerticalChange}
-                                                variant="scrollable"
-                                                scrollButtons="auto"
-                                                sx={{ borderRight: 1, borderColor: 'divider' }}
-                                            >
-                                                {singleMonitors.map(function(single, index) {
-                                                    return <Tab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems:"block", color:single.colorText}} wrapped/>
-                                                })}
-                                            </Tabs>
-                                            {singleMonitors.map(function(sing, index) {
-                                                return(
-                                                    <TabPanel key={index} value={sing.value}>
-                                                        <Container maxWidth="md">
-                                                            <Typography>
-                                                                <Grid container spacing={2} direction="row" style={{fontSize:"20px"}} >
-                                                                   {/* <Grid item xs={12}> <strong>{sing.description}</strong></Grid> */}
-                                                                   <Grid item xs={12}><strong>Description: </strong>{sing.description}</Grid>
-                                                                </Grid>
-                                                                <Grid container direction="row">
-                                                                    {/* <strong>Status:</strong> */}
-                                                                    {sing.enableBtn}
-                                                                   {/* Status:  {sing.enableBtn} */}
-                                                                </Grid>
-                                                                <br/>
-                                                                <Grid container spacing={2} direction="row">
-                                                                    {sing.btns}
-                                                                </Grid>
-                                                                {/* <Grid container spacing={2} direction="row">
-                                                                    <Grid item xs={12}>
-                                                                        {sing.bodyText}
-                                                                    </Grid>
-                                                                </Grid> */}
-                                                                {/* <Grid container spacing={2} direction="row" alignContent="center" justifyContent="center" style={{padding:'35px'}}>
-                                                                    
-                                                                </Grid> */}
-                                                                <Grid item xs={12}>
-                                                                    {sing.mutlipleBtn}
-                                                                </Grid>
-                                                                <Grid item xs={12}>
-                                                                    {sing.tableData}
-                                                                </Grid>
-                                                                {sing.isMultipleTable == false ? null : 
-                                                                    <React.Fragment> 
-                                                                        {Array.apply(0, Array(zoneCount)).map(function (x, i) {
-                                                                            return <div key={i}>
-                                                                                <Typography style={{border:'1px solid', padding: '12px', marginBottom: '10px'}}> <strong>Zone {i+1}</strong>
-                                                                                <ButtonGroup size="small" color="secondary" aria-label="small outlined button group" style={{float:'right', paddingBottom:'20px'}}>
-                                                                                    <Button  style={{color:'red'}}>Delete Zone</Button>
-                                                                                </ButtonGroup>
-                                                                                <div style={{paddingTop: '10px'}}>
-                                                                                <MonitorTabels hideAltitude="false" errorMessage="true" jsonVal={(e) => setNoFlyParameters(e, i)}/>
-                                                                                </div>
-                                                                                </Typography>
-                                                                                </div>;
-                                                                        })}
-                                                                    </React.Fragment>
-                                                                }
-                                                            </Typography>
-                                                        </Container>
-                                                    </TabPanel>
-                                                )
-                                            })}
-                                        </Box>
-                                    </TabContext>
+                                <TabContext value={verticalValue}>
+                        <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
+                            <Tabs
+                                orientation="vertical"
+                                value={verticalValue}
+                                onChange={handleVerticalChange}
+                                variant="scrollable"
+                                scrollButtons="auto"
+                                sx={{ borderRight: 1, borderColor: 'divider' }}
+                            >
+                                {singleMonitors.map(function(single, index) {
+                                    return <StyledTab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems:"block", color:single.colorText}} wrapped/>
+                                })}
+                            </Tabs>
+
+                            {singleMonitors.map(function(sing, index) {
+                                return(
+                                    <TabPanel key={index} value={sing.value}
+                                    sx={{
+                                        maxHeight: '57vh', 
+                                        overflowY: 'auto',
+                                        '&::-webkit-scrollbar': {
+                                          display: 'none'
+                                        },
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none'
+                                      }}>
+                                        <Container maxWidth="md">
+                                            <Typography>
+                                                <Grid container spacing={2} direction="row" style={{fontSize:"20px"}} >
+                                                   <Grid item xs={12}><strong>Description: </strong>{sing.description}</Grid>
+                                                </Grid>
+                                                <Grid container direction="row">
+                                                    {sing.enableBtn}
+                                                </Grid>
+                                                <br/>
+                                                <Grid container spacing={2} direction="row">
+                                                    {sing.btns}
+                                                </Grid>
+                                                {/* <Grid container spacing={2} direction="row">
+                                                    <Grid item xs={12}>
+                                                        {sing.bodyText}
+                                                    </Grid>
+                                                </Grid> */}
+                                                {/* <Grid container spacing={2} direction="row" alignContent="center" justifyContent="center" style={{padding:'35px'}}>
+                                                    
+                                                </Grid> */}
+                                                <Grid item xs={12}>
+                                                    {sing.mutlipleBtn}
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                    {sing.tableData}
+                                                </Grid>
+                                                {sing.isMultipleTable == false ? null : 
+                                                    <React.Fragment> 
+                                                        {Array.apply(0, Array(zoneCount)).map(function (x, i) {
+                                                            return <div key={i}>
+                                                                <Typography style={{border:'1px solid', padding: '12px', marginBottom: '10px'}}> <strong>Zone {i+1}</strong>
+                                                                <ButtonGroup size="small" color="secondary" aria-label="small outlined button group" style={{float:'right', paddingBottom:'20px'}}>
+                                                                    <Button  style={{color:'red'}}>Delete Zone</Button>
+                                                                </ButtonGroup>
+                                                                <div style={{paddingTop: '10px'}}>
+                                                                <MonitorTabels hideAltitude="false" errorMessage="true" jsonVal={(e) => setNoFlyParameters(e, i)}/>
+                                                                </div>
+                                                                </Typography>
+                                                                </div>;
+                                                        })}
+                                                    </React.Fragment>
+                                                }
+                                            </Typography>
+                                        </Container>
+                                    </TabPanel>
+                                )
+                            })}
+                        </Box>
+                    </TabContext>
                                 </Box>
                             </TabPanel>
                             <TabPanel value="Fuzzy">
@@ -770,7 +848,7 @@ export default function MonitorControl (monJson) {
                         </TabContext>
                     </Box>
                 {/* </Container> */}
-            </Box>
+            </Container>
         </div>
     )
 }

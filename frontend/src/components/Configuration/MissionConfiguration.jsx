@@ -20,7 +20,15 @@ const useStyles = makeStyles((theme) => ({
     root: {
       width: '100%',
       padding: '5px'
-    }
+    },
+    transparentBackground: {
+        backgroundColor: 'transparent !important'
+      },
+      backdropFilter: {
+        backgroundColor: '#14151471',
+        '-webkitBackdropFilter': 'sepia(100%)',
+        backdropFilter: 'sepia(100%)',
+      }
   }));
 
 export default function MissionConfiguration (mission) {
@@ -281,37 +289,27 @@ export default function MissionConfiguration (mission) {
                         <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
                     </ButtonGroup>
                 </Grid>
-                <div>
+
                     {droneArray.map((drone, index) => 
-                    (<div key={index}>
-                        <div>
-                            {/* <div key={drone.id}>{drone.name}</div> */}
-                        <div className={classes.root}>
-                            <Accordion>
-                                <AccordionSummary
-                                expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                                sx={{backgroundColor: '#7c501a'}}
-                                >
-                                <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails 
-                                sx={{ 
-                                    backgroundColor: '#321F01', 
-                                    backdropFilter: 'blur(30px)'
-                                }}
-                                >
-                                <Typography>
-                                    <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
-                                </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        </div>
-                        </div>
-                    </div>)
-                    )}
-                </div>
+                    (
+                        <Accordion key={index} classes={{ root: classes.transparentBackground }}>
+                            <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                            sx={{backgroundColor: '#7c501a'}}
+                            >
+                            <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails 
+                            classes={{ root: classes.backdropFilter }}
+                            >
+                            <Typography>
+                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                            </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                ))}
             </Box>
         </div>
     )

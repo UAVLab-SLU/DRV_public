@@ -1,84 +1,139 @@
-// // import React from 'react';
-// import { Viewer, Cesium3DTileset, CameraFlyTo } from 'resium';
-// import { Cartesian3, Math, IonResource, CesiumTerrainProvider } from 'cesium';
-
-// const App = () => {
-//   const position = Cartesian3.fromDegrees(-122.3472, 47.598, 370);
-//   const orientation = {
-//     heading: Math.toRadians(10),
-//     pitch: Math.toRadians(-10),
-//   };
-
-//   const terrainProvider = new CesiumTerrainProvider({
-//     // to-do: // Example URL, change to your terrain server if needed
-//     url: 'https://assets.cesium.com/1',
-//     requestVertexNormals: true
-//   });
-
-//   return (
-//     <Viewer terrainProvider={terrainProvider}>
-//       <CameraFlyTo destination={position} orientation={orientation} duration={0} />
-//       <Cesium3DTileset url={IonResource.fromAssetId(96188)} /> {/* Asset ID for OSM Buildings */}
-//     </Viewer>
-//   );
-// };
-
-// export default App;
-
-
-// handling left click
-import React, { useRef, useEffect } from 'react';
-import { Viewer, CameraFlyTo, Cesium3DTileset } from 'resium';
-import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, Cartographic } from 'cesium';
+import React, { useRef, useEffect, useState } from 'react';
+import { Viewer, CameraFlyTo, Cesium3DTileset, Entity } from 'resium';
+import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, 
+Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
+Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2 } from 'cesium';
 import PropTypes from 'prop-types';
 
 const CesiumMap = ({onLocationSelect}) => {
   const viewerRef = useRef(null);
+  const [viewerReady, setViewerReady] = useState(false);
+  const [drawing, setDrawing] = useState(true);
+  const [points, setPoints] = useState([]);
+  const [cameraPosition, setCameraPosition] = useState({
+    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 370),
+    destination: Cartesian3.fromDegrees(-122.3472, 47.598, 1000),
+    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 130000),
+    orientation: {
+      heading: CesiumMath.toRadians(10),
+      pitch: CesiumMath.toRadians(-10)
+    }
+  });
+  
+  Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZTFmNzlmMy1mNjU4LTQwNGYtOTQ2YS0yOTZiZTMwNmM4NTkiLCJpZCI6MjE2MTY1LCJpYXQiOjE3MTYwODk0NzV9.52fSstXZ3CeFEcorDgCv__iCvdUecg3Q0bhaXum3ZnI";
 
   useEffect(() => {
-    const viewer = viewerRef.current?.cesiumElement;
-    console.log("Ref on render:", viewerRef);
-    console.log("current", viewerRef.current);
-    // console.log('@VIEWER ', viewer);
-    if (viewer) {
-      const handleLeftClick = (movement) => {
-        console.log('handle left click........');
-        const cartesian = viewer.camera.pickEllipsoid(movement.position, viewer.scene.globe.ellipsoid);
+    const interval = setInterval(() => {
+      if (viewerRef.current?.cesiumElement) {
+          setViewerReady(true);
+          clearInterval(interval);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (viewerReady) {
+      const viewer = viewerRef.current.cesiumElement;
+      const handleLeftClick = (click) => {
+        console.log('handle left click......');
+        const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
         if (cartesian) {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
           const longitude = CesiumMath.toDegrees(cartographic.longitude);
           onLocationSelect(latitude, longitude);
+          setCameraPosition({
+            destination: viewer.camera.position,
+            orientation: {
+              heading: viewer.camera.heading,
+              pitch: viewer.camera.pitch
+            }
+          });
         }
       };
 
       // Add the left click event handler
       viewer.screenSpaceEventHandler.setInputAction(handleLeftClick, ScreenSpaceEventType.LEFT_CLICK);
-    }
-
-    // Cleanup function to remove event handler
-    return () => {
-      if (viewer) {
+      // Cleanup function to remove event handler
+      return () => {
         viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-      }
-    };
-  }, []);
+      };
+    }
+  }, [viewerReady]);
 
-  const terrainProvider = new CesiumTerrainProvider({
-    url: 'https://assets.cesium.com/1',
-    requestVertexNormals: true
-  });
+  useEffect(() => {
+    if (viewerReady && drawing) {
+      const viewer = viewerRef.current.cesiumElement;
 
-  const position = Cartesian3.fromDegrees(-122.3472, 47.598, 370);
-  const orientation = {
-    heading: CesiumMath.toRadians(10),
-    pitch: CesiumMath.toRadians(-10),
-  };
+      viewer.screenSpaceEventHandler.setInputAction((click) => {
+        const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+        if (cartesian) {
+          setPoints(currentPoints => {
+              const newPoints = [...currentPoints, cartesian];
+              return newPoints;
+          });
+          
+          setCameraPosition({
+            destination: viewer.camera.position,
+            orientation: {
+              heading: viewer.camera.heading,
+              pitch: viewer.camera.pitch
+            }
+          });
+        }
+      }, ScreenSpaceEventType.LEFT_CLICK);
+
+      return () => {
+        viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+      };
+    }
+  }, [viewerReady]);
+
+  const terrainProvider= createWorldTerrainAsync();
+  const osmBuildingsTileset = createOsmBuildingsAsync();
 
   return (
-    <Viewer ref={viewerRef} terrainProvider={terrainProvider}>
-      <CameraFlyTo destination={position} orientation={orientation} duration={0} />
+
+    <Viewer ref={viewerRef} full terrainProvider={terrainProvider}>
+      {points.map((point, index) => (
+        <Entity
+          key={index}
+          position= {point}
+          point= {{
+            pixelSize: 10,
+            color: Color.RED,
+            outlineColor: Color.WHITE,
+            outlineWidth: 2,
+          }}
+          label= {{
+            text: `Point ${index+1}`,
+            font: "14pt monospace",
+            style: LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 2,
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            pixelOffset: new Cartesian2(0, -9),
+          }}
+        />
+       ))}
+      {viewerReady && (
+        <Entity
+          name="polygon-entity"
+          polygon={{
+            hierarchy: new PolygonHierarchy(points),
+            material: Color.RED.withAlpha(0.5),
+            outline: true,
+            outlineColor: Color.BLACK
+          }}
+        />
+      )}
       <Cesium3DTileset url={IonResource.fromAssetId(96188)} />
+      <CameraFlyTo
+        destination={cameraPosition.destination}
+        orientation={cameraPosition.orientation}
+        duration={2}
+        />
     </Viewer>
   );
 };

@@ -235,6 +235,13 @@ export default function DroneConfiguration (droneData)  {
         margin: 0
     }));
 
+    // dummy image 
+    const handleDragStart = (event) => {
+        const imageUrl = "https://catsatthestudios.com/wp-content/uploads/2017/12/12920541_1345368955489850_5587934409579916708_n-2-960x410.jpg"; // URL of the image to drag
+        event.dataTransfer.setData("text/plain", imageUrl);
+        console.log('event', event);
+    };
+
     return (
         <div>
             <Snackbar open={snackBarState.open} 
@@ -254,6 +261,13 @@ export default function DroneConfiguration (droneData)  {
                         <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
                             Drone Settings
                         </Typography>
+                        <img
+                            src="https://catsatthestudios.com/wp-content/uploads/2017/12/12920541_1345368955489850_5587934409579916708_n-2-960x410.jpg"
+                            alt="Draggable Icon"
+                            draggable="true"
+                            onDragStart={handleDragStart}
+                            style={{ width: 50, cursor: 'grab' }}
+                            />
                     </Grid>
         
                     {/* Drone Name Field */}

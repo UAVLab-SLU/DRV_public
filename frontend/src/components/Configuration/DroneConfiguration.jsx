@@ -237,9 +237,8 @@ export default function DroneConfiguration (droneData)  {
 
     // dummy image 
     const handleDragStart = (event) => {
-        const imageUrl = "https://catsatthestudios.com/wp-content/uploads/2017/12/12920541_1345368955489850_5587934409579916708_n-2-960x410.jpg"; // URL of the image to drag
-        event.dataTransfer.setData("text/plain", imageUrl);
-        console.log('event', event);
+        const imgSrc = event.target.src;
+        event.dataTransfer.setData('text/plain', imgSrc);
     };
 
     return (
@@ -258,16 +257,16 @@ export default function DroneConfiguration (droneData)  {
             <Container maxWidth="md">
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
-                        <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
-                            Drone Settings
-                        </Typography>
-                        <img
-                            src="https://catsatthestudios.com/wp-content/uploads/2017/12/12920541_1345368955489850_5587934409579916708_n-2-960x410.jpg"
-                            alt="Draggable Icon"
-                            draggable="true"
-                            onDragStart={handleDragStart}
-                            style={{ width: 50, cursor: 'grab' }}
-                            />
+                    <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Drone Settings
+                    <img
+                        src="/images/drone-blue.png"
+                        alt="Draggable Icon"
+                        draggable="true"
+                        onDragStart={handleDragStart}
+                        style={{ width: 40, cursor: 'grab' }}
+                    />
+                    </Typography>  
                     </Grid>
         
                     {/* Drone Name Field */}

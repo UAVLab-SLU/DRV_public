@@ -23,12 +23,12 @@ const useStyles = makeStyles((theme) => ({
     },
     transparentBackground: {
         backgroundColor: 'transparent !important'
-      },
-      backdropFilter: {
+    },
+    backdropFilter: {
         backgroundColor: '#14151471',
         '-webkitBackdropFilter': 'sepia(100%)',
         backdropFilter: 'sepia(100%)',
-      }
+    }
   }));
 
 export default function MissionConfiguration (mission) {
@@ -282,10 +282,9 @@ export default function MissionConfiguration (mission) {
                 </Grid>
                 <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px'}}>
                     Number of sUAS &nbsp;&nbsp;
-                    <ButtonGroup size="small" aria-label="small outlined button group" >
-                    {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
-                        
-                        {droneCount && <Button style={{fontSize:'15px'}} variant="contained" color="primary">{droneCount}</Button>}
+                    <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
+                        {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
+                        {droneCount && <Button style={{fontSize:'15px'}} variant="contained" color="warning">{droneCount}</Button>}
                         <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
                     </ButtonGroup>
                 </Grid>
@@ -297,16 +296,16 @@ export default function MissionConfiguration (mission) {
                             expandIcon={<ExpandMore />}
                             aria-controls="panel1a-content"
                             id="panel1a-header"
-                            sx={{backgroundColor: '#7c501a'}}
+                            sx={{ backgroundColor: '#cc621b' }}
                             >
-                            <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
+                                <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
                             </AccordionSummary>
                             <AccordionDetails 
                             classes={{ root: classes.backdropFilter }}
                             >
-                            <Typography>
-                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
-                            </Typography>
+                                <Typography>
+                                    <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                                </Typography>
                             </AccordionDetails>
                         </Accordion>
                 ))}

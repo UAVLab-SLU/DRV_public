@@ -511,6 +511,7 @@ export default function EnvironmentConfiguration (env) {
                     >
                     <StyledTab label="Region" />
                     <StyledTab label="Wind" />
+                    <StyledTab label="SADE" />
                 </StyledTabs>
             </Grid>
 
@@ -754,6 +755,10 @@ export default function EnvironmentConfiguration (env) {
                     //     </div> */}
                     // </Grid>
                 )}
+
+                {selectedTab === 2 &&
+                <></>
+                }
             </Grid>
         </Grid>
 

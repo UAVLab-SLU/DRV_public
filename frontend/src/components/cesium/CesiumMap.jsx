@@ -86,6 +86,7 @@ const CesiumMap = ({onLocationSelect}) => {
               return newPoints;
             }
           });
+
           setCameraPosition({
             destination: viewer.camera.position,
             orientation: {
@@ -137,10 +138,9 @@ const CesiumMap = ({onLocationSelect}) => {
                 pitch: viewer.camera.pitch
               }
             });
-            
+
             // onLocationSelect(latitude, longitude);
             const imageUrl = event.dataTransfer.getData("text/plain") || '';
-            console.log('image url', imageUrl);
             setBillboards((currentBillboards) => [...currentBillboards, { image: imageUrl, position: cartesian }]);
           }
         };
@@ -195,33 +195,14 @@ const CesiumMap = ({onLocationSelect}) => {
       )}
       {billboards.map((billboard, index) => (
         <Entity
-        key={index}
-        position= {billboard.position}
-        point= {{
-          pixelSize: 10,
-          color: Color.RED,
-          outlineColor: Color.WHITE,
-          outlineWidth: 2,
-        }}
-        label= {{
-          text: `Point ${index+1}`,
-          font: "14pt monospace",
-          style: LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
-          verticalOrigin: VerticalOrigin.BOTTOM,
-          pixelOffset: new Cartesian2(0, -9),
-        }}
-      />
-        // <Entity
-        //   key={index}
-        //   position={billboard.position}
-        //   billboard={{
-        //     // image: billboard.image,
-        //     image: 'https://catsatthestudios.com/wp-content/uploads/2017/12/12920541_1345368955489850_5587934409579916708_n-2-960x410.jpg',
-        //     // scale: 0.5, // Scale it to a suitable size
-        //     verticalOrigin: VerticalOrigin.BOTTOM
-        //   }}
-        // />
+          key={index}
+          position={billboard.position}
+          billboard={{
+            image: billboard.image,
+            scale: 0.15,
+            verticalOrigin: VerticalOrigin.BOTTOM
+          }}
+        />
       ))}
       <Cesium3DTileset url={IonResource.fromAssetId(96188)} />
       <CameraFlyTo

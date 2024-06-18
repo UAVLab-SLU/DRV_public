@@ -235,11 +235,6 @@ export default function DroneConfiguration (droneData)  {
         margin: 0
     }));
 
-    // dummy image 
-    const handleDragStart = (event) => {
-        const imgSrc = event.target.src;
-        event.dataTransfer.setData('text/plain', imgSrc);
-    };
 
     return (
         <div>
@@ -259,18 +254,10 @@ export default function DroneConfiguration (droneData)  {
                     <Grid item xs={12}>
                     <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     Drone Settings
-                    <img
-                        src="/images/drone-blue.png"
-                        alt="Draggable Icon"
-                        draggable="true"
-                        onDragStart={handleDragStart}
-                        style={{ width: 40, cursor: 'grab' }}
-                    />
                     </Typography>  
                     </Grid>
         
                     {/* Drone Name Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
                             <InputLabel id="name" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                 Name
@@ -293,10 +280,21 @@ export default function DroneConfiguration (droneData)  {
                                 fullWidth disabled
                             />
                         </Grid>
-                    {/* </CustomGrid> */}
+
+                        {/* <Grid item xs={3} alignItems="flex-end">
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+                                <InputLabel id="flight-path">Mission</InputLabel>
+                                <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
+                                    {flightPaths.map(function(val) {
+                                        return(<MenuItem value={val.value} key={val.id}>
+                                            <em>{val.label}</em>
+                                        </MenuItem>)
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </Grid> */}
 
                     {/* Drone Type Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
                             <InputLabel id="drone-type" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Drone Type</InputLabel>
                         </Grid>
@@ -321,10 +319,8 @@ export default function DroneConfiguration (droneData)  {
                                 ))}
                             </StyledSelect>
                         </Grid>
-                    {/* </CustomGrid> */}
 
                     {/* Drone Model Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
                             <InputLabel id="drone-model" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>
                                 Drone Model
@@ -351,7 +347,6 @@ export default function DroneConfiguration (droneData)  {
                                 ))}
                             </StyledSelect>
                         </Grid>
-                    {/* </CustomGrid> */}
 
                     <Grid item xs={12}>
                         <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
@@ -361,7 +356,6 @@ export default function DroneConfiguration (droneData)  {
 
                     {selectedLoc == 'GeoLocation' ?
                     <React.Fragment>
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
                                     <InputLabel id="X-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                         Latitude
@@ -388,9 +382,7 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
                         
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
                                 <InputLabel id="Y-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                     Longitude
@@ -417,9 +409,7 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
 
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
                                 <InputLabel id="Z-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                     Height
@@ -446,7 +436,6 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
                     </React.Fragment>: 
                     <React.Fragment>
                         <Grid item xs={3}>

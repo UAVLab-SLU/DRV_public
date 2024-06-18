@@ -33,6 +33,19 @@ const useStyles = makeStyles((theme) => ({
 
 export default function MissionConfiguration (mission) {
     const classes = useStyles();
+    const droneImages = [
+        { src: '/images/drone-blue.png', color: '#FFCCCC' },
+        { src: '/images/drone-blue.png', color: '#CCFFCC' },
+        { src: '/images/drone-blue.png', color: '#CCCCFF' },
+        { src: '/images/drone-blue.png', color: '#FFFFCC' },
+        { src: '/images/drone-blue.png', color: '#FFCCFF' },
+        { src: '/images/drone-blue.png', color: '#CCFFFF' },
+        { src: '/images/drone-blue.png', color: '#F0E68C' },
+        { src: '/images/drone-blue.png', color: '#E6E6FA' },
+        { src: '/images/drone-blue.png', color: '#FFDAB9' },
+        { src: '/images/drone-blue.png', color: '#FFFACD' }
+    ];
+    
     const [droneCount, setDroneCount] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones.length : 1);
     const [droneArray, setDroneArray] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones : [{
         id: droneCount-1, 
@@ -47,6 +60,8 @@ export default function MissionConfiguration (mission) {
         AllowAPIAlways: true,
         EnableTrace: false,
         Name:"Drone " + (droneCount),
+        image: droneImages[droneCount-1].src,
+        color: droneImages[droneCount-1].color,
         X:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Latitude : 0,
         Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
         Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
@@ -128,6 +143,8 @@ export default function MissionConfiguration (mission) {
             AllowAPIAlways: true,
             EnableTrace: false,
             Name:"Drone " + (droneCount+1),
+            image: droneImages[droneCount].src,
+            color: droneImages[droneCount].color,
             X:mission.mainJsonValue.environment != null ? droneCount > 0 ? (mission.mainJsonValue.environment.Origin.Latitude) + (0.0001 * droneCount): mission.mainJsonValue.environment.Origin.Latitude : 0,
             Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
             Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
@@ -253,6 +270,11 @@ export default function MissionConfiguration (mission) {
         }))
     }
 
+    const handleDragStart = (event) => {
+        const imgSrc = event.target.src;
+        event.dataTransfer.setData('text/plain', imgSrc);
+    };
+
     return (
         <div>
             <Snackbar open={snackBarState.open} 
@@ -266,9 +288,12 @@ export default function MissionConfiguration (mission) {
                     Please make sure that no two sUAS (small unmanned aircraft system) have the same Home Geolocation
                 </Alert>
             </Snackbar>
+
             <Box 
             sx={{
-                maxHeight: '60vh', 
+                maxHeight: '70vh', 
+                width: '90%',
+                padding: 4,
                 overflowY: 'auto',
                 '&::-webkit-scrollbar': {
                 display: 'none'  // This hides the scrollbar in Webkit browsers
@@ -277,10 +302,10 @@ export default function MissionConfiguration (mission) {
                 msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
             }}
             >
-                <Grid container  direction="row" style={{padding: '12px'}} >
+                <Grid container  direction="row" style={{padding: '12px', color: '#F5F5DC' }} >
                     <strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong>
                 </Grid>
-                <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px'}}>
+                <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px', color: '#F5F5DC' }}>
                     Number of sUAS &nbsp;&nbsp;
                     <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
                         {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
@@ -289,25 +314,42 @@ export default function MissionConfiguration (mission) {
                     </ButtonGroup>
                 </Grid>
 
-                    {droneArray.map((drone, index) => 
-                    (
-                        <Accordion key={index} classes={{ root: classes.transparentBackground }}>
-                            <AccordionSummary
-                            expandIcon={<ExpandMore />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                            sx={{ backgroundColor: '#cc621b' }}
-                            >
-                                <Typography variant="h5" className={classes.heading}>{drone.droneName}</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails 
-                            classes={{ root: classes.backdropFilter }}
-                            >
-                                <Typography>
-                                    <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                {droneArray.map((drone, index) => 
+                (
+                    <Accordion key={index} classes={{ root: classes.transparentBackground }}>
+                        <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                        sx={{ backgroundColor: `${drone.color}ef` }}
+                        >
+                            <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            }}>
+                                <Typography variant="h5" >
+                                    {drone.droneName}
                                 </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                                <img
+                                    src={drone.image}
+                                    alt="Draggable Icon"
+                                    draggable="true"
+                                    onDragStart={handleDragStart}
+                                    style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                                />
+                            </Box>
+                        </AccordionSummary>
+                        
+                        <AccordionDetails
+                        sx={{ backgroundColor: `${drone.color}51` }}
+                        >
+                            <Typography>
+                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                            </Typography>
+                        </AccordionDetails>
+                    </Accordion>
                 ))}
             </Box>
         </div>

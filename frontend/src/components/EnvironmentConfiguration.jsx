@@ -500,7 +500,7 @@ export default function EnvironmentConfiguration (env) {
     </Snackbar>
 
     <Grid container spacing={2} 
-        sx={{ width: '100%', paddingBottom: 5, paddingTop: 4, paddingLeft:2 }}>
+        sx={{ width: '100%', padding: 6 }}>
             <Grid item xs={3}>
                 <StyledTabs
                     orientation="vertical"

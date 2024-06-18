@@ -26,15 +26,15 @@ const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',
         padding: '5px'
-      },
+    },
     transparentBackground: {
         backgroundColor: 'transparent !important'
-      },
-      backdropFilter: {
+    },
+    backdropFilter: {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'sepia(100%)',
         '-webkitBackdropFilter': 'sepia(100%)',
-      }
+    }
 }));
 
 export default function MonitorControl (monJson) {
@@ -765,8 +765,8 @@ export default function MonitorControl (monJson) {
                             <TabPanel value="2">
                                 <Box sx={{ width: '100%', typography: 'body1' }}>
                                 <TabContext value={verticalValue}>
-                        <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
-                            <Tabs
+                            <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
+                            <StyledTabs
                                 orientation="vertical"
                                 value={verticalValue}
                                 onChange={handleVerticalChange}
@@ -777,7 +777,7 @@ export default function MonitorControl (monJson) {
                                 {singleMonitors.map(function(single, index) {
                                     return <StyledTab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems:"block", color:single.colorText}} wrapped/>
                                 })}
-                            </Tabs>
+                            </StyledTabs>
 
                             {singleMonitors.map(function(sing, index) {
                                 return(

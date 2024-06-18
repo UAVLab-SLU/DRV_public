@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
         '-webkitBackdropFilter': 'sepia(100%)',
         backdropFilter: 'sepia(100%)',
     }
-  }));
+}));
 
 export default function MissionConfiguration (mission) {
     const classes = useStyles();

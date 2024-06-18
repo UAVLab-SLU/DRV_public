@@ -6,11 +6,25 @@ import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
+import { makeStyles } from '@mui/styles';
+// import "../styles/MissionConfiguration.css";
+
+const useStyles = makeStyles((theme) => ({
+    transparentBackground: {
+        backgroundColor: 'transparent !important'
+    },
+    backdropFilter: {
+        backgroundColor: '#14151471',
+        '-webkitBackdropFilter': 'sepia(100%)',
+        backdropFilter: 'sepia(100%)',
+    }
+}));
 
 const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWindChange, handleFLuctuationChange,
     selectedWindType, fluctuationPercentage, windShears, addNewWindShear, 
     windShearData, setWindShearData, deleteWindShear}
 ) => {
+    const classes = useStyles();
     const WindDirection = [
         {value:'N', id:5},
         {value:'S', id:6},
@@ -37,9 +51,9 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
     }));
 
     return (
-        <Grid container spacing={5} direction="column" >
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+        <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }} >
+            <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter, zIndex: 2 }} >
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Wind Type</InputLabel>
                     </Grid>
@@ -65,10 +79,8 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </StyledSelect>
                     </Grid>
                 </Grid>
-            </Grid>
 
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Direction
@@ -97,7 +109,6 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </StyledSelect>
                     </Grid>
                 </Grid>
-            </Grid>
 
             {/* WIND ORIGIN DROP DOWN */}
             {/* <Grid item xs={3}> */} 
@@ -117,8 +128,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                 {/*</FormControl>*/}
             {/*</Grid>*/}
         
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Velocity (m/s)
@@ -146,11 +156,9 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </Tooltip>
                     </Grid>
                 </Grid>
-            </Grid>
 
             {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
-                <Grid item xs={12}>
-                    <Grid container alignItems="center" direction="row">
+                    <Grid item container alignItems="center" direction="row">
                         <Grid item xs={4}>
                             <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                                 Fluctuation %
@@ -178,14 +186,17 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                                 />
                             </Tooltip>
                         </Grid>
-                    </Grid>   
-                </Grid>
+                    </Grid>
             )}
+            </Grid>
 
             {(windShears.length<2 && selectedWindType === "Wind Shear") ? (
-            <Grid item xs={12}><IconButton onClick={addNewWindShear} color="warning">
+            <Grid item container xs={12} ><Grid xs={10} 
+            classes={{ root: classes.backdropFilter }}
+            // className="drone-accordion-details" 
+            sx={{border: '1px white solid', textAlign: 'center'}}><IconButton onClick={addNewWindShear} color="warning">
                 <AddIcon />
-            </IconButton> </Grid>) : null} 
+            </IconButton> </Grid></Grid>) : null} 
 
             {/* WIND SHEAR WINDOW */}
             {/* <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
@@ -281,8 +292,8 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
             
             {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((
             <React.Fragment key={index}>
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} >
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Direction
@@ -316,10 +327,8 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </StyledSelect>
                     </Grid>
                 </Grid>
-            </Grid>
             
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Wind Velocity (m/s)
@@ -348,10 +357,8 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </Tooltip>
                     </Grid>
                 </Grid>
-            </Grid>
                         
-            <Grid item xs={12}>
-                <Grid container alignItems="center" direction="row">
+                <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
                             Fluctuation %
@@ -382,13 +389,13 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
                         </Tooltip>
                     </Grid>
                 </Grid>
-            </Grid>
 
             <Grid item xs={12}>
             <IconButton onClick={() => deleteWindShear(index)}>
                     <DeleteOutline color="error"/>
                 </IconButton>
-            </Grid>      
+            </Grid> 
+            </Grid>     
             </React.Fragment> 
 
             // <Grid item xs={3} sx={{ marginTop: '10px' }}>

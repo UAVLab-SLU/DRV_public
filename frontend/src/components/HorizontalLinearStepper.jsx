@@ -178,11 +178,12 @@ export default function HorizontalLinearStepper(data) {
       id:2, 
       comp: <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
     },
-    {
+    /*
+    {/*
       name:'Test Configuration',
       id:3,
       comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
-    }
+    }*/
   ];
 
   const StyledTab = styled(Tab)(({ theme }) => ({
@@ -240,13 +241,13 @@ export default function HorizontalLinearStepper(data) {
           );
         })}
       </Stepper>     */}
-        
+
         <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
           <Box sx={{ width: '45%'}}>
             <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
               <StyledTab label="Environment" />
               <StyledTab label="Mission" />
-              <StyledTab label="Test" />
+             {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/} 
             </StyledTabs>
             <div>
               {activeStep === 0 && <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson} />}

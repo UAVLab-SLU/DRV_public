@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem, Switch, FormControlLabel } from '@mui/material';
+import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui/material';
 import Select from '@mui/material/Select';
 import { OutlinedInput } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,13 +41,12 @@ const WindDirection = [
 const WindType = [
     { value: "Constant Wind", id: 1 },
     { value: "Turbulent Wind", id: 2 },
-    { value: "Wind Shear", id: 3 },
 ];
 
 const WindSettings = ({
     envConf, handleWindTypeChange, handleDirection, handleWindChange, handleFLuctuationChange,
-    selectedWindType, fluctuationPercentage, windShears, addNewWindBlock,
-    windBlockData, setWindBlockData, deleteWindBlock
+    selectedWindType, fluctuationPercentage, windShears,
+    setWindBlockData, deleteWindBlock
 }) => {
     const classes = useStyles();
     const [isWindSelectionEnabled, setIsWindSelectionEnabled] = useState(false);
@@ -111,16 +110,20 @@ const WindSettings = ({
     );
 
     const handleAddWindBlock = () => {
-        setIsWindSelectionEnabled(true);
-        addNewWindBlock();
+        if (!isWindSelectionEnabled) {
+            setIsWindSelectionEnabled(true);
+            addNewWindBlock();
+        } else {
+            addNewWindBlock();
+        }
     };
 
-    addNewWindBlock = () => {
+    const addNewWindBlock = () => {
         const newWindBlock = {
             windType: selectedWindType,
             windDirection: envConf.Wind.Direction,
             windVelocity: envConf.Wind.Force,
-            fluctuationPercentage: fluctuationPercentage,
+            fluctuationPercentage: selectedWindType === "Turbulent Wind" ? fluctuationPercentage : 0,
         };
         setWindBlocks([...windBlocks, newWindBlock]);
     };
@@ -137,30 +140,8 @@ const WindSettings = ({
         setWindBlocks(updatedWindBlocks);
     };
 
-
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
-            <Grid item>
-                <FormControlLabel
-                    control={
-                        <Switch
-                            checked={isWindSelectionEnabled}
-                            onChange={(e) => setIsWindSelectionEnabled(e.target.checked)}
-                            color="primary"
-                            sx={{
-                                '& .MuiSwitch-track': {
-                                    backgroundColor: '#F5F5DC',
-                                },
-                                '& .MuiSwitch-thumb': {
-                                    color: '#FFFFFF',
-                                },
-                            }}
-                        />
-                    }
-                    label={<span style={{ color: '#FFFFFF' }}>Enable Wind Selection</span>}
-                />
-            </Grid>
-
             {!isWindSelectionEnabled && (
                 <Grid item container xs={12}>
                     <Grid xs={10}
@@ -175,20 +156,6 @@ const WindSettings = ({
 
             {isWindSelectionEnabled && (
                 <>
-                    <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter, zIndex: 2 }}>
-                        {renderSelectField("Wind Type", selectedWindType, handleWindTypeChange, WindType)}
-                        {renderSelectField("Wind Direction", envConf.Wind.Direction, handleDirection, WindDirection)}
-                        {renderTextField("Wind Velocity (m/s)", envConf.Wind.Force, handleWindChange, { min: 0 })}
-
-                        {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear") && (
-                            renderTextField("Fluctuation %", fluctuationPercentage, handleFLuctuationChange, {
-                                min: 0,
-                                max: 100,
-                                step: 0.1
-                            })
-                        )}
-                    </Grid>
-
                     {windBlocks.map((windBlock, index) => (
                         <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
                             {renderSelectField("Wind Type", windBlock.windType, (e) =>
@@ -197,8 +164,11 @@ const WindSettings = ({
                                 setWindBlockData(index, { windDirection: e.target.value }), WindDirection)}
                             {renderTextField("Wind Velocity (m/s)", windBlock.windVelocity, (e) =>
                                 setWindBlockData(index, { windVelocity: e.target.value }), { min: 0 })}
-                            {renderTextField("Fluctuation %", windBlock.fluctuationPercentage, (e) =>
-                                setWindBlockData(index, { fluctuationPercentage: e.target.value }), { min: 0, max: 100, step: 0.1 })}
+
+                            {(windBlock.windType === "Turbulent Wind") && (
+                                renderTextField("Fluctuation %", windBlock.fluctuationPercentage, (e) =>
+                                    setWindBlockData(index, { fluctuationPercentage: e.target.value }), { min: 0, max: 100, step: 0.1 })
+                            )}
 
                             <Grid item xs={12}>
                                 <IconButton onClick={() => deleteWindBlock(index)}>
@@ -212,7 +182,7 @@ const WindSettings = ({
                         <Grid xs={10}
                             classes={{ root: classes.backdropFilter }}
                             sx={{ border: '1px white solid', textAlign: 'center' }}>
-                            <IconButton onClick={addNewWindBlock} color="warning">
+                            <IconButton onClick={handleAddWindBlock} color="warning">
                                 <AddIcon />
                             </IconButton>
                         </Grid>
@@ -232,8 +202,6 @@ WindSettings.propTypes = {
     selectedWindType: PropTypes.string.isRequired,
     fluctuationPercentage: PropTypes.number.isRequired,
     windShears: PropTypes.array.isRequired,
-    addNewWindBlock: PropTypes.func.isRequired,
-    windBlockData: PropTypes.object.isRequired,
     setWindBlockData: PropTypes.func.isRequired,
     deleteWindBlock: PropTypes.func.isRequired
 };

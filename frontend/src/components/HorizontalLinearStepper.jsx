@@ -240,13 +240,13 @@ export default function HorizontalLinearStepper(data) {
           );
         })}
       </Stepper>     */}
-        
+
         <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
           <Box sx={{ width: '45%' }}>
             <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
               <StyledTab label="Environment" />
               <StyledTab label="Mission" />
-              <StyledTab label="Test" />
+             {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/} 
             </StyledTabs>
             <div>
               {stepsComponent[activeStep].comp}

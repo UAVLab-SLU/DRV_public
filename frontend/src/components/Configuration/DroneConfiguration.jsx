@@ -228,18 +228,22 @@ export default function DroneConfiguration (droneData)  {
 
     const StyledSelect = styled(Select)(({ theme }) => ({
         backgroundColor: '#F5F5DC',
-            '& .MuiInputBase-input': {
-                padding: '6px 8px',
-                height: '1em',
-            }, 
-        margin: 0
+        '& .MuiInputBase-input': {
+            padding: '6px 8px',
+            height: '1em',
+            fontSize: '1.2rem', fontFamily: 'Roboto',
+        },
+        margin: 0,
     }));
 
-    // dummy image 
-    const handleDragStart = (event) => {
-        const imgSrc = event.target.src;
-        event.dataTransfer.setData('text/plain', imgSrc);
-    };
+    const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
+        marginRight: 2,
+        marginLeft: 20,
+        flexShrink: 0,
+        color: '#F5F5DC',
+        width: '200px',
+        fontSize: '1.2rem', fontFamily: 'Roboto, sans-serif',
+    }));
 
     return (
         <div>
@@ -255,26 +259,14 @@ export default function DroneConfiguration (droneData)  {
             </Snackbar>
             
             <Container maxWidth="md">
-                <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Drone Settings
-                    <img
-                        src="/images/drone-blue.png"
-                        alt="Draggable Icon"
-                        draggable="true"
-                        onDragStart={handleDragStart}
-                        style={{ width: 40, cursor: 'grab' }}
-                    />
-                    </Typography>  
+                <Grid container spacing={1}>
+                    <Grid item xs={12} sx={{mt: 1}}>
+                        <Typography variant="h5" sx={{ color: '#F5F5DC', pb: 1, }}> Drone Settings </Typography>  
                     </Grid>
         
                     {/* Drone Name Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
-                            <InputLabel id="name" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                                Name
-                            </InputLabel>
+                            <StyledInputLabel id="name">Name</StyledInputLabel>
                         </Grid>
                         <Grid item xs={6}>
                             <TextField
@@ -282,7 +274,7 @@ export default function DroneConfiguration (droneData)  {
                                     backgroundColor: '#F5F5DC',
                                     '& .MuiOutlinedInput-root': {
                                         '& .MuiInputBase-input': {
-                                            padding: '6px 8px',
+                                            padding: '6px 8px', fontSize: '1.2rem',
                                         },
                                     },
                                 }}
@@ -293,12 +285,23 @@ export default function DroneConfiguration (droneData)  {
                                 fullWidth disabled
                             />
                         </Grid>
-                    {/* </CustomGrid> */}
+
+                        {/* <Grid item xs={3} alignItems="flex-end">
+                            <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
+                                <InputLabel id="flight-path">Mission</InputLabel>
+                                <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
+                                    {flightPaths.map(function(val) {
+                                        return(<MenuItem value={val.value} key={val.id}>
+                                            <em>{val.label}</em>
+                                        </MenuItem>)
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </Grid> */}
 
                     {/* Drone Type Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
-                            <InputLabel id="drone-type" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Drone Type</InputLabel>
+                            <StyledInputLabel id="drone-type">Drone Type</StyledInputLabel>
                         </Grid>
                         <Grid item xs={6}>
                             <StyledSelect
@@ -308,7 +311,10 @@ export default function DroneConfiguration (droneData)  {
                                     sx: {
                                         '& .MuiPaper-root': {
                                             backgroundColor: '#F5F5DC',
-                                        }
+                                        },
+                                        '& .MuiMenuItem-root': {
+                                            fontSize: '1.2rem', fontFamily: 'Roboto',
+                                        },
                                     }
                                 }}
                                 onChange={handleDroneTypeChange}
@@ -321,14 +327,10 @@ export default function DroneConfiguration (droneData)  {
                                 ))}
                             </StyledSelect>
                         </Grid>
-                    {/* </CustomGrid> */}
 
                     {/* Drone Model Field */}
-                    {/* <CustomGrid container item xs={12} direction="row"> */}
                         <Grid item xs={4}>
-                            <InputLabel id="drone-model" sx={{ marginRight: 2, marginLeft: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>
-                                Drone Model
-                            </InputLabel>
+                            <StyledInputLabel id="drone-model">Drone Model</StyledInputLabel>
                         </Grid>
                         <Grid item xs={6}>
                             <StyledSelect
@@ -338,7 +340,10 @@ export default function DroneConfiguration (droneData)  {
                                 sx: {
                                     '& .MuiPaper-root': {
                                         backgroundColor: '#F5F5DC',
-                                    }
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '1.2rem', fontFamily: 'Roboto',
+                                    },
                                 }
                             }}
                             onChange={handleDroneModelChange}
@@ -351,21 +356,15 @@ export default function DroneConfiguration (droneData)  {
                                 ))}
                             </StyledSelect>
                         </Grid>
-                    {/* </CustomGrid> */}
 
-                    <Grid item xs={12}>
-                        <Typography variant="h6" sx={{ mb: 2, color: '#F5F5DC'}}>
-                            Home Location
-                        </Typography>
+                    <Grid item xs={12} sx={{mt: 3}}>
+                        <Typography variant="h5" sx={{ pb: 1, color: '#F5F5DC' }}> Home Location </Typography>
                     </Grid>
 
                     {selectedLoc == 'GeoLocation' ?
                     <React.Fragment>
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
-                                    <InputLabel id="X-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                                        Latitude
-                                    </InputLabel>
+                                <StyledInputLabel id="X-label">Latitude</StyledInputLabel>
                             </Grid>
                             <Grid item xs={6}>
                                 <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
@@ -374,7 +373,7 @@ export default function DroneConfiguration (droneData)  {
                                             backgroundColor: '#F5F5DC',
                                             '& .MuiOutlinedInput-root': {
                                                 '& .MuiInputBase-input': {
-                                                    padding: '6px 8px',
+                                                    padding: '6px 8px', fontSize: '1.1rem',
                                                 },
                                             },
                                         }}
@@ -388,13 +387,9 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
                         
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
-                                <InputLabel id="Y-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                                    Longitude
-                                </InputLabel>
+                                <StyledInputLabel id="Y-label">Longitude</StyledInputLabel>
                             </Grid>
                             <Grid item xs={6}>
                                 <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
@@ -403,7 +398,7 @@ export default function DroneConfiguration (droneData)  {
                                             backgroundColor: '#F5F5DC',
                                             '& .MuiOutlinedInput-root': {
                                                 '& .MuiInputBase-input': {
-                                                    padding: '6px 8px',
+                                                    padding: '6px 8px', fontSize: '1.1rem',
                                                 },
                                             },
                                         }}
@@ -417,13 +412,9 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
 
-                        {/* <CustomGrid container item xs={12} direction="row"> */}
                             <Grid item xs={4}>
-                                <InputLabel id="Z-label" sx={{ marginRight: 2, marginLeft: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                                    Height
-                                </InputLabel>
+                                <StyledInputLabel id="Z-label">Height</StyledInputLabel>
                             </Grid>
                             <Grid item xs={6}>
                                 <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
@@ -432,7 +423,7 @@ export default function DroneConfiguration (droneData)  {
                                             backgroundColor: '#F5F5DC',
                                             '& .MuiOutlinedInput-root': {
                                                 '& .MuiInputBase-input': {
-                                                    padding: '6px 8px',
+                                                    padding: '6px 8px', fontSize: '1.1rem',
                                                 },
                                             },
                                         }}
@@ -446,7 +437,6 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                        {/* </CustomGrid> */}
                     </React.Fragment>: 
                     <React.Fragment>
                         <Grid item xs={3}>
@@ -461,7 +451,7 @@ export default function DroneConfiguration (droneData)  {
                     </React.Fragment>
                     } 
                 </Grid>
-                <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/>
+                {/* <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/> */}
                 <Grid container direction="row" justifyContent="flex-end" alignItems="center" style={{paddingTop:'15px', marginTop:'15px'}}>
                     {/* <Button variant="outlined" onClick={sendJson}>Ok</Button> &nbsp;&nbsp;&nbsp; */}
                     {/* <Button variant="contained">OK</Button> */}

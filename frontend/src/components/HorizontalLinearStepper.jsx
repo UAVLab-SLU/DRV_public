@@ -242,16 +242,14 @@ export default function HorizontalLinearStepper(data) {
       </Stepper>     */}
         
         <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
-          <Box sx={{ width: '45%'}}>
+          <Box sx={{ width: '45%' }}>
             <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
               <StyledTab label="Environment" />
               <StyledTab label="Mission" />
               <StyledTab label="Test" />
             </StyledTabs>
             <div>
-              {activeStep === 0 && <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson} />}
-              {activeStep === 1 && <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} />}
-              {activeStep === 2 && <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} />}
+              {stepsComponent[activeStep].comp}
             </div>
           </Box>
           <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>

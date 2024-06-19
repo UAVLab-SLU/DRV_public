@@ -7,7 +7,6 @@ import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@mui/styles';
-// import "../styles/MissionConfiguration.css";
 
 const useStyles = makeStyles((theme) => ({
     transparentBackground: {
@@ -52,7 +51,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
 
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }} >
-            <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter, zIndex: 2 }} >
+            <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} >
                 <Grid item container alignItems="center" direction="row">
                     <Grid item xs={4}>
                         <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Wind Type</InputLabel>
@@ -192,8 +191,7 @@ const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWin
 
             {(windShears.length<2 && selectedWindType === "Wind Shear") ? (
             <Grid item container xs={12} ><Grid xs={10} 
-            classes={{ root: classes.backdropFilter }}
-            // className="drone-accordion-details" 
+            classes={{ root: classes.backdropFilter }} 
             sx={{border: '1px white solid', textAlign: 'center'}}><IconButton onClick={addNewWindShear} color="warning">
                 <AddIcon />
             </IconButton> </Grid></Grid>) : null} 

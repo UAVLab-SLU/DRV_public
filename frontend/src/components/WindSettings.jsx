@@ -49,7 +49,6 @@ const WindSettings = ({
     setWindBlockData, deleteWindBlock
 }) => {
     const classes = useStyles();
-    const [isWindSelectionEnabled, setIsWindSelectionEnabled] = useState(false);
     const [windBlocks, setWindBlocks] = useState([]);
 
     const renderSelectField = (label, value, onChange, options) => (
@@ -109,15 +108,6 @@ const WindSettings = ({
         </Grid>
     );
 
-    const handleAddWindBlock = () => {
-        if (!isWindSelectionEnabled) {
-            setIsWindSelectionEnabled(true);
-            addNewWindBlock();
-        } else {
-            addNewWindBlock();
-        }
-    };
-
     const addNewWindBlock = () => {
         const newWindBlock = {
             windType: selectedWindType,
@@ -142,53 +132,37 @@ const WindSettings = ({
 
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
-            {!isWindSelectionEnabled && (
-                <Grid item container xs={12}>
-                    <Grid xs={10}
-                        classes={{ root: classes.backdropFilter }}
-                        sx={{ border: '1px white solid', textAlign: 'center' }}>
-                        <IconButton onClick={handleAddWindBlock} color="warning">
-                            <AddIcon />
+            {windBlocks.map((windBlock, index) => (
+                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
+                    {renderSelectField("Wind Type", windBlock.windType, (e) =>
+                        setWindBlockData(index, { windType: e.target.value }), WindType)}
+                    {renderSelectField("Wind Direction", windBlock.windDirection, (e) =>
+                        setWindBlockData(index, { windDirection: e.target.value }), WindDirection)}
+                    {renderTextField("Wind Velocity (m/s)", windBlock.windVelocity, (e) =>
+                        setWindBlockData(index, { windVelocity: e.target.value }), { min: 0 })}
+
+                    {(windBlock.windType === "Turbulent Wind") && (
+                        renderTextField("Fluctuation %", windBlock.fluctuationPercentage, (e) =>
+                            setWindBlockData(index, { fluctuationPercentage: e.target.value }), { min: 0, max: 100, step: 0.1 })
+                    )}
+
+                    <Grid item xs={12}>
+                        <IconButton onClick={() => deleteWindBlock(index)}>
+                            <DeleteOutline color="error" />
                         </IconButton>
                     </Grid>
                 </Grid>
-            )}
+            ))}
 
-            {isWindSelectionEnabled && (
-                <>
-                    {windBlocks.map((windBlock, index) => (
-                        <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
-                            {renderSelectField("Wind Type", windBlock.windType, (e) =>
-                                setWindBlockData(index, { windType: e.target.value }), WindType)}
-                            {renderSelectField("Wind Direction", windBlock.windDirection, (e) =>
-                                setWindBlockData(index, { windDirection: e.target.value }), WindDirection)}
-                            {renderTextField("Wind Velocity (m/s)", windBlock.windVelocity, (e) =>
-                                setWindBlockData(index, { windVelocity: e.target.value }), { min: 0 })}
-
-                            {(windBlock.windType === "Turbulent Wind") && (
-                                renderTextField("Fluctuation %", windBlock.fluctuationPercentage, (e) =>
-                                    setWindBlockData(index, { fluctuationPercentage: e.target.value }), { min: 0, max: 100, step: 0.1 })
-                            )}
-
-                            <Grid item xs={12}>
-                                <IconButton onClick={() => deleteWindBlock(index)}>
-                                    <DeleteOutline color="error" />
-                                </IconButton>
-                            </Grid>
-                        </Grid>
-                    ))}
-
-                    <Grid item container xs={12}>
-                        <Grid xs={10}
-                            classes={{ root: classes.backdropFilter }}
-                            sx={{ border: '1px white solid', textAlign: 'center' }}>
-                            <IconButton onClick={handleAddWindBlock} color="warning">
-                                <AddIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-                </>
-            )}
+            <Grid item container xs={12}>
+                <Grid xs={10}
+                    classes={{ root: classes.backdropFilter }}
+                    sx={{ border: '1px white solid', textAlign: 'center' }}>
+                    <IconButton onClick={addNewWindBlock} color="warning">
+                        <AddIcon />
+                    </IconButton>
+                </Grid>
+            </Grid>
         </Grid>
     );
 };

@@ -23,8 +23,8 @@ DroneReqValidator has 3 main components:
 3. React frontend
 
 To use the DroneReqValidator, follow the steps based on which OS you are working with:
-#### [Windows](windowsinstallation.md)
-#### [macOS](macinstallation.md)
+#### [Windows](docs/windowsinstallation.md)
+#### [macOS](docs/macinstallation.md)
 
 ## Contributing
 

@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
+import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -49,7 +50,10 @@ const WindSettings = ({
     setWindBlockData, deleteWindBlock
 }) => {
     const classes = useStyles();
-    const [windBlocks, setWindBlocks] = useState([]);
+    const [windBlocks, setWindBlocks] = useState(() => {
+        const storedWindBlocks = localStorage.getItem('windBlocks');
+        return storedWindBlocks ? JSON.parse(storedWindBlocks) : [];
+    });
 
     const renderSelectField = (label, value, onChange, options) => (
         <Grid item container alignItems="center" direction="row">
@@ -115,19 +119,22 @@ const WindSettings = ({
             windVelocity: envConf.Wind.Force,
             fluctuationPercentage: selectedWindType === "Turbulent Wind" ? fluctuationPercentage : 0,
         };
-        setWindBlocks([...windBlocks, newWindBlock]);
+        const updatedWindBlocks = [...windBlocks, newWindBlock];
+        setWindBlocks(updatedWindBlocks);
+        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
     };
 
     setWindBlockData = (index, updatedData) => {
         const updatedWindBlocks = [...windBlocks];
         updatedWindBlocks[index] = { ...updatedWindBlocks[index], ...updatedData };
         setWindBlocks(updatedWindBlocks);
+        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
     };
 
     deleteWindBlock = (index) => {
-        const updatedWindBlocks = [...windBlocks];
-        updatedWindBlocks.splice(index, 1);
+        const updatedWindBlocks = windBlocks.filter((_, i) => i !== index);
         setWindBlocks(updatedWindBlocks);
+        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
     };
 
     return (
@@ -159,7 +166,7 @@ const WindSettings = ({
                     classes={{ root: classes.backdropFilter }}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
                     <IconButton onClick={addNewWindBlock} color="warning">
-                        <AddIcon />
+                        <AddIcon /> Add Wind Source
                     </IconButton>
                 </Grid>
             </Grid>

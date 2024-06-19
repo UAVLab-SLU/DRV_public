@@ -34,16 +34,16 @@ const useStyles = makeStyles((theme) => ({
 export default function MissionConfiguration (mission) {
     const classes = useStyles();
     const droneImages = [
-        { src: '/images/drone-blue.png', color: '#FFCCCC' },
-        { src: '/images/drone-blue.png', color: '#CCFFCC' },
+        { src: '/images/drone-red.png', color: '#FFCCCC' },
+        { src: '/images/drone-green.png', color: '#CCFFCC' },
         { src: '/images/drone-blue.png', color: '#CCCCFF' },
-        { src: '/images/drone-blue.png', color: '#FFFFCC' },
-        { src: '/images/drone-blue.png', color: '#FFCCFF' },
-        { src: '/images/drone-blue.png', color: '#CCFFFF' },
-        { src: '/images/drone-blue.png', color: '#F0E68C' },
-        { src: '/images/drone-blue.png', color: '#E6E6FA' },
-        { src: '/images/drone-blue.png', color: '#FFDAB9' },
-        { src: '/images/drone-blue.png', color: '#FFFACD' }
+        { src: '/images/drone-yellow.png', color: '#FFFFCC' },
+        { src: '/images/drone-pink.png', color: '#FFCCFF' },
+        { src: '/images/drone-indigo.png', color: '#CCFFFF' },
+        { src: '/images/drone-gold.png', color: '#F0E68C' },
+        { src: '/images/drone-darkblue.png', color: '#E6E6FA' },
+        { src: '/images/drone-orange.png', color: '#FFDAB9' },
+        { src: '/images/drone-purple.png', color: '#DABDF9' }
     ];
     
     const [droneCount, setDroneCount] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones.length : 1);

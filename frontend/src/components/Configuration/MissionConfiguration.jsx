@@ -291,10 +291,8 @@ export default function MissionConfiguration (mission) {
 
             <Box 
             sx={{
-                maxHeight: '70vh', 
-                width: '90%',
-                padding: 4,
-                overflowY: 'auto',
+                maxHeight: '66vh', overflowY: 'auto',
+                width: '90%', m: 4,
                 '&::-webkit-scrollbar': {
                 display: 'none'  // This hides the scrollbar in Webkit browsers
                 },
@@ -305,7 +303,7 @@ export default function MissionConfiguration (mission) {
                 <Grid container  direction="row" style={{padding: '12px', color: '#F5F5DC' }} >
                     <strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong>
                 </Grid>
-                <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px', color: '#F5F5DC' }}>
+                <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '10px 0', fontSize:'18px', color: '#F5F5DC' }}>
                     Number of sUAS &nbsp;&nbsp;
                     <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
                         {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
@@ -321,7 +319,7 @@ export default function MissionConfiguration (mission) {
                         expandIcon={<ExpandMore />}
                         aria-controls="panel1a-content"
                         id="panel1a-header"
-                        sx={{ backgroundColor: `${drone.color}ef` }}
+                        sx={{ backgroundColor: `${drone.color}cf` }}
                         >
                             <Box sx={{
                             display: 'flex',
@@ -343,7 +341,7 @@ export default function MissionConfiguration (mission) {
                         </AccordionSummary>
                         
                         <AccordionDetails
-                        sx={{ backgroundColor: `${drone.color}51` }}
+                        sx={{ backgroundColor: `${drone.color}31` }}
                         >
                             <Typography>
                                 <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>

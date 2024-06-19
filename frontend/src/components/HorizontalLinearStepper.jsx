@@ -178,12 +178,11 @@ export default function HorizontalLinearStepper(data) {
       id:2, 
       comp: <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
     },
-    /*
-    {/*
+    {
       name:'Test Configuration',
       id:3,
       comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
-    }*/
+    }
   ];
 
   const StyledTab = styled(Tab)(({ theme }) => ({

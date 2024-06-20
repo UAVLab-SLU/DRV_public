@@ -42,6 +42,16 @@ export default function EnvironmentConfiguration (env) {
         backendStatus: 'idle'
     });  
 
+    const [windBlocks, setWindBlocks] = useState([]);
+
+    const updateWindBlocks = (updatedWindBlocks) => {
+        setWindBlocks(updatedWindBlocks);
+        setEnvConf((prevEnvConf) => ({
+          ...prevEnvConf,
+          Wind: updatedWindBlocks,
+        }));
+      };
+      
     const [currentPosition, setCurrentPosition] = React.useState({
         lat: 41.980381,
         lng: -87.934524
@@ -80,12 +90,7 @@ export default function EnvironmentConfiguration (env) {
         timeOfDayFuzzy: false,
         positionFuzzy: false,
         windFuzzy: false,
-        Wind: {
-            Direction: "NE",
-            Velocity: 1,
-            //Type: "None",
-            //WindOrigin: "None",
-        },
+        Wind: [],
         Origin: {
             Latitude: 41.980381,
             Longitude: -87.934524,
@@ -336,106 +341,6 @@ export default function EnvironmentConfiguration (env) {
 //   }
 
   //WIND SHEAR WINDOW FUNCTIONS
-  const [windShears, setwindShears] = React.useState([]);
-
-  const addWindShear = (direction, velocity, fluctuation) => {
-    const newWindShear = {
-      windDirection: direction,
-      windVelocity: velocity,
-      fluctuationPercentage: fluctuation,
-    };
-    
-    // Update the windShears array with the new shear wind object
-    setwindShears([...windShears, newWindShear]);
-  };
-  const deleteWindShear = (index) => {
-    const updatedWindShears = [...windShears];
-    updatedWindShears.splice(index, 1);
-    setwindShears(updatedWindShears);
-  };
-
-  const [isAddWindShearOpen, setIsAddWindShearOpen] = React.useState(false);
-
-  // Temporary data saved in the window
-  const [windShearData, setWindShearData] = React.useState({
-    windDirection: "NE",
-    windVelocity: 0,
-    fluctuationPercentage: 0,
-  });
-
-  // Function to open the wind shear Window
-  const openAddWindShearWindow = () => {
-    setIsAddWindShearOpen(true);
-  };
-
-  // Function to close the wind shear Window
-  const closeAddWindShearWindow = () => {
-    setIsAddWindShearOpen(false);
-    setWindShearData({
-        windDirection: "",
-        windVelocity: 0,
-        fluctuationPercentage: 0,
-    });
-  };
-
-  const handleShearWindDirection = (e, id) => {
-    console.log(id)
-        const newArry = windShears.map((shear, index) => {
-        
-            console.log('direction-----', shear)
-            if(id == index) {
-                return {
-                    ...shear,
-                    windDirection: e
-                }
-            } else {
-                return shear
-            }
-        })
-
-        setwindShears(newArry)
-    }
-
-    const handleShearWindChange = (e, id) => {
-        const newArry = windShears.map((shear, index) => {
-            if(id == index) {
-                return {
-                    ...shear,
-                    windVelocity: e
-                }
-            } else {
-                return shear
-            }
-        })
-
-        setwindShears(newArry)
-    }
-
-    const handleShearfluctuationPercentageChange = (e, id) => {
-        const newArry = windShears.map((shear, index) => {
-            if(id == index) {
-                return {
-                    ...shear,
-                    fluctuationPercentage: e
-                }
-            } else {
-                return shear
-            }
-        })
-
-        setwindShears(newArry)
-    }
-
-    // Function to add a new wind shear entry for window
-    const addNewWindShear = () => {
-        const newWindShearEntry = { 
-            windDirection: "",
-            windVelocity: 0,
-            fluctuationPercentage: 0,
-        };
-
-        setwindShears([...windShears, newWindShearEntry]);
-    };
 
     const [snackBarState, setSnackBarState] = React.useState({
         open: false,
@@ -500,7 +405,7 @@ export default function EnvironmentConfiguration (env) {
     </Snackbar>
 
     <Grid container spacing={2} 
-        sx={{ width: '100%', padding: 6 }}>
+        sx={{ width: '100%', paddingBottom: 5, paddingTop: 4, paddingLeft:2 }}>
             <Grid item xs={3}>
                 <StyledTabs
                     orientation="vertical"
@@ -526,21 +431,19 @@ export default function EnvironmentConfiguration (env) {
                 msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
               }}
             >
-                {selectedTab === 1 && (
-                    <WindSettings
-                        envConf={envConf}
-                        handleWindTypeChange={handleWindTypeChange}
-                        handleDirection={handleDirection}
-                        handleWindChange={handleWindChange}
-                        handleFLuctuationChange={handleFLuctuationChange}
-                        selectedWindType={selectedWindType}
-                        fluctuationPercentage={fluctuationPercentage}
-                        windShears={windShears}
-                        addNewWindShear={addNewWindShear}
-                        windShearData={windShearData}
-                        setWindShearData={setWindShearData}
-                        deleteWindShear={deleteWindShear}
-                    />
+            {selectedTab === 1 && (
+                <WindSettings
+                    envConf={envConf}
+                    handleWindTypeChange={handleWindTypeChange}
+                    handleDirection={handleDirection}
+                    handleWindChange={handleWindChange}
+                    handleFLuctuationChange={handleFLuctuationChange}
+                    selectedWindType={selectedWindType}
+                    fluctuationPercentage={fluctuationPercentage}
+                    windBlocks={envConf.Wind}
+                    updateWindBlocks={updateWindBlocks}
+                />
+
                 )}
 
                 {selectedTab === 0 && (

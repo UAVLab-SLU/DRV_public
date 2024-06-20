@@ -40,13 +40,17 @@ const droneModels = [
 //{/*            
 const droneModels = {
     FixedWing: [
-        {value: 'SenseflyeBeeX', label: 'Sensefly eBee X'},
-        {value: 'TrinityF90', label: 'Trinity F90'}
+        {value: 'SenseflyeBeeX', label: 'Sensefly eBee X', src: '/images/SenseflyeBeeX.png'},
+        {value: 'TrinityF90', label: 'Trinity F90', src: '/images/TrinityF90.png'}
     ],
     MultiRotor: [
-        {value: 'ParrotANAFI', label: 'Parrot ANAFI'},
-        {value: 'DJI', label: 'DJI'},
-        {value: 'StreamLineDesignX189', label: 'StreamLineDesign X189'}
+        {value: 'ParrotANAFI', label: 'Parrot ANAFI', src: '/images/Parrot-ANAFI.png'},
+        {value: 'DJI', label: 'DJI', src: '/images/DJI.png'},
+        {value: 'VOXLm500', label: 'VOXL m500', src: '/images/VOXLm500.png'},
+        {value: 'AureliaX6Pro', label: 'Aurelia X6 Pro', src: '/images/Aurelia-X6-Pro.png'}, //does not have a see-through BG
+        {value: 'IF1200', label: 'IF 1200', src: '/images/IF1200.png'},
+        {value: 'Craziefly2.1', label: 'Craziefly 2.1', src: '/images/Craziefly2.1.png'},
+        {/*value: 'StreamLineDesignX189', label: 'StreamLineDesign X189', src: null*/} //cannot find an image and is not in simulator
     ]
 }
 
@@ -356,6 +360,18 @@ export default function DroneConfiguration (droneData)  {
                                 ))}
                             </StyledSelect>
                         </Grid>
+
+                        {/* Drone Image Field */}
+                        <Grid item xs={12}>
+                            {selectedDroneType && (
+                                <Box mt={2}>
+                                    <img src={droneModels[selectedDroneType].find((m) => m.value === selectedModel)?.src}
+                                    alt=""
+                                    style={{maxWidth:'100%', marginTop: '10px'}}
+                                    />
+                                </Box>
+                            )}
+                        </Grid>                        
 
                     <Grid item xs={12} sx={{mt: 3}}>
                         <Typography variant="h5" sx={{ pb: 1, color: '#F5F5DC' }}> Home Location </Typography>

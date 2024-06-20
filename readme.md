@@ -30,6 +30,27 @@ To use the DroneReqValidator, follow the steps based on which OS you are working
 #### [Windows](docs/windowsinstallation.md)
 #### [macOS](docs/macinstallation.md)
 
+## Citation
+
+If you use this project in your research, please cite our paper:
+1. **DroneReqValidator: Facilitating High Fidelity Simulation Testing for Uncrewed Aerial Systems Developers** 
+```bibtex
+@inproceedings{zhang2023dronereqvalidator, title={DroneReqValidator: Facilitating High Fidelity Simulation Testing for Uncrewed Aerial Systems Developers}, author={Zhang, Bohan and Shivalingaiah, Yashaswini and Agrawal, Ankit}, booktitle={2023 38th IEEE/ACM International Conference on Automated Software Engineering (ASE)}, pages={2082--2085}, year={2023}, organization={IEEE} }
+```
+
+2. **A Requirements-Driven Platform for Validating Field Operations of Small Uncrewed Aerial Vehicles** 
+
+```bibtex
+@inproceedings{agrawal2023requirements,
+          title={A Requirements-Driven Platform for Validating Field Operations of Small Uncrewed Aerial Vehicles},
+          author={Agrawal, Ankit and Zhang, Bohan and Shivalingaiah, Yashaswini and Vierhauser, Michael and Cleland-Huang, Jane},
+          booktitle={2023 IEEE 31st International Requirements Engineering Conference (RE)},
+          pages={29--40},
+          year={2023},
+          organization={IEEE}
+        }
+```
+
 ## Contributing
 
 We welcome contributions to this project. To contribute, please follow these steps:

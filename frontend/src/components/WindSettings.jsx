@@ -1,6 +1,6 @@
-import React from 'react';
-import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem, Button } from '@mui/material';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import React, { useState } from 'react';
+import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui/material';
+import Select from '@mui/material/Select';
 import { OutlinedInput } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
@@ -19,390 +19,167 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const WindSettings = ({envConf, handleWindTypeChange, handleDirection, handleWindChange, handleFLuctuationChange,
-    selectedWindType, fluctuationPercentage, windShears, addNewWindShear, 
-    windShearData, setWindShearData, deleteWindShear}
-) => {
+const StyledSelect = styled(Select)(({ theme }) => ({
+    backgroundColor: '#F5F5DC',
+    '& .MuiInputBase-input': {
+        padding: '6px 8px',
+        height: '1em',
+    }
+}));
+
+const WindDirection = [
+    { value: 'N', id: 5 },
+    { value: 'S', id: 6 },
+    { value: 'E', id: 7 },
+    { value: 'W', id: 8 },
+    { value: 'NE', id: 1 },
+    { value: 'SE', id: 2 },
+    { value: 'SW', id: 3 },
+    { value: 'NW', id: 4 }
+];
+
+const WindType = [
+    { value: "Constant Wind", id: 1 },
+    { value: "Turbulent Wind", id: 2 },
+];
+
+const WindSettings = ({
+    envConf,
+    handleWindTypeChange,
+    handleDirection,
+    handleWindChange,
+    handleFLuctuationChange,
+    selectedWindType,
+    fluctuationPercentage,
+    windBlocks,
+    updateWindBlocks,
+}) => {
     const classes = useStyles();
-    const WindDirection = [
-        {value:'N', id:5},
-        {value:'S', id:6},
-        {value:'E', id:7},
-        {value:'W', id:8},
-        {value:'NE', id:1},
-        {value:'SE', id:2},
-        {value:'SW', id:3},
-        {value:'NW', id:4}
-    ];
 
-    const WindType = [
-        { value: "Constant Wind", id: 1 },
-        { value: "Turbulent Wind", id: 2 },
-        { value: "Wind Shear", id: 3 },
-    ]
+    const renderSelectField = (label, value, onChange, options) => (
+        <Grid item container alignItems="center" direction="row">
+            <Grid item xs={4}>
+                <InputLabel sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>{label}</InputLabel>
+            </Grid>
+            <Grid item xs={6}>
+                <StyledSelect
+                    value={value}
+                    input={<OutlinedInput />}
+                    MenuProps={{
+                        sx: {
+                            '& .MuiPaper-root': {
+                                backgroundColor: '#F5F5DC',
+                            }
+                        }
+                    }}
+                    onChange={onChange}
+                    fullWidth
+                >
+                    {options.map((val) => (
+                        <MenuItem value={val.value} key={val.id}>
+                            <em>{val.value}</em>
+                        </MenuItem>
+                    ))}
+                </StyledSelect>
+            </Grid>
+        </Grid>
+    );
 
-    const StyledSelect = styled(Select)(({ theme }) => ({
-        backgroundColor: '#F5F5DC',
-            '& .MuiInputBase-input': {
-                padding: '6px 8px',
-                height: '1em',
-            } 
-    }));
+    const renderTextField = (label, value, onChange, inputProps) => (
+        <Grid item container alignItems="center" direction="row">
+            <Grid item xs={4}>
+                <InputLabel sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>{label}</InputLabel>
+            </Grid>
+            <Grid item xs={6}>
+                <Tooltip title={`Enter ${label}`} placement='bottom'>
+                    <TextField
+                        sx={{
+                            backgroundColor: '#F5F5DC',
+                            '& .MuiOutlinedInput-root': {
+                                '& .MuiInputBase-input': {
+                                    padding: '6px 8px',
+                                },
+                            },
+                        }}
+                        variant="outlined"
+                        type="number"
+                        onChange={onChange}
+                        value={value}
+                        inputProps={inputProps}
+                        fullWidth
+                    />
+                </Tooltip>
+            </Grid>
+        </Grid>
+    );
+
+    const addNewWindBlock = () => {
+        const newWindBlock = {
+          windType: selectedWindType,
+          windDirection: envConf.Wind.Direction,
+          windVelocity: envConf.Wind.Force,
+          fluctuationPercentage: selectedWindType === 'Turbulent Wind' ? fluctuationPercentage : 0,
+        };
+        updateWindBlocks([...windBlocks, newWindBlock]);
+    };
+    
+    const setWindBlockData = (index, updatedData) => {
+        const updatedWindBlocks = [...windBlocks];
+        updatedWindBlocks[index] = { ...updatedWindBlocks[index], ...updatedData };
+        updateWindBlocks(updatedWindBlocks);
+    };
+    
+    const deleteWindBlock = (index) => {
+        const updatedWindBlocks = windBlocks.filter((_, i) => i !== index);
+        updateWindBlocks(updatedWindBlocks);
+    };
 
     return (
-        <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }} >
-            <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} >
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="WindType" sx={{ marginRight: 2, width: '200px', flexShrink: 0, color: '#F5F5DC' }}>Wind Type</InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <StyledSelect
-                            value={selectedWindType}
-                            input={<OutlinedInput/>}
-                            MenuProps= {{
-                                sx: {
-                                    '& .MuiPaper-root': {
-                                        backgroundColor: '#F5F5DC',
-                                    }
-                                }
-                            }}
-                            onChange={handleWindTypeChange}
-                            fullWidth
-                            >
-                            {WindType.map((val) => (
-                                <MenuItem value={val.value} key={val.id}>
-                                    <em>{val.value}</em>
-                                </MenuItem>
-                            ))}
-                        </StyledSelect>
+        <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
+            {windBlocks.map((windBlock, index) => (
+                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
+                    {renderSelectField("Wind Type", windBlock.windType, (e) =>
+                        setWindBlockData(index, { windType: e.target.value }), WindType)}
+                    {renderSelectField("Wind Direction", windBlock.windDirection, (e) =>
+                        setWindBlockData(index, { windDirection: e.target.value }), WindDirection)}
+                    {renderTextField("Wind Velocity (m/s)", windBlock.windVelocity, (e) =>
+                        setWindBlockData(index, { windVelocity: e.target.value }), { min: 0 })}
+
+                    {(windBlock.windType === "Turbulent Wind") && (
+                        renderTextField("Fluctuation %", windBlock.fluctuationPercentage, (e) =>
+                            setWindBlockData(index, { fluctuationPercentage: e.target.value }), { min: 0, max: 100, step: 0.1 })
+                    )}
+
+                    <Grid item xs={12}>
+                        <IconButton onClick={() => deleteWindBlock(index)}>
+                            <DeleteOutline color="error" />
+                        </IconButton>
                     </Grid>
                 </Grid>
+            ))}
 
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                            Wind Direction
-                        </InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <StyledSelect
-                            labelId="direction-label"
-                            input={<OutlinedInput/>}
-                            MenuProps= {{
-                                sx: {
-                                    '& .MuiPaper-root': {
-                                        backgroundColor: '#F5F5DC',
-                                    }
-                                }
-                            }}
-                            value={envConf.Wind.Direction}
-                            onChange={handleDirection}
-                            fullWidth
-                            >
-                            {WindDirection.map((val) => (
-                            <MenuItem value={val.value} key={val.id}>
-                                <em>{val.value}</em>
-                            </MenuItem>
-                            ))}
-                        </StyledSelect>
-                    </Grid>
+            <Grid item container xs={12}>
+                <Grid xs={10}
+                    classes={{ root: classes.backdropFilter }}
+                    sx={{ border: '1px white solid', textAlign: 'center' }}>
+                    <IconButton 
+                        onClick={addNewWindBlock} 
+                        color="warning"
+                        sx={{ 
+                            fontSize: '1.10rem', // Reduces font size 
+                            '& .MuiSvgIcon-root': { 
+                                fontSize: '1rem' // Reduces icon size
+                            },
+                            padding: '4px' // Reduces padding around the button
+                        }}
+                    >
+                        <AddIcon /> Add Wind Source
+                    </IconButton>
                 </Grid>
-
-            {/* WIND ORIGIN DROP DOWN */}
-            {/* <Grid item xs={3}> */} 
-                {/*<FormControl variant="standard" sx={{ minWidth: 150 }}>*/}
-                    {/*<InputLabel id="WindOrigin">Wind Origin</InputLabel>*/}
-                        {/*<Select*/}
-                        {/* label="Wind Origin"*/}
-                            {/*value={selectedWindOrigin}*/}
-                        {/* onChange={handleWindOriginChange}>*/}
-                        {/*{WindOrigin.map(function (val) {*/}
-                            {/*return (*/}
-                            {/* <MenuItem value={val.value} key={val.id}>*/}
-                            {/*     <em>{val.value}</em>*/}
-                            {/* </MenuItem>)*/}
-                            {/* })}*/}
-                {/* </Select>*/}
-                {/*</FormControl>*/}
-            {/*</Grid>*/}
-        
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                            Wind Velocity (m/s)
-                        </InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                            <TextField
-                                sx = {{
-                                    backgroundColor: '#F5F5DC',
-                                    '& .MuiOutlinedInput-root': {
-                                        '& .MuiInputBase-input': {
-                                            padding: '6px 8px',
-                                        },
-                                    },
-                                }}
-                                id="Force"
-                                variant="outlined"
-                                type="number"
-                                onChange={handleWindChange}
-                                value={envConf.Wind.Force}
-                                inputProps={{ min: 0 }}
-                                fullWidth
-                            />
-                        </Tooltip>
-                    </Grid>
-                </Grid>
-
-            {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
-                    <Grid item container alignItems="center" direction="row">
-                        <Grid item xs={4}>
-                            <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                                Fluctuation %
-                            </InputLabel>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Tooltip title="Enter Fluctuation %" placement='bottom'>
-                                <TextField id="Fluctuation %" fullWidth
-                                    variant="outlined" 
-                                    type="number"
-                                    sx = {{
-                                        backgroundColor: '#F5F5DC',
-                                        '& .MuiOutlinedInput-root': {
-                                            '& .MuiInputBase-input': {
-                                                padding: '6px 8px',
-                                            },
-                                        },
-                                    }}
-                                    onChange={handleFLuctuationChange} 
-                                    value={fluctuationPercentage} 
-                                    inputProps={{ min: 0, 
-                                        max: 100, 
-                                        step: 0.1 
-                                    }} 
-                                />
-                            </Tooltip>
-                        </Grid>
-                    </Grid>
-            )}
             </Grid>
-
-            {(windShears.length<2 && selectedWindType === "Wind Shear") ? (
-            <Grid item container xs={12} ><Grid xs={10} 
-            classes={{ root: classes.backdropFilter }} 
-            sx={{border: '1px white solid', textAlign: 'center'}}><IconButton onClick={addNewWindShear} color="warning">
-                <AddIcon />
-            </IconButton> </Grid></Grid>) : null} 
-
-            {/* WIND SHEAR WINDOW */}
-            {/* <Dialog open={isAddWindShearOpen} close = {closeAddWindShearWindow} disableBackdropClick={true} disableEscapeKeyDown={true}>
-                <DialogTitle>Enter Wind Shear Data</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={5} direction="row" >
-                        <Grid item xs={3}>
-                            <FormControl variant="standard" sx={{ minWidth: 130 }}>
-                                <InputLabel id="WindDirection">Wind Direction</InputLabel>
-                                    <Select
-                                        labelId="WindDirection"
-                                        label="Wind Direction"
-                                        value={windShearData.windDirection}
-                                        onChange={(e) =>
-                                        setWindShearData({
-                                            ...windShearData,
-                                            windDirection: e.target.value,
-                                            })}>
-                                        
-                                        {Direction.map(function (val) {
-                                            return (
-                                                <MenuItem value={val.value} key={val.id}>
-                                                {val.value}
-                                            </MenuItem>
-                                            );
-                                        })}
-                                    </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={3}>
-                        <TextField
-                            label="Wind Velocity (m/s)"
-                            type="number"
-                            value={windShearData.windVelocity}
-                            variant="standard"
-                            onChange={(e) =>
-                                setWindShearData({
-                                ...windShearData,
-                                windVelocity: e.target.value,
-                                })
-                            }
-                            inputProps = {{min:0}}
-                            fullWidth
-                            size="large" 
-                            style={{ width: '120%' }}/>
-                        </Grid>
-                        <Grid item xs={3}>
-                    
-                        <TextField
-                            label="Fluctuation %"
-                            type="number"
-                            variant="standard"
-                            value={windShearData.fluctuationPercentage}
-                                onChange={(e) =>
-                                setWindShearData({
-                                ...windShearData,
-                                fluctuationPercentage: e.target.value,
-                                })
-                            }
-                            fullWidth
-                            inputProps={{ min: 0, max: 100, step: 0.1 }}
-                            size="medium" 
-                            style={{ width: '120%' }}/>
-                        </Grid>
-                        <Grid item xs = {3}>
-                            <IconButton onClick={addNewWindShear} color="primary">
-                                <AddIcon />
-                            </IconButton>
-                        </Grid>
-
-                        {/* Display wind shear instances in the dialog */}
-                        {/* {windShears.map((shear, index) => ( 
-                                <Grid item xs={12} key={index}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <ul style={{ flex: '1', marginRight: '10px' }}>
-                                            <li>
-                                                Direction: {shear.windDirection}, Velocity: {shear.windVelocity}, Fluctuation %: {shear.fluctuationPercentage}
-                                            </li>
-                                        </ul>
-                                        <IconButton onClick={() => deleteWindShear(index)} color="blue">
-                                            <CloseIcon />
-                                        </IconButton>
-                                    </div>
-                                </Grid>
-                        ))}
-
-                        <Grid item xs = {3}>
-                            <Button onClick={closeAddWindShearWindow}>Save</Button>
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-            </Dialog> */}
-            
-            {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((
-            <React.Fragment key={index}>
-                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} >
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="direction-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                            Wind Direction
-                        </InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <StyledSelect fullWidth
-                            labelId="direction-label"
-                            input={<OutlinedInput/>}
-                            MenuProps= {{
-                                sx: {
-                                    '& .MuiPaper-root': {
-                                        backgroundColor: '#F5F5DC',
-                                    }
-                                }
-                            }}
-                            value={windShearData.windDirection}
-                            onChange={(e) =>
-                            setWindShearData({
-                                ...windShearData,
-                                windDirection: e.target.value,
-                                })}>
-                            
-                            {WindDirection.map(function (val) {
-                                return (
-                                    <MenuItem value={val.value} key={val.id}>
-                                    {val.value}
-                                </MenuItem>
-                                );
-                            })}
-                        </StyledSelect>
-                    </Grid>
-                </Grid>
-            
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="velocity-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                            Wind Velocity (m/s)
-                        </InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                            <TextField id="Force" fullWidth
-                                variant="outlined" type="number" 
-                                value={windShearData.windVelocity}
-                                sx = {{
-                                    backgroundColor: '#F5F5DC',
-                                    '& .MuiOutlinedInput-root': {
-                                        '& .MuiInputBase-input': {
-                                            padding: '6px 8px',
-                                        },
-                                    },
-                                }}
-                                onChange={(e) =>
-                                    setWindShearData({
-                                    ...windShearData,
-                                    windVelocity: e.target.value,
-                                    })
-                                }
-                                inputProps={{ min: 0 }}/>
-                        </Tooltip>
-                    </Grid>
-                </Grid>
-                        
-                <Grid item container alignItems="center" direction="row">
-                    <Grid item xs={4}>
-                        <InputLabel id="fluctuation-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
-                            Fluctuation %
-                        </InputLabel>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Tooltip title="Enter Fluctuation %" placement='bottom'>
-                            <TextField id="Fluctuation %" fullWidth
-                                variant="outlined" 
-                                type="number" 
-                                value={windShearData.fluctuationPercentage}
-                                sx = {{
-                                    backgroundColor: '#F5F5DC',
-                                    '& .MuiOutlinedInput-root': {
-                                        '& .MuiInputBase-input': {
-                                            padding: '6px 8px',
-                                        },
-                                    },
-                                }}
-                                onChange={(e) =>
-                                    setWindShearData({
-                                    ...windShearData,
-                                    fluctuationPercentage: e.target.value,
-                                    })
-                                }
-                                inputProps={{ min: 0, max: 100, step: 0.1 }} 
-                            />
-                        </Tooltip>
-                    </Grid>
-                </Grid>
-
-            <Grid item xs={12}>
-            <IconButton onClick={() => deleteWindShear(index)}>
-                    <DeleteOutline color="error"/>
-                </IconButton>
-            </Grid> 
-            </Grid>     
-            </React.Fragment> 
-
-            // <Grid item xs={3} sx={{ marginTop: '10px' }}>
-            //     <Button onClick={() => openAddWindShearWindow()}> Click to Enter Wind Shear Information</Button>
-            // </Grid>
-            )))}
         </Grid>
-    )
-}
+    );
+};
 
 WindSettings.propTypes = {
     envConf: PropTypes.object.isRequired,
@@ -412,11 +189,8 @@ WindSettings.propTypes = {
     handleFLuctuationChange: PropTypes.func.isRequired,
     selectedWindType: PropTypes.string.isRequired,
     fluctuationPercentage: PropTypes.number.isRequired,
-    windShears: PropTypes.array.isRequired,
-    addNewWindShear: PropTypes.func.isRequired,
-    windShearData: PropTypes.object.isRequired,
-    setWindShearData: PropTypes.func.isRequired,
-    deleteWindShear: PropTypes.func.isRequired
+    windBlocks: PropTypes.array.isRequired,
+    updateWindBlocks: PropTypes.func.isRequired,
 };
 
 export default WindSettings;

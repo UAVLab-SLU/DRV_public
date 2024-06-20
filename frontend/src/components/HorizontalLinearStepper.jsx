@@ -176,7 +176,7 @@ export default function HorizontalLinearStepper(data) {
     {
       name:'Mission Configuration',
       id:2, 
-      comp: <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+      comp: <MissionConfiguration setMainJson={setMainJson} id="Drones" mainJson={mainJson} windowHeight={windowSize.current[1]}/>
     },
     {
       name:'Test Configuration',
@@ -255,11 +255,10 @@ export default function HorizontalLinearStepper(data) {
           <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
             <Typography 
             sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5">Latitude: {lat}; Longitude: {long}</Typography>
-            {/* <Typography 
-            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5"></Typography> */}
-            <CesiumMap onLocationSelect={onLocationSelect}/> 
+            variant="h6" component="h5">
+              Latitude: {lat}; Longitude: {long}
+            </Typography>
+            <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"/> 
 
           </Box>
         </Box>

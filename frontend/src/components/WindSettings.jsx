@@ -6,7 +6,6 @@ import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
-import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -45,15 +44,17 @@ const WindType = [
 ];
 
 const WindSettings = ({
-    envConf, handleWindTypeChange, handleDirection, handleWindChange, handleFLuctuationChange,
-    selectedWindType, fluctuationPercentage, windShears,
-    setWindBlockData, deleteWindBlock
+    envConf,
+    handleWindTypeChange,
+    handleDirection,
+    handleWindChange,
+    handleFLuctuationChange,
+    selectedWindType,
+    fluctuationPercentage,
+    windBlocks,
+    updateWindBlocks,
 }) => {
     const classes = useStyles();
-    const [windBlocks, setWindBlocks] = useState(() => {
-        const storedWindBlocks = localStorage.getItem('windBlocks');
-        return storedWindBlocks ? JSON.parse(storedWindBlocks) : [];
-    });
 
     const renderSelectField = (label, value, onChange, options) => (
         <Grid item container alignItems="center" direction="row">
@@ -114,27 +115,23 @@ const WindSettings = ({
 
     const addNewWindBlock = () => {
         const newWindBlock = {
-            windType: selectedWindType,
-            windDirection: envConf.Wind.Direction,
-            windVelocity: envConf.Wind.Force,
-            fluctuationPercentage: selectedWindType === "Turbulent Wind" ? fluctuationPercentage : 0,
+          windType: selectedWindType,
+          windDirection: envConf.Wind.Direction,
+          windVelocity: envConf.Wind.Force,
+          fluctuationPercentage: selectedWindType === 'Turbulent Wind' ? fluctuationPercentage : 0,
         };
-        const updatedWindBlocks = [...windBlocks, newWindBlock];
-        setWindBlocks(updatedWindBlocks);
-        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
+        updateWindBlocks([...windBlocks, newWindBlock]);
     };
-
-    setWindBlockData = (index, updatedData) => {
+    
+    const setWindBlockData = (index, updatedData) => {
         const updatedWindBlocks = [...windBlocks];
         updatedWindBlocks[index] = { ...updatedWindBlocks[index], ...updatedData };
-        setWindBlocks(updatedWindBlocks);
-        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
+        updateWindBlocks(updatedWindBlocks);
     };
-
-    deleteWindBlock = (index) => {
+    
+    const deleteWindBlock = (index) => {
         const updatedWindBlocks = windBlocks.filter((_, i) => i !== index);
-        setWindBlocks(updatedWindBlocks);
-        localStorage.setItem('windBlocks', JSON.stringify(updatedWindBlocks));
+        updateWindBlocks(updatedWindBlocks);
     };
 
     return (
@@ -165,7 +162,17 @@ const WindSettings = ({
                 <Grid xs={10}
                     classes={{ root: classes.backdropFilter }}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
-                    <IconButton onClick={addNewWindBlock} color="warning">
+                    <IconButton 
+                        onClick={addNewWindBlock} 
+                        color="warning"
+                        sx={{ 
+                            fontSize: '1.10rem', // Reduces font size 
+                            '& .MuiSvgIcon-root': { 
+                                fontSize: '1rem' // Reduces icon size
+                            },
+                            padding: '4px' // Reduces padding around the button
+                        }}
+                    >
                         <AddIcon /> Add Wind Source
                     </IconButton>
                 </Grid>
@@ -182,9 +189,8 @@ WindSettings.propTypes = {
     handleFLuctuationChange: PropTypes.func.isRequired,
     selectedWindType: PropTypes.string.isRequired,
     fluctuationPercentage: PropTypes.number.isRequired,
-    windShears: PropTypes.array.isRequired,
-    setWindBlockData: PropTypes.func.isRequired,
-    deleteWindBlock: PropTypes.func.isRequired
+    windBlocks: PropTypes.array.isRequired,
+    updateWindBlocks: PropTypes.func.isRequired,
 };
 
 export default WindSettings;

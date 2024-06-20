@@ -5,7 +5,7 @@ Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
 Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2 } from 'cesium';
 import PropTypes from 'prop-types';
 
-const CesiumMap = ({onLocationSelect}) => {
+const CesiumMap = ({onLocationSelect, mainJson, setMainJson, id}) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [drawing, setDrawing] = useState(true);
@@ -33,36 +33,6 @@ const CesiumMap = ({onLocationSelect}) => {
 
     return () => clearInterval(interval);
   }, []);
-
-  // useEffect(() => {
-  //   if (viewerReady) {
-  //     const viewer = viewerRef.current.cesiumElement;
-  //     const handleLeftClick = (click) => {
-  //       console.log('handle left click......');
-  //       const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-  //       if (cartesian) {
-  //         const cartographic = Cartographic.fromCartesian(cartesian);
-  //         const latitude = CesiumMath.toDegrees(cartographic.latitude);
-  //         const longitude = CesiumMath.toDegrees(cartographic.longitude);
-  //         onLocationSelect(latitude, longitude);
-  //         setCameraPosition({
-  //           destination: viewer.camera.position,
-  //           orientation: {
-  //             heading: viewer.camera.heading,
-  //             pitch: viewer.camera.pitch
-  //           }
-  //         });
-  //       }
-  //     };
-
-  //     // Add the left click event handler
-  //     viewer.screenSpaceEventHandler.setInputAction(handleLeftClick, ScreenSpaceEventType.LEFT_CLICK);
-  //     // Cleanup function to remove event handler
-  //     return () => {
-  //       viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-  //     };
-  //   }
-  // }, [viewerReady]);
 
   useEffect(() => {
     if (viewerReady && drawing) {
@@ -102,6 +72,7 @@ const CesiumMap = ({onLocationSelect}) => {
     }
   }, [viewerReady]);
 
+  // drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
         const viewer = viewerRef.current.cesiumElement;
@@ -139,9 +110,16 @@ const CesiumMap = ({onLocationSelect}) => {
               }
             });
 
-            // onLocationSelect(latitude, longitude);
-            const imageUrl = event.dataTransfer.getData("text/plain") || '';
-            setBillboards((currentBillboards) => [...currentBillboards, { image: imageUrl, position: cartesian }]);
+            const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+            const imgSrc = dragData.src;
+            const droneIndex = dragData.index;
+            setBillboards((currentBillboards) => [...currentBillboards, { 
+              image: imgSrc, 
+              position: Cartesian3.fromDegrees(longitude, latitude)
+            }]);
+            // TO-DO: update X,Y in mainJson with dropped drone positions
+            console.log('+++++++++Main json in CESIUM', mainJson);
+            console.log('DRAGGED DRONE INDEX', droneIndex);
           }
         };
 
@@ -199,7 +177,7 @@ const CesiumMap = ({onLocationSelect}) => {
           position={billboard.position}
           billboard={{
             image: billboard.image,
-            scale: 0.15,
+            scale: 0.5,
             verticalOrigin: VerticalOrigin.BOTTOM
           }}
         />
@@ -215,7 +193,10 @@ const CesiumMap = ({onLocationSelect}) => {
 };
 
 CesiumMap.propTypes = {
-  onLocationSelect: PropTypes.func.isRequired
+  onLocationSelect: PropTypes.func.isRequired,
+  mainJson: PropTypes.object.isRequired,
+  setMainJson: PropTypes.func.isRequired,
+  id: PropTypes.string.isRequired
 };
 
 export default CesiumMap;

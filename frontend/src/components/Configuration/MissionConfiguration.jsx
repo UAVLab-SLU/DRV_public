@@ -46,8 +46,8 @@ export default function MissionConfiguration (mission) {
         { src: '/images/drone-purple.png', color: '#DABDF9' }
     ];
     
-    const [droneCount, setDroneCount] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones.length : 1);
-    const [droneArray, setDroneArray] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones : [{
+    const [droneCount, setDroneCount] = React.useState(mission.mainJson.Drones != null ? mission.mainJson.Drones.length : 1);
+    const [droneArray, setDroneArray] = React.useState(mission.mainJson.Drones != null ? mission.mainJson.Drones : [{
         id: droneCount-1, 
         droneName:"Drone " + droneCount,
         FlightController: "SimpleFlight",
@@ -62,9 +62,9 @@ export default function MissionConfiguration (mission) {
         Name:"Drone " + (droneCount),
         image: droneImages[droneCount-1].src,
         color: droneImages[droneCount-1].color,
-        X:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Latitude : 0,
-        Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
-        Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
+        X:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Latitude : 0,
+        Y:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Longitude : 0,
+        Z:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Height : 0,
         Pitch: 0,
         Roll: 0, 
         Yaw: 0,
@@ -145,9 +145,9 @@ export default function MissionConfiguration (mission) {
             Name:"Drone " + (droneCount+1),
             image: droneImages[droneCount].src,
             color: droneImages[droneCount].color,
-            X:mission.mainJsonValue.environment != null ? droneCount > 0 ? (mission.mainJsonValue.environment.Origin.Latitude) + (0.0001 * droneCount): mission.mainJsonValue.environment.Origin.Latitude : 0,
-            Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
-            Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
+            X:mission.mainJson.environment != null ? droneCount > 0 ? (mission.mainJson.environment.Origin.Latitude) + (0.0001 * droneCount): mission.mainJson.environment.Origin.Latitude : 0,
+            Y:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Longitude : 0,
+            Z:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Height : 0,
             Pitch: 0,
             Roll: 0, 
             Yaw: 0,
@@ -238,29 +238,20 @@ export default function MissionConfiguration (mission) {
     }
 
     React.useEffect(() => {
-        mission.droneArrayJson(droneArray, mission.id)
+        mission.setMainJson(droneArray, mission.id);
+        console.log('MAIN JSON', mission.mainJson);
     }, [droneArray])
 
     const setDroneJson = (json, index) => {
-        console.log('set drone json---', json, index)
-        // json = {...json, id: index, droneName:json.Name}
-        // droneArray.splice(index, 1);
-        // droneArray.push(json)
-        // let newArry = droneArray.filter(((obj) => {return obj.id != index}))
-        // console.log('newArry-----', newArry)
-        // // setDroneArray(droneArray=>droneArray.splice(index, 1));
-        // setDroneArray((oldArry) => {
-        //     return oldArry.filter((obj) => obj.id !== index);
-        // })
-        // let indx = droneArray.findIndex(prod => prod.id === index)
-        // console.log('indx-----', indx)
-        // // if (indx > -1) { //make sure you found it
-        // //     setDroneArray(prevState => prevState.splice(index, 1));
-        // //    } 
-        // droneArray.push(json)
-        const target = droneArray.find(obj => obj.id == index);
-        Object.assign(target, json)
-        console.log('droneArray----Missin Config', droneArray)
+        console.log('set drone json---', json, index);
+        setDroneArray(currentArray => {
+            return currentArray.map((item, idx) => {
+                if (idx === index) {
+                    return {...item, ...json};
+                }
+                return item;
+            });
+        });
     }
 
     const handleSnackBarVisibility = (val) => {
@@ -270,9 +261,14 @@ export default function MissionConfiguration (mission) {
         }))
     }
 
-    const handleDragStart = (event) => {
+    const handleDragStart = (event, index) => {
         const imgSrc = event.target.src;
-        event.dataTransfer.setData('text/plain', imgSrc);
+        const dragData = {
+            src: imgSrc,
+            index: index
+        };
+        
+        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
     };
 
     return (
@@ -334,7 +330,7 @@ export default function MissionConfiguration (mission) {
                                     src={drone.image}
                                     alt="Draggable Icon"
                                     draggable="true"
-                                    onDragStart={handleDragStart}
+                                    onDragStart={(e) => handleDragStart(e, index)}
                                     style={{ width: 40, cursor: 'grab', marginRight: 20 }}
                                 />
                             </Box>
@@ -344,7 +340,7 @@ export default function MissionConfiguration (mission) {
                         sx={{ backgroundColor: `${drone.color}31` }}
                         >
                             <Typography>
-                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
+                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} setDroneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
                             </Typography>
                         </AccordionDetails>
                     </Accordion>

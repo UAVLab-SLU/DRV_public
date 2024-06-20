@@ -169,10 +169,6 @@ export default function DroneConfiguration (droneData)  {
         }));
     };
     
-
-
-
-
     const handleChange = (val) => {
         console.log('handlechange---', val)
         if(val.target.id == "Name"){
@@ -193,7 +189,7 @@ export default function DroneConfiguration (droneData)  {
     }, [drone])
 
     const sendJson = () => {
-        droneData.droneJson(drone, droneData.id);
+        droneData.setDroneJson(drone, droneData.id);
     }
 
     const setSensorConfig = (sensor) => {

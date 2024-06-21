@@ -364,9 +364,11 @@ export default function DroneConfiguration (droneData)  {
                         {/* Drone Image Field */}
                         <Grid item xs={12}>
                             {selectedDroneType && (
-                                <img src={droneModels[selectedDroneType].find((m) => m.value === selectedModel)?.src}
-                                alt="" 
-                                style={{maxWidth:'70%', maxHeight:'150px', objectFit:'fill', marginTop: '8px', margin:'auto'}}/>        
+                                <Box mt={2} display="flex" justifyContent="center" alignItems="center">
+                                    <img src={droneModels[selectedDroneType].find((m) => m.value === selectedModel)?.src}
+                                    alt=""
+                                    style={{maxWidth:'70%', maxHeight:'150px', objectFit:'fill', marginTop: '8px'}}/>
+                                </Box>
                             )}
                         </Grid>                        
 

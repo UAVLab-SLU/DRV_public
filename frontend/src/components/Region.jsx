@@ -13,7 +13,6 @@ const StyledSelect = styled(Select)(({ theme }) => ({
         }
 }));
 
-
 const originOptions = [
   {value: "Chicago O'Hare Airport", id: 20},
   {value: "Specify Region", id: 30}
@@ -24,7 +23,7 @@ const originValues = {
   "Michigan Lake Beach": {Latitude: 42.211223, Longitude: -86.390394, Height: 170}
 };
 
-export default function Region({ envConf, setEnvConf }) {
+function Region({ envConf, setEnvConf }) {
   const handleOrigin = (event) => {
     const selectedValue = event.target.value;
     const newOrigin = selectedValue !== "Specify Region"
@@ -97,3 +96,5 @@ Region.propTypes = {
     }).isRequired,
     setEnvConf: PropTypes.func.isRequired,
   };
+
+export default Region;

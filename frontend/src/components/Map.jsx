@@ -5,16 +5,14 @@ Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
 Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2 } from 'cesium';
 import PropTypes from 'prop-types';
 
-const CesiumMap = ({onLocationSelect}) => {
+const Map = ({onLocationSelect}) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [drawing, setDrawing] = useState(true);
   const [points, setPoints] = useState([]);
   const [billboards, setBillboards] = useState([]);
   const [cameraPosition, setCameraPosition] = useState({
-    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 370),
     destination: Cartesian3.fromDegrees(-122.3472, 47.598, 1000),
-    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 130000),
     orientation: {
       heading: CesiumMath.toRadians(10),
       pitch: CesiumMath.toRadians(-10)
@@ -34,36 +32,6 @@ const CesiumMap = ({onLocationSelect}) => {
     return () => clearInterval(interval);
   }, []);
 
-  // useEffect(() => {
-  //   if (viewerReady) {
-  //     const viewer = viewerRef.current.cesiumElement;
-  //     const handleLeftClick = (click) => {
-  //       console.log('handle left click......');
-  //       const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
-  //       if (cartesian) {
-  //         const cartographic = Cartographic.fromCartesian(cartesian);
-  //         const latitude = CesiumMath.toDegrees(cartographic.latitude);
-  //         const longitude = CesiumMath.toDegrees(cartographic.longitude);
-  //         onLocationSelect(latitude, longitude);
-  //         setCameraPosition({
-  //           destination: viewer.camera.position,
-  //           orientation: {
-  //             heading: viewer.camera.heading,
-  //             pitch: viewer.camera.pitch
-  //           }
-  //         });
-  //       }
-  //     };
-
-  //     // Add the left click event handler
-  //     viewer.screenSpaceEventHandler.setInputAction(handleLeftClick, ScreenSpaceEventType.LEFT_CLICK);
-  //     // Cleanup function to remove event handler
-  //     return () => {
-  //       viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-  //     };
-  //   }
-  // }, [viewerReady]);
-
   useEffect(() => {
     if (viewerReady && drawing) {
       const viewer = viewerRef.current.cesiumElement;
@@ -71,16 +39,10 @@ const CesiumMap = ({onLocationSelect}) => {
       viewer.screenSpaceEventHandler.setInputAction((click) => {
         const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
         if (cartesian) {
-          // setPoints(currentPoints => {
-          //     const newPoints = [...currentPoints, cartesian];
-          //     return newPoints;
-          // });
           setPoints(currentPoints => {
             if (currentPoints.length === 0) {
-              // If no points have been added, add the first point and replicate it to start the polygon closure
               return [cartesian, cartesian];
             } else {
-              // Insert the new point before the last point to keep the polygon closed
               let newPoints = [...currentPoints];
               newPoints.splice(newPoints.length - 1, 0, cartesian);
               return newPoints;
@@ -107,7 +69,6 @@ const CesiumMap = ({onLocationSelect}) => {
         const viewer = viewerRef.current.cesiumElement;
         const canvas = viewer.canvas;
 
-        // Ensure the canvas is focusable
         canvas.setAttribute('tabindex', '0');
 
         const dragOverHandler = (event) => {
@@ -120,7 +81,7 @@ const CesiumMap = ({onLocationSelect}) => {
           canvas.style.border = ''; // Remove visual feedback
 
           const rect = canvas.getBoundingClientRect();
-          // Adjust X and Y coordinate relative to the canvas
+
           const x = event.clientX - rect.left;  
           const y = event.clientY - rect.top;
 
@@ -214,8 +175,8 @@ const CesiumMap = ({onLocationSelect}) => {
   );
 };
 
-CesiumMap.propTypes = {
+Map.propTypes = {
   onLocationSelect: PropTypes.func.isRequired
 };
 
-export default CesiumMap;
+export default Map;

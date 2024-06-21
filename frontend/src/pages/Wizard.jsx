@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import HorizontalLinearStepper from '../components/HorizontalLinearStepper';
+import ConfigurationStepper from '../components/ConfigurationStepper';
 import { MainJsonProvider } from '../contexts/MainJsonContext';
 
 const style = {
@@ -26,9 +26,7 @@ const Wizard = () => {
   return (
     <>
       <Box sx={style}>
-        <MainJsonProvider>
-          <HorizontalLinearStepper desc={location.state.descs} title={location.state.title}/>
-        </MainJsonProvider>
+        <ConfigurationStepper desc={location.state.descs} title={location.state.title}/>
       </Box>
     </>
   );

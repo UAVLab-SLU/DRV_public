@@ -1,4 +1,4 @@
-import * as React from 'react'
+import {useState, useEffect, Fragment} from 'react'
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Container from '@mui/material/Container';
@@ -58,10 +58,10 @@ const locations = [
 
 export default function DroneConfiguration (droneData)  {
     console.log('DroneConfiguration-----', droneData)
-    const [selectedLoc, setSelectedLoc] = React.useState('GeoLocation')
-    const [selectedModel, setSelectedModel] = React.useState('');
-    const [selectedDroneType, setselectedDroneType] = React.useState(droneTypes[1].value);
-    const [drone, setDrone] = React.useState({
+    const [selectedLoc, setSelectedLoc] = useState('GeoLocation')
+    const [selectedModel, setSelectedModel] = useState('');
+    const [selectedDroneType, setselectedDroneType] = useState(droneTypes[1].value);
+    const [drone, setDrone] = useState({
         ...droneData.droneObject, 
         // droneType: droneTypes[1].value
     }
@@ -184,7 +184,7 @@ export default function DroneConfiguration (droneData)  {
         }))
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         sendJson()
     }, [drone])
 
@@ -211,7 +211,7 @@ export default function DroneConfiguration (droneData)  {
         // }))
     }
 
-    const [snackBarState, setSnackBarState] = React.useState({
+    const [snackBarState, setSnackBarState] = useState({
         open: false,
         });
     
@@ -358,7 +358,7 @@ export default function DroneConfiguration (droneData)  {
                     </Grid>
 
                     {selectedLoc == 'GeoLocation' ?
-                    <React.Fragment>
+                    <Fragment>
                             <Grid item xs={4}>
                                 <StyledInputLabel id="X-label">Latitude</StyledInputLabel>
                             </Grid>
@@ -433,8 +433,8 @@ export default function DroneConfiguration (droneData)  {
                                     />
                                 </Tooltip>
                             </Grid>
-                    </React.Fragment>: 
-                    <React.Fragment>
+                    </Fragment>: 
+                    <Fragment>
                         <Grid item xs={3}>
                             <TextField id="X" label="X" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange} />
                         </Grid>
@@ -444,7 +444,7 @@ export default function DroneConfiguration (droneData)  {
                         <Grid item xs={3}> 
                             <TextField id="Z" label="Z" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Z} disabled/>
                         </Grid>
-                    </React.Fragment>
+                    </Fragment>
                     } 
                 </Grid>
                 {/* <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/> */}

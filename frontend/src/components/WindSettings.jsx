@@ -116,8 +116,8 @@ const WindSettings = ({
     const addNewWindBlock = () => {
         const newWindBlock = {
           windType: selectedWindType,
-          windDirection: envConf.Wind.Direction,
-          windVelocity: envConf.Wind.Force,
+          windDirection: "NE",
+          windVelocity: 1,
           fluctuationPercentage: selectedWindType === 'Turbulent Wind' ? fluctuationPercentage : 0,
         };
         updateWindBlocks([...windBlocks, newWindBlock]);
@@ -137,7 +137,7 @@ const WindSettings = ({
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
             {windBlocks.map((windBlock, index) => (
-                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
+                <Grid item container spacing={0.8} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
                     {renderSelectField("Wind Type", windBlock.windType, (e) =>
                         setWindBlockData(index, { windType: e.target.value }), WindType)}
                     {renderSelectField("Wind Direction", windBlock.windDirection, (e) =>

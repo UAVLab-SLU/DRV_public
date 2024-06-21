@@ -2,19 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Viewer, CameraFlyTo, Cesium3DTileset, Entity } from 'resium';
 import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, 
 Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
-Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain } from 'cesium';
+Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2 } from 'cesium';
 import PropTypes from 'prop-types';
 
-const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
+const Map = ({onLocationSelect}) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [drawing, setDrawing] = useState(true);
   const [points, setPoints] = useState([]);
   const [billboards, setBillboards] = useState([]);
   const [cameraPosition, setCameraPosition] = useState({
-    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 370),
     destination: Cartesian3.fromDegrees(-122.3472, 47.598, 1000),
-    // destination: Cartesian3.fromDegrees(-122.3472, 47.598, 130000),
     orientation: {
       heading: CesiumMath.toRadians(10),
       pitch: CesiumMath.toRadians(-10)
@@ -41,16 +39,10 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
       viewer.screenSpaceEventHandler.setInputAction((click) => {
         const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
         if (cartesian) {
-          // setPoints(currentPoints => {
-          //     const newPoints = [...currentPoints, cartesian];
-          //     return newPoints;
-          // });
           setPoints(currentPoints => {
             if (currentPoints.length === 0) {
-              // If no points have been added, add the first point and replicate it to start the polygon closure
               return [cartesian, cartesian];
             } else {
-              // Insert the new point before the last point to keep the polygon closed
               let newPoints = [...currentPoints];
               newPoints.splice(newPoints.length - 1, 0, cartesian);
               return newPoints;
@@ -72,13 +64,11 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
     }
   }, [viewerReady]);
 
-  // drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
         const viewer = viewerRef.current.cesiumElement;
         const canvas = viewer.canvas;
 
-        // Ensure the canvas is focusable
         canvas.setAttribute('tabindex', '0');
 
         const dragOverHandler = (event) => {
@@ -91,7 +81,7 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
           canvas.style.border = ''; // Remove visual feedback
 
           const rect = canvas.getBoundingClientRect();
-          // Adjust X and Y coordinate relative to the canvas
+
           const x = event.clientX - rect.left;  
           const y = event.clientY - rect.top;
 
@@ -110,21 +100,9 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
               }
             });
 
-            const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
-            const imgSrc = dragData.src;
-            const droneInx = dragData.index;
-            setDroneLocation(droneInx, longitude, latitude);
-            // find the terrain height at dropped location
-            // const terrainProvider = viewer.terrainProvider;
-            // const positions = [Cartographic.fromDegrees(longitude, latitude)];
-            // sampleTerrain(terrainProvider, 11, positions).then((updatedPositions) => {
-            //   const height = updatedPositions[0].height;
-
-              setBillboards(currentBillboards => [...currentBillboards, {
-                image: dragData.src,
-                position: Cartesian3.fromDegrees(longitude, latitude)
-              }]);
-            // });
+            // onLocationSelect(latitude, longitude);
+            const imageUrl = event.dataTransfer.getData("text/plain") || '';
+            setBillboards((currentBillboards) => [...currentBillboards, { image: imageUrl, position: cartesian }]);
           }
         };
 
@@ -182,9 +160,8 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
           position={billboard.position}
           billboard={{
             image: billboard.image,
-            scale: 0.5,
-            verticalOrigin: VerticalOrigin.BOTTOM,
-            heightReference: HeightReference.CLAMP_TO_GROUND,
+            scale: 0.15,
+            verticalOrigin: VerticalOrigin.BOTTOM
           }}
         />
       ))}
@@ -198,10 +175,8 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
   );
 };
 
-CesiumMap.propTypes = {
-  onLocationSelect: PropTypes.func.isRequired,
-  id: PropTypes.string.isRequired,
-  setDroneLocation: PropTypes.func.isRequired,
+Map.propTypes = {
+  onLocationSelect: PropTypes.func.isRequired
 };
 
-export default CesiumMap;
+export default Map;

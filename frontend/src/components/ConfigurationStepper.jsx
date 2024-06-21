@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import MissionConfiguration from './Configuration/MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
-import CesiumMap from './cesium/CesiumMap';
+import Map from './Map';
 import MonitorControl from './MonitorControl';
 import PropTypes from 'prop-types';  // Import PropTypes
 
@@ -59,6 +59,22 @@ function ConfigurationStepper({ desc }) {
   const [coordinates, setCoordinates] = useState({ lat: null, long: null });
   const windowSize = useRef([window.innerWidth, window.innerHeight]);
 
+  const handleLocationSelect = (lat, long) => {
+    setMainJson(prevState => ({
+      ...prevState,
+      environment: {
+        ...prevState.environment,
+        Origin: {
+          ...prevState.environment.Origin,
+          Latitude: lat,
+          Longitude: long
+        }
+      }
+    }));
+  };
+
+  const [isPinDragging, setIsPinDragging] = useState(false);
+
   useEffect(() => {
     handleFuzzyLogic();
   }, [mainJson]);
@@ -103,8 +119,6 @@ function ConfigurationStepper({ desc }) {
   };
 
   const cleanJsonForSubmission = (json) => {
-    // Implement the cleaning logic here
-    // This function should remove unnecessary fields and format the JSON as required
     return json;
   };
 
@@ -137,7 +151,10 @@ function ConfigurationStepper({ desc }) {
           <Typography sx={{ border: 1, borderColor: 'yellow', backgroundColor: 'white', p: 2 }} variant="h6">
             Latitude: {coordinates.lat}; Longitude: {coordinates.long}
           </Typography>
-          <CesiumMap onLocationSelect={(lat, long) => setCoordinates({ lat, long })} />
+          <Map 
+            onLocationSelect={handleLocationSelect} 
+            isPinDragging={isPinDragging} 
+          />
         </Box>
       </Box>
 

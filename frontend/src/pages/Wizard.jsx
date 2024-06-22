@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import HorizontalLinearStepper from '../components/HorizontalLinearStepper';
+import { MainJsonProvider } from '../contexts/MainJsonContext';
 
 const style = {
   backgroundImage: 'linear-gradient(rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.7), rgba(128, 128, 128, 0.5)), url("/images/google-earth-3D.png")',
@@ -25,7 +26,9 @@ const Wizard = () => {
   return (
     <>
       <Box sx={style}>
-        <HorizontalLinearStepper desc={location.state.descs} title={location.state.title}/>
+        <MainJsonProvider>
+          <HorizontalLinearStepper desc={location.state.descs} title={location.state.title}/>
+        </MainJsonProvider>
       </Box>
     </>
   );

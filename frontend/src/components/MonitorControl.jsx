@@ -112,6 +112,7 @@ export default function MonitorControl (monJson) {
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
+        UseCFD: true,
         time:dayjs('2020-01-01 10:00')
     }); 
 

@@ -67,7 +67,7 @@ function NavigationBar() {
     <div>
       <nav className={classes.nav}>
         <a href="/" className={classes.siteTitle}>
-          Drone World
+          DRV
         </a>
         <ul className={classes.navList}>
           <li className={classes.navListItem}>

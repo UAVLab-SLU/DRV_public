@@ -172,7 +172,7 @@ export default function LandingPage() {
           </div>
         ) : (
           <div style={{ textAlign: 'center', color: '#4d4d4d' }}>
-            <h2 style={{ fontSize: '2em' }}>Welcome to Drone World!</h2>
+            <h2 style={{ fontSize: '2em' }}>Welcome to DRV!</h2>
           </div>
         )}
       </div>

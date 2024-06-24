@@ -86,6 +86,7 @@ export default function EnvironmentConfiguration (env) {
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
+        UseCFD: true,
         time:dayjs('2020-01-01 10:00')
     }); 
     
@@ -190,6 +191,7 @@ export default function EnvironmentConfiguration (env) {
             ...prevState.Wind,
             Velocity: val.target.type === "number" ? parseFloat(val.target.value) : 0,
           },
+          // UseCFD: true,
         }));
       };
     const handleOriginChange = (val) => {
@@ -542,6 +544,13 @@ const handleShearWindDirection = (e, index) => {
     }));
   };
 
+  const handleUseCFDChange = (event) => {
+    setEnvConf(prevState => ({
+        ...prevState,
+        UseCFD: event.target.checked
+    }));
+}
+
 
   // Function to add a new wind shear entry for window
   /*
@@ -606,6 +615,21 @@ const handleSnackBarVisibility = (val) => {
                     {/* <Grid item xs={3}>
                         <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                     </Grid> */}
+                  <Grid item xs={3}>
+                        <FormGroup>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={envConf.UseCFD}
+                                        onChange={handleUseCFDChange}
+                                        inputProps={{ 'aria-label': 'controlled' }}
+                                    />
+                                }
+                                label="Use CFD"
+                            />
+                            <FormHelperText>Toggle this to enable or disable CFD</FormHelperText>
+                        </FormGroup>
+                    </Grid>
                     <Grid item xs={3}> 
                         <FormControl variant="standard" sx={{ minWidth: 150 }}>
                             <InputLabel id="WindType">Wind Type</InputLabel>

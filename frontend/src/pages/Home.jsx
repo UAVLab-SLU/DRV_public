@@ -194,15 +194,15 @@ const Home = () => {
 
     <Typography id="modal-modal-description" sx={{ mt: 2 }}>
     <p>
-<strong>About Drone World</strong>
+<strong>About DRV</strong>
 </p>
 <p>
-Drone World is revolutionizing sUAS (small Uncrewed Aerial Systems) testing. In the dynamic world
+DRV is revolutionizing sUAS (small Uncrewed Aerial Systems) testing. In the dynamic world
 of sUAS, safety and reliability are paramount. Traditional field testing across diverse environments is costly
 and challenging.
 </p>
 <p>
-Drone World offers an innovative sUAV simulation ecosystem that generates high-fidelity, realistic environments
+DRV offers an innovative sUAV simulation ecosystem that generates high-fidelity, realistic environments
 mimicking real-world complexities like adverse weather and wireless interference. Our automated solution allows
 developers to specify constraints and generate tailored test environments.
 </p>

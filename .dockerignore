@@ -1,0 +1,18 @@
+# ignore all csv, png, jpg, jpeg files
+
+# ignore all files in the .git folder
+.git/*
+
+# ignore all files in the .vscode folder
+.vscode/*
+
+# ignore all files in the __pycache__ folder
+__pycache__/*
+
+# ignore venv
+venv/*
+
+# ignore all files in the .idea folder
+.idea/*
+
+node_modules/*

@@ -1,0 +1,30 @@
+services:
+  wisp_server:
+    image: bohanzhang1/wisp_server:latest
+    stop_signal: SIGINT
+    ports:
+      - '5001:5001'
+    networks:
+      - app-network
+
+  drv_server:
+    image: bohanzhang1/drv_server:latest
+    stop_signal: SIGINT
+    ports:
+      - '5000:5000'
+    volumes:
+      - '${USERPROFILE:-$HOME}/Documents/AirSim:/root/Documents/AirSim'
+    networks:
+      - app-network
+
+  sim_analyzer:
+    image: bohanzhang1/sim_analyzer:latest
+    stop_signal: SIGINT
+    ports:
+      - '3000:3000'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

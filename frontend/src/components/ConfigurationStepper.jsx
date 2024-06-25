@@ -59,19 +59,12 @@ function ConfigurationStepper({ desc }) {
   const [coordinates, setCoordinates] = useState({ lat: null, long: null });
   const windowSize = useRef([window.innerWidth, window.innerHeight]);
 
-  const handleLocationSelect = (lat, long) => {
-    setMainJson(prevState => ({
-      ...prevState,
-      environment: {
-        ...prevState.environment,
-        Origin: {
-          ...prevState.environment.Origin,
-          Latitude: lat,
-          Longitude: long
-        }
-      }
-    }));
+  const [lastDroppedLocation, setLastDroppedLocation] = useState(null);
+
+  const handleLocationSelect = (latitude, longitude) => {
+    setLastDroppedLocation({ latitude, longitude });
   };
+
 
   const [isPinDragging, setIsPinDragging] = useState(false);
 
@@ -128,6 +121,7 @@ function ConfigurationStepper({ desc }) {
     <MonitorControl key="monitor" monitorJson={setJsonSection} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]} />
   ];
 
+
   return (
     <Box sx={{ width: '100vw', height: '100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box' }}>
       <Typography sx={{ mb: 1, color: 'white' }} variant="h4">
@@ -151,10 +145,7 @@ function ConfigurationStepper({ desc }) {
           <Typography sx={{ border: 1, borderColor: 'yellow', backgroundColor: 'white', p: 2 }} variant="h6">
             Latitude: {coordinates.lat}; Longitude: {coordinates.long}
           </Typography>
-          <Map 
-            onLocationSelect={handleLocationSelect} 
-            isPinDragging={isPinDragging} 
-          />
+          <Map onLocationSelect={handleLocationSelect} />
         </Box>
       </Box>
 

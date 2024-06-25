@@ -23,8 +23,8 @@ now you can interface the ecosystem using the UI at http://localhost:3000
 
 ## Demo
 
-- [Demo Video Available Here](https://www.youtube.com/watch?v=Fd9ft55gbO8)
-
+- [DRV demo video](https://www.youtube.com/watch?v=Fd9ft55gbO8)
+- [DroneWiS demo video](https://youtu.be/khBHEBST8Wc)
 
 ## System requirement
 - Windows 10/11

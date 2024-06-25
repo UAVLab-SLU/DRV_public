@@ -45,6 +45,8 @@ function EnvironmentConfiguration({ mainJsonValue, environmentJson, id }) {
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
 
+  const [lastDroppedLocation, setLastDroppedLocation] = useState(null);
+
   const [envConf, setEnvConf] = useState(mainJsonValue.environment || {
     enableFuzzy: false,
     Wind: [],
@@ -76,6 +78,8 @@ function EnvironmentConfiguration({ mainJsonValue, environmentJson, id }) {
     setSnackBarOpen(true);
   };
 
+
+
   return (
     <div>
       <Snackbar
@@ -106,7 +110,11 @@ function EnvironmentConfiguration({ mainJsonValue, environmentJson, id }) {
         <Grid item xs={9} sx={{ maxHeight: '65vh', overflowY: 'auto', scrollbarWidth: 'none' }}>
           {selectedTab === 0 && (
             <>
-              <Region envConf={envConf} setEnvConf={setEnvConf} />
+              <Region 
+                envConf={envConf} 
+                setEnvConf={setEnvConf} 
+                lastDroppedLocation={lastDroppedLocation}
+              />
               <Box mt={2}>
                 <Grid container alignItems="center">
                   <Grid item xs={4}>

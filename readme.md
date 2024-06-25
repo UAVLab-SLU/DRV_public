@@ -1,14 +1,29 @@
-# Drone Simulation Ecosystem - DroneReqValidator
+# DroneReqValidator
 
 DroneReqValidator (DRV) is a complete Drone simulation ecosystem that automatically generates realistic environments, monitors Drone activities against predefined safety parameters, and generates detailed acceptance test reports for effective debugging and analysis of Drone software applications. 
 
-## Demonstration
+# DroneWis
 
-A demonstration of the simulation ecosystem in action can be viewed at the following link:
+DroneWis is a CFD-based wind simulation component that is integrated with DroneReqValidator. It is used to automatically simulate the wind flow in the environment.
+
+## DRV + DroneWis
+
+Instruction for ASE 2024 reviewers:
+
+Use the docker compose.yaml file to run the complete system. 
+```bash
+docker-compose up
+```
+Then download DRV_1.0.0 from the [link](https://sluedu-my.sharepoint.com/:f:/g/personal/ankit_agrawal_1_slu_edu/ElbD1q-O8fBFgGDqov6Mh5EBsJ90YyPj2fzsIznTP6AX-w?e=XZaPiX)
+
+Unzip and run the Blocks.exe file to start the simulation.
+
+now you can interface the ecosystem using the UI at http://localhost:3000
+
+
+## Demo
 
 - [Demo Video Available Here](https://www.youtube.com/watch?v=Fd9ft55gbO8)
-
-
 
 
 ## System requirement

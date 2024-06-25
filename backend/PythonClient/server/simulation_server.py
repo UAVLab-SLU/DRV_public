@@ -3,8 +3,7 @@ import os #I changed it from os.path to just os. Revert is needed
 import threading
 import time
 import base64
-import json
-import mimetypes
+
 import sys
 from flask import Flask, request, abort, send_file, render_template, Response, jsonify
 from flask_cors import CORS

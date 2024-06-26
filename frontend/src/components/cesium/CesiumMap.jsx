@@ -2,10 +2,10 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Viewer, CameraFlyTo, Cesium3DTileset, Entity } from 'resium';
 import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, 
 Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
-Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2 } from 'cesium';
+Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain } from 'cesium';
 import PropTypes from 'prop-types';
 
-const CesiumMap = ({onLocationSelect, mainJson, setMainJson, id}) => {
+const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [drawing, setDrawing] = useState(true);
@@ -112,14 +112,19 @@ const CesiumMap = ({onLocationSelect, mainJson, setMainJson, id}) => {
 
             const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
             const imgSrc = dragData.src;
-            const droneIndex = dragData.index;
-            setBillboards((currentBillboards) => [...currentBillboards, { 
-              image: imgSrc, 
-              position: Cartesian3.fromDegrees(longitude, latitude)
-            }]);
-            // TO-DO: update X,Y in mainJson with dropped drone positions
-            console.log('+++++++++Main json in CESIUM', mainJson);
-            console.log('DRAGGED DRONE INDEX', droneIndex);
+            const droneInx = dragData.index;
+            setDroneLocation(droneInx, longitude, latitude);
+            // find the terrain height at dropped location
+            // const terrainProvider = viewer.terrainProvider;
+            // const positions = [Cartographic.fromDegrees(longitude, latitude)];
+            // sampleTerrain(terrainProvider, 11, positions).then((updatedPositions) => {
+            //   const height = updatedPositions[0].height;
+
+              setBillboards(currentBillboards => [...currentBillboards, {
+                image: dragData.src,
+                position: Cartesian3.fromDegrees(longitude, latitude)
+              }]);
+            // });
           }
         };
 
@@ -178,7 +183,8 @@ const CesiumMap = ({onLocationSelect, mainJson, setMainJson, id}) => {
           billboard={{
             image: billboard.image,
             scale: 0.5,
-            verticalOrigin: VerticalOrigin.BOTTOM
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            heightReference: HeightReference.CLAMP_TO_GROUND,
           }}
         />
       ))}
@@ -194,9 +200,8 @@ const CesiumMap = ({onLocationSelect, mainJson, setMainJson, id}) => {
 
 CesiumMap.propTypes = {
   onLocationSelect: PropTypes.func.isRequired,
-  mainJson: PropTypes.object.isRequired,
-  setMainJson: PropTypes.func.isRequired,
-  id: PropTypes.string.isRequired
+  id: PropTypes.string.isRequired,
+  setDroneLocation: PropTypes.func.isRequired,
 };
 
 export default CesiumMap;

@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import HorizontalLinearStepper from '../components/HorizontalLinearStepper';
 import { MainJsonProvider } from '../contexts/MainJsonContext';
 
@@ -23,15 +23,20 @@ const Wizard = () => {
   const accordionList = [];
   const location = useLocation()
  console.log({location });
-  return (
-    <>
-      <Box sx={style}>
-        <MainJsonProvider>
-          <HorizontalLinearStepper desc={location.state.descs} title={location.state.title}/>
-        </MainJsonProvider>
-      </Box>
-    </>
-  );
-};
+  if(!location.state){
+    // here we move back the user to /home since he havent selected anything
+    return <Navigate to="/home" /> 
+  } else{
+      return (
+        <>
+          <Box sx={style}>
+            <MainJsonProvider>
+              <HorizontalLinearStepper desc={location.state.descs} title={location.state.title}/>
+            </MainJsonProvider>
+          </Box>
+        </>
+      );
+    };
+  }
 
 export default Wizard;

@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Viewer, CameraFlyTo, Cesium3DTileset, Entity } from 'resium';
 import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, 
 Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
-Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain } from 'cesium';
+Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain,
+Rectangle, KeyboardEventModifier, ScreenSpaceEventHandler, CallbackProperty, Ellipsoid } from 'cesium';
 import PropTypes from 'prop-types';
 
 const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
@@ -20,6 +21,10 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
       pitch: CesiumMath.toRadians(-10)
     }
   });
+  const [mouseDown, setMouseDown] = useState(false);
+  const [firstPoint, setFirstPoint] = useState(null);
+  const [rectangleCoordinates, setRectangleCoordinates] = useState(null);
+  const [showSelector, setShowSelector] = useState(false);
   
   Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZTFmNzlmMy1mNjU4LTQwNGYtOTQ2YS0yOTZiZTMwNmM4NTkiLCJpZCI6MjE2MTY1LCJpYXQiOjE3MTYwODk0NzV9.52fSstXZ3CeFEcorDgCv__iCvdUecg3Q0bhaXum3ZnI";
 
@@ -137,7 +142,67 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
         };
     }
   }, [viewerReady]);
-  
+
+  useEffect(() => {
+    if (!viewerReady) return;
+    const viewer = viewerRef.current.cesiumElement;
+    const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+
+    // Dragging logic
+    handler.setInputAction((movement) => {
+      if (!mouseDown) return;
+      const cartesian = viewer.camera.pickEllipsoid(movement.endPosition, viewer.scene.globe.ellipsoid);
+      console.log('cartesian', cartesian);
+      if (cartesian) {
+        const tempCartographic = Cartographic.fromCartesian(cartesian, Ellipsoid.WGS84);
+        if (!firstPoint) {
+          setFirstPoint(tempCartographic);
+        } else {
+          const newRectangle = new Rectangle(
+            Math.min(tempCartographic.longitude, firstPoint.longitude),
+            Math.min(tempCartographic.latitude, firstPoint.latitude),
+            Math.max(tempCartographic.longitude, firstPoint.longitude),
+            Math.max(tempCartographic.latitude, firstPoint.latitude)
+          );
+          setRectangleCoordinates(newRectangle);
+          setShowSelector(true);
+          setCameraPosition({
+            destination: viewer.camera.position,
+            orientation: {
+              heading: viewer.camera.heading,
+              pitch: viewer.camera.pitch
+            }
+          });
+        }
+      }
+    }, ScreenSpaceEventType.MOUSE_MOVE, KeyboardEventModifier.SHIFT);
+
+    handler.setInputAction(() => {
+      setMouseDown(true);
+    }, ScreenSpaceEventType.LEFT_DOWN, KeyboardEventModifier.SHIFT);
+
+    handler.setInputAction(() => {
+      setMouseDown(false);
+      setFirstPoint(null);
+      setShowSelector(false);
+      setCameraPosition({
+        destination: viewer.camera.position,
+        orientation: {
+          heading: viewer.camera.heading,
+          pitch: viewer.camera.pitch
+        }
+      });
+    }, ScreenSpaceEventType.LEFT_UP, KeyboardEventModifier.SHIFT);
+
+    // Hide selector
+    handler.setInputAction(() => {
+      setShowSelector(false);
+    }, ScreenSpaceEventType.LEFT_CLICK);
+
+    return () => {
+      handler.destroy();
+    };
+  }, [viewerReady, mouseDown, firstPoint, rectangleCoordinates, showSelector]);
 
   const terrainProvider= createWorldTerrainAsync();
   const osmBuildingsTileset = createOsmBuildingsAsync();
@@ -188,6 +253,17 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
           }}
         />
       ))}
+      {showSelector && (
+        <Entity
+          rectangle={{
+            coordinates: rectangleCoordinates,
+            material: Color.RED.withAlpha(0.5),
+            outline: true,
+            outlineColor: Color.WHITE,
+            outlineWidth: 2,
+          }}
+        />
+      )}
       <Cesium3DTileset url={IonResource.fromAssetId(96188)} />
       <CameraFlyTo
         destination={cameraPosition.destination}

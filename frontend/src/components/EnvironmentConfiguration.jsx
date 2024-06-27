@@ -393,7 +393,12 @@ export default function EnvironmentConfiguration (env) {
                 iconUrl: iconUrl,
                 radius: envConf.Origin.Radius || 0
             });
-            event.dataTransfer.setData("application/json", dragData);
+            //event.dataTransfer.setData("application/json", dragData);
+            event.dataTransfer.setData('text/plain', JSON.stringify({
+                type: 'pin',
+                iconUrl: iconUrl,
+                radius: envConf.Origin.Radius || 0
+            }));
         };
         
 

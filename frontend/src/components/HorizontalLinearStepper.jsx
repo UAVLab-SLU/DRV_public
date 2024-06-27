@@ -206,15 +206,17 @@ export default function HorizontalLinearStepper(data) {
 
   const setDroneLocation = (index, location) => {
     setMainJson(prevState => {
-      const updatedDrones = [...prevState.Drones];
-      updatedDrones[index] = {
-        ...updatedDrones[index],
-        X: location.latitude,
-        Y: location.longitude
-      };
-      return { ...prevState, Drones: updatedDrones };
+        const updatedDrones = [...prevState.Drones];
+        updatedDrones[index] = {
+            ...updatedDrones[index],
+            X: location.latitude,
+            Y: location.longitude,
+            Z: updatedDrones[index].Z || 0 // Maintain the current Z value or default to 0
+        };
+        return { ...prevState, Drones: updatedDrones };
     });
-  };
+};
+
 
 
   return (
@@ -257,7 +259,13 @@ export default function HorizontalLinearStepper(data) {
             variant="h6" component="h5">
               Latitude: {lat}; Longitude: {long}
             </Typography>
-            <CesiumMap onLocationSelect={onLocationSelect} id={'cesium-map'} setDroneLocation={setDroneLocation} setLastDroppedLocation={setLastDroppedLocation} />
+            <CesiumMap
+              onLocationSelect={onLocationSelect}
+              id="cesium-map"
+              setDroneLocation={setDroneLocation}
+              setLastDroppedLocation={setLastDroppedLocation}
+            />
+
 
           </Box>
         </Box>

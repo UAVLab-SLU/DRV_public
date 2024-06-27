@@ -1,3 +1,4 @@
+
 //import * as React from 'react' 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -34,6 +35,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
 import WindSettings from './WindSettings';
+import PlaceIcon from '@mui/icons-material/Place';
 
 export default function EnvironmentConfiguration (env) {  
     const [selectedTab, setSelectedTab] = useState(0);
@@ -94,6 +96,7 @@ export default function EnvironmentConfiguration (env) {
         Origin: {
             Latitude: 41.980381,
             Longitude: -87.934524,
+            Radius: 0,
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
@@ -180,15 +183,26 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     } 
-    const handleOriginChange = (val) => {
-        setEnvConf(prevState => ({
-            ...prevState,
-            Origin: {
-                ...prevState.Origin,
-                [val.target.id]: parseFloat(val.target.value)
+    const handleOriginChange = (event) => {
+        const { id, value } = event.target;
+        let parsedValue = value === '' ? '' : parseFloat(value);
+        
+        if (id === 'Radius') {
+            if (value === '') {
+                parsedValue = '';
+            } else if (parsedValue < 0) {
+                parsedValue = 0;
             }
-        }))
-    }
+        }
+    
+        setEnvConf(prev => ({
+            ...prev,
+            Origin: { ...prev.Origin, [id]: parsedValue }
+        }));
+    };
+    
+    
+    
     const handleCheckboxChange = (checkboxName) => {
         setFuzzyAlert(true);
         handleSnackBarVisibility(true);
@@ -220,21 +234,6 @@ export default function EnvironmentConfiguration (env) {
             setPositionBox(newStatus);
     }};
 
-  // HANDLE WIND ORIGIN
-  {/*
-  const handleWindOriginChange = (event) => {
-        const newWindOrigin = event.target.value;
-        setSelectedWindOrigin(newWindOrigin);
-        setEnvConf(prevState=> ({
-          ...prevState,
-              Wind: {
-              ...prevState.Wind,
-              WindOrigin: newWindOrigin,
-              },
-          }));
-
-  };
-  */}
 
   const handleFLuctuationChange = (event) => {
       const newFlucValue = event.target.value;
@@ -246,15 +245,6 @@ export default function EnvironmentConfiguration (env) {
         handleSnackBarVisibility(true)
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
-      // ENV CONFIG
-      {/*setEnvConf((prevState) => ({
-          ...prevState,
-              Wind: {
-              ...prevState.Wind,
-              Type: newWindType,
-              },
-          }));
-      */}
   };
     
   const handleDirection = (val) => {
@@ -391,6 +381,28 @@ export default function EnvironmentConfiguration (env) {
                 }
         }));
     
+        const DraggableIcon = styled('div')({
+            cursor: 'move',
+            display: 'inline-block',
+            marginLeft: '10px',
+          });
+
+          const handleDragStart = (event) => {
+            const iconUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
+            const dragData = JSON.stringify({
+                type: 'pin',
+                iconUrl: iconUrl,
+                radius: envConf.Origin.Radius || 0
+            });
+            //event.dataTransfer.setData("application/json", dragData);
+            event.dataTransfer.setData('text/plain', JSON.stringify({
+                type: 'pin',
+                iconUrl: iconUrl,
+                radius: envConf.Origin.Radius || 0
+            }));
+        };
+        
+
   return (
     <div>
     <Snackbar open={snackBarState.open} 
@@ -576,6 +588,44 @@ export default function EnvironmentConfiguration (env) {
                             </Grid>
                         </Grid>
                         
+                        // added radius label
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="radius-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                        Enter radius (miles)
+                                    </InputLabel>
+                                </Grid>
+                                <Grid item xs={5}>
+                                    <TextField
+                                        sx={{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Radius"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ 
+                                            step: "0.1",
+                                            min: "0"
+                                        }}
+                                        onChange={handleOriginChange}
+                                        value={envConf.Origin.Radius === 0 || envConf.Origin.Radius === '' ? '' : envConf.Origin.Radius}
+                                        fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={1}>
+                                    <DraggableIcon draggable onDragStart={handleDragStart}>
+                                        <PlaceIcon style={{ color: 'white' }} />
+                                    </DraggableIcon>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+
                     </Grid>
                 
                         

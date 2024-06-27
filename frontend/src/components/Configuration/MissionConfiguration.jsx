@@ -14,6 +14,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
+import { useMainJson } from '../../contexts/MainJsonContext';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -32,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MissionConfiguration (mission) {
+    const { mainJson, setJson } = useMainJson();
     const classes = useStyles();
     const droneImages = [
         { src: '/images/drone-red.png', color: '#FFCCCC' },
@@ -46,171 +48,56 @@ export default function MissionConfiguration (mission) {
         { src: '/images/drone-purple.png', color: '#DABDF9' }
     ];
     
-    const [droneCount, setDroneCount] = React.useState(mission.mainJson.Drones != null ? mission.mainJson.Drones.length : 1);
-    const [droneArray, setDroneArray] = React.useState(mission.mainJson.Drones != null ? mission.mainJson.Drones : [{
-        id: droneCount-1, 
-        droneName:"Drone " + droneCount,
-        FlightController: "SimpleFlight",
-        droneType:"Multi Rotor", 
-        droneModel:"DJI",
-        VehicleType: "SimpleFlight",
-        DefaultVehicleState: "Armed",
-        EnableCollisionPassthrogh: false,
-        EnableCollisions: true,
-        AllowAPIAlways: true,
-        EnableTrace: false,
-        Name:"Drone " + (droneCount),
-        image: droneImages[droneCount-1].src,
-        color: droneImages[droneCount-1].color,
-        X:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Latitude : 0,
-        Y:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Longitude : 0,
-        Z:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Height : 0,
-        Pitch: 0,
-        Roll: 0, 
-        Yaw: 0,
-        Sensors: null,
-        MissionValue: null,
-        Mission : {
-            name:"fly_to_points",
-            param : []
-        },
-        // Cameras: {
-        //     CaptureSettings: [
-        //         {
-        //           ImageType: 0,
-        //           Width: 256,
-        //           Height: 144,
-        //           FOV_Degrees: 90,
-        //           AutoExposureSpeed: 100,
-        //           AutoExposureBias: 0,
-        //           AutoExposureMaxBrightness: 0.64,
-        //           AutoExposureMinBrightness: 0.03,
-        //           MotionBlurAmount: 0,
-        //           TargetGamma: 1,
-        //           ProjectionMode: '',
-        //           OrthoWidth: 5.12
-        //         }
-        //     ],
-        //     NoiseSettings: [
-        //         {
-        //           Enabled: false,
-        //           ImageType: 0,
-        //           RandContrib: 0.2,
-        //           RandSpeed: 100000,
-        //           RandSize: 500,
-        //           RandDensity: 2,
-        //           HorzWaveContrib: 0.03,
-        //           HorzWaveStrength: 0.08,
-        //           HorzWaveVertSize: 1,
-        //           HorzWaveScreenSize: 1,
-        //           HorzNoiseLinesContrib: 1,
-        //           HorzNoiseLinesDensityY: 0.01,
-        //           HorzNoiseLinesDensityXY: 0.5,
-        //           HorzDistortionContrib: 1,
-        //           HorzDistortionStrength: 0.002
-        //         }
-        //     ],
-        //     Gimbal: {
-        //         Stabilization: 0,
-        //         Pitch: 0,
-        //         Roll: 0,
-        //         Yaw: 0
-        //     },
-        //     X:0,
-        //     Y:0,
-        //     Z:0,
-        //     Pitch: 0,
-        //     Roll: 0, 
-        //     Yaw: 0
-        // }
-    }]);
-
+    const [droneCount, setDroneCount] = React.useState(mainJson.Drones != null ? mainJson.Drones.length : 0);
     const [snackBarState, setSnackBarState] = React.useState({
         open: true,
     });
 
     const setDrone = () => {
-        droneArray.push({
-            id: (droneCount), 
-            droneName:"Drone " + (droneCount+1),
-            FlightController: "SimpleFlight",
-            droneType:"Multi Rotor", 
-            droneModel:"DJI", 
-            VehicleType: "SimpleFlight",
-            DefaultVehicleState: "Armed",
-            EnableCollisionPassthrogh: false,
-            EnableCollisions: true,
-            AllowAPIAlways: true,
-            EnableTrace: false,
-            Name:"Drone " + (droneCount+1),
-            image: droneImages[droneCount].src,
-            color: droneImages[droneCount].color,
-            X:mission.mainJson.environment != null ? droneCount > 0 ? (mission.mainJson.environment.Origin.Latitude) + (0.0001 * droneCount): mission.mainJson.environment.Origin.Latitude : 0,
-            Y:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Longitude : 0,
-            Z:mission.mainJson.environment != null ? mission.mainJson.environment.Origin.Height : 0,
-            Pitch: 0,
-            Roll: 0, 
-            Yaw: 0,
-            Sensors: null,
-            MissionValue: null,
-            Mission : {
-                name:"fly_to_points",
-                param : []
-            },
-            // Cameras: {
-            //     CaptureSettings: [
-            //         {
-            //           ImageType: 0,
-            //           Width: 256,
-            //           Height: 144,
-            //           FOV_Degrees: 90,
-            //           AutoExposureSpeed: 100,
-            //           AutoExposureBias: 0,
-            //           AutoExposureMaxBrightness: 0.64,
-            //           AutoExposureMinBrightness: 0.03,
-            //           MotionBlurAmount: 0,
-            //           TargetGamma: 1,
-            //           ProjectionMode: '',
-            //           OrthoWidth: 5.12
-            //         }
-            //     ],
-            //     NoiseSettings: [
-            //         {
-            //           Enabled: false,
-            //           ImageType: 0,
-            //           RandContrib: 0.2,
-            //           RandSpeed: 100000,
-            //           RandSize: 500,
-            //           RandDensity: 2,
-            //           HorzWaveContrib: 0.03,
-            //           HorzWaveStrength: 0.08,
-            //           HorzWaveVertSize: 1,
-            //           HorzWaveScreenSize: 1,
-            //           HorzNoiseLinesContrib: 1,
-            //           HorzNoiseLinesDensityY: 0.01,
-            //           HorzNoiseLinesDensityXY: 0.5,
-            //           HorzDistortionContrib: 1,
-            //           HorzDistortionStrength: 0.002
-            //         }
-            //     ],
-            //     Gimbal: {
-            //         Stabilization: 0,
-            //         Pitch: 0,
-            //         Roll: 0,
-            //         Yaw: 0
-            //     },
-            //     X:0,
-            //     Y:0,
-            //     Z:0,
-            //     Pitch: 0,
-            //     Roll: 0, 
-            //     Yaw: 0
-            // }
-        })
+        setJson(prevState => {
+            const drones = Array.isArray(prevState.Drones) ? prevState.Drones : [];
+            const newDrone = {
+                id: droneCount,
+                droneName: "Drone " + (droneCount + 1),
+                FlightController: "SimpleFlight",
+                droneType: "Multi Rotor",
+                droneModel: "DJI",
+                VehicleType: "SimpleFlight",
+                DefaultVehicleState: "Armed",
+                EnableCollisionPassthrogh: false,
+                EnableCollisions: true,
+                AllowAPIAlways: true,
+                EnableTrace: false,
+                Name: "Drone " + (droneCount + 1),
+                image: droneImages[droneCount].src,
+                color: droneImages[droneCount].color,
+                X: mainJson.environment ? (droneCount > 0 ? mainJson.environment.Origin.Latitude + 0.0001 * droneCount : mainJson.environment.Origin.Latitude) : 0,
+                Y: mainJson.environment ? mainJson.environment.Origin.Longitude : 0,
+                Z: mainJson.environment ? mainJson.environment.Origin.Height : 0,
+                Pitch: 0,
+                Roll: 0,
+                Yaw: 0,
+                Sensors: null,
+                MissionValue: null,
+                Mission: {
+                    name: "fly_to_points",
+                    param: []
+                },
+            };
+    
+            const updatedDrones = [...drones, newDrone];
+            return { ...prevState, Drones: updatedDrones };
+        });
     }
 
     const popDrone = () =>{
-        droneArray.pop()
+        setJson(prevState => {
+            if (prevState.Drones && prevState.Drones.length > 0) {
+                const updatedDrones = prevState.Drones.slice(0, -1);
+                return { ...prevState, Drones: updatedDrones };
+            }
+            return prevState;
+        });
     }
 
     const handleIncrement = () => {
@@ -223,36 +110,7 @@ export default function MissionConfiguration (mission) {
         popDrone()
     }
 
-    const setDroneName = (e, index) => {
-        setDroneArray(objs => {
-            return objs.map((obj, i) => {
-                if(index === obj.id) {
-                    obj = {
-                        ...obj,
-                        droneName: e
-                    }
-                }
-                return obj
-            })
-        })
-    }
-
-    React.useEffect(() => {
-        mission.setMainJson(droneArray, mission.id);
-        console.log('MAIN JSON', mission.mainJson);
-    }, [droneArray])
-
-    const setDroneJson = (json, index) => {
-        console.log('set drone json---', json, index);
-        setDroneArray(currentArray => {
-            return currentArray.map((item, idx) => {
-                if (idx === index) {
-                    return {...item, ...json};
-                }
-                return item;
-            });
-        });
-    }
+    
 
     const handleSnackBarVisibility = (val) => {
         setSnackBarState(prevState => ({
@@ -308,7 +166,7 @@ export default function MissionConfiguration (mission) {
                     </ButtonGroup>
                 </Grid>
 
-                {droneArray.map((drone, index) => 
+                {mainJson.Drones?.map((drone, index) => 
                 (
                     <Accordion key={index} classes={{ root: classes.transparentBackground }}>
                         <AccordionSummary
@@ -339,9 +197,9 @@ export default function MissionConfiguration (mission) {
                         <AccordionDetails
                         sx={{ backgroundColor: `${drone.color}31` }}
                         >
-                            <Typography>
-                                <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} setDroneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
-                            </Typography>
+                            <Box>
+                                <DroneConfiguration name={drone.droneName} id={drone.id} index={index}/>
+                            </Box>
                         </AccordionDetails>
                     </Accordion>
                 ))}

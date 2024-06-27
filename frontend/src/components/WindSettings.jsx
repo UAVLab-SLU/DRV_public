@@ -43,11 +43,15 @@ const WindType = [
     { value: "Turbulent Wind", id: 2 },
 ];
 
-const Wind = ({
+const WindSettings = ({
     envConf,
-    setEnvConf,
-    showSnackBar,
-    windBlocks = [],  // Provide a default empty array
+    handleWindTypeChange,
+    handleDirection,
+    handleWindChange,
+    handleFLuctuationChange,
+    selectedWindType,
+    fluctuationPercentage,
+    windBlocks,
     updateWindBlocks,
 }) => {
     const classes = useStyles();
@@ -111,13 +115,13 @@ const Wind = ({
 
     const addNewWindBlock = () => {
         const newWindBlock = {
-          windType: "Constant Wind",
-          windDirection: "N",
-          windVelocity: 0,
-          fluctuationPercentage: 0,
+          windType: selectedWindType,
+          windDirection: envConf.Wind.Direction,
+          windVelocity: envConf.Wind.Force,
+          fluctuationPercentage: selectedWindType === 'Turbulent Wind' ? fluctuationPercentage : 0,
         };
         updateWindBlocks([...windBlocks, newWindBlock]);
-      };
+    };
     
     const setWindBlockData = (index, updatedData) => {
         const updatedWindBlocks = [...windBlocks];
@@ -132,7 +136,7 @@ const Wind = ({
 
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
-            {windBlocks?.map((windBlock, index) => (
+            {windBlocks.map((windBlock, index) => (
                 <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
                     {renderSelectField("Wind Type", windBlock.windType, (e) =>
                         setWindBlockData(index, { windType: e.target.value }), WindType)}
@@ -177,12 +181,16 @@ const Wind = ({
     );
 };
 
-Wind.propTypes = {
+WindSettings.propTypes = {
     envConf: PropTypes.object.isRequired,
-    setEnvConf: PropTypes.func.isRequired,
-    showSnackBar: PropTypes.func.isRequired,
-    windBlocks: PropTypes.array,
+    handleWindTypeChange: PropTypes.func.isRequired,
+    handleDirection: PropTypes.func.isRequired,
+    handleWindChange: PropTypes.func.isRequired,
+    handleFLuctuationChange: PropTypes.func.isRequired,
+    selectedWindType: PropTypes.string.isRequired,
+    fluctuationPercentage: PropTypes.number.isRequired,
+    windBlocks: PropTypes.array.isRequired,
     updateWindBlocks: PropTypes.func.isRequired,
-  };
+};
 
-export default Wind;
+export default WindSettings;

@@ -16,7 +16,6 @@ import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
 import { useMainJson } from '../../contexts/MainJsonContext';
 
-
 const useStyles = makeStyles((theme) => ({
     root: {
       width: '100%',
@@ -83,55 +82,6 @@ export default function MissionConfiguration (mission) {
                     name: "fly_to_points",
                     param: []
                 },
-            // Cameras: {
-            //     CaptureSettings: [
-            //         {
-            //           ImageType: 0,
-            //           Width: 256,
-            //           Height: 144,
-            //           FOV_Degrees: 90,
-            //           AutoExposureSpeed: 100,
-            //           AutoExposureBias: 0,
-            //           AutoExposureMaxBrightness: 0.64,
-            //           AutoExposureMinBrightness: 0.03,
-            //           MotionBlurAmount: 0,
-            //           TargetGamma: 1,
-            //           ProjectionMode: '',
-            //           OrthoWidth: 5.12
-            //         }
-            //     ],
-            //     NoiseSettings: [
-            //         {
-            //           Enabled: false,
-            //           ImageType: 0,
-            //           RandContrib: 0.2,
-            //           RandSpeed: 100000,
-            //           RandSize: 500,
-            //           RandDensity: 2,
-            //           HorzWaveContrib: 0.03,
-            //           HorzWaveStrength: 0.08,
-            //           HorzWaveVertSize: 1,
-            //           HorzWaveScreenSize: 1,
-            //           HorzNoiseLinesContrib: 1,
-            //           HorzNoiseLinesDensityY: 0.01,
-            //           HorzNoiseLinesDensityXY: 0.5,
-            //           HorzDistortionContrib: 1,
-            //           HorzDistortionStrength: 0.002
-            //         }
-            //     ],
-            //     Gimbal: {
-            //         Stabilization: 0,
-            //         Pitch: 0,
-            //         Roll: 0,
-            //         Yaw: 0
-            //     },
-            //     X:0,
-            //     Y:0,
-            //     Z:0,
-            //     Pitch: 0,
-            //     Roll: 0, 
-            //     Yaw: 0
-            // }
             };
     
             const updatedDrones = [...drones, newDrone];
@@ -169,13 +119,21 @@ export default function MissionConfiguration (mission) {
     }
 
     const handleDragStart = (event, index) => {
+        event.stopPropagation(); // Prevent event bubbling
         const imgSrc = event.target.src;
         const dragData = {
+            type: 'drone',
             src: imgSrc,
             index: index
         };
         
-        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+        //event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+        event.dataTransfer.setData('text/plain', JSON.stringify({
+            type: 'drone',
+            src: imgSrc,
+            index: index
+        }));
+        
     };
 
     return (
@@ -194,15 +152,17 @@ export default function MissionConfiguration (mission) {
 
             <Box 
             sx={{
-                maxHeight: '66vh', overflowY: 'auto',
-                width: '90%', m: 4,
+                maxHeight: '66vh', 
+                overflowY: 'auto',
+                width: '90%', 
+                m: 4,
                 '&::-webkit-scrollbar': {
-                display: 'none'  // This hides the scrollbar in Webkit browsers
+                    display: 'none'
                 },
-                scrollbarWidth: 'none',  // This hides the scrollbar in Firefox
-                msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
             }}
-            >
+            > 
                 <Grid container  direction="row" style={{padding: '12px', color: '#F5F5DC' }} >
                     <strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong>
                 </Grid>
@@ -214,7 +174,6 @@ export default function MissionConfiguration (mission) {
                         <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
                     </ButtonGroup>
                 </Grid>
-
                 {mainJson.Drones?.map((drone, index) => 
                 (
                     <Accordion key={index} classes={{ root: classes.transparentBackground }}>
@@ -235,7 +194,7 @@ export default function MissionConfiguration (mission) {
                                 </Typography>
                                 <img
                                     src={drone.image}
-                                    alt="Draggable Icon"
+                                    alt="Draggable Drone Icon"
                                     draggable="true"
                                     onDragStart={(e) => handleDragStart(e, index)}
                                     style={{ width: 40, cursor: 'grab', marginRight: 20 }}

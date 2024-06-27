@@ -12,7 +12,7 @@ import MissionConfiguration from './Configuration/MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 import CesiumMap from './cesium/CesiumMap';
 import MonitorControl from './MonitorControl'
-import Home from '../pages/Home';
+import Home from '../pages/HomePage';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';

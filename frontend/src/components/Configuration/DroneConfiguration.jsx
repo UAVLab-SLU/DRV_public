@@ -16,7 +16,7 @@ import styled from '@emotion/styled';
 import { OutlinedInput } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
-import { useMainJson } from '../../contexts/MainJsonContext';
+import { useMainJson } from '../MainJsonContext/MainJsonContext';
 
 const flightPaths = [
     {value:'fly_in_circle', label:'Circle', id:1},

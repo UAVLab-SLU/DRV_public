@@ -13,10 +13,10 @@ export const MainJsonProvider = ({ children }) => {
   });
 
   const setMainJson = (envJson, id) => {
-    if(id == "environment" && mainJson.Drones && mainJson.Drones[0].X != envJson.Origin.Latitude) {
+    if (id == "environment" && mainJson.Drones && mainJson.Drones[0].X != envJson.Origin.Latitude) {
       setJson(prevState => ({
         ...prevState,
-        Drones:null,
+        Drones: null,
       }))
     }
     setJson(prevState => ({
@@ -27,14 +27,14 @@ export const MainJsonProvider = ({ children }) => {
 
   const setDroneJson = (json, index) => {
     setJson(prevState => {
-        const updatedDrones = prevState.Drones?.map((drone, idx) => {
-            if (idx === index) {
-                return {...drone, ...json};
-            }
-            return drone;
-        });
+      const updatedDrones = prevState.Drones?.map((drone, idx) => {
+        if (idx === index) {
+          return { ...drone, ...json };
+        }
+        return drone;
+      });
 
-        return {...prevState, Drones: updatedDrones};
+      return { ...prevState, Drones: updatedDrones };
     });
   }
 
@@ -51,7 +51,7 @@ export const MainJsonProvider = ({ children }) => {
         return drone;
       });
 
-      return {...prevState, Drones: newDrones};
+      return { ...prevState, Drones: newDrones };
     });
   };
 

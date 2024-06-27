@@ -15,6 +15,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
 import { useMainJson } from '../../contexts/MainJsonContext';
+import { useMainJson } from '../../contexts/MainJsonContext';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -83,55 +84,6 @@ export default function MissionConfiguration (mission) {
                     name: "fly_to_points",
                     param: []
                 },
-            // Cameras: {
-            //     CaptureSettings: [
-            //         {
-            //           ImageType: 0,
-            //           Width: 256,
-            //           Height: 144,
-            //           FOV_Degrees: 90,
-            //           AutoExposureSpeed: 100,
-            //           AutoExposureBias: 0,
-            //           AutoExposureMaxBrightness: 0.64,
-            //           AutoExposureMinBrightness: 0.03,
-            //           MotionBlurAmount: 0,
-            //           TargetGamma: 1,
-            //           ProjectionMode: '',
-            //           OrthoWidth: 5.12
-            //         }
-            //     ],
-            //     NoiseSettings: [
-            //         {
-            //           Enabled: false,
-            //           ImageType: 0,
-            //           RandContrib: 0.2,
-            //           RandSpeed: 100000,
-            //           RandSize: 500,
-            //           RandDensity: 2,
-            //           HorzWaveContrib: 0.03,
-            //           HorzWaveStrength: 0.08,
-            //           HorzWaveVertSize: 1,
-            //           HorzWaveScreenSize: 1,
-            //           HorzNoiseLinesContrib: 1,
-            //           HorzNoiseLinesDensityY: 0.01,
-            //           HorzNoiseLinesDensityXY: 0.5,
-            //           HorzDistortionContrib: 1,
-            //           HorzDistortionStrength: 0.002
-            //         }
-            //     ],
-            //     Gimbal: {
-            //         Stabilization: 0,
-            //         Pitch: 0,
-            //         Roll: 0,
-            //         Yaw: 0
-            //     },
-            //     X:0,
-            //     Y:0,
-            //     Z:0,
-            //     Pitch: 0,
-            //     Roll: 0, 
-            //     Yaw: 0
-            // }
             };
     
             const updatedDrones = [...drones, newDrone];

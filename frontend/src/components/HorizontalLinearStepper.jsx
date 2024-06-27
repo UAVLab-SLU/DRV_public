@@ -17,7 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import { useMainJson } from '../contexts/MainJsonContext';
-import {useState} from 'react'
+
+
 
 const StyledButton = styled(Button)`
   font-size: 18px;
@@ -38,7 +39,7 @@ const steps = [
 
 export default function HorizontalLinearStepper(data) { 
   const navigate = useNavigate(); 
-  const { mainJson, setJson, setMainJson} = useMainJson();
+  const { mainJson, setJson, setMainJson, setDroneLocation } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
@@ -202,23 +203,6 @@ export default function HorizontalLinearStepper(data) {
     setLong(longitude);
   };
 
-  const [lastDroppedLocation, setLastDroppedLocation] = useState(null);
-
-  const setDroneLocation = (index, location) => {
-    setMainJson(prevState => {
-        const updatedDrones = [...prevState.Drones];
-        updatedDrones[index] = {
-            ...updatedDrones[index],
-            X: location.latitude,
-            Y: location.longitude,
-            Z: updatedDrones[index].Z || 0 // Maintain the current Z value or default to 0
-        };
-        return { ...prevState, Drones: updatedDrones };
-    });
-};
-
-
-
   return (
     <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
         <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
@@ -259,14 +243,8 @@ export default function HorizontalLinearStepper(data) {
             variant="h6" component="h5">
               Latitude: {lat}; Longitude: {long}
             </Typography>
-            <CesiumMap
-              onLocationSelect={onLocationSelect}
-              id="cesium-map"
-              setDroneLocation={setDroneLocation}
-              setLastDroppedLocation={setLastDroppedLocation}
-            />
-
-
+            <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
+             setDroneLocation={setDroneLocation} />
           </Box>
         </Box>
         

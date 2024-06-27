@@ -2,6 +2,28 @@
 
 DroneReqValidator (DRV) is a complete Drone simulation ecosystem that automatically generates realistic environments, monitors Drone activities against predefined safety parameters, and generates detailed acceptance test reports for effective debugging and analysis of Drone software applications. 
 
+## Running Docker for frontend alone
+
+Front end is build in React JS framework where it have its on wn docker file that builds on node:lts-buster base image. following are the commands to build and run the docker image.
+
+```{shell}
+# assuming you are the root directory of project
+cd frontend
+
+# now you have chnaged the directory to frontend and run below command to build image
+docker build -t drv-frontend:latest .
+
+# run below commmand to run image
+docker run -p 3000:3000 drv-frontend:latest
+```
+
+NOTE: Please install docker daemon before running the above commands and post the run dont close the terminal as it keeps the image up and shows you the logs, if you want to run the image in background please use following run command.
+
+```{shell}
+# run below command to run the image in detached mode
+docker run -d -p 3000:3000 drv-frontend:latest
+```
+
 ## Demo
 
 - [Demo Video Available Here](https://www.youtube.com/watch?v=Fd9ft55gbO8)

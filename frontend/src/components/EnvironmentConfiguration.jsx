@@ -423,56 +423,36 @@ export default function EnvironmentConfiguration (env) {
         }]);
         
         const setSade = () => {
-            sadeArray.push({
-                id: (sadeCount),
-                sadeName:"SADE " + (sadeCount+1),
-                Name:"SADE " + (sadeCount+1)
-            })
-        }
+            const newSade = {
+                id: sadeCount,
+                sadeName: "SADE " + (sadeCount+1),
+                Name: "SADE " + (sadeCount+1)
+            };
+            setSadeArray(prevArray => [...prevArray, newSade]);
+        };
 
         const popSade = () =>{
-            sadeArray.pop()
-        }
+            sadeArray.pop();
+        };
         
         const handleIncrement = () => {
-            setSadeCount(sadeCount +1)
-            setSade()
-        }
+            setSadeCount(sadeCount +1);
+            setSade();
+        };
         
         const handleDecrement = () => {
-            setSadeCount(sadeCount -1)
-            popSade()
-        }
+            setSadeCount(sadeCount -1);
+            popSade();
+        };
         
-        const setSadeName = (e, index) => {
-            setSadeArray(objs => {
-                return objs.map((obj, i) => {
-                    if(index === obj.id) {
-                        obj = {
-                            ...obj,
-                            sadeName: e
-                        }
-                    }
-                    return obj
-                })
-            })
-        } 
-        
-        const handleChange = (val) => {
-            console.log('handlechange---', val)
-            const{id, value, type} = val.target;
-            setSade(prevState=> {
-                const newState = {
-                    ...prevState,
-                    [id]: type==="number" ? parseFloat(value) : value
-                };
-                if (id === "sadeName"){
-                    env.resetName(value, env.id);
-                    newState.sadeName = value;
+        const handleChange = (e, index) => {
+            const{id, value, type} = e.target;
+            setSadeArray(prevState => prevState.map((sade, i) => {
+                if (index === i){
+                    return{...sade, [id] : type === "number" ? parseFloat(value) : value};
                 }
-
-                return newState;
-            });
+                return sade;
+            }));
         };
 
         const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
@@ -789,7 +769,7 @@ export default function EnvironmentConfiguration (env) {
                                         {label:'Name', key:'sadeName', type:'text'},
                                         {label:'Height', key:'height', type:'number'},
                                         {label:'Latitude 1', key:'latitude1', type:'number'},
-                                        {label:'Longitude 1', key:'longitude1', type:'number'},
+                                         {label:'Longitude 1', key:'longitude1', type:'number'},
                                         {label:'Latitude 2', key:'latitude2', type:'number'},
                                         {label:'Longitude 2', key:'longitude2', type:'number'},
                                         {label:'Latitude 3', key:'latitude3', type:'number'},
@@ -812,7 +792,7 @@ export default function EnvironmentConfiguration (env) {
                                                 id={field.key}
                                                 type={field.type}
                                                 variant="outlined"
-                                                onChange={handleChange}
+                                                onChange={(e) => handleChange(e, index)}
                                                 value={sade[field.key] || ''}
                                                 fullWidth
                                             />

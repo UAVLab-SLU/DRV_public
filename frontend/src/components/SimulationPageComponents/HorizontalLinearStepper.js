@@ -1,61 +1,42 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import styled from '@emotion/styled';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import styled from '@emotion/styled';
-import MissionConfiguration from './Configuration/MissionConfiguration';
-import EnvironmentConfiguration from './EnvironmentConfiguration';
-import CesiumMap from './cesium/CesiumMap';
-import MonitorControl from './MonitorControl'
-import Home from '../pages/Home';
-import { useNavigate } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import Tooltip from '@mui/material/Tooltip';
-import { useMainJson } from '../contexts/MainJsonContext';
+import MissionConfiguration from '../Configuration/MissionConfiguration';
+import EnvironmentConfiguration from '../EnvironmentConfiguration';
+import CesiumMap from '../cesium/CesiumMap';
+import MonitorControl from '../MonitorControl'
+import { useMainJson } from '../MainJsonContext/MainJsonContext';
+import { StyledButton, StyledTab } from '../../css/SimulationPageStyles'
+import { steps } from '../../utils/SimulationPageUtils';
+import { redirectToDashboard } from '../../utils/NavigationUtils';
+import { HomeIconComponent } from '../commonComponents/HomeIconComponent';
 
 
+export default function HorizontalLinearStepper(data) {
 
-const StyledButton = styled(Button)`
-  font-size: 18px;
-  font-weight: bolder;
-  color: white;
-  background-color: #8B4513;
-  width: 200px;
-  &:hover {
-    background-color: #A0522D;
-  }
-`;
 
-const steps = [
-  'Environment Configuration',
-  'Mission Configuration',
-  'Test Configuration'
-];
-
-export default function HorizontalLinearStepper(data) { 
-  const navigate = useNavigate(); 
+  // START of model
   const { mainJson, setJson, setMainJson, setDroneLocation } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
   const [lat, setLat] = React.useState(null);
   const [long, setLong] = React.useState(null);
-
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
 
-  const redirectToHome = () => {
-    navigate('/')
-  }
+  // END of model
 
+  // START of Controller
   const isStepSkipped = (step) => {
     return skipped.has(step);
   };
-
 
   const handleTabChange = (event, newValue) => {
     setActiveStep(newValue);
@@ -67,20 +48,18 @@ export default function HorizontalLinearStepper(data) {
       newSkipped = new Set(newSkipped.values());
       newSkipped.delete(activeStep);
     }
-    // if(activeStep == 0) {
-    //   setMainJson();
-    // }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
     invokePostAPI();
   };
+
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
   React.useEffect(() => {
-    if( mainJson.environment != null && mainJson.environment.enableFuzzy == true && mainJson.environment.enableFuzzy != null) {
+    if (mainJson.environment != null && mainJson.environment.enableFuzzy == true && mainJson.environment.enableFuzzy != null) {
       setJson(prevState => ({
         ...prevState,
         FuzzyTest: {
@@ -99,7 +78,7 @@ export default function HorizontalLinearStepper(data) {
 
   const invokePostAPI = () => {
     console.log("mainJson-----", mainJson)
-    if(activeStep === steps.length -1) {
+    if (activeStep === steps.length - 1) {
       mainJson.Drones.map(drone => {
 
         delete drone["id"]
@@ -138,58 +117,38 @@ export default function HorizontalLinearStepper(data) {
       delete mainJson.environment["windFuzzy"]
       delete mainJson.environment["positionFuzzy"]
       console.log('mainJson-----', JSON.stringify(mainJson))
-      navigate('/report-dashboard', {
-        state: {mainJson: mainJson}
+      redirectToDashboard( {
+        state: { mainJson: mainJson }
       })
-      fetch('http://127.0.0.1:5000/addTask', { 
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify(mainJson),
+      fetch('http://127.0.0.1:5000/addTask', {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(mainJson),
       })
-      .then(res => res.json())
-      .then(res => console.log(res));
+        .then(res => res.json())
+        .then(res => console.log(res));
     }
-  } 
+  }
   const stepsComponent = [
     {
-      name:'Environment Configuration',
-      id:1,
-      comp: <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson}/>
+      name: 'Environment Configuration',
+      id: 1,
+      comp: <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson} />
     },
     {
-      name:'Mission Configuration',
-      id:2, 
-      comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]}/>
+      name: 'Mission Configuration',
+      id: 2,
+      comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]} />
     },
     {
-      name:'Test Configuration',
-      id:3,
-      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+      name: 'Test Configuration',
+      id: 3,
+      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]} />
     }
   ];
 
-  const StyledTab = styled(Tab)(({ theme }) => ({
-    textTransform: 'none',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
-    // to-do: use global variables for tab colors
-    color: '#8B4513', // Shade of brown
-    backgroundColor: '#F5F5DC', // Beige background
-    transition: 'background-color 0.3s, color 0.3s',
-    '&:hover': {
-      backgroundColor: '#DEB887', // Light brown when hovered
-      color: '#FFFFFF',
-    },
-    '&.Mui-selected': {
-      backgroundColor: '#A0522D', // Darker brown when selected
-      color: '#FFFFFF',
-      borderBottom: '5px solid #FFB500',
-    },
-  }));
-  
   const StyledTabs = styled(Tabs)({
     minHeight: '48px',
     '.MuiTabs-indicator': {
@@ -204,14 +163,12 @@ export default function HorizontalLinearStepper(data) {
   };
 
   return (
-    <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
-        <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
-          <Tooltip title="Home" placement='bottom'>
-            <HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px', color: 'white'}} onClick={redirectToHome}/>
-          </Tooltip>
-        </Typography>
-        <Typography sx={{ mt: 2, mb: 1, color: 'white' }}  variant="h6" component="h4">{data.desc}</Typography>
-        {/* <Stepper activeStep={activeStep} style={{padding:20}}> 
+    <Box sx={{ width: '100vw', height: '100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
+      <Typography sx={{ mb: 1, color: 'white' }} variant="h4" component="h4">Requirement
+          <HomeIconComponent />
+      </Typography>
+      <Typography sx={{ mt: 2, mb: 1, color: 'white' }} variant="h6" component="h4">{data.desc}</Typography>
+      {/* <Stepper activeStep={activeStep} style={{padding:20}}> 
         {steps.map((label, index) => {
           const stepProps = {};
           const labelProps = {};
@@ -226,64 +183,66 @@ export default function HorizontalLinearStepper(data) {
         })}
       </Stepper>     */}
 
-        <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
-          <Box sx={{ width: '45%' }}>
-            <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
-              <StyledTab label="Environment" />
-              <StyledTab label="Mission" />
-             {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/} 
-            </StyledTabs>
-            <div>
-              {stepsComponent[activeStep].comp}
-            </div>
-          </Box>
-          <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
-            <Typography 
-            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5">
-              Latitude: {lat}; Longitude: {long}
-            </Typography>
-            <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
-             setDroneLocation={setDroneLocation} />
-          </Box>
+      <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box', }} >
+        <Box sx={{ width: '45%' }}>
+          <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
+            <StyledTab label="Environment" />
+            <StyledTab label="Mission" />
+            {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/}
+          </StyledTabs>
+          <div>
+            {stepsComponent[activeStep].comp}
+          </div>
         </Box>
-        
-        {activeStep === steps.length ? (
-          <React.Fragment>
-            Redirect to dashboard //TODO
-            {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
+        <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5 }}>
+          <Typography
+            sx={{ border: 1, borderColor: 'yellow', backgroundColor: 'white', p: 2 }}
+            variant="h6" component="h5">
+            Latitude: {lat}; Longitude: {long}
+          </Typography>
+          <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
+            setDroneLocation={setDroneLocation} />
+        </Box>
+      </Box>
+
+      {activeStep === steps.length ? (
+        <React.Fragment>
+          Redirect to dashboard //TODO
+          {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
               <Box sx={{ flex: '1 1 auto' }} />
               <Button onClick={handleReset}>Reset</Button>
             </Box> */}
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
           {/* <Typography sx={{ mt: 2, mb: 1 }}  variant="h4" component="h4">Requirement</Typography>
           <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography> */}
-            {/* {stepsComponent.map((compo, index) => {
+          {/* {stepsComponent.map((compo, index) => {
               return (
                   (compo.id) === (activeStep + 1) ?  (compo.comp): ''
               )
             })} */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
-              bottom: 8, left: 12, right: 12, }}>
-              <StyledButton
-                color='inherit'
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                sx={{ mr: 1 }}
-                variant='outlined'
-              >
-                Back
-              </StyledButton>
+          <Box sx={{
+            display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
+            bottom: 8, left: 12, right: 12,
+          }}>
+            <StyledButton
+              color='inherit'
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              sx={{ mr: 1 }}
+              variant='outlined'
+            >
+              Back
+            </StyledButton>
 
-              <StyledButton variant='outlined' onClick={handleNext}>
-                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-              </StyledButton>
-            </Box>
-          </React.Fragment>
-        )}
-      </Box>
+            <StyledButton variant='outlined' onClick={handleNext}>
+              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+            </StyledButton>
+          </Box>
+        </React.Fragment>
+      )}
+    </Box>
   );
 }

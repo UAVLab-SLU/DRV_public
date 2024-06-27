@@ -588,7 +588,6 @@ export default function EnvironmentConfiguration (env) {
                             </Grid>
                         </Grid>
                         
-                        // added radius label
                         <Grid item xs={12}>
                             <Grid container alignItems="center" direction="row">
                                 <Grid item xs={4}>

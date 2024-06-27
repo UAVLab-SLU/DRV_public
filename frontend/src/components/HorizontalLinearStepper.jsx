@@ -16,6 +16,7 @@ import Home from '../pages/Home';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
+import { useMainJson } from '../contexts/MainJsonContext';
 
 
 
@@ -38,14 +39,10 @@ const steps = [
 
 export default function HorizontalLinearStepper(data) { 
   const navigate = useNavigate(); 
+  const { mainJson, setJson, setMainJson, setDroneLocation } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
-  const [mainJson, setJson] = React.useState({
-    Drones:null,
-    environment: null,
-    monitors: null
-  })
   const [lat, setLat] = React.useState(null);
   const [long, setLong] = React.useState(null);
 
@@ -59,18 +56,6 @@ export default function HorizontalLinearStepper(data) {
     return skipped.has(step);
   };
 
-  const setMainJson = (envJson, id) => {
-    if(id == "environment" && mainJson.Drones != null && mainJson.Drones[0].X != envJson.Origin.Latitude) {
-      setJson(prevState => ({
-        ...prevState,
-        Drones:null,
-      }))
-    }
-    setJson(prevState => ({
-      ...prevState,
-      [id]: envJson
-    }))
-  }
 
   const handleTabChange = (event, newValue) => {
     setActiveStep(newValue);
@@ -176,7 +161,7 @@ export default function HorizontalLinearStepper(data) {
     {
       name:'Mission Configuration',
       id:2, 
-      comp: <MissionConfiguration droneArrayJson={setMainJson} id="Drones" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+      comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]}/>
     },
     {
       name:'Test Configuration',
@@ -255,12 +240,11 @@ export default function HorizontalLinearStepper(data) {
           <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
             <Typography 
             sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5">Latitude: {lat}; Longitude: {long}</Typography>
-            {/* <Typography 
-            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5"></Typography> */}
-            <CesiumMap onLocationSelect={onLocationSelect}/> 
-
+            variant="h6" component="h5">
+              Latitude: {lat}; Longitude: {long}
+            </Typography>
+            <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
+             setDroneLocation={setDroneLocation} />
           </Box>
         </Box>
         

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import {useState, useEffect, Fragment} from 'react'
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Container from '@mui/material/Container';
@@ -15,6 +15,8 @@ import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
 import { OutlinedInput } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import PropTypes from 'prop-types';
+import { useMainJson } from '../../contexts/MainJsonContext';
 
 const flightPaths = [
     {value:'fly_in_circle', label:'Circle', id:1},
@@ -60,152 +62,105 @@ const locations = [
     {value:'Cartesian Coordinate', id:2}
 ]   
 
-export default function DroneConfiguration (droneData)  {
-    console.log('DroneConfiguration-----', droneData)
-    const [selectedLoc, setSelectedLoc] = React.useState('GeoLocation')
-    const [selectedModel, setSelectedModel] = React.useState('');
-    const [selectedDroneType, setselectedDroneType] = React.useState(droneTypes[1].value);
-    const [drone, setDrone] = React.useState({
-        ...droneData.droneObject, 
-        // droneType: droneTypes[1].value
-    }
-        // != null ? droneData.droneObject : {
-        // VehicleType: "SimpleFlight",
-		// DefaultVehicleState: "Armed",
-		// EnableCollisionPassthrogh: false,
-		// EnableCollisions: true,
-		// AllowAPIAlways: true,
-		// EnableTrace: false,
-        // Name:droneData.name,
-        // droneName: droneData.name,
-        // X:0,
-        // Y:0,
-        // Z:0,
-        // Pitch: 0,
-		// Roll: 0, 
-		// Yaw: 0,
-        // Sensors: null,
-        // MissionValue:null
-        // Mission : {
-        //     name:"fly_to_points",
-        //     param : []
-        // },
-        // // Cameras: {
-        // //     CaptureSettings: [
-        // //         {
-        // //           ImageType: 0,
-        // //           Width: 256,
-        // //           Height: 144,
-        // //           FOV_Degrees: 90,
-        // //           AutoExposureSpeed: 100,
-        // //           AutoExposureBias: 0,
-        // //           AutoExposureMaxBrightness: 0.64,
-        // //           AutoExposureMinBrightness: 0.03,
-        // //           MotionBlurAmount: 0,
-        // //           TargetGamma: 1,
-        // //           ProjectionMode: '',
-        // //           OrthoWidth: 5.12
-        // //         }
-        // //     ],
-        // //     NoiseSettings: [
-        // //         {
-        // //           Enabled: false,
-        // //           ImageType: 0,
-        // //           RandContrib: 0.2,
-        // //           RandSpeed: 100000,
-        // //           RandSize: 500,
-        // //           RandDensity: 2,
-        // //           HorzWaveContrib: 0.03,
-        // //           HorzWaveStrength: 0.08,
-        // //           HorzWaveVertSize: 1,
-        // //           HorzWaveScreenSize: 1,
-        // //           HorzNoiseLinesContrib: 1,
-        // //           HorzNoiseLinesDensityY: 0.01,
-        // //           HorzNoiseLinesDensityXY: 0.5,
-        // //           HorzDistortionContrib: 1,
-        // //           HorzDistortionStrength: 0.002
-        // //         }
-        // //     ],
-        // //     Gimbal: {
-        // //         Stabilization: 0,
-        // //         Pitch: 0,
-        // //         Roll: 0,
-        // //         Yaw: 0
-        // //     },
-        // //     X:0,
-        // //     Y:0,
-        // //     Z:0,
-        // //     Pitch: 0,
-        // //     Roll: 0, 
-        // //     Yaw: 0
-        // // }}
-    )
+export default function DroneConfiguration ({name, id, index})  {
+    const { mainJson, setJson } = useMainJson();
+    console.log('DroneConfiguration-----', mainJson.Drones[index]);
+    const [selectedLoc, setSelectedLoc] = useState('GeoLocation')
+    const [selectedModel, setSelectedModel] = useState('');
+    const [selectedDroneType, setselectedDroneType] = useState(droneTypes[1].value);
 
     const handleLocChange = (event ) => {
         setSelectedLoc(event.target.value);
     };
 
     const handleMissionChange = (event ) => {
-        setDrone(prevState => ({
-            ...prevState,
-            Mission: {
-                ...prevState.Mission,
-                name: event.target.value
-            }
-        }));
+        setJson(prevState => {
+            const updatedDrones = prevState.Drones.map((drone, idx) => {
+                if (idx === index) {
+                    return {
+                        ...drone,
+                        Mission: { ...drone.Mission, name: event.target.value }
+                    };
+                }
+                return drone;
+            });
+    
+            return { ...prevState, Drones: updatedDrones };
+        });
     };
 
     const handleDroneTypeChange = (event) => {
         handleSnackBarVisibility(true)
-        setselectedDroneType(event.target.value)
-         setDrone(prevState => ({
-             ...prevState,
-             droneType: event.target.value
-         }));
+        setselectedDroneType(event.target.value);
+        setJson(prevState => {
+            const updatedDrones = prevState.Drones.map((drone, idx) => {
+                if (idx === index) {
+                    return { ...drone, droneType: event.target.value };
+                }
+                return drone;
+            });
+    
+            return { ...prevState, Drones: updatedDrones };
+        });
     };
 
     const handleDroneModelChange = (event) => {
         handleSnackBarVisibility(true)
         setSelectedModel(event.target.value);
-        setDrone(prevState => ({
-            ...prevState,
-            droneModel: event.target.value
-        }));
+        setJson(prevState => {
+            const updatedDrones = prevState.Drones.map((drone, idx) => {
+                if (idx === index) {
+                    return { ...drone, droneModel: event.target.value };
+                }
+                return drone;
+            });
+    
+            return { ...prevState, Drones: updatedDrones };
+        });
     };
     
-
-
-
-
-    const handleChange = (val) => {
-        console.log('handlechange---', val)
-        if(val.target.id == "Name"){
-            droneData.resetName(val.target.value, droneData.id)
-            setDrone(prevState => ({
-                ...prevState,
-                droneName: val.target.value
-            }))
+    const handleChange = (event) => {
+        if(event.target.id == "Name"){
+            // droneData.resetName(event.target.value, droneData.id)
+            setJson(prevState => {
+                const updatedDrones = prevState.Drones.map((drone, idx) => {
+                    if (idx === index) {
+                        return { ...drone, droneName: event.target.value };
+                    }
+                    return drone;
+                });
+        
+                return { ...prevState, Drones: updatedDrones };
+            });
         }
-        setDrone(prevState => ({
-            ...prevState,
-            [val.target.id]: val.target.type === "number" ? parseFloat(val.target.value) : val.target.value
-        }))
-    }
-
-    React.useEffect(() => {
-        sendJson()
-    }, [drone])
-
-    const sendJson = () => {
-        droneData.droneJson(drone, droneData.id);
+        else {
+            setJson(prevState => {
+                const updatedDrones = prevState.Drones.map((drone, idx) => {
+                    if (idx === index) {
+                        return {
+                            ...drone,
+                            [event.target.id]: event.target.type === "number" ? parseFloat(event.target.value) : event.target.value
+                        };
+                    }
+                    return drone;
+                });
+        
+                return { ...prevState, Drones: updatedDrones };
+            });
+        }
     }
 
     const setSensorConfig = (sensor) => {
-        setDrone(prevState => ({
-            ...prevState,
-            Sensors: sensor
-        }))
-        console.log('sensor---in droneConfig', drone)
+        setJson(prevState => {
+            const updatedDrones = prevState.Drones.map((drone, idx) => {
+                if (idx === index) {
+                    return { ...drone, Sensors: sensor };
+                }
+                return drone;
+            });
+    
+            return { ...prevState, Drones: updatedDrones };
+        });
     }
 
     const setCameraSettings = (camera) => {
@@ -219,7 +174,7 @@ export default function DroneConfiguration (droneData)  {
         // }))
     }
 
-    const [snackBarState, setSnackBarState] = React.useState({
+    const [snackBarState, setSnackBarState] = useState({
         open: false,
         });
     
@@ -263,7 +218,7 @@ export default function DroneConfiguration (droneData)  {
             </Snackbar>
             
             <Container maxWidth="md">
-                <Grid container spacing={1}>
+                <Grid container spacing={0.8}>
                     <Grid item xs={12} sx={{mt: 1}}>
                         <Typography variant="h5" sx={{ color: '#F5F5DC', pb: 1, }}> Drone Settings </Typography>  
                     </Grid>
@@ -285,7 +240,7 @@ export default function DroneConfiguration (droneData)  {
                                 id="name"
                                 variant="outlined"
                                 onChange={handleChange}
-                                value={drone.droneName}
+                                value={mainJson.Drones[index].droneName}
                                 fullWidth disabled
                             />
                         </Grid>
@@ -309,7 +264,8 @@ export default function DroneConfiguration (droneData)  {
                         </Grid>
                         <Grid item xs={6}>
                             <StyledSelect
-                                value={selectedDroneType}
+                                // value={selectedDroneType}
+                                value={mainJson.Drones[index].droneType}
                                 input={<OutlinedInput/>}
                                 MenuProps= {{
                                     sx: {
@@ -377,7 +333,7 @@ export default function DroneConfiguration (droneData)  {
                     </Grid>
 
                     {selectedLoc == 'GeoLocation' ?
-                    <React.Fragment>
+                    <Fragment>
                             <Grid item xs={4}>
                                 <StyledInputLabel id="X-label">Latitude</StyledInputLabel>
                             </Grid>
@@ -397,7 +353,7 @@ export default function DroneConfiguration (droneData)  {
                                         type="number"
                                         inputProps={{ step: ".0001" }}
                                         onChange={handleChange}
-                                        value={drone.X}
+                                        value={mainJson.Drones[index].X}
                                         fullWidth
                                     />
                                 </Tooltip>
@@ -422,7 +378,7 @@ export default function DroneConfiguration (droneData)  {
                                         type="number"
                                         inputProps={{ step: ".0001" }}
                                         onChange={handleChange}
-                                        value={drone.Y}
+                                        value={mainJson.Drones[index].Y}
                                         fullWidth
                                     />
                                 </Tooltip>
@@ -447,23 +403,23 @@ export default function DroneConfiguration (droneData)  {
                                         type="number"
                                         inputProps={{ step: "1" }}
                                         onChange={handleChange}
-                                        value={drone.Z}
+                                        value={mainJson.Drones[index].Z}
                                         fullWidth
                                     />
                                 </Tooltip>
                             </Grid>
-                    </React.Fragment>: 
-                    <React.Fragment>
+                    </Fragment>: 
+                    <Fragment>
                         <Grid item xs={3}>
-                            <TextField id="X" label="X" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange} />
+                            <TextField id="X" label="X" variant="standard" type="number" inputProps={{ step: ".0001" }} value={mainJson.Drones[index].X} onChange={handleChange} />
                         </Grid>
                         <Grid item xs={3}>
-                            <TextField id="Y" label="Y" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Y} onChange={handleChange} />
+                            <TextField id="Y" label="Y" variant="standard" type="number" inputProps={{ step: ".0001" }} value={mainJson.Drones[index].Y} onChange={handleChange} />
                         </Grid>
                         <Grid item xs={3}> 
-                            <TextField id="Z" label="Z" variant="standard" type="number" inputProps={{ step: ".0001" }} value={drone.Z} disabled/>
+                            <TextField id="Z" label="Z" variant="standard" type="number" inputProps={{ step: ".0001" }} value={mainJson.Drones[index].Z} disabled/>
                         </Grid>
-                    </React.Fragment>
+                    </Fragment>
                     } 
                 </Grid>
                 {/* <SensorConfiguration setSensor={setSensorConfig} setCamera={setCameraSettings} sensorJson={drone.Sensors}/> */}
@@ -475,3 +431,9 @@ export default function DroneConfiguration (droneData)  {
         </div>
     )
 }
+
+DroneConfiguration.propTypes = {
+    name: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+    index: PropTypes.number.isRequired,
+};

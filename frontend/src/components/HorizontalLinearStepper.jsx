@@ -19,7 +19,6 @@ import Tooltip from '@mui/material/Tooltip';
 import { useMainJson } from '../contexts/MainJsonContext';
 import {useState} from 'react'
 
-
 const StyledButton = styled(Button)`
   font-size: 18px;
   font-weight: bolder;
@@ -39,7 +38,7 @@ const steps = [
 
 export default function HorizontalLinearStepper(data) { 
   const navigate = useNavigate(); 
-  const { mainJson, setJson, setMainJson, setDroneLocation } = useMainJson();
+  const { mainJson, setJson, setMainJson} = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
@@ -204,6 +203,19 @@ export default function HorizontalLinearStepper(data) {
   };
 
   const [lastDroppedLocation, setLastDroppedLocation] = useState(null);
+
+  const setDroneLocation = (index, location) => {
+    setMainJson(prevState => {
+      const updatedDrones = [...prevState.Drones];
+      updatedDrones[index] = {
+        ...updatedDrones[index],
+        X: location.latitude,
+        Y: location.longitude
+      };
+      return { ...prevState, Drones: updatedDrones };
+    });
+  };
+
 
   return (
     <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>

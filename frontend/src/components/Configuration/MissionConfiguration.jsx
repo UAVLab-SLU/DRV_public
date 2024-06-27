@@ -16,7 +16,6 @@ import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
 import { useMainJson } from '../../contexts/MainJsonContext';
 
-
 const useStyles = makeStyles((theme) => ({
     root: {
       width: '100%',
@@ -120,13 +119,15 @@ export default function MissionConfiguration (mission) {
     }
 
     const handleDragStart = (event, index) => {
+        event.stopPropagation(); // Prevent event bubbling
         const imgSrc = event.target.src;
         const dragData = {
+            type: 'drone',
             src: imgSrc,
             index: index
         };
         
-        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+        event.dataTransfer.setData('application/json', JSON.stringify(dragData));
     };
 
     return (
@@ -145,15 +146,17 @@ export default function MissionConfiguration (mission) {
 
             <Box 
             sx={{
-                maxHeight: '66vh', overflowY: 'auto',
-                width: '90%', m: 4,
+                maxHeight: '66vh', 
+                overflowY: 'auto',
+                width: '90%', 
+                m: 4,
                 '&::-webkit-scrollbar': {
-                display: 'none'  // This hides the scrollbar in Webkit browsers
+                    display: 'none'
                 },
-                scrollbarWidth: 'none',  // This hides the scrollbar in Firefox
-                msOverflowStyle: 'none'  // This hides the scrollbar in Internet Explorer
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
             }}
-            >
+            > 
                 <Grid container  direction="row" style={{padding: '12px', color: '#F5F5DC' }} >
                     <strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong>
                 </Grid>
@@ -165,7 +168,6 @@ export default function MissionConfiguration (mission) {
                         <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
                     </ButtonGroup>
                 </Grid>
-
                 {mainJson.Drones?.map((drone, index) => 
                 (
                     <Accordion key={index} classes={{ root: classes.transparentBackground }}>
@@ -186,7 +188,7 @@ export default function MissionConfiguration (mission) {
                                 </Typography>
                                 <img
                                     src={drone.image}
-                                    alt="Draggable Icon"
+                                    alt="Draggable Drone Icon"
                                     draggable="true"
                                     onDragStart={(e) => handleDragStart(e, index)}
                                     style={{ width: 40, cursor: 'grab', marginRight: 20 }}

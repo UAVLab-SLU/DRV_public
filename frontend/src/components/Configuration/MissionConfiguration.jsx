@@ -127,7 +127,13 @@ export default function MissionConfiguration (mission) {
             index: index
         };
         
-        event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+        //event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+        event.dataTransfer.setData('text/plain', JSON.stringify({
+            type: 'drone',
+            src: imgSrc,
+            index: index
+        }));
+        
     };
 
     return (

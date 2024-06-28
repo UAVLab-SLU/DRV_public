@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField'
 import Container from '@mui/material/Container'
 import Stack from '@mui/material/Stack';
-import { AccordionSummary, Tab, Tabs } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -35,26 +35,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
 import WindSettings from './WindSettings';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails'
-import { makeStyles } from '@mui/styles';
-import {ExpandMore} from '@mui/icons-material';
-import ButtonGroup from '@mui/material/ButtonGroup';
-
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        padding: '5px'
-    },
-    transparentBackground: {
-        backgroundColor: 'transparent !important'
-    },
-    backdropFilter: {
-        backgroundColor: '#75531E',
-        '-webkitBackdropFilter': 'sepia(100%)',
-        backdropFilter: 'sepia(100%)',
-    }
-}));
+import PlaceIcon from '@mui/icons-material/Place';
 
 
 export default function EnvironmentConfiguration (env) {  
@@ -116,6 +97,7 @@ export default function EnvironmentConfiguration (env) {
         Origin: {
             Latitude: 41.980381,
             Longitude: -87.934524,
+            Radius: 0,
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
@@ -202,15 +184,26 @@ export default function EnvironmentConfiguration (env) {
             }
         }))
     } 
-    const handleOriginChange = (val) => {
-        setEnvConf(prevState => ({
-            ...prevState,
-            Origin: {
-                ...prevState.Origin,
-                [val.target.id]: parseFloat(val.target.value)
+    const handleOriginChange = (event) => {
+        const { id, value } = event.target;
+        let parsedValue = value === '' ? '' : parseFloat(value);
+        
+        if (id === 'Radius') {
+            if (value === '') {
+                parsedValue = '';
+            } else if (parsedValue < 0) {
+                parsedValue = 0;
             }
-        }))
-    }
+        }
+    
+        setEnvConf(prev => ({
+            ...prev,
+            Origin: { ...prev.Origin, [id]: parsedValue }
+        }));
+    };
+    
+    
+    
     const handleCheckboxChange = (checkboxName) => {
         setFuzzyAlert(true);
         handleSnackBarVisibility(true);
@@ -242,21 +235,6 @@ export default function EnvironmentConfiguration (env) {
             setPositionBox(newStatus);
     }};
 
-  // HANDLE WIND ORIGIN
-  {/*
-  const handleWindOriginChange = (event) => {
-        const newWindOrigin = event.target.value;
-        setSelectedWindOrigin(newWindOrigin);
-        setEnvConf(prevState=> ({
-          ...prevState,
-              Wind: {
-              ...prevState.Wind,
-              WindOrigin: newWindOrigin,
-              },
-          }));
-
-  };
-  */}
 
   const handleFLuctuationChange = (event) => {
       const newFlucValue = event.target.value;
@@ -268,15 +246,6 @@ export default function EnvironmentConfiguration (env) {
         handleSnackBarVisibility(true)
       const newWindType = event.target.value;
       setSelectedWindType(newWindType); 
-      // ENV CONFIG
-      {/*setEnvConf((prevState) => ({
-          ...prevState,
-              Wind: {
-              ...prevState.Wind,
-              Type: newWindType,
-              },
-          }));
-      */}
   };
     
   const handleDirection = (val) => {
@@ -412,59 +381,29 @@ export default function EnvironmentConfiguration (env) {
                     height: '1em',
                 }
         }));
+    
+        const DraggableIcon = styled('div')({
+            cursor: 'move',
+            display: 'inline-block',
+            marginLeft: '10px',
+          });
 
-        // SADE AREA //
-        const classes = useStyles();
-
-        const [sadeCount, setSadeCount] = React.useState(env.mainJsonValue.Sades != null ? env.mainJsonValue.Sades.length: 1);
-        const [sadeArray, setSadeArray] = React.useState(env.mainJsonValue.Sades != null ? env.mainJsonValue.Sades : [{
-            id:sadeCount-1,
-            sadeName: "SADE " + sadeCount,
-            Name:"SADE " + (sadeCount)
-        }]);
-        
-        const setSade = () => {
-            const newSade = {
-                id: sadeCount,
-                sadeName: "SADE " + (sadeCount+1),
-                Name: "SADE " + (sadeCount+1)
-            };
-            setSadeArray(prevArray => [...prevArray, newSade]);
-        };
-
-        const popSade = () =>{
-            sadeArray.pop();
-        };
-        
-        const handleIncrement = () => {
-            setSadeCount(sadeCount +1);
-            setSade();
-        };
-        
-        const handleDecrement = () => {
-            setSadeCount(sadeCount -1);
-            popSade();
-        };
-        
-        const handleChange = (e, index) => {
-            const{id, value, type} = e.target;
-            setSadeArray(prevState => prevState.map((sade, i) => {
-                if (index === i){
-                    return{...sade, [id] : type === "number" ? parseFloat(value) : value};
-                }
-                return sade;
+        const handleDragStart = (event) => {
+            const iconUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
+            const dragData = JSON.stringify({
+                type: 'pin',
+                iconUrl: iconUrl,
+                radius: envConf.Origin.Radius || 0
+            });
+            //event.dataTransfer.setData("application/json", dragData);
+            event.dataTransfer.setData('text/plain', JSON.stringify({
+                type: 'pin',
+                iconUrl: iconUrl,
+                radius: envConf.Origin.Radius || 0
             }));
         };
+        
 
-        const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
-            marginRight: 2,
-            marginLeft: 20,
-            flexShrink: 0,
-            color: '#FFFFFF',
-            width: '200px',
-            fontSize: '1.2rem', fontFamily: 'Roboto, sans-serif',
-        }));
-    
   return (
     <div>
     <Snackbar open={snackBarState.open} 
@@ -770,80 +709,11 @@ export default function EnvironmentConfiguration (env) {
                     // </Grid>
                 )}
 
-                {/*SADE Field*/}
-                {selectedTab === 2 && (
-                    <Grid container direction="column" style={{padding: '12px', color:'#F5F5F5'}}>
-                        <Grid item>
-                            <strong>Configure SADE in your scenario</strong>
-                        </Grid>
-                    <Grid container  direction="row" alignItems="center" justifyContent="flex-end" style={{padding: '10px 0', fontSize:'18px', color: '#F5F5DC' }}>
-                        <Grid item>
-                            Number of SADEs &nbsp;&nbsp;
-                            <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
-                                {sadeCount > 1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
-                                {sadeCount && <Button style={{fontSize:'15px'}} variant="contained" color="warning">{sadeCount}</Button>}
-                                <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={sadeCount===10}>+</Button>
-                            </ButtonGroup>
-                        </Grid>
-                    </Grid>
-
-                    {sadeArray.map((sade, index) => (
-                        <Accordion key={index} classes={{root:classes.transparentBackground}}>
-                            <AccordionSummary
-                                expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                                sx={{backgroundColor: '#643E05'}}
-                            >
-                                <Box sx={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%'}}>
-                                    <Typography variant="h5" sx={{color:'#F5F5F5', pb:1}}>
-                                        {sade.sadeName}
-                                    </Typography>
-                                </Box>
-                            </AccordionSummary>
-                            <AccordionDetails sx={{backgroundColor:'#75531E47'}}>
-                                <Grid container spacing={2}>
-                                    {[
-                                        {label:'Name', key:'sadeName', type:'text'},
-                                        {label:'Height', key:'height', type:'number'},
-                                        {label:'Latitude 1', key:'latitude1', type:'number'},
-                                         {label:'Longitude 1', key:'longitude1', type:'number'},
-                                        {label:'Latitude 2', key:'latitude2', type:'number'},
-                                        {label:'Longitude 2', key:'longitude2', type:'number'},
-                                        {label:'Latitude 3', key:'latitude3', type:'number'},
-                                        {label:'Longitude 3', key:'longitude3', type:'number'},
-                                        {label:'Latitude 4', key:'latitude4', type:'number'},
-                                        {label:'Longitude 4', key:'longitude4', type:'number'},
-                                    ].map((field, i) => (
-                                        <Grid item xs={6} key={i}>
-                                            <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
-                                            <TextField
-                                                sx={{
-                                                    backgroundColor:'#71665E',
-                                                    '& .MuiOutlinedInput-root': {
-                                                        '& .MuiInputBase-input': {
-                                                            padding: '6px 8px',
-                                                            fontSize: '1.2rem',
-                                                        },
-                                                    },
-                                                }}
-                                                id={field.key}
-                                                type={field.type}
-                                                variant="outlined"
-                                                onChange={(e) => handleChange(e, index)}
-                                                value={sade[field.key] || ''}
-                                                fullWidth
-                                            />
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            </AccordionDetails>
-                        </Accordion>
-                    ))}
+                {selectedTab === 2 &&
+                <></>
+                }
             </Grid>
-            )}
         </Grid>
-    </Grid>
 
     <Typography 
         animate 

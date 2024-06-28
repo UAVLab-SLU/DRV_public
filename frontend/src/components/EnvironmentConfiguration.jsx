@@ -613,7 +613,7 @@ export default function EnvironmentConfiguration (env) {
                                             min: "0"
                                         }}
                                         onChange={handleOriginChange}
-                                        value={envConf.Origin.Radius === 0 || envConf.Origin.Radius === '' ? '' : envConf.Origin.Radius}
+                                        value={envConf.Origin.Radius}
                                         fullWidth
                                     />
                                 </Grid>

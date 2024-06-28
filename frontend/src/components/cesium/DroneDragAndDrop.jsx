@@ -3,7 +3,7 @@ import { Entity } from 'resium';
 import { Cartesian3, Math as CesiumMath, Cartographic, VerticalOrigin, Cartesian2, 
     HeightReference } from 'cesium';
 import PropTypes from 'prop-types';
-import { useMainJson } from '../../contexts/MainJsonContext';
+import { useMainJson } from '../../model/MainJsonContext';
 
 const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 const { setDroneLocation } = useMainJson();

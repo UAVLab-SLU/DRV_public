@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui/material';
 import Select from '@mui/material/Select';
 import { OutlinedInput } from '@mui/material';
@@ -6,7 +6,12 @@ import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
-import { styled as makeStyles } from '@mui/system';;
+import { styled as makeStyles } from '@mui/system';
+
+import { WindDirection, WindType } from '../utils/const';
+import { renderSelectField, renderTextField } from '../utils/SimulationPageUtils';
+import { WindModel } from '../model/WindModel';
+import { EnvironmentModel } from '../model/EnvironmentModel';
 
 const useStyles = makeStyles((theme) => ({
     transparentBackground: {
@@ -19,124 +24,34 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const StyledSelect = styled(Select)(({ theme }) => ({
-    backgroundColor: '#F5F5DC',
-    '& .MuiInputBase-input': {
-        padding: '6px 8px',
-        height: '1em',
-    }
-}));
 
-const WindDirection = [
-    { value: 'N', id: 5 },
-    { value: 'S', id: 6 },
-    { value: 'E', id: 7 },
-    { value: 'W', id: 8 },
-    { value: 'NE', id: 1 },
-    { value: 'SE', id: 2 },
-    { value: 'SW', id: 3 },
-    { value: 'NW', id: 4 }
-];
-
-const WindType = [
-    { value: "Constant Wind", id: 1 },
-    { value: "Turbulent Wind", id: 2 },
-];
-
-const WindSettings = ({
-    envConf,
-    handleWindTypeChange,
-    handleDirection,
-    handleWindChange,
-    handleFLuctuationChange,
-    selectedWindType,
-    fluctuationPercentage,
-    windBlocks,
-    updateWindBlocks,
-}) => {
+const WindSettings = ({ envConf, setEnvConf }) => {
     const classes = useStyles();
 
-    const renderSelectField = (label, value, onChange, options) => (
-        <Grid item container alignItems="center" direction="row">
-            <Grid item xs={4}>
-                <InputLabel sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>{label}</InputLabel>
-            </Grid>
-            <Grid item xs={6}>
-                <StyledSelect
-                    value={value}
-                    input={<OutlinedInput />}
-                    MenuProps={{
-                        sx: {
-                            '& .MuiPaper-root': {
-                                backgroundColor: '#F5F5DC',
-                            }
-                        }
-                    }}
-                    onChange={onChange}
-                    fullWidth
-                >
-                    {options.map((val) => (
-                        <MenuItem value={val.value} key={val.id}>
-                            <em>{val.value}</em>
-                        </MenuItem>
-                    ))}
-                </StyledSelect>
-            </Grid>
-        </Grid>
-    );
-
-    const renderTextField = (label, value, onChange, inputProps) => (
-        <Grid item container alignItems="center" direction="row">
-            <Grid item xs={4}>
-                <InputLabel sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>{label}</InputLabel>
-            </Grid>
-            <Grid item xs={6}>
-                <Tooltip title={`Enter ${label}`} placement='bottom'>
-                    <TextField
-                        sx={{
-                            backgroundColor: '#F5F5DC',
-                            '& .MuiOutlinedInput-root': {
-                                '& .MuiInputBase-input': {
-                                    padding: '6px 8px',
-                                },
-                            },
-                        }}
-                        variant="outlined"
-                        type="number"
-                        onChange={onChange}
-                        value={value}
-                        inputProps={inputProps}
-                        fullWidth
-                    />
-                </Tooltip>
-            </Grid>
-        </Grid>
-    );
-
     const addNewWindBlock = () => {
-        const newWindBlock = {
-          windType: selectedWindType,
-          windDirection: envConf.Wind.Direction,
-          windVelocity: envConf.Wind.Force,
-          fluctuationPercentage: selectedWindType === 'Turbulent Wind' ? fluctuationPercentage : 0,
-        };
-        updateWindBlocks([...windBlocks, newWindBlock]);
+        let newWindBlock = new WindModel();
+        envConf.addNewWind(newWindBlock);
+        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
     };
-    
+
     const setWindBlockData = (index, updatedData) => {
-        const updatedWindBlocks = [...windBlocks];
-        updatedWindBlocks[index] = { ...updatedWindBlocks[index], ...updatedData };
-        updateWindBlocks(updatedWindBlocks);
+        let wind = envConf.getWindBasedOnIndex(index);
+        wind.windType = updatedData.windType ? updatedData.windType : wind.windType;
+        wind.windDirection = updatedData.windDirection ? updatedData.windDirection : wind.windDirection;
+        wind.windVelocity = updatedData.windVelocity ? updatedData.windVelocity : wind.windVelocity;
+        wind.fluctuationPercentage = updatedData.fluctuationPercentage ? updatedData.fluctuationPercentage : wind.fluctuationPercentage;
+        envConf.updateWindBasedOnIndex(index, wind);
+        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
     };
-    
-    const deleteWindBlock = (index) => {
-        const updatedWindBlocks = windBlocks.filter((_, i) => i !== index);
-        updateWindBlocks(updatedWindBlocks);
-    };
+
+    const performWindDelete = (index) => {
+        envConf.deleteWindBasedOnIndex(index)
+        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+    } 
 
     return (
         <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
-            {windBlocks.map((windBlock, index) => (
+            {envConf.Wind.map((windBlock, index) => (
                 <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
                     {renderSelectField("Wind Type", windBlock.windType, (e) =>
                         setWindBlockData(index, { windType: e.target.value }), WindType)}
@@ -151,7 +66,7 @@ const WindSettings = ({
                     )}
 
                     <Grid item xs={12}>
-                        <IconButton onClick={() => deleteWindBlock(index)}>
+                        <IconButton onClick={() => performWindDelete(index)}>
                             <DeleteOutline color="error" />
                         </IconButton>
                     </Grid>
@@ -162,12 +77,12 @@ const WindSettings = ({
                 <Grid xs={10}
                     classes={{ root: classes.backdropFilter }}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
-                    <IconButton 
-                        onClick={addNewWindBlock} 
+                    <IconButton
+                        onClick={addNewWindBlock}
                         color="warning"
-                        sx={{ 
+                        sx={{
                             fontSize: '1.10rem', // Reduces font size 
-                            '& .MuiSvgIcon-root': { 
+                            '& .MuiSvgIcon-root': {
                                 fontSize: '1rem' // Reduces icon size
                             },
                             padding: '4px' // Reduces padding around the button
@@ -183,14 +98,7 @@ const WindSettings = ({
 
 WindSettings.propTypes = {
     envConf: PropTypes.object.isRequired,
-    handleWindTypeChange: PropTypes.func.isRequired,
-    handleDirection: PropTypes.func.isRequired,
-    handleWindChange: PropTypes.func.isRequired,
-    handleFLuctuationChange: PropTypes.func.isRequired,
-    selectedWindType: PropTypes.string.isRequired,
-    fluctuationPercentage: PropTypes.number.isRequired,
-    windBlocks: PropTypes.array.isRequired,
-    updateWindBlocks: PropTypes.func.isRequired,
+    setEnvConf: PropTypes.object.isRequired,
 };
 
 export default WindSettings;

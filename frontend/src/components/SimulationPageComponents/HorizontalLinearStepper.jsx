@@ -8,16 +8,14 @@ import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import styled from '@emotion/styled';
-import MissionConfiguration from './Configuration/MissionConfiguration';
-import EnvironmentConfiguration from './EnvironmentConfiguration';
-import CesiumMap from './cesium/CesiumMap';
-import MonitorControl from './MonitorControl'
-import Home from '../pages/Home';
+import MissionConfiguration from '../Configuration/MissionConfiguration';
+import EnvironmentConfiguration from '../EnvironmentConfiguration';
+import CesiumMap from '../cesium/CesiumMap';
+import MonitorControl from '../MonitorControl'
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
-import { useMainJson } from '../contexts/MainJsonContext';
-
+import { useMainJson } from '../../model/MainJsonContext';
 
 
 const StyledButton = styled(Button)`
@@ -38,16 +36,20 @@ const steps = [
 ];
 
 export default function HorizontalLinearStepper(data) { 
+
+  // START of DOM model ===================
   const navigate = useNavigate(); 
-  const { mainJson, setJson, setMainJson, setDroneLocation } = useMainJson();
+  const { mainJson, setJson, setMainJson, setDroneLocation, setDroneJson } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
   const [lat, setLat] = React.useState(null);
   const [long, setLong] = React.useState(null);
-
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
+  // END of DOM Model================
 
+
+  // START of DOM controller
   const redirectToHome = () => {
     navigate('/')
   }
@@ -163,11 +165,11 @@ export default function HorizontalLinearStepper(data) {
       id:2, 
       comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]}/>
     },
-    // {
-    //   name:'Test Configuration',
-    //   id:3,
-    //   comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
-    // }
+    {
+      name:'Test Configuration',
+      id:3,
+      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+    }
   ];
 
   const StyledTab = styled(Tab)(({ theme }) => ({

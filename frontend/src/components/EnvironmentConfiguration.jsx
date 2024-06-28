@@ -35,15 +35,26 @@ import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
 import WindSettings from './WindSettings';
 
-export default function EnvironmentConfiguration (env) {  
+import { EnvironmentModel } from '../model/EnvironmentModel';
+import { WindModel } from '../model/WindModel';
+
+export default function EnvironmentConfiguration (env) {
+    
+    // Start of Model
     const [selectedTab, setSelectedTab] = useState(0);
     const [backendInfo, setBackendInfo] = useState({ 
         numQueuedTasks: 0,
         backendStatus: 'idle'
     });  
-
     const [windBlocks, setWindBlocks] = useState([]);
+    const [currentPosition, setCurrentPosition] = useState({
+        lat: 41.980381,
+        lng: -87.934524
+      }); 
 
+    // END of model
+
+    // Start of Controller
     const updateWindBlocks = (updatedWindBlocks) => {
         setWindBlocks(updatedWindBlocks);
         setEnvConf((prevEnvConf) => ({
@@ -52,10 +63,6 @@ export default function EnvironmentConfiguration (env) {
         }));
       };
       
-    const [currentPosition, setCurrentPosition] = React.useState({
-        lat: 41.980381,
-        lng: -87.934524
-      }); 
 
       const getStatusStyle = () => {
         switch (backendInfo.backendStatus) {
@@ -85,20 +92,21 @@ export default function EnvironmentConfiguration (env) {
         }))
 
     }
-    const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : {
-        enableFuzzy: false,
-        timeOfDayFuzzy: false,
-        positionFuzzy: false,
-        windFuzzy: false,
-        Wind: [],
-        Origin: {
-            Latitude: 41.980381,
-            Longitude: -87.934524,
-        },
-        TimeOfDay: "10:00:00",
-        UseGeo: true,
-        time:dayjs('2020-01-01 10:00')
-    }); 
+
+    const prepareEnvironment = () => {
+        let model = new EnvironmentModel();
+        model.enableFuzzy = false;
+        model.timeOfDayFuzzy = false;
+        model.positionFuzzy = false;
+        model.setOriginLatitude = 41.980381;
+        model.setOriginLongitude = -87.934524;
+        model.TimeOfDay = "10:00:00";
+        model.UseGeo = true;
+        model.time = dayjs('2020-01-01 10:00');
+        return model
+    }
+
+    const [envConf, setEnvConf] = useState(prepareEnvironment()); 
 
     const handleTabChange = (event, newValue) => {
         setSelectedTab(newValue);
@@ -117,27 +125,6 @@ export default function EnvironmentConfiguration (env) {
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
-
-
-    {/*}
-    //Wind Origin
-    const WindOrigin = [
-        { value: "VALUE SUBJECT TO CHANGE1", id: 1 },
-        { value: "VALUE SUBJECT TO CHANGE2", id: 2 },
-        { value: "VALUE SUBJECT TO CHANGE3", id: 3 },
-        { value: "VALUE SUBJECT TO CHANGE4", id: 4 },
-        { value: "VALUE SUBJECT TO CHANGE5", id: 5 },
-        { value: "None", id: 6 }
-    ]
-    */}
-
-    {/*}
-    //Saves selected wind origin with a chosen one, or if none is chosen, it uses a default
-    //THIS WILL CHANGE WHEN WE HAVE FURTHER INFORMATION ON WHAT THE VALUES ARE, AS WELL AS ENVCONFIG
-    const [selectedWindOrigin, setSelectedWindOrigin] = React.useState(
-        envConf.Wind.WindOrigin || "None"
-    );
-    */}
 
 
     const [selectedWindType, setSelectedWindType] = React.useState(
@@ -165,6 +152,7 @@ export default function EnvironmentConfiguration (env) {
     ]
 
     const handleTimeChange = (val) => {
+
         setEnvConf(prevState => ({
             ...prevState,
             time: val,
@@ -219,22 +207,6 @@ export default function EnvironmentConfiguration (env) {
         } else if (checkboxName === 'position') {
             setPositionBox(newStatus);
     }};
-
-  // HANDLE WIND ORIGIN
-  {/*
-  const handleWindOriginChange = (event) => {
-        const newWindOrigin = event.target.value;
-        setSelectedWindOrigin(newWindOrigin);
-        setEnvConf(prevState=> ({
-          ...prevState,
-              Wind: {
-              ...prevState.Wind,
-              WindOrigin: newWindOrigin,
-              },
-          }));
-
-  };
-  */}
 
   const handleFLuctuationChange = (event) => {
       const newFlucValue = event.target.value;
@@ -434,14 +406,7 @@ export default function EnvironmentConfiguration (env) {
             {selectedTab === 1 && (
                 <WindSettings
                     envConf={envConf}
-                    handleWindTypeChange={handleWindTypeChange}
-                    handleDirection={handleDirection}
-                    handleWindChange={handleWindChange}
-                    handleFLuctuationChange={handleFLuctuationChange}
-                    selectedWindType={selectedWindType}
-                    fluctuationPercentage={fluctuationPercentage}
-                    windBlocks={envConf.Wind}
-                    updateWindBlocks={updateWindBlocks}
+                    setEnvConf = {setEnvConf}
                 />
 
                 )}

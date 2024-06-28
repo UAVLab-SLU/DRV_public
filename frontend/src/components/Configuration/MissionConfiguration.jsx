@@ -14,7 +14,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
-import { useMainJson } from '../../contexts/MainJsonContext';
+import { useMainJson } from '../../model/MainJsonContext';
 
 
 const useStyles = makeStyles((theme) => ({

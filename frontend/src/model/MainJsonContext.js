@@ -1,16 +1,13 @@
 import React, { createContext, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { SimulationConfigurationModel } from './SimulationConfigurationModel';
 
 const MainJsonContext = createContext();
 
 export const useMainJson = () => useContext(MainJsonContext);
 
 export const MainJsonProvider = ({ children }) => {
-  const [mainJson, setJson] = useState({
-    Drones: null,
-    environment: null,
-    monitors: null
-  });
+  const [mainJson, setJson] = useState(new SimulationConfigurationModel());
 
   const setMainJson = (envJson, id) => {
     if(id == "environment" && mainJson.Drones && mainJson.Drones[0].X != envJson.Origin.Latitude) {

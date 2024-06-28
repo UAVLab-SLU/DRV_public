@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import styled from '@emotion/styled';
-import { makeStyles } from '@mui/styles';
+import { styled as makeStyles } from '@mui/system';;
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 
 const useStyles = makeStyles((theme) => ({

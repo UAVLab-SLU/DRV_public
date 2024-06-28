@@ -1,3 +1,4 @@
+
 //import * as React from 'react' 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -649,6 +650,43 @@ export default function EnvironmentConfiguration (env) {
                             </Grid>
                         </Grid>
                         
+                        <Grid item xs={12}>
+                            <Grid container alignItems="center" direction="row">
+                                <Grid item xs={4}>
+                                    <InputLabel id="radius-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                                        Enter radius (miles)
+                                    </InputLabel>
+                                </Grid>
+                                <Grid item xs={5}>
+                                    <TextField
+                                        sx={{
+                                            backgroundColor: '#F5F5DC',
+                                            '& .MuiOutlinedInput-root': {
+                                                '& .MuiInputBase-input': {
+                                                    padding: '6px 8px',
+                                                },
+                                            },
+                                        }}
+                                        id="Radius"
+                                        variant="outlined"
+                                        type="number"
+                                        inputProps={{ 
+                                            step: "0.1",
+                                            min: "0"
+                                        }}
+                                        onChange={handleOriginChange}
+                                        value={envConf.Origin.Radius}
+                                        fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={1}>
+                                    <DraggableIcon draggable onDragStart={handleDragStart}>
+                                        <PlaceIcon style={{ color: 'white' }} />
+                                    </DraggableIcon>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+
                     </Grid>
                 
                         

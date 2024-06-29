@@ -33,13 +33,13 @@ const StyledButton = styled(Button)`
 const steps = [
   'Environment Configuration',
   'Mission Configuration',
-  // 'Test Configuration'
+  'Test Configuration'
 ];
 
-export default function HorizontalLinearStepper(data) { 
+export default function HorizontalLinearStepper(data) {
 
   // START of DOM model ===================
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
@@ -86,47 +86,52 @@ export default function HorizontalLinearStepper(data) {
   //   setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   // }, [mainJson])
 
-  const setDroneLocation = () => {}
+  const setDroneLocation = () => { }
 
   const invokePostAPI = () => {
     console.log("mainJson-----", mainJson)
-    if(activeStep === steps.length -1) {
-      
+    if (activeStep === steps.length - 1) {
+
       let mainJSONStringed = mainJson.toJSONString();
       navigate('/report-dashboard', {
-        state: {mainJson: mainJSONStringed}
+        state: { mainJson: mainJSONStringed }
       })
-      fetch('http://127.0.0.1:5000/addTask', { 
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify(mainJSONStringed),
+      fetch('http://127.0.0.1:5000/addTask', {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(mainJSONStringed),
       })
-      .then(res => res.json())
-      .then(res => console.log(res));
+        .then(res => res.json())
+        .then(res => console.log(res));
     }
-  } 
+  }
   const stepsComponent = [
     {
-      name:'Environment Configuration',
-      id:1,
+      name: 'Environment Configuration',
+      id: 1,
       comp: <EnvironmentConfiguration environemntJSONSetState={setEnvJson}
-                                      id="environment" 
-                                      mainJSON={mainJson}
-                                      environmentJSON={envJson}
-                                      mainJSONSetState={setMainJson}
-                                      />
+        id="environment"
+        mainJSON={mainJson}
+        environmentJSON={envJson}
+        mainJSONSetState={setMainJson}
+      />
     },
     {
-      name:'Mission Configuration',
-      id:2, 
-      comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]}/>
+      name: 'Mission Configuration',
+      id: 2,
+      comp: <MissionConfiguration 
+        id="Drones"
+        windowHeight={windowSize.current[1]}
+        mainJSON = {mainJson}
+        mainJSONSetState = {setMainJson}
+      />
     },
     {
-      name:'Test Configuration',
-      id:3,
-      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+      name: 'Test Configuration',
+      id: 3,
+      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]} />
     }
   ];
 
@@ -149,7 +154,7 @@ export default function HorizontalLinearStepper(data) {
       borderBottom: '5px solid #FFB500',
     },
   }));
-  
+
   const StyledTabs = styled(Tabs)({
     minHeight: '48px',
     '.MuiTabs-indicator': {
@@ -164,60 +169,62 @@ export default function HorizontalLinearStepper(data) {
   };
 
   return (
-    <Box sx={{ width: '100vw' , height:'100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
-        <Typography sx={{mb: 1, color: 'white' }}  variant="h4" component="h4">Requirement
-          <Tooltip title="Home" placement='bottom'>
-            <HomeIcon style={{float:'right', cursor:'pointer', fontSize:'35px', color: 'white'}} onClick={redirectToHome}/>
-          </Tooltip>
-        </Typography>
-        <Typography sx={{ mt: 2, mb: 1, color: 'white' }}  variant="h6" component="h4">{data.desc}</Typography>
+    <Box sx={{ width: '100vw', height: '100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
+      <Typography sx={{ mb: 1, color: 'white' }} variant="h4" component="h4">Requirement
+        <Tooltip title="Home" placement='bottom'>
+          <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px', color: 'white' }} onClick={redirectToHome} />
+        </Tooltip>
+      </Typography>
+      <Typography sx={{ mt: 2, mb: 1, color: 'white' }} variant="h6" component="h4">{data.desc}</Typography>
 
-        <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
-          <Box sx={{ width: '45%' }}>
-            <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
-              <StyledTab label="Environment" />
-              <StyledTab label="Mission" />
-             {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/} 
-            </StyledTabs>
-            <div>
-              {activeStep != steps.length && stepsComponent[activeStep].comp}
-            </div>
-          </Box>
-          <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
-            <Typography 
-            sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
-            variant="h6" component="h5">
-              Latitude: {lat}; Longitude: {long}
-            </Typography>
-            {/* <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
-             setDroneLocation={setDroneLocation} /> */}
-          </Box>
+      <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box', }} >
+        <Box sx={{ width: '45%' }}>
+          <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
+            <StyledTab label="Environment" />
+            <StyledTab label="Mission" />
+            <StyledTab label="Test" />
+          </StyledTabs>
+          <div>
+            {activeStep != steps.length && stepsComponent[activeStep].comp}
+          </div>
         </Box>
-        
-        {activeStep === steps.length ? (
-          <React.Fragment>
-            Redirect to dashboard //TODO
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
-              bottom: 8, left: 12, right: 12, }}>
-              <StyledButton
-                color='inherit'
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                sx={{ mr: 1 }}
-                variant='outlined'
-              >
-                Back
-              </StyledButton>
-
-              <StyledButton variant='outlined' onClick={handleNext}>
-                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-              </StyledButton>
-            </Box>
-          </React.Fragment>
-        )}
+        <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5 }}>
+          <Typography
+            sx={{ border: 1, borderColor: 'yellow', backgroundColor: 'white', p: 2 }}
+            variant="h6" component="h5">
+            Latitude: {lat}; Longitude: {long}
+          </Typography>
+          {/* <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
+             setDroneLocation={setDroneLocation} /> */}
+        </Box>
       </Box>
+
+      {activeStep === steps.length ? (
+        <React.Fragment>
+          Redirect to dashboard //TODO
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <Box sx={{
+            display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
+            bottom: 8, left: 12, right: 12,
+          }}>
+            <StyledButton
+              color='inherit'
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              sx={{ mr: 1 }}
+              variant='outlined'
+            >
+              Back
+            </StyledButton>
+
+            <StyledButton variant='outlined' onClick={handleNext}>
+              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+            </StyledButton>
+          </Box>
+        </React.Fragment>
+      )}
+    </Box>
   );
 }

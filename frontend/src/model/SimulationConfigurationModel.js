@@ -57,6 +57,10 @@ export class SimulationConfigurationModel {
         this._drones = this._drones.filter((_, i) => i !== index);
     }
 
+    popLastDrone(){
+        this._drones.pop();
+    }
+
     static getReactStateBasedUpdate(instance){
         let model = new SimulationConfigurationModel();
         model.environment = instance.environment;

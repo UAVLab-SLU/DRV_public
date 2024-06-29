@@ -4,14 +4,13 @@ import Select from '@mui/material/Select';
 import { OutlinedInput } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
-import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
 import { styled as makeStyles } from '@mui/system';
 
-import { WindDirection, WindType } from '../utils/const';
-import { renderSelectField, renderTextField } from '../utils/SimulationPageUtils';
-import { WindModel } from '../model/WindModel';
-import { EnvironmentModel } from '../model/EnvironmentModel';
+import { WindDirection, WindType } from '../../utils/const';
+import { renderSelectField, renderTextField } from '../../utils/SimulationPageUtils';
+import { WindModel } from '../../model/WindModel';
+import { EnvironmentModel } from '../../model/EnvironmentModel';
 
 const useStyles = makeStyles((theme) => ({
     transparentBackground: {
@@ -98,7 +97,7 @@ const WindSettings = ({ envConf, setEnvConf }) => {
 
 WindSettings.propTypes = {
     envConf: PropTypes.object.isRequired,
-    setEnvConf: PropTypes.object.isRequired,
+    setEnvConf: PropTypes.func.isRequired,
 };
 
 export default WindSettings;

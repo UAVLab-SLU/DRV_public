@@ -20,7 +20,7 @@ import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import styled from '@emotion/styled';
 import { styled as makeStyles } from '@mui/system';;
-import EnvironmentConfiguration from './EnvironmentConfiguration';
+import EnvironmentConfiguration from './SimulationPageComponents/EnvironmentConfiguration';
 
 const useStyles = makeStyles((theme) => ({
     root: {

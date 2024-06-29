@@ -1,10 +1,9 @@
 export const HOME_LABEL = {
-  partfirst: `Simulation of a realistic scenario is an effective way to test the system's requirements.`,
-  partsecond: `Describe one or more requirements you would like to test by simulating a scenario`,
+  "partfirst": `Simulation of a realistic scenario is an effective way to test the system's requirements.`,
+  "partsecond": `Describe one or more requirements you would like to test by simulating a scenario`,
 };
 
 export const BASE_URL = "http://localhost:5000";
-
 
 export const UAV_DESCRIPTION = {
   "UAV-301": {
@@ -21,7 +20,6 @@ export const UAV_DESCRIPTION = {
   },
 }
 
-
 export const WindDirection = [
   { value: 'N', id: 5 },
   { value: 'S', id: 6 },
@@ -36,4 +34,15 @@ export const WindDirection = [
 export const WindType = [
   { value: "Constant Wind", id: 1 },
   { value: "Turbulent Wind", id: 2 },
+];
+
+export const ENVIRONMENT_ORIGINS = [
+  { value: "Chicago O’Hare Airport", id: 20 },
+  { value: "Michigan Lake Beach", id: 10 },
+  { value: "Specify Region", id: 30 }
+];
+
+export const ENVIRONMENT_ORIGIN_VALUES = [
+  { value: "Michigan Lake Beach", Latitude: 42.211223, Longitude: -86.390394, Height: 170 },
+  { value: "Chicago O’Hare Airport", Latitude: 41.980381, Longitude: -87.934524, Height: 200 }
 ];

@@ -9,13 +9,14 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import styled from '@emotion/styled';
 import MissionConfiguration from '../Configuration/MissionConfiguration';
-import EnvironmentConfiguration from '../EnvironmentConfiguration';
+import EnvironmentConfiguration from './EnvironmentConfiguration';
 import CesiumMap from '../cesium/CesiumMap';
 import MonitorControl from '../MonitorControl'
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import { useMainJson } from '../../model/MainJsonContext';
+import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 
 const StyledButton = styled(Button)`
@@ -39,7 +40,7 @@ export default function HorizontalLinearStepper(data) {
 
   // START of DOM model ===================
   const navigate = useNavigate(); 
-  const { mainJson, setJson, setMainJson, setDroneLocation, setDroneJson } = useMainJson();
+  const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
@@ -81,74 +82,26 @@ export default function HorizontalLinearStepper(data) {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  React.useEffect(() => {
-    if( mainJson.environment != null && mainJson.environment.enableFuzzy == true && mainJson.environment.enableFuzzy != null) {
-      setJson(prevState => ({
-        ...prevState,
-        FuzzyTest: {
-          target: "Wind",
-          precision: 5
-        }
-      }))
-      delete mainJson.environment["enableFuzzy"]
-    }
-    if (mainJson.environment != null && mainJson.environment.enableFuzzy == false && mainJson.FuzzyTest != null) {
-      delete mainJson.FuzzyTest
-    }
-  }, [mainJson])
+  // React.useEffect(() => {
+  //   setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  // }, [mainJson])
 
-
+  const setDroneLocation = () => {}
 
   const invokePostAPI = () => {
     console.log("mainJson-----", mainJson)
     if(activeStep === steps.length -1) {
-      mainJson.Drones.map(drone => {
-
-        delete drone["id"]
-        delete drone["droneName"]
-        delete drone.Sensors.Barometer["Key"]
-        delete drone.Sensors.Magnetometer["Key"]
-        delete drone.Sensors.GPS["Key"]
-        // delete drone.Sensors.GPS["EphTimeConstant"]
-        // drone.Sensors.GPS["EpvTimeConstant"] ? delete drone.Sensors.GPS["EpvTimeConstant"]: null
-        // drone.Sensors.GPS["EphInitial"] ? delete drone.Sensors.GPS["EphInitial"]: null
-        // drone.Sensors.GPS["EpvInitial"] ? delete drone.Sensors.GPS["EpvInitial"]: null
-        // drone.Sensors.GPS["EphFinal"] ? delete drone.Sensors.GPS["EphFinal"]: null
-        // drone.Sensors.GPS["EpvFinal"] ? delete drone.Sensors.GPS["EpvFinal"]: null
-        // drone.Sensors.GPS["EphMin3d"] ? delete drone.Sensors.GPS["EphMin3d"]: null
-        // drone.Sensors.GPS["EphMin2d"] ? delete drone.Sensors.GPS["EphMin2d"]: null
-        // drone.Sensors.GPS["UpdateLatency"] ? delete drone.Sensors.GPS["UpdateLatency"]: null
-        // drone.Sensors.GPS["StartupDelay"] ? delete drone.Sensors.GPS["StartupDelay"]: null
-        // delete drone.Cameras.CaptureSettings.map(capt => {
-        //   delete capt["key"]
-        // })
-      })
-
-      delete mainJson.environment["time"]
-      mainJson.monitors.circular_deviation_monitor["enable"] == true ? delete mainJson.monitors.circular_deviation_monitor["enable"] : delete mainJson.monitors.circular_deviation_monitor
-      mainJson.monitors.collision_monitor["enable"] == true ? delete mainJson.monitors.collision_monitor["enable"] : delete mainJson.monitors.collision_monitor
-      mainJson.monitors.unordered_waypoint_monitor["enable"] == true ? delete mainJson.monitors.unordered_waypoint_monitor["enable"] : delete mainJson.monitors.unordered_waypoint_monitor
-      mainJson.monitors.ordered_waypoint_monitor["enable"] == true ? delete mainJson.monitors.ordered_waypoint_monitor["enable"] : delete mainJson.monitors.ordered_waypoint_monitor
-      mainJson.monitors.point_deviation_monitor["enable"] == true ? delete mainJson.monitors.point_deviation_monitor["enable"] : delete mainJson.monitors.point_deviation_monitor
-      mainJson.monitors.min_sep_dist_monitor["enable"] == true ? delete mainJson.monitors.min_sep_dist_monitor["enable"] : delete mainJson.monitors.min_sep_dist_monitor
-      mainJson.monitors.landspace_monitor["enable"] == true ? delete mainJson.monitors.landspace_monitor["enable"] : delete mainJson.monitors.landspace_monitor
-      mainJson.monitors.no_fly_zone_monitor["enable"] == true ? delete mainJson.monitors.no_fly_zone_monitor["enable"] : delete mainJson.monitors.no_fly_zone_monitor
-      mainJson.monitors.drift_monitor["enable"] == true ? delete mainJson.monitors.drift_monitor["enable"] : delete mainJson.monitors.drift_monitor
-      mainJson.monitors.battery_monitor["enable"] == true ? delete mainJson.monitors.battery_monitor["enable"] : delete mainJson.monitors.battery_monitor
-      delete mainJson.environment["enableFuzzy"]
-      delete mainJson.environment["timeOfDayFuzzy"]
-      delete mainJson.environment["windFuzzy"]
-      delete mainJson.environment["positionFuzzy"]
-      console.log('mainJson-----', JSON.stringify(mainJson))
+      
+      let mainJSONStringed = mainJson.toJSONString();
       navigate('/report-dashboard', {
-        state: {mainJson: mainJson}
+        state: {mainJson: mainJSONStringed}
       })
       fetch('http://127.0.0.1:5000/addTask', { 
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
       },
-      body: JSON.stringify(mainJson),
+      body: JSON.stringify(mainJSONStringed),
       })
       .then(res => res.json())
       .then(res => console.log(res));
@@ -158,7 +111,12 @@ export default function HorizontalLinearStepper(data) {
     {
       name:'Environment Configuration',
       id:1,
-      comp: <EnvironmentConfiguration environmentJson={setMainJson} id="environment" mainJsonValue={mainJson}/>
+      comp: <EnvironmentConfiguration environemntJSONSetState={setEnvJson}
+                                      id="environment" 
+                                      mainJSON={mainJson}
+                                      environmentJSON={envJson}
+                                      mainJSONSetState={setMainJson}
+                                      />
     },
     {
       name:'Mission Configuration',
@@ -213,20 +171,6 @@ export default function HorizontalLinearStepper(data) {
           </Tooltip>
         </Typography>
         <Typography sx={{ mt: 2, mb: 1, color: 'white' }}  variant="h6" component="h4">{data.desc}</Typography>
-        {/* <Stepper activeStep={activeStep} style={{padding:20}}> 
-        {steps.map((label, index) => {
-          const stepProps = {};
-          const labelProps = {};
-          if (isStepSkipped(index)) {
-            stepProps.completed = false;
-          }
-          return (
-            <Step key={label} {...stepProps}>
-              <StepLabel {...labelProps}>{label}</StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>     */}
 
         <Box sx={{ display: 'flex', width: '98vw', alignItems: 'start', padding: '1vw', boxSizing: 'border-box',}} >
           <Box sx={{ width: '45%' }}>
@@ -245,29 +189,17 @@ export default function HorizontalLinearStepper(data) {
             variant="h6" component="h5">
               Latitude: {lat}; Longitude: {long}
             </Typography>
-            <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
-             setDroneLocation={setDroneLocation} />
+            {/* <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
+             setDroneLocation={setDroneLocation} /> */}
           </Box>
         </Box>
         
         {activeStep === steps.length ? (
           <React.Fragment>
             Redirect to dashboard //TODO
-            {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-              <Box sx={{ flex: '1 1 auto' }} />
-              <Button onClick={handleReset}>Reset</Button>
-            </Box> */}
           </React.Fragment>
         ) : (
           <React.Fragment>
-          {/* <Typography sx={{ mt: 2, mb: 1 }}  variant="h4" component="h4">Requirement</Typography>
-          <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography> */}
-            {/* {stepsComponent.map((compo, index) => {
-              return (
-                  (compo.id) === (activeStep + 1) ?  (compo.comp): ''
-              )
-            })} */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2, position: 'fixed',
               bottom: 8, left: 12, right: 12, }}>
               <StyledButton

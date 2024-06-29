@@ -93,6 +93,22 @@ export class EnvironmentModel {
         this._Wind = value;
     }
 
+    getOriginLatitude(){
+        return this._Origin.Latitude;
+    }
+
+    getOriginLongitude(){
+        return this._Origin.Longitude;
+    }
+
+    getOriginHeight(){
+        return this._Origin.Height
+    }
+
+    getOriginName(){
+        return this._Origin.Name;
+    }
+
     setOriginLatitude(value){
         this._Origin.Latitude = value;
     }
@@ -132,15 +148,14 @@ export class EnvironmentModel {
         model.enableFuzzy = instance.enableFuzzy;
         model.timeOfDayFuzzy =instance.timeOfDayFuzzy;
         model.positionFuzzy = instance.positionFuzzy;
-        model.setOriginLatitude = instance.setOriginLatitude;
-        model.setOriginLongitude =instance.setOriginLongitude;
+        model.setOriginLatitude(instance.setOriginLatitude);
+        model.setOriginLongitude(instance.setOriginLongitude);
         model.TimeOfDay =instance.TimeOfDay;
         model.UseGeo = instance.UseGeo;
         model.time = instance.time;
         model.Origin = instance.Origin;
         model.Wind = instance.Wind;
         return model
-
     }
 
     toJSONString(){

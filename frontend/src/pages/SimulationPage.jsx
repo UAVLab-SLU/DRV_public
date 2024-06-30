@@ -1,9 +1,8 @@
 import { Box } from '@mui/material';
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import HorizontalLinearStepper from '../components/SimulationPageComponents/HorizontalLinearStepper';
+import SimulationController from '../components/SimulationPageComponents/SimulationController';
 import { MainJsonProvider } from '../model/MainJsonContext';
 import { simulationMainBoxstyle } from '../css/SimulationPageStyles';
-
 
 
 const requirementsArray = [
@@ -22,7 +21,7 @@ const Simulation = () => {
       <>
         <Box sx={simulationMainBoxstyle}>
           <MainJsonProvider>
-            <HorizontalLinearStepper desc={location.state.descs} title={location.state.title} />
+            <SimulationController desc={location.state.descs} title={location.state.title} />
           </MainJsonProvider>
         </Box>
       </>

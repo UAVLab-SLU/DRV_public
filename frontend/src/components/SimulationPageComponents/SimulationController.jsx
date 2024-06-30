@@ -33,10 +33,10 @@ const StyledButton = styled(Button)`
 const steps = [
   'Environment Configuration',
   'Mission Configuration',
-  'Test Configuration'
+  //'Test Configuration'
 ];
 
-export default function HorizontalLinearStepper(data) {
+export default function SimulationController(data) {
 
   // START of DOM model ===================
   const navigate = useNavigate();
@@ -44,8 +44,6 @@ export default function HorizontalLinearStepper(data) {
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [activeTab, setActiveTab] = React.useState(0);
-  const [lat, setLat] = React.useState(null);
-  const [long, setLong] = React.useState(null);
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
   // END of DOM Model================
 
@@ -82,9 +80,6 @@ export default function HorizontalLinearStepper(data) {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  // React.useEffect(() => {
-  //   setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-  // }, [mainJson])
 
   const setDroneLocation = () => { }
 
@@ -107,6 +102,8 @@ export default function HorizontalLinearStepper(data) {
         .then(res => console.log(res));
     }
   }
+
+
   const stepsComponent = [
     {
       name: 'Environment Configuration',
@@ -131,7 +128,11 @@ export default function HorizontalLinearStepper(data) {
     {
       name: 'Test Configuration',
       id: 3,
-      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]} />
+      comp: <MonitorControl 
+        monitorJson={setMainJson}
+        id="monitors"
+        mainJsonValue={mainJson}
+        windowHeight={windowSize.current[1]} />
     }
   ];
 
@@ -162,11 +163,6 @@ export default function HorizontalLinearStepper(data) {
     },
   });
 
-  const onLocationSelect = (latitude, longitude) => {
-    console.log("Selected Coordinates:", latitude, longitude);
-    setLat(latitude);
-    setLong(longitude);
-  };
 
   return (
     <Box sx={{ width: '100vw', height: '100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
@@ -182,7 +178,7 @@ export default function HorizontalLinearStepper(data) {
           <StyledTabs value={activeStep} onChange={handleTabChange} aria-label="Configuration Tabs">
             <StyledTab label="Environment" />
             <StyledTab label="Mission" />
-            <StyledTab label="Test" />
+            {/* <StyledTab label="Test" /> */}
           </StyledTabs>
           <div>
             {activeStep != steps.length && stepsComponent[activeStep].comp}
@@ -192,10 +188,12 @@ export default function HorizontalLinearStepper(data) {
           <Typography
             sx={{ border: 1, borderColor: 'yellow', backgroundColor: 'white', p: 2 }}
             variant="h6" component="h5">
-            Latitude: {lat}; Longitude: {long}
+            Latitude: { envJson.getOriginLatitude() }; Longitude: {envJson.getOriginLongitude() }
           </Typography>
-          {/* <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
-             setDroneLocation={setDroneLocation} /> */}
+          <CesiumMap mainJson={mainJson} 
+                      setMainJson={setMainJson} 
+                      id="Drones"
+                      setDroneLocation={setDroneLocation} /> 
         </Box>
       </Box>
 

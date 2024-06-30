@@ -55,7 +55,6 @@ export default function DroneConfiguration({ name, id, index }) {
     const { mainJson, setMainJson } = useMainJson();
     console.log('DroneConfiguration-----', mainJson.getAllDrones()[index]);
     const [selectedLoc, setSelectedLoc] = useState('GeoLocation')
-    const [selectedModel, setSelectedModel] = useState('');
     const [selectedDroneType, setselectedDroneType] = useState(droneTypes[1].value);
 
     const handleLocChange = (event) => {
@@ -81,7 +80,6 @@ export default function DroneConfiguration({ name, id, index }) {
 
     const handleDroneModelChange = (event) => {
         handleSnackBarVisibility(true)
-        setSelectedModel(event.target.value);
         let drone = mainJson.getDroneBasedOnIndex(index);
         drone.droneModel = event.target.value;
         mainJson.updateDroneBasedOnIndex(index, drone);
@@ -89,19 +87,18 @@ export default function DroneConfiguration({ name, id, index }) {
     };
 
     const handleChange = (event) => {
-        if (event.target.id == "Name") {
-            let drone = mainJson.getDroneBasedOnIndex(index);
+        let drone = mainJson.getDroneBasedOnIndex(index);
+        if (event.target.id === "name") {
             drone.droneName = event.target.value;
-            mainJson.updateDroneBasedOnIndex(index, drone);
-            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-        } else {
-            let drone = mainJson.getDroneBasedOnIndex(index);
-            // work here on generic fix
-            // [event.target.id]: event.target.type === "number" ? parseFloat(event.target.value) : event.target.value
-            drone.droneName = event.target.value;
-            mainJson.updateDroneBasedOnIndex(index, drone);
-            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        } else if(event.target.id === "X"){
+            drone.X = event.target.type === "number" ? parseFloat(event.target.value) : event.target.value;
+        } else if(event.target.id === "Y"){
+            drone.Y = event.target.type === "number" ? parseFloat(event.target.value) : event.target.value;
+        } else if(event.target.id === "Z"){
+            drone.Z = event.target.type === "number" ? parseFloat(event.target.value) : event.target.value;
         }
+        mainJson.updateDroneBasedOnIndex(index, drone);
+        setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
 
     const setSensorConfig = (sensor) => {
@@ -242,7 +239,7 @@ export default function DroneConfiguration({ name, id, index }) {
                     </Grid>
                     <Grid item xs={6}>
                         <StyledSelect
-                            value={selectedModel}
+                            value={mainJson.getDroneBasedOnIndex(index).droneModel}
                             input={<OutlinedInput />}
                             MenuProps={{
                                 sx: {
@@ -269,7 +266,7 @@ export default function DroneConfiguration({ name, id, index }) {
                     <Grid item xs={12}>
                         {selectedDroneType && (
                             <Box mt={2} display="flex" justifyContent="center" alignItems="center">
-                                <img src={droneModels[selectedDroneType].find((m) => m.value === selectedModel)?.src}
+                                <img src={droneModels[selectedDroneType].find((m) => m.value === mainJson.getDroneBasedOnIndex(index).droneModel)?.src}
                                     alt=""
                                     style={{ maxWidth: '70%', maxHeight: '150px', objectFit: 'fill', marginTop: '8px' }} />
                             </Box>

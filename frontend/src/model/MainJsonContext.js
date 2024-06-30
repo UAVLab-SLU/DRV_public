@@ -10,6 +10,8 @@ export const MainJsonProvider = ({ children }) => {
   const [mainJson, setMainJson] = useState(new SimulationConfigurationModel());
   const [envJson, setEnvJson] = useState(mainJson.environment);
 
+  
+
   // const setMainJson = (envJson, id) => {
   //   if(id == "environment" && mainJson.Drones && mainJson.Drones[0].X != envJson.Origin.Latitude) {
   //     setJson(prevState => ({

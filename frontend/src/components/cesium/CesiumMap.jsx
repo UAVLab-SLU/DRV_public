@@ -1,15 +1,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Viewer, CameraFlyTo, Cesium3DTileset, Entity } from 'resium';
-import { Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType, 
-Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
-Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain,
-Rectangle, KeyboardEventModifier, ScreenSpaceEventHandler, CallbackProperty, Ellipsoid, 
-defined } from 'cesium';
+import {
+  Cartesian3, CesiumTerrainProvider, IonResource, Math as CesiumMath, ScreenSpaceEventType,
+  Cartographic, createWorldTerrainAsync, createOsmBuildingsAsync, Ion,
+  Color, PolygonHierarchy, LabelStyle, VerticalOrigin, Cartesian2, HeightReference, sampleTerrain,
+  Rectangle, KeyboardEventModifier, ScreenSpaceEventHandler, CallbackProperty, Ellipsoid,
+  defined
+} from 'cesium';
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
 
-const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
+const CesiumMap = ({ mainJson, setMainJson, id, setDroneLocation }) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [billboards, setBillboards] = useState([]);
@@ -20,7 +22,7 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
       pitch: CesiumMath.toRadians(-10)
     }
   });
-  
+
   Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZTFmNzlmMy1mNjU4LTQwNGYtOTQ2YS0yOTZiZTMwNmM4NTkiLCJpZCI6MjE2MTY1LCJpYXQiOjE3MTYwODk0NzV9.52fSstXZ3CeFEcorDgCv__iCvdUecg3Q0bhaXum3ZnI";
 
   const setNewCameraPosition = () => {
@@ -40,15 +42,15 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (viewerRef.current?.cesiumElement) {
-          setViewerReady(true);
-          clearInterval(interval);
+        setViewerReady(true);
+        clearInterval(interval);
       }
     }, 100);
 
     return () => clearInterval(interval);
   }, []);
 
-  const terrainProvider= createWorldTerrainAsync();
+  const terrainProvider = createWorldTerrainAsync();
   const osmBuildingsTileset = createOsmBuildingsAsync();
 
   return (
@@ -59,21 +61,24 @@ const CesiumMap = ({onLocationSelect, id, setDroneLocation}) => {
         destination={cameraPosition.destination}
         orientation={cameraPosition.orientation}
         duration={2}
-        />
-
-      <DroneDragAndDrop 
-      viewerReady={viewerReady} viewerRef={viewerRef} setNewCameraPosition={setNewCameraPosition}
       />
-      
+
+      <DroneDragAndDrop
+        viewerReady={viewerReady}
+        viewerRef={viewerRef}
+        setNewCameraPosition={setNewCameraPosition}
+      />
+
       <DrawSadeZone
-      viewerReady={viewerReady} viewerRef={viewerRef} setNewCameraPosition={setNewCameraPosition}
+        viewerReady={viewerReady} viewerRef={viewerRef} setNewCameraPosition={setNewCameraPosition}
       />
     </Viewer>
   );
 };
 
 CesiumMap.propTypes = {
-  onLocationSelect: PropTypes.func.isRequired,
+  setMainJson: PropTypes.func.isRequired,
+  mainJson: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
   setDroneLocation: PropTypes.func.isRequired,
 };

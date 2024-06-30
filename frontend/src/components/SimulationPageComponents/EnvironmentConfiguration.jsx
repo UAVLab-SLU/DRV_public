@@ -17,7 +17,7 @@ import EnvironmentRegionSetting from './EnvironmentRegionSetting';
 export default function EnvironmentConfiguration(env) {
 
     // Start of Model
-    const [selectedTab, setSelectedTab] = useState(1);
+    const [selectedTab, setSelectedTab] = useState(0);
     const [backendInfo, setBackendInfo] = useState({
         numQueuedTasks: 0,
         backendStatus: 'idle'

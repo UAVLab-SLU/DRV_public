@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import styled from '@emotion/styled';
-import { styled as makeStyles } from '@mui/system';;
+import { styled as makeStyles } from '@mui/system';
 import EnvironmentConfiguration from './SimulationPageComponents/EnvironmentConfiguration';
 
 const useStyles = makeStyles((theme) => ({
@@ -140,6 +140,8 @@ export default function MonitorControl (monJson) {
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
+
+    
     const handleBatteruMonitor = (val) => {
         setMonitor(prevState => ({
             ...prevState,

@@ -14,7 +14,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-const { setDroneLocation } = useMainJson();
+  const { mainJson, setMainJson } = useMainJson();
   const [fieldDrones, setFieldDrones] = useState([]);
 
   // drone drag and drop event listeners
@@ -112,7 +112,7 @@ const { setDroneLocation } = useMainJson();
 DroneDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-    setNewCameraPosition: PropTypes.func.isRequired
+  setNewCameraPosition: PropTypes.func.isRequired
 };
 
 export default DroneDragAndDrop;

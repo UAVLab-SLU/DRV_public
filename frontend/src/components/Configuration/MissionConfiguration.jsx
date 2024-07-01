@@ -8,7 +8,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
 import {ExpandMore} from '@mui/icons-material';
-import { styled as makeStyles } from '@mui/system';;
+import { makeStyles } from '@mui/styles';
 import DroneConfiguration from './DroneConfiguration'
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';

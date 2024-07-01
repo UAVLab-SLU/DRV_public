@@ -6,7 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
-import { styled as makeStyles } from '@mui/system';;
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
     transparentBackground: {

@@ -1,14 +1,75 @@
 import styled from '@emotion/styled';
-import { Box, Button, TextField, Modal, Typography, Grid, InputLabel, MenuItem, FormControl, Select } from '@mui/material';
+import { Box, Button, TextField, Modal, Typography, Grid, InputLabel, MenuItem, FormControl, Select, Divider } from '@mui/material';
 import { Link } from 'react-router-dom';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 
+const StyledBackground = {
+  backgroundImage: 'url("/images/dji-air-4.png")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundAttachment: 'fixed',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100vw',
+  height: '100vh',
+};
+
+const StyledBox = {
+  background: 'linear-gradient(to bottom, #211401 14%, #3D250199 66%, #3C260350 100%)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textAlign: 'center',
+  width: '30vw',
+  height: '100vh',
+  transform: 'translateX(-93%)',
+};
+
+const StyledHiddenBox = {
+  background: 'linear-gradient(to bottom, #211401 24%, #3C260358 100%)',
+  display:'flex',
+  flexDirection:'column',
+  alignItems: 'left',
+  width: '62.9vw',
+  height: '20vh',
+  position: 'absolute',
+  top: '80vh',
+  right: '0vw',
+  visibility: 'hidden',
+  padding: '10px',
+  color: 'white',
+};
+
+const StyledDivider = {
+  width: '80%',
+  height: '4px',
+  backgroundColor: '#DEE2E6',
+  marginTop: '15px',
+  alignItems: 'center',
+};
+
 const StyledButton = styled(Button)`
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  height: 50px;
+  border-radius: 5px;
+  height: 70px;
+  width: 370px;
+  color: 'white';
+  border: 2px solid #CC7E09;
+  background-color: transparent;
+  font-size: 38px;
+
+  &:hover {
+    background-color: #CC7E09;
+  }
+  
+  &:active{
+    background-color: #CC7E09;
+    border: 2px solid #CC7E09;
+  }
 `;
 
 const StyledText = styled.p`
@@ -32,8 +93,19 @@ const StyledTextField = styled(TextField)`
 
 const Home = () => {
   const [selectedvalue, setSelectedValue] = useState('');
-  const [text, setText] = useState('Please select a requirement identifier');
+  const [text, setText] = useState('');
   const [title, setTitle] = useState('');
+  const [hoveredButton, setHoveredButton] = useState(null);
+
+  const handleMouseEnter = (event) => {
+    setHoveredButton(event);
+    handleReqIdChange(event);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredButton(null);
+  };
+
   const [backendInfo, setBackendInfo] = useState({
     numQueuedTasks: 0,
     backendStatus: 'idle'
@@ -55,14 +127,14 @@ const Home = () => {
   const statusStyle = getStatusStyle();
 
   const handleReqIdChange = (event) => {
-    setSelectedValue(event.target.value);
-    if (event.target.value === "UAV-301") {
+    //setSelectedValue(event.target.value);
+    if (event === "SADE") {
       setText('Two sUAS (Small Unmanned Aircraft System) shall be able to complete a circular and square flight mission in windy weather conditions without colliding with stationary objects, the terrain, or other aircraft and drifting from its planned path by more than 10 meters.');
       setTitle("Circular and Square Flight Mission in Windy Weather")
-    } else if (event.target.value === "UAV-302") {
+    } else if (event === "PX4") {
       setText('Two sUAS (Small Unmanned Aircraft Systems) shall be able to complete their missions in windy weather conditions while maintaining a minimum separation distance of at least 5 meters between each other and without drifting by more than 5 meters.');
       setTitle("sUAS Mission Coordination in Windy Weather")
-    } else if (event.target.value === "UAV-303") {
+    } else if (event === "AIRSIM") {
       setText('Two sUAS (Small Unmanned Aircraft Systems) shall be able to complete their respective missions in windy weather conditions without drifting from their planned path by more than 15 meters.');
       setTitle("sUAS Mission in Windy Weather with Path Accuracy")
     }
@@ -109,6 +181,71 @@ const Home = () => {
 
   return (
     <React.Fragment>
+      <Box sx={StyledBackground}>
+        <Box sx={StyledBox}>
+          {/*Title and subtitle*/}
+          <Typography style={{fontSize: '60px', color:'white', fontWeight:'bold'}}>
+            DRONE WORLD
+          </Typography>
+          <Typography style={{marginTop:'130px', fontSize: '27px', color:'white'}}>
+            TYPE OF SIMULATION
+          </Typography>
+          <Divider sx={StyledDivider}/>
+          {/*Buttons*/}
+          <Grid container spacing={8} direction="column" style={{ marginTop: '8px', paddingTop: '8px', alignItems: 'center' }}>
+            <Grid item>
+              <StyledLink to='/simulation' state={{ req: selectedvalue.toString(), descs: text.toString(), title: title.toString()}}>
+                <StyledButton 
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('SADE')} 
+                  onMouseLeave={handleMouseLeave}>
+                  SADE
+                </StyledButton>
+              </StyledLink>
+            </Grid>
+            <Grid item>
+              <StyledLink to='/simulation' state={{ req: selectedvalue.toString(), descs: text.toString(), title: title.toString()}}>
+                <StyledButton 
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('PX4')}
+                  onMouseLeave={handleMouseLeave}>
+                  PX4
+                </StyledButton>
+              </StyledLink>
+            </Grid>
+            <Grid item>
+            <StyledLink to='/simulation' state={{ req: selectedvalue.toString(), descs: text.toString(), title: title.toString()}}>
+                <StyledButton 
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('AIRSIM')}
+                  onMouseLeave={handleMouseLeave}>
+                  AIRSIM
+                </StyledButton>
+              </StyledLink>
+            </Grid>
+          </Grid>
+        </Box>
+        {/*Box behind hidden text*/}
+        <Box sx={{...StyledHiddenBox, visibility: hoveredButton ? 'visible' : 'hidden'}}>
+          <Typography variant="h6">{title}</Typography>
+          <Typography>{text}</Typography>
+        </Box>
+        {/*Backend Status */}
+        <Typography style={{ position: 'absolute', top: '25px', left: 0 }}>
+          <Grid container spacing={2} direction="row" style={{paddingTop: '15px', paddingLeft: '1500px'}}>
+            <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5}>
+              <Typography>
+                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
+              </Typography>
+            </Box>
+            <Typography style={{ marginTop: '17px', marginLeft: '50px' }}>
+              Queued Tasks: {backendInfo.numQueuedTasks}
+            </Typography>
+          </Grid>
+        </Typography>
+      </Box>
+
+{/*
       <Typography style={{ width: 1000 }}>
         <Grid spacing={5} direction="row" style={{ marginTop: '15px', paddingTop: '15px', paddingLeft: '290px' }}>
           <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5}>
@@ -214,8 +351,9 @@ reliability, and efficiency of sUAS applications.
     </Typography>
   </Box>
 </Modal>
-
-  </Box>
+{/*
+  </Box> 
+  */}
 </React.Fragment>
 );
 };

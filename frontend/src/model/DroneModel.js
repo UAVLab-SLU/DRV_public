@@ -29,6 +29,8 @@ export class DroneModel {
             "name": "",
             "param": [],
         };
+        this._cesiumImage = null;
+        this._cesiumPosition = null;
     }
 
     // Getters
@@ -120,6 +122,14 @@ export class DroneModel {
         return this._MissionValue;
     }
 
+    get cesiumImage() {
+        return this._cesiumImage;
+    }
+
+    get cesiumPosition() {
+        return this._cesiumPosition;
+    }
+
     // Setters
     set id(value) {
         this._id = value;
@@ -207,6 +217,14 @@ export class DroneModel {
 
     set MissionValue(value) {
         this._MissionValue = value;
+    }
+
+    set cesiumImage(value) {
+        this._cesiumImage = value;
+    }
+
+    set cesiumPosition(value) {
+        this._cesiumPosition = value;
     }
 
     setMissionObjectName(value) {

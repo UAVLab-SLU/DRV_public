@@ -14,7 +14,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { mainJson, setMainJson } = useMainJson();
+  const { syncDroneLocation, mainJson } = useMainJson();
   const [fieldDrones, setFieldDrones] = useState([]);
 
   // drone drag and drop event listeners
@@ -57,11 +57,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
             return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
           };
 
-          let drone = mainJson.getDroneBasedOnIndex(droneInx);
-          drone.X = latitude;
-          drone.Y = longitude;
-          mainJson.updateDroneBasedOnIndex(droneInx, drone);
-          setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+          syncDroneLocation(droneInx, latitude, longitude, dragData.src);
           // find the terrain height at dropped location
           // const terrainProvider = viewer.terrainProvider;
           // const positions = [Cartographic.fromDegrees(longitude, latitude)];
@@ -70,14 +66,14 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
 
           // Fixing the same drone dragging into multiple locations
-          let removedOldDrones = fieldDrones.filter((data) => data.image !== dragData.src)
-          removedOldDrones.push({
-            image: dragData.src,
-            position: Cartesian3.fromDegrees(longitude, latitude)
-          })
+          //let removedOldDrones = fieldDrones.filter((data) => data.image !== dragData.src)
+          //removedOldDrones.push({
+          //  image: dragData.src,
+          //  position: Cartesian3.fromDegrees(longitude, latitude)
+          //})
 
-          setFieldDrones(removedOldDrones);
-          // });
+          // setFieldDrones(removedOldDrones);
+
         }
       };
 
@@ -89,22 +85,23 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         canvas.removeEventListener('drop', dropHandler);
       };
     }
-  }, [viewerReady]);
+  }, [viewerReady, mainJson]);
 
   return (
     <>
-      {fieldDrones.map((fieldDrone, index) => (
-        <Entity
+      {mainJson.getAllDrones().map((fieldDrone, index) => (
+        fieldDrone.cesiumPosition && fieldDrone.cesiumImage && (<Entity
           key={index}
-          position={fieldDrone.position}
+          position={fieldDrone.cesiumPosition}
           billboard={{
-            image: fieldDrone.image,
+            image: fieldDrone.cesiumImage,
             scale: 0.5,
             verticalOrigin: VerticalOrigin.BOTTOM,
             heightReference: HeightReference.CLAMP_TO_GROUND,
           }}
-        />
-      ))}
+        />)
+      )
+      )}
     </>
   );
 };

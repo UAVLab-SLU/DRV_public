@@ -35,9 +35,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MissionConfiguration (mission) {
-    
-    const mainJSON = mission.mainJSON;
-    const mainJSONSetState = mission.mainJSONSetState;
+
+    const { mainJson, setMainJson } = useMainJson();
 
     const classes = useStyles();
     const droneImages = [
@@ -53,7 +52,7 @@ export default function MissionConfiguration (mission) {
         { src: '/images/drone-purple.png', color: '#DABDF9' }
     ];
     
-    const [droneCount, setDroneCount] = React.useState( mainJSON.getAllDrones().length );
+    const [droneCount, setDroneCount] = React.useState( mainJson.getAllDrones().length );
     const [snackBarState, setSnackBarState] = React.useState({
         open: true,
     });
@@ -75,9 +74,9 @@ export default function MissionConfiguration (mission) {
             newDrone.Name = "Drone " + (droneCount + 1);
             newDrone.image = droneImages[droneCount].src;
             newDrone.color = droneImages[droneCount].color;
-            newDrone.X = mainJSON.environment.getOriginLatitude() + 0.0001 * droneCount;
-            newDrone.Y = mainJSON.environment.getOriginLongitude();
-            newDrone.Z = mainJSON.environment.getOriginHeight();
+            newDrone.X = mainJson.environment.getOriginLatitude() + 0.0001 * droneCount;
+            newDrone.Y = mainJson.environment.getOriginLongitude();
+            newDrone.Z = mainJson.environment.getOriginHeight();
             newDrone.Pitch = 0;
             newDrone.Roll = 0;
             newDrone.Yaw = 0;
@@ -86,8 +85,8 @@ export default function MissionConfiguration (mission) {
             newDrone.setMissionObjectName("fly_to_points");
             newDrone.setMissionObjectParams([]);
 
-            mainJSON.addNewDrone(newDrone);
-            mainJSONSetState(SimulationConfigurationModel.getReactStateBasedUpdate(mainJSON));
+            mainJson.addNewDrone(newDrone);
+            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
             // Cameras: {
             //     CaptureSettings: [
             //         {
@@ -141,8 +140,8 @@ export default function MissionConfiguration (mission) {
     }
 
     const popDrone = () =>{
-        mainJSON.popLastDrone();
-        mainJSONSetState(SimulationConfigurationModel.getReactStateBasedUpdate(mainJSON));
+        mainJson.popLastDrone();
+        setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
 
     const handleIncrement = () => {
@@ -210,7 +209,7 @@ export default function MissionConfiguration (mission) {
                     </ButtonGroup>
                 </Grid>
 
-                {mainJSON.getAllDrones()?.map((drone, index) => 
+                {mainJson.getAllDrones()?.map((drone, index) => 
                 (
                     <Accordion key={index} classes={{ root: classes.transparentBackground }}>
                         <AccordionSummary

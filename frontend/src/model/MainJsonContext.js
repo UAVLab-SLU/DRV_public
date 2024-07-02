@@ -21,49 +21,6 @@ export const MainJsonProvider = ({ children }) => {
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }
 
-  // const setMainJson = (envJson, id) => {
-  //   if(id == "environment" && mainJson.Drones && mainJson.Drones[0].X != envJson.Origin.Latitude) {
-  //     setJson(prevState => ({
-  //       ...prevState,
-  //       Drones:null,
-  //     }))
-  //   }
-  //   setJson(prevState => ({
-  //     ...prevState,
-  //     [id]: envJson
-  //   }))
-  // }
-
-  // const setDroneJson = (json, index) => {
-  //   setJson(prevState => {
-  //       const updatedDrones = prevState.Drones?.map((drone, idx) => {
-  //           if (idx === index) {
-  //               return {...drone, ...json};
-  //           }
-  //           return drone;
-  //       });
-
-  //       return {...prevState, Drones: updatedDrones};
-  //   });
-  // }
-
-  // const setDroneLocation = (droneInx, longitude, latitude) => {
-  //   setJson(prevState => {
-  //     const newDrones = prevState.Drones?.map((drone, index) => {
-  //       if (index === droneInx) {
-  //         return {
-  //           ...drone,
-  //           X: latitude,
-  //           Y: longitude
-  //         };
-  //       }
-  //       return drone;
-  //     });
-
-  //     return {...prevState, Drones: newDrones};
-  //   });
-  // };
-
   return (
     <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation }}>
       {children}

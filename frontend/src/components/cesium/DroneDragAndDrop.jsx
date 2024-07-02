@@ -15,14 +15,17 @@ import { SimulationConfigurationModel } from '../../model/SimulationConfiguratio
 
 const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
   const { syncDroneLocation, mainJson } = useMainJson();
-  const [fieldDrones, setFieldDrones] = useState([]);
 
   // drone drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
       const viewer = viewerRef.current.cesiumElement;
       const canvas = viewer.canvas;
-
+      
+      viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
+        date = JulianDate.toDate(date);
+        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+      };
       // Ensure the canvas is focusable
       canvas.setAttribute('tabindex', '0');
 
@@ -51,11 +54,6 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
           const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
           const droneInx = dragData.index;
-
-          viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
-            date = JulianDate.toDate(date);
-            return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-          };
 
           syncDroneLocation(droneInx, latitude, longitude, dragData.src);
           // find the terrain height at dropped location

@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Select from '@mui/material/Select';
+import Tabs from '@mui/material/Tabs';
 
 export const simulationMainBoxstyle = {
   backgroundImage: 'linear-gradient(rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.7), rgba(128, 128, 128, 0.5)), url("/images/google-earth-3D.png")',
@@ -27,7 +28,15 @@ export const StyledButton = styled(Button)`
   }
 `;
 
-export const StyledTab = styled(Tab)(({ theme }) => ({
+export const StyledSelect = styled(Select)(({ theme }) => ({
+  backgroundColor: '#F5F5DC',
+  '& .MuiInputBase-input': {
+    padding: '6px 8px',
+    height: '1em',
+  }
+}));
+
+export const StyledTab = styled(Tab)({
   textTransform: 'none',
   fontSize: 16,
   fontWeight: 'bold',
@@ -45,12 +54,11 @@ export const StyledTab = styled(Tab)(({ theme }) => ({
     color: '#FFFFFF',
     borderBottom: '5px solid #FFB500',
   },
-}));
+});
 
-export const StyledSelect = styled(Select)(({ theme }) => ({
-  backgroundColor: '#F5F5DC',
-  '& .MuiInputBase-input': {
-    padding: '6px 8px',
-    height: '1em',
-  }
-}));
+export const StyledTabs = styled(Tabs)({
+  minHeight: '48px',
+  '.MuiTabs-indicator': {
+    display: 'none',
+  },
+});

@@ -8,7 +8,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
 import {ExpandMore} from '@mui/icons-material';
-import { styled as makeStyles } from '@mui/system';;
+import { styled } from '@mui/system';;
 import DroneConfiguration from './DroneConfiguration'
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -19,26 +19,16 @@ import { DroneModel } from '../../model/DroneModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-      width: '100%',
-      padding: '5px'
-    },
-    transparentBackground: {
-        backgroundColor: 'transparent !important'
-    },
-    backdropFilter: {
-        backgroundColor: '#14151471',
-        '-webkitBackdropFilter': 'sepia(100%)',
-        backdropFilter: 'sepia(100%)',
-    }
-}));
+const AccordionStyled = styled(Accordion)({
+    width: '100%',
+    padding: '5px',
+    backgroundColor: 'transparent !important'
+})
 
 export default function MissionConfiguration (mission) {
 
     const { mainJson, setMainJson } = useMainJson();
 
-    const classes = useStyles();
     const droneImages = [
         { src: '/images/drone-red.png', color: '#FFCCCC' },
         { src: '/images/drone-green.png', color: '#CCFFCC' },
@@ -211,7 +201,7 @@ export default function MissionConfiguration (mission) {
 
                 {mainJson.getAllDrones()?.map((drone, index) => 
                 (
-                    <Accordion key={index} classes={{ root: classes.transparentBackground }}>
+                    <AccordionStyled key={index}>
                         <AccordionSummary
                         expandIcon={<ExpandMore />}
                         aria-controls="panel1a-content"
@@ -244,7 +234,7 @@ export default function MissionConfiguration (mission) {
                                 <DroneConfiguration name={drone.droneName} id={drone.id} index={index}/>
                             </Box>
                         </AccordionDetails>
-                    </Accordion>
+                    </AccordionStyled>
                 ))}
             </Box>
         </div>

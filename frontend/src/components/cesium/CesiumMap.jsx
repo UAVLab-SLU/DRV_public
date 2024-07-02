@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
 
-const CesiumMap = ({ mainJson, setMainJson, id, setDroneLocation }) => {
+const CesiumMap = ({ mainJson, setMainJson, id }) => {
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [billboards, setBillboards] = useState([]);
@@ -80,7 +80,6 @@ CesiumMap.propTypes = {
   setMainJson: PropTypes.func.isRequired,
   mainJson: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
-  setDroneLocation: PropTypes.func.isRequired,
 };
 
 export default CesiumMap;

@@ -19,7 +19,6 @@ import {
 
 const Home = () => {
 
-
   // START of Model =============================
   const [selectedValue, setSelectedValue] = useState('');
   const [text, setText] = useState('Please select a requirement identifier');
@@ -43,19 +42,19 @@ const Home = () => {
   };
 
   useEffect(() => {
-      callAPI("currentRunning", "GET", {}, "TEXT")
-        .then((data) => {
-          const [status, queueSize] = data.split(', ');
-          if (status === "None") {
-            setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
-          } else if (status === "Running") {
-            setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching data:', error);
-          setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
-        })
+    callAPI("currentRunning", "GET", {}, "TEXT")
+      .then((data) => {
+        const [status, queueSize] = data.split(', ');
+        if (status === "None") {
+          setBackendInfo({ numQueuedTasks: 0, backendStatus: 'idle' });
+        } else if (status === "Running") {
+          setBackendInfo({ numQueuedTasks: parseInt(queueSize), backendStatus: 'running' });
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' });
+      })
   }, []);
   // END of Controller =============================
 

@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import { useMainJson } from '../../model/MainJsonContext';
-import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
+import { StyledTab, StyledTabs } from '../../css/SimulationPageStyles'
 
 
 const StyledButton = styled(Button)`
@@ -43,7 +43,6 @@ export default function SimulationController(data) {
   const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
-  const [activeTab, setActiveTab] = React.useState(0);
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
   // END of DOM Model================
 
@@ -68,9 +67,6 @@ export default function SimulationController(data) {
       newSkipped = new Set(newSkipped.values());
       newSkipped.delete(activeStep);
     }
-    // if(activeStep == 0) {
-    //   setMainJson();
-    // }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
     invokePostAPI();
@@ -79,9 +75,6 @@ export default function SimulationController(data) {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
-
-
-  const setDroneLocation = () => { }
 
   const invokePostAPI = () => {
     console.log("mainJson-----", mainJson)
@@ -136,34 +129,6 @@ export default function SimulationController(data) {
     }
   ];
 
-  const StyledTab = styled(Tab)(({ theme }) => ({
-    textTransform: 'none',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 8,
-    // to-do: use global variables for tab colors
-    color: '#8B4513', // Shade of brown
-    backgroundColor: '#F5F5DC', // Beige background
-    transition: 'background-color 0.3s, color 0.3s',
-    '&:hover': {
-      backgroundColor: '#DEB887', // Light brown when hovered
-      color: '#FFFFFF',
-    },
-    '&.Mui-selected': {
-      backgroundColor: '#A0522D', // Darker brown when selected
-      color: '#FFFFFF',
-      borderBottom: '5px solid #FFB500',
-    },
-  }));
-
-  const StyledTabs = styled(Tabs)({
-    minHeight: '48px',
-    '.MuiTabs-indicator': {
-      display: 'none',
-    },
-  });
-
-
   return (
     <Box sx={{ width: '100vw', height: '100vh', maxHeight: '98vh', overflowY: 'hidden', padding: '1vw', boxSizing: 'border-box', }}>
       <Typography sx={{ mb: 1, color: 'white' }} variant="h4" component="h4">Requirement
@@ -192,8 +157,7 @@ export default function SimulationController(data) {
           </Typography>
           <CesiumMap mainJson={mainJson} 
                       setMainJson={setMainJson} 
-                      id="Drones"
-                      setDroneLocation={setDroneLocation} /> 
+                      id="Drones" /> 
         </Box>
       </Box>
 

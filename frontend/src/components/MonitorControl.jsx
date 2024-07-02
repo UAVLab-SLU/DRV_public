@@ -22,6 +22,7 @@ import styled from '@emotion/styled';
 import { styled as makeStyles } from '@mui/system';
 import EnvironmentConfiguration from './SimulationPageComponents/EnvironmentConfiguration';
 
+
 const useStyles = makeStyles((theme) => ({
     root: {
         width: '100%',

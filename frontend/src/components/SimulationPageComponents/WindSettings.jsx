@@ -1,31 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui/material';
-import Select from '@mui/material/Select';
-import { OutlinedInput } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { styled as makeStyles } from '@mui/system';
+import { styled } from '@mui/system';
 
 import { WindDirection, WindType } from '../../utils/const';
 import { renderSelectField, renderTextField } from '../../utils/SimulationPageUtils';
 import { WindModel } from '../../model/WindModel';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 
-const useStyles = makeStyles((theme) => ({
-    transparentBackground: {
-        backgroundColor: 'transparent !important'
-    },
-    backdropFilter: {
-        backgroundColor: '#14151471',
-        '-webkitBackdropFilter': 'sepia(100%)',
-        backdropFilter: 'sepia(100%)',
-    }
-}));
 
+const GridBackDropFilter = styled(Grid)({
+    backgroundColor: '#14151471',
+    '-webkitBackdropFilter': 'sepia(100%)',
+    backdropFilter: 'sepia(100%)',
+})
+
+const GridTransparentBackGround = styled(Grid)({
+    backgroundColor: 'transparent !important'
+})
 
 const WindSettings = ({ envConf, setEnvConf }) => {
-    const classes = useStyles();
 
     const addNewWindBlock = () => {
         let newWindBlock = new WindModel();
@@ -49,9 +45,9 @@ const WindSettings = ({ envConf, setEnvConf }) => {
     } 
 
     return (
-        <Grid container spacing={5} direction="column" classes={{ root: classes.transparentBackground }}>
+        <GridTransparentBackGround container spacing={5} direction="column" >
             {envConf.Wind.map((windBlock, index) => (
-                <Grid item container spacing={2} xs={12} classes={{ root: classes.backdropFilter }} key={index}>
+                <GridBackDropFilter item container spacing={2} xs={12} key={index}>
                     {renderSelectField("Wind Type", windBlock.windType, (e) =>
                         setWindBlockData(index, { windType: e.target.value }), WindType)}
                     {renderSelectField("Wind Direction", windBlock.windDirection, (e) =>
@@ -69,12 +65,11 @@ const WindSettings = ({ envConf, setEnvConf }) => {
                             <DeleteOutline color="error" />
                         </IconButton>
                     </Grid>
-                </Grid>
+                </GridBackDropFilter>
             ))}
 
             <Grid item container xs={12}>
-                <Grid xs={10}
-                    classes={{ root: classes.backdropFilter }}
+                <GridBackDropFilter xs={10}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
                     <IconButton
                         onClick={addNewWindBlock}
@@ -89,9 +84,9 @@ const WindSettings = ({ envConf, setEnvConf }) => {
                     >
                         <AddIcon /> Add Wind Source
                     </IconButton>
-                </Grid>
+                </GridBackDropFilter>
             </Grid>
-        </Grid>
+        </GridTransparentBackGround>
     );
 };
 

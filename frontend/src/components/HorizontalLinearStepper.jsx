@@ -34,7 +34,7 @@ const StyledButton = styled(Button)`
 const steps = [
   'Environment Configuration',
   'Mission Configuration',
-  'Test Configuration'
+  // 'Test Configuration'
 ];
 
 export default function HorizontalLinearStepper(data) { 
@@ -163,11 +163,11 @@ export default function HorizontalLinearStepper(data) {
       id:2, 
       comp: <MissionConfiguration id="Drones" windowHeight={windowSize.current[1]}/>
     },
-    {
-      name:'Test Configuration',
-      id:3,
-      comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
-    }
+    // {
+    //   name:'Test Configuration',
+    //   id:3,
+    //   comp: <MonitorControl monitorJson={setMainJson} id="monitors" mainJsonValue={mainJson} windowHeight={windowSize.current[1]}/>
+    // }
   ];
 
   const StyledTab = styled(Tab)(({ theme }) => ({
@@ -234,7 +234,7 @@ export default function HorizontalLinearStepper(data) {
              {/* <StyledTab label="Test" /> //hides the Test button from the horizontal tab*/} 
             </StyledTabs>
             <div>
-              {stepsComponent[activeStep].comp}
+              {activeStep != steps.length && stepsComponent[activeStep].comp}
             </div>
           </Box>
           <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>

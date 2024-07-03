@@ -13,6 +13,7 @@ import WindSettings from './WindSettings';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 import EnvironmentRegionSetting from './EnvironmentRegionSetting';
+import SadeSettings from './SadeSettings';
 
 export default function EnvironmentConfiguration(env) {
 
@@ -182,9 +183,12 @@ export default function EnvironmentConfiguration(env) {
                         />
                     )}
 
-                    {selectedTab === 2 &&
-                        <></>
-                    }
+                    {selectedTab === 2 && (
+                        <SadeSettings
+                            envConf={envConf}
+                            setEnvConf={setEnvConf}
+                        />
+                    )}
                 </Grid>
             </Grid>
 

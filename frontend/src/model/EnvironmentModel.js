@@ -17,6 +17,7 @@ export class EnvironmentModel {
             "Name": "Specify Region",
             "Height": 0
         };
+        this._sades = [];
     }
 
     // Getters
@@ -143,6 +144,32 @@ export class EnvironmentModel {
         this._Wind = this._Wind.filter((_, i) => i !== index);
     }
 
+    getAllSades(){
+        return this._sades;
+    }
+
+    getSadeBasedOnIndex(index){
+        if(this._sades.length > index){
+            return this._sades[index];
+        }
+    }
+
+    addNewSade(sadeObj){
+        this._sades.push(sadeObj);
+    }
+
+    updateSadeBasedOnIndex(index, sade){
+        this._sades[index] = sade;
+    }
+
+    deleteSadeBasedOnIndex(index){
+        this._sades = this._sades.filter((_, i) => i !== index);
+    }
+
+    popLastSade(){
+        this._sades.pop();
+    }
+
     static getReactStateBasedUpdate(instance){
         let model = new EnvironmentModel();
         model.enableFuzzy = instance.enableFuzzy;
@@ -155,6 +182,10 @@ export class EnvironmentModel {
         model.time = instance.time;
         model.Origin = instance.Origin;
         model.Wind = instance.Wind;
+        const sades = instance.getAllSades();
+        for(let i =0; i < sades.length; i++){
+            model.addNewSade(sades[i]);
+        }
         return model
     }
 
@@ -168,7 +199,8 @@ export class EnvironmentModel {
             "Origin": this._Origin,
             "TimeOfDay": this._TimeOfDay,
             "UseGeo": this.UseGeo,
-            "time": this._time
+            "time": this._time,
+            "Sade" : this._sades?.map( (obj) => obj.toJSONString() )
         }
     }
 

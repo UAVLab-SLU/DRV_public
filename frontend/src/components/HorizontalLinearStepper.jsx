@@ -238,11 +238,11 @@ export default function HorizontalLinearStepper(data) {
             </div>
           </Box>
           <Box sx={{ width: '55%', overflow: 'hidden', border: 1, borderColor: 'yellow', ml: 5}}>
-            <Typography 
+            {/* <Typography 
             sx={{border: 1, borderColor: 'yellow', backgroundColor: 'white', p:2}}
             variant="h6" component="h5">
               Latitude: {lat}; Longitude: {long}
-            </Typography>
+            </Typography> */}
             <CesiumMap onLocationSelect={onLocationSelect} mainJson={mainJson} setMainJson={setMainJson} id="Drones"
              setDroneLocation={setDroneLocation} />
           </Box>

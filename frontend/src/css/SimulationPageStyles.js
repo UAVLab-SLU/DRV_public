@@ -3,6 +3,8 @@ import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Select from '@mui/material/Select';
 import Tabs from '@mui/material/Tabs';
+import Accordion from '@mui/material/Accordion';
+import InputLabel from '@mui/material/InputLabel';
 
 export const simulationMainBoxstyle = {
   backgroundImage: 'linear-gradient(rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.7), rgba(128, 128, 128, 0.5)), url("/images/google-earth-3D.png")',
@@ -62,3 +64,20 @@ export const StyledTabs = styled(Tabs)({
     display: 'none',
   },
 });
+
+
+export const AccordionStyled = styled(Accordion)({
+  width: '100%',
+  padding: '5px',
+  backgroundColor: 'transparent !important'
+})
+
+
+export const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
+  marginRight: 2,
+  marginLeft: 20,
+  flexShrink: 0,
+  color: '#F5F5DC',
+  width: '200px',
+  fontSize: '1.2rem', fontFamily: 'Roboto, sans-serif',
+}));

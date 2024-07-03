@@ -18,6 +18,7 @@ import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
+import { StyledInputLabel } from '../../css/SimulationPageStyles';
 
 const flightPaths = [
     { value: 'fly_in_circle', label: 'Circle', id: 1 },
@@ -138,15 +139,6 @@ export default function DroneConfiguration({ name, id, index }) {
             fontSize: '1.2rem', fontFamily: 'Roboto',
         },
         margin: 0,
-    }));
-
-    const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
-        marginRight: 2,
-        marginLeft: 20,
-        flexShrink: 0,
-        color: '#F5F5DC',
-        width: '200px',
-        fontSize: '1.2rem', fontFamily: 'Roboto, sans-serif',
     }));
 
     return (

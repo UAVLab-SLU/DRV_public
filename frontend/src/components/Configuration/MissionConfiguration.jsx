@@ -17,13 +17,8 @@ import Snackbar from '@mui/material/Snackbar';
 import { useMainJson } from '../../model/MainJsonContext';
 import { DroneModel } from '../../model/DroneModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
+import { AccordionStyled } from '../../css/SimulationPageStyles';
 
-
-const AccordionStyled = styled(Accordion)({
-    width: '100%',
-    padding: '5px',
-    backgroundColor: 'transparent !important'
-})
 
 export default function MissionConfiguration (mission) {
 

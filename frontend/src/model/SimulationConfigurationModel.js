@@ -1,5 +1,6 @@
 import { EnvironmentModel } from "./EnvironmentModel";
 import { MonitorModel } from "./MonitorModel";
+import { ENVIRONMENT_ORIGIN_VALUES } from '../utils/const';
 import dayjs from 'dayjs';
 
 
@@ -10,8 +11,9 @@ export class SimulationConfigurationModel {
         this._environment.enableFuzzy = false;
         this._environment.timeOfDayFuzzy = false;
         this._environment.positionFuzzy = false;
-        this._environment.setOriginLatitude(41.980381);
-        this._environment.setOriginLongitude(-87.934524);
+        this._environment.setOriginName(ENVIRONMENT_ORIGIN_VALUES[1].value)
+        this._environment.setOriginLatitude(ENVIRONMENT_ORIGIN_VALUES[1].Latitude);
+        this._environment.setOriginLongitude(ENVIRONMENT_ORIGIN_VALUES[1].Longitude);
         this._environment.TimeOfDay = "10:00:00";
         this._environment.UseGeo = true;
         this._environment.time = dayjs('2020-01-01 10:00');

@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import { styled } from '@mui/system';
-import EnvironmentConfiguration from './SimulationPageComponents/EnvironmentConfiguration';
+import EnvironmentConfiguration from './Configuration/EnvironmentConfiguration';
 
 
 const ContainerStyled = styled(Container)({

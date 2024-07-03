@@ -34,6 +34,10 @@ const SadeSettings = ( {envConf, setEnvConf} ) => {
             sade.sadeName = value;
         } else if(id === "height") {
             sade.height = parseFloat(value);
+        } else if(id === "length") {
+            sade.length = parseFloat(value);
+        } else if(id === "width") {
+            sade.width = parseFloat(value);
         } else if(id === "latitude1") {
             sade.latitude1 = parseFloat(value);
         } else if(id === "longitude1") {
@@ -57,9 +61,6 @@ const SadeSettings = ( {envConf, setEnvConf} ) => {
 
     return (
         <Grid container direction="column" style={{ padding: '12px', color: '#F5F5F5' }}>
-            <Grid item>
-                <strong>Configure SADE in your scenario</strong>
-            </Grid>
             <Grid container direction="row" alignItems="center" justifyContent="flex-end" style={{ padding: '10px 0', fontSize: '18px', color: '#F5F5DC' }}>
                 <Grid item>
                     Number of SADEs &nbsp;&nbsp;
@@ -90,14 +91,16 @@ const SadeSettings = ( {envConf, setEnvConf} ) => {
                             {[
                                 { label: 'Name', key: 'sadeName', type: 'text' },
                                 { label: 'Height', key: 'height', type: 'number' },
+                                { label: 'Length', key: 'length', type: 'number' },
+                                { label: 'Width', key: 'width', type: 'number' },
                                 { label: 'Latitude 1', key: 'latitude1', type: 'number' },
                                 { label: 'Longitude 1', key: 'longitude1', type: 'number' },
-                                { label: 'Latitude 2', key: 'latitude2', type: 'number' },
-                                { label: 'Longitude 2', key: 'longitude2', type: 'number' },
-                                { label: 'Latitude 3', key: 'latitude3', type: 'number' },
-                                { label: 'Longitude 3', key: 'longitude3', type: 'number' },
-                                { label: 'Latitude 4', key: 'latitude4', type: 'number' },
-                                { label: 'Longitude 4', key: 'longitude4', type: 'number' },
+                                // { label: 'Latitude 2', key: 'latitude2', type: 'number' },
+                                // { label: 'Longitude 2', key: 'longitude2', type: 'number' },
+                                // { label: 'Latitude 3', key: 'latitude3', type: 'number' },
+                                // { label: 'Longitude 3', key: 'longitude3', type: 'number' },
+                                // { label: 'Latitude 4', key: 'latitude4', type: 'number' },
+                                // { label: 'Longitude 4', key: 'longitude4', type: 'number' },
                             ].map((field, i) => (
                                 <Grid item xs={6} key={i}>
                                     <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>

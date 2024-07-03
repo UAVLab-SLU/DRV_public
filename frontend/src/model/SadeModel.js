@@ -15,6 +15,9 @@ export class SadeModel {
         this._latitude4 = null;
         this._longitude4 = null;
         this._height = null;
+        this._length = null;
+        this._width = null;
+        this._rectangle = null;
     }
 
     get id() {
@@ -65,6 +68,18 @@ export class SadeModel {
         return this._height;
     }
 
+    get length() {
+        return this._length;
+    }
+
+    get width() {
+        return this._width;
+    }
+
+    get rectangle() {
+        return this._rectangle;
+    }
+
     set id(value) {
         this._id = value;
     }
@@ -113,4 +128,15 @@ export class SadeModel {
         this._height = value;
     }
 
+    set length(value){
+        this._length = value;
+    }
+
+    set width(value){
+        this._width = value;
+    }
+
+    set rectangle(value) {
+        this._rectangle = value;
+    }
 }

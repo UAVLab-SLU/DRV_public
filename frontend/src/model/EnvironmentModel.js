@@ -1,4 +1,4 @@
-
+import { SadeModel } from "./SadeModel";
 
 export class EnvironmentModel {
 
@@ -146,6 +146,10 @@ export class EnvironmentModel {
 
     getAllSades(){
         return this._sades;
+    }
+
+    getSadesCount() {
+        return this._sades.length;
     }
 
     getSadeBasedOnIndex(index){

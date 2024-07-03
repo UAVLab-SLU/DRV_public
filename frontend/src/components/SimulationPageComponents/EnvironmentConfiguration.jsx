@@ -3,19 +3,41 @@ import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import { Tab, Tabs } from '@mui/material';
+import { AccordionSummary, Tab, Tabs } from '@mui/material';
 import dayjs from 'dayjs';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails'
+import { makeStyles } from '@mui/styles';
+import {ExpandMore} from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField'
 import WindSettings from './WindSettings';
-
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 import EnvironmentRegionSetting from './EnvironmentRegionSetting';
 
-export default function EnvironmentConfiguration(env) {
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        padding: '5px'
+    },
+    transparentBackground: {
+        backgroundColor: 'transparent !important'
+    },
+    backdropFilter: {
+        backgroundColor: '#75531E',
+        '-webkitBackdropFilter': 'sepia(100%)',
+        backdropFilter: 'sepia(100%)',
+    }
+}));
 
+export default function EnvironmentConfiguration(env) {
+    console.log('env', env);
     // Start of Model
     const [selectedTab, setSelectedTab] = useState(0);
     const [backendInfo, setBackendInfo] = useState({
@@ -128,6 +150,58 @@ export default function EnvironmentConfiguration(env) {
         },
     });
 
+    // SADE AREA //
+    const classes = useStyles();
+
+    const [sadeCount, setSadeCount] = React.useState(mainJSON.Sades != null ? mainJSON.Sades.length: 1);
+    const [sadeArray, setSadeArray] = React.useState(mainJSON.Sades != null ? mainJSON.Sades : [{
+        id:sadeCount-1,
+        sadeName: "SADE " + sadeCount,
+        Name:"SADE " + (sadeCount)
+    }]);
+    
+    const setSade = () => {
+        const newSade = {
+            id: sadeCount,
+            sadeName: "SADE " + (sadeCount+1),
+            Name: "SADE " + (sadeCount+1)
+        };
+        setSadeArray(prevArray => [...prevArray, newSade]);
+    };
+
+    const popSade = () =>{
+        sadeArray.pop();
+    };
+    
+    const handleIncrement = () => {
+        setSadeCount(sadeCount +1);
+        setSade();
+    };
+    
+    const handleDecrement = () => {
+        setSadeCount(sadeCount -1);
+        popSade();
+    };
+    
+    const handleChange = (e, index) => {
+        const{id, value, type} = e.target;
+        setSadeArray(prevState => prevState.map((sade, i) => {
+            if (index === i){
+                return{...sade, [id] : type === "number" ? parseFloat(value) : value};
+            }
+            return sade;
+        }));
+    };
+
+    const StyledInputLabel = styled(InputLabel)(({ theme }) => ({
+        marginRight: 2,
+        marginLeft: 20,
+        flexShrink: 0,
+        color: '#FFFFFF',
+        width: '200px',
+        fontSize: '1.2rem', fontFamily: 'Roboto, sans-serif',
+    }));
+
     return (
         <div>
             <Snackbar open={snackBarState.open}
@@ -182,9 +256,78 @@ export default function EnvironmentConfiguration(env) {
                         />
                     )}
 
-                    {selectedTab === 2 &&
-                        <></>
-                    }
+                    {/*SADE Field*/}
+                {selectedTab === 2 && (
+                    <Grid container direction="column" style={{padding: '12px', color:'#F5F5F5'}}>
+                        <Grid item>
+                            <strong>Configure SADE in your scenario</strong>
+                        </Grid>
+                    <Grid container  direction="row" alignItems="center" justifyContent="flex-end" style={{padding: '10px 0', fontSize:'18px', color: '#F5F5DC' }}>
+                        <Grid item>
+                            Number of SADEs &nbsp;&nbsp;
+                            <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
+                                {sadeCount > 1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
+                                {sadeCount && <Button style={{fontSize:'15px'}} variant="contained" color="warning">{sadeCount}</Button>}
+                                <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={sadeCount===10}>+</Button>
+                            </ButtonGroup>
+                        </Grid>
+                    </Grid>
+
+                    {sadeArray.map((sade, index) => (
+                        <Accordion key={index} classes={{root:classes.transparentBackground}}>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                                sx={{backgroundColor: '#643E05'}}
+                            >
+                                <Box sx={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%'}}>
+                                    <Typography variant="h5" sx={{color:'#F5F5F5', pb:1}}>
+                                        {sade.sadeName}
+                                    </Typography>
+                                </Box>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{backgroundColor:'#75531E47'}}>
+                                <Grid container spacing={2}>
+                                    {[
+                                        {label:'Name', key:'sadeName', type:'text'},
+                                        {label:'Height', key:'height', type:'number'},
+                                        {label:'Latitude 1', key:'latitude1', type:'number'},
+                                         {label:'Longitude 1', key:'longitude1', type:'number'},
+                                        {label:'Latitude 2', key:'latitude2', type:'number'},
+                                        {label:'Longitude 2', key:'longitude2', type:'number'},
+                                        {label:'Latitude 3', key:'latitude3', type:'number'},
+                                        {label:'Longitude 3', key:'longitude3', type:'number'},
+                                        {label:'Latitude 4', key:'latitude4', type:'number'},
+                                        {label:'Longitude 4', key:'longitude4', type:'number'},
+                                    ].map((field, i) => (
+                                        <Grid item xs={6} key={i}>
+                                            <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
+                                            <TextField
+                                                sx={{
+                                                    backgroundColor:'#71665E',
+                                                    '& .MuiOutlinedInput-root': {
+                                                        '& .MuiInputBase-input': {
+                                                            padding: '6px 8px',
+                                                            fontSize: '1.2rem',
+                                                        },
+                                                    },
+                                                }}
+                                                id={field.key}
+                                                type={field.type}
+                                                variant="outlined"
+                                                onChange={(e) => handleChange(e, index)}
+                                                value={sade[field.key] || ''}
+                                                fullWidth
+                                            />
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </AccordionDetails>
+                        </Accordion>
+                    ))}
+                </Grid>
+                )}
                 </Grid>
             </Grid>
 

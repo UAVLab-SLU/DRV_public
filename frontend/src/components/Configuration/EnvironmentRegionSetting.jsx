@@ -9,24 +9,12 @@ import Stack from '@mui/material/Stack';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StyledSelect } from '../../css/SimulationPageStyles';
-// import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
+import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
-
-    const ENVIRONMENT_ORIGINS = [
-        { value: "Chicago O’Hare Airport", id: 20 },
-        { value: "Michigan Lake Beach", id: 10 },
-        { value: "Specify Region", id: 30 }
-      ];
-      
-    const ENVIRONMENT_ORIGIN_VALUES = [
-        { value: "Michigan Lake Beach", Latitude: 42.211223, Longitude: -86.390394, Height: 170 },
-        { value: "Chicago O’Hare Airport", Latitude: 41.980381, Longitude: -87.934524, Height: 200 }
-      ];
-
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
@@ -57,7 +45,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         } else if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {
-            envConf.getOriginLongitude(parseFloat(val.target.value));
+            envConf.setOriginLongitude(parseFloat(val.target.value));
         } else if (val.target.id === "Height") {
             // future implementation
             envConf.setOriginHeight(parseFloat(val.target.value));

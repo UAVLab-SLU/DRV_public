@@ -37,8 +37,8 @@ export const WindType = [
 ];
 
 export const ENVIRONMENT_ORIGINS = [
-  { value: "Chicago O’Hare Airport", id: 20 },
   { value: "Michigan Lake Beach", id: 10 },
+  { value: "Chicago O’Hare Airport", id: 20 },
   { value: "Specify Region", id: 30 }
 ];
 

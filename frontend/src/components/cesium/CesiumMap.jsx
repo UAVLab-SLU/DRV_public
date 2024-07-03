@@ -56,7 +56,7 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
   return (
 
     <Viewer ref={viewerRef} terrainProvider={terrainProvider}>
-      <Cesium3DTileset url={IonResource.fromAssetId(96188)} />
+      <Cesium3DTileset url={IonResource.fromAssetId(2275207)} />
       <CameraFlyTo
         destination={cameraPosition.destination}
         orientation={cameraPosition.orientation}

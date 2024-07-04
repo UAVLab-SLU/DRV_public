@@ -1,0 +1,82 @@
+# Use root/example as user/password credentials
+version: '3.9'
+
+services:
+
+  mongo_db:
+    image: mongo
+    restart: always
+    container_name: mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: uav_user
+      MONGO_INITDB_ROOT_PASSWORD: uavPassword
+    expose:
+      - 27017
+    volumes:
+      - ./.mongo_data:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - ./dockerConfig.env
+    networks:
+      - backend_network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    container_name: mongo-express
+    ports:
+      - 8081:8081
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: uav_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: uavPassword
+      ME_CONFIG_MONGODB_URL: mongodb://uav_user:uavPassword@mongo_db:27017/
+      ME_CONFIG_BASICAUTH: false
+    networks:
+      - backend_network
+    env_file:
+      - ./dockerConfig.env  
+
+  python_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./dockerConfig.env
+    container_name: python_backend
+    ports:
+      - 5000:5000
+    networks:
+      - frontend_network
+      - backend_network
+    depends_on:
+      - mongo_db
+      - mongo-express
+    expose:
+      - 5000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./dockerConfig.env
+    container_name: frontend
+    ports:
+      - 3000:3000
+    networks:
+      - frontend_network
+    expose:
+      - 3000
+    depends_on:
+      - mongo_db
+      - mongo-express
+      - python_backend
+
+networks:
+  backend_network:
+  frontend_network:

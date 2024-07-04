@@ -283,14 +283,20 @@ class SimulationTaskManager:
 
     @staticmethod
     def __save_settings_dot_json(new_setting_dot_json):
-        with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json',
-                  'w') as outfile:
+        current_pwd = os.getcwd()
+        settings_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "settings.json")
+        with open(settings_path, mode = 'w') as outfile:
+        #with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json',
+                  #'w') as outfile:
             json.dump(new_setting_dot_json, outfile, indent=4)
 
     @staticmethod
     def __save_cesium_dot_json(cesium_setting):
-        with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json',
-                  'w') as outfile:
+        current_pwd = os.getcwd()
+        settings_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "cesium.json")
+        with open(settings_path, mode = 'w') as outfile:
+        #with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json',
+                  #'w') as outfile:
             json.dump(cesium_setting, outfile, indent=4)
 
     def stop(self):
@@ -521,7 +527,9 @@ class SimulationTaskManager:
         """
         Initialize json files if do not exist
         """
-        file_path = os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json'
+        current_pwd = os.getcwd()
+        file_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "settings.json")
+        #file_path = os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json'
         if not os.path.exists(file_path):
             open(file_path, 'w').close()
             default_settings = {
@@ -539,7 +547,9 @@ class SimulationTaskManager:
             with open(file_path, 'w') as outfile:
                 json.dump(default_settings, outfile, indent=4)
 
-        file_path = os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json'
+
+        file_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "cesium.json")
+        #file_path = os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json'
         if not os.path.exists(file_path):
             open(file_path, 'w').close()
             default_settings = {

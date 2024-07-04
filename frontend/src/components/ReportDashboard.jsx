@@ -25,7 +25,7 @@ import PropTypes from 'prop-types';
 import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
 import FuzzyDashboard from './FuzzyDashboard'; 
 import React, { useEffect } from 'react';
-import { styled as makeStyles } from '@mui/system';;
+import { makeStyles } from '@mui/styles';
 import Snackbar from '@mui/material/Snackbar';
 
 import Accordion from '@mui/material/Accordion';

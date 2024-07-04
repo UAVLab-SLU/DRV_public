@@ -8,7 +8,7 @@ import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import styled from '@emotion/styled';
-import MissionConfiguration from '../Configuration/MissionConfiguration';
+import MissionConfiguration from './MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 import CesiumMap from '../cesium/CesiumMap';
 import MonitorControl from '../MonitorControl'

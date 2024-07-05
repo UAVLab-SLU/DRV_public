@@ -11,11 +11,12 @@ import {
   Math as CesiumMath,
   defined,
   Cartesian3,
+  CornerType,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
-import { findRectangleLength, findRectangleWidth } from '../../utils/mapUtils';
+import { findRectangleLength, findRectangleWidth, computeCircle } from '../../utils/mapUtils';
 
 const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
   const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
@@ -88,42 +89,67 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
       sade.length = len;
       const width = findRectangleWidth(rect);
       sade.width = width;
+      // Calculate the center of the rectangle
+      const centerLongitude = (rect.east + rect.west) / 2;
+      const centerLatitude = (rect.north + rect.south) / 2;
+      sade.latitude1 = centerLatitude;
+      sade.longitude1 = centerLongitude;
       envJson.updateSadeBasedOnIndex(lastIndex, sade);
-      console.log('env json', envJson);
       setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
     }
   };
 
+  useEffect(() => {
+    setNewCameraPosition();
+  }, [envJson]);
+
   return (
     <>
-      {/* {firstPoint && (
-      <Entity
-        position={Cartesian3.fromRadians(firstPoint.longitude, firstPoint.latitude)}
-        point={{ 
-          pixelSize: 10,
-          color: Color.RED,
-          outlineColor: Color.WHITE,
-          outlineWidth: 2
-        }}
-      />
-    )} */}
-      {envJson.getAllSades().map((sade, index) =>
-        sade.rectangle ? (
-          <Entity
-            key={index}
-            rectangle={{
-              coordinates: sade.rectangle,
-              material: Color.GREEN.withAlpha(0.5),
-              outline: true,
-              outlineColor: Color.WHITE,
-              outlineWidth: 2,
-              extrudedHeight: 300.0,
-            }}
-          />
-        ) : (
-          <div key={index}>No valid zone defined.</div>
-        ),
-      )}
+      {envJson.getAllSades().map((sade, index) => (
+        <React.Fragment key={index}>
+          {sade.rectangle && (
+            <Entity
+              rectangle={{
+                coordinates: sade.rectangle,
+                material: Color.GREEN.withAlpha(0.5),
+                outline: true,
+                outlineColor: Color.WHITE,
+                outlineWidth: 2,
+                extrudedHeight: sade.height,
+              }}
+            />
+          )}
+          {sade.longitude1 && sade.latitude1 && (
+            // point entity representing the center of the sade zone
+            <Entity
+              position={Cartesian3.fromRadians(sade.longitude1, sade.latitude1)}
+              point={{
+                pixelSize: 10,
+                color: Color.RED,
+                outlineColor: Color.WHITE,
+                outlineWidth: 2,
+                extrudedHeight: sade.height,
+              }}
+            />
+            // TO-DO: fix normalizing error
+            // <Entity
+            //   polylineVolume={{
+            //     positions: Cartesian3.fromRadiansArrayHeights([
+            //       sade.longitude1,
+            //       sade.latitude1,
+            //       0,
+            //       sade.longitude1,
+            //       sade.latitude1,
+            //       sade.height,
+            //     ]),
+            //     shape: computeCircle(100.0),
+            //     cornerType: CornerType.ROUNDED,
+            //     material: Color.RED,
+            //   }}
+            // />
+          )}
+        </React.Fragment>
+      ))}
     </>
   );
 };

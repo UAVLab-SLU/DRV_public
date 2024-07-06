@@ -33,13 +33,19 @@ class AirSimApplication:
 
     @staticmethod
     def load_airsim_setting():
-        with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json', 'r') as f:
+        current_pwd = os.getcwd()
+        settings_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "settings.json")
+        with open(settings_path, mode = 'r') as f:
+        #with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json', 'r') as f:
             setting_json = json.load(f)
         return setting_json
 
     @staticmethod
     def load_cesium_setting():
-        with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json', 'r') as f:
+        current_pwd = os.getcwd()
+        settings_path = os.path.join(current_pwd, "PythonClient", "airsim", "JSON_files", "cesium.json")
+        with open(settings_path, mode = 'r') as f:
+        #with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'cesium.json', 'r') as f:
             cesium_json = json.load(f)
         return cesium_json
 

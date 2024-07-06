@@ -5,6 +5,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DrawIcon from '@mui/icons-material/Draw';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -18,7 +19,6 @@ import PropTypes from 'prop-types';
 const SadeSettings = ({ envConf, setEnvConf }) => {
   const handleIncrement = () => {
     let newSade = new SadeModel();
-    newSade.name = `SADE Zone ${envConf.getAllSades().length + 1}`;
     envConf.addNewSade(newSade);
     envConf.activeSadeZoneIndex = null;
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
@@ -30,9 +30,14 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
   };
 
+  const handleDelete = (index) => {
+    envConf.deleteSadeBasedOnIndex(index);
+    envConf.activeSadeZoneIndex = null;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
+
   const handleRefresh = (index, sadeZoneName) => {
     let newSade = new SadeModel();
-    newSade.name = sadeZoneName;
     envConf.updateSadeBasedOnIndex(index, newSade);
     envConf.activeSadeZoneIndex = null;
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
@@ -81,6 +86,17 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
   };
 
+  const handleActionClick = (event, action, index, sadeName) => {
+    event.stopPropagation(); // Prevents the accordion from toggling
+    if (action === 'setActive') {
+      setActiveSadeZoneIndex(index);
+    } else if (action === 'refresh') {
+      handleRefresh(index, sadeName);
+    } else if (action === 'delete') {
+      handleDelete(index);
+    }
+  };
+
   return (
     <Grid container direction='column' style={{ color: '#F5F5F5' }}>
       <Grid
@@ -114,85 +130,79 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
       </Grid>
 
       {envConf.getAllSades()?.map((sade, index) => (
-        <Grid container item key={index}>
-          <Grid item xs={11}>
-            <AccordionStyled key={index}>
-              <AccordionSummary
-                expandIcon={<ExpandMore style={{ color: '#F5F5DC' }} />}
-                aria-controls='panel1a-content'
-                id='panel1a-header'
-                sx={{ backgroundColor: '#643E05' }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                  }}
-                >
-                  <Typography variant='h5' sx={{ color: '#F5F5DC', pb: 1 }}>
-                    {sade.name}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails sx={{ backgroundColor: '#75531E47' }}>
-                <Grid container spacing={2}>
-                  {[
-                    { label: 'Name', key: 'name', type: 'text' },
-                    { label: 'Height (m)', key: 'height', type: 'number' },
-                    { label: 'Length (m)', key: 'length', type: 'number' },
-                    { label: 'Width (m)', key: 'width', type: 'number' },
-                    { label: 'Center Latitude', key: 'latitude1', type: 'number' },
-                    { label: 'Center Longitude', key: 'longitude1', type: 'number' },
-                  ].map(
-                    (field, i) =>
-                      (field.key == 'name' || sade.rectangle) && (
-                        <Grid item xs={6} key={i}>
-                          <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
-                          <TextField
-                            sx={{
-                              backgroundColor: '#71665E',
-                              '& .MuiOutlinedInput-root': {
-                                '& .MuiInputBase-input': {
-                                  padding: '6px 8px',
-                                  fontSize: '1.2rem',
-                                },
-                              },
-                            }}
-                            id={field.key}
-                            type={field.type}
-                            variant='outlined'
-                            onChange={(e) => handleChange(e, index)}
-                            value={sade[field.key] || ''}
-                            fullWidth
-                          />
-                        </Grid>
-                      ),
-                  )}
-                </Grid>
-              </AccordionDetails>
-            </AccordionStyled>
-          </Grid>
-          <Grid container direction='column' item xs={1}>
-            <ButtonGroup
-              size='small'
-              orientation='vertical'
-              variant='outlined'
-              aria-label='small outlined button group'
-              color='warning'
-              sx={{ paddingTop: '5px' }}
+        <Grid item key={index}>
+          <AccordionStyled key={index}>
+            <AccordionSummary
+              expandIcon={<ExpandMore style={{ color: '#F5F5DC' }} />}
+              aria-controls='panel1a-content'
+              id='panel1a-header'
+              sx={{ backgroundColor: '#643E05' }}
             >
-              <Button onClick={() => setActiveSadeZoneIndex(index)}>
-                <DrawIcon
-                  style={{ color: envConf.activeSadeZoneIndex == index ? '#F5F5DC' : '#FF7F50' }}
-                />
-              </Button>
-              <Button onClick={() => handleRefresh(index, sade.name)}>
-                <RefreshIcon style={{ color: '#FF7F50' }} />
-              </Button>
-            </ButtonGroup>
-          </Grid>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <Typography variant='h5' sx={{ color: '#F5F5DC', pb: 1 }}>
+                  {sade.name}
+                </Typography>
+                <ButtonGroup size='large' variant='text' color='warning'>
+                  <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
+                    <DrawIcon
+                      style={{
+                        color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50',
+                      }}
+                    />
+                  </Button>
+                  <Button onClick={(e) => handleActionClick(e, 'refresh', index, sade.name)}>
+                    <RefreshIcon />
+                  </Button>
+                  <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
+                    <DeleteIcon />
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ backgroundColor: '#75531E47' }}>
+              <Grid container spacing={2}>
+                {[
+                  { label: 'Name', key: 'name', type: 'text' },
+                  { label: 'Height (m)', key: 'height', type: 'number' },
+                  { label: 'Length (m)', key: 'length', type: 'number' },
+                  { label: 'Width (m)', key: 'width', type: 'number' },
+                  { label: 'Center Latitude', key: 'latitude1', type: 'number' },
+                  { label: 'Center Longitude', key: 'longitude1', type: 'number' },
+                ].map(
+                  (field, i) =>
+                    (field.key == 'name' || sade.rectangle) && (
+                      <Grid item xs={6} key={i}>
+                        <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
+                        <TextField
+                          sx={{
+                            backgroundColor: '#71665E',
+                            '& .MuiOutlinedInput-root': {
+                              '& .MuiInputBase-input': {
+                                padding: '6px 8px',
+                                fontSize: '1.2rem',
+                              },
+                            },
+                          }}
+                          id={field.key}
+                          type={field.type}
+                          variant='outlined'
+                          onChange={(e) => handleChange(e, index)}
+                          value={sade[field.key] || ''}
+                          fullWidth
+                        />
+                      </Grid>
+                    ),
+                )}
+              </Grid>
+            </AccordionDetails>
+          </AccordionStyled>
         </Grid>
       ))}
     </Grid>

@@ -1,7 +1,7 @@
 export class SadeModel {
-  constructor() {
+  constructor(name = 'Sade Zone') {
     this._id = 0;
-    this._name = null;
+    this._name = name;
     this._latitude1 = null;
     this._longitude1 = null;
     this._height = 30;

@@ -18,6 +18,7 @@ export class EnvironmentModel {
             "Height": 0
         };
         this._sades = [];
+        this._activeSadeZoneIndex = null;
     }
 
     // Getters
@@ -57,6 +58,10 @@ export class EnvironmentModel {
         return this._Origin;
     }
 
+    get activeSadeZoneIndex(){
+        return this._activeSadeZoneIndex;
+    }
+
     // Setters
     set enableFuzzy(value) {
         this._enableFuzzy = value;
@@ -92,6 +97,10 @@ export class EnvironmentModel {
 
     set Wind(value){
         this._Wind = value;
+    }
+
+    set activeSadeZoneIndex(value) {
+        this._activeSadeZoneIndex = value;
     }
 
     getOriginLatitude(){
@@ -186,6 +195,7 @@ export class EnvironmentModel {
         model.time = instance.time;
         model.Origin = instance.Origin;
         model.Wind = instance.Wind;
+        model.activeSadeZoneIndex = instance.activeSadeZoneIndex;
         const sades = instance.getAllSades();
         for(let i =0; i < sades.length; i++){
             model.addNewSade(sades[i]);

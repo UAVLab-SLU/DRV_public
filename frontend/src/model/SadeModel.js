@@ -1,26 +1,24 @@
 export class SadeModel {
   constructor() {
     this._id = 0;
-    this._sadeName = null;
-    this._Name = null;
+    this._name = null;
     this._latitude1 = null;
     this._longitude1 = null;
     this._height = 30;
     this._length = null;
     this._width = null;
     this._rectangle = null;
+    // TO-DO: remove if unnecessary
+    this._lengthLabelCoords = null;
+    this._widthLabelCoords = null;
   }
 
   get id() {
     return this._id;
   }
 
-  get sadeName() {
-    return this._sadeName;
-  }
-
-  get Name() {
-    return this._Name;
+  get name() {
+    return this._name;
   }
 
   get latitude1() {
@@ -47,16 +45,20 @@ export class SadeModel {
     return this._rectangle;
   }
 
+  get lengthLabelCoords() {
+    return this._lengthLabelCoords;
+  }
+
+  get widthLabelCoords() {
+    return this._widthLabelCoords;
+  }
+
   set id(value) {
     this._id = value;
   }
 
-  set sadeName(value) {
-    this._sadeName = value;
-  }
-
-  set Name(value) {
-    this._Name = value;
+  set name(value) {
+    this._name = value;
   }
 
   set latitude1(value) {
@@ -81,5 +83,13 @@ export class SadeModel {
 
   set rectangle(value) {
     this._rectangle = value;
+  }
+
+  set lengthLabelCoords(value) {
+    this._lengthLabelCoords = value;
+  }
+
+  set widthLabelCoords(value) {
+    this._widthLabelCoords = value;
   }
 }

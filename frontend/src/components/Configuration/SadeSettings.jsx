@@ -58,26 +58,26 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     } else if (id === 'length') {
       sade.length = parseFloat(value);
       sade.rectangle = value
-        ? updateRectangle(sade.longitude1, sade.latitude1, sade.length, sade.width)
+        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
         : 0;
     } else if (id === 'width') {
       sade.width = parseFloat(value);
       sade.rectangle = value
-        ? updateRectangle(sade.longitude1, sade.latitude1, sade.length, sade.width)
+        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
         : 0;
-    } else if (id === 'latitude1') {
-      sade.latitude1 = value ? parseFloat(value) : 0;
+    } else if (id === 'centerLat') {
+      sade.centerLat = value ? parseFloat(value) : 0;
       sade.rectangle = updateRectangleByNewCenter(
-        sade.longitude1,
-        sade.latitude1,
+        sade.centerLong,
+        sade.centerLat,
         sade.length,
         sade.width,
       );
-    } else if (id === 'longitude1') {
-      sade.longitude1 = value ? parseFloat(value) : 0;
+    } else if (id === 'centerLong') {
+      sade.centerLong = value ? parseFloat(value) : 0;
       sade.rectangle = updateRectangleByNewCenter(
-        sade.longitude1,
-        sade.latitude1,
+        sade.centerLong,
+        sade.centerLat,
         sade.length,
         sade.width,
       );
@@ -173,8 +173,8 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                   { label: 'Height (m)', key: 'height', type: 'number' },
                   { label: 'Length (m)', key: 'length', type: 'number' },
                   { label: 'Width (m)', key: 'width', type: 'number' },
-                  { label: 'Center Latitude', key: 'latitude1', type: 'number' },
-                  { label: 'Center Longitude', key: 'longitude1', type: 'number' },
+                  { label: 'Center Latitude', key: 'centerLat', type: 'number' },
+                  { label: 'Center Longitude', key: 'centerLong', type: 'number' },
                 ].map(
                   (field, i) =>
                     (field.key == 'name' || sade.rectangle) && (

@@ -104,8 +104,8 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     // Calculate the center of the rectangle
     const centerLongitude = (rect.east + rect.west) / 2;
     const centerLatitude = (rect.north + rect.south) / 2;
-    sade.latitude1 = centerLatitude;
-    sade.longitude1 = centerLongitude;
+    sade.centerLat = centerLatitude;
+    sade.centerLong = centerLongitude;
     envJson.updateSadeBasedOnIndex(currentInx, sade);
     setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
   };
@@ -118,7 +118,9 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     <>
       {envJson.getAllSades().map((sade, index) => (
         <React.Fragment key={index}>
+          {/** rectangle entity representing the sade zone */}
           {sade.rectangle && (
+            <React.Fragment>
             <Entity
               rectangle={{
                 coordinates: sade.rectangle,
@@ -129,11 +131,72 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
                 extrudedHeight: sade.height,
               }}
             />
+            
+            {/** polyline entity representing the length of a sade zone */}
+            <Entity>
+              <Entity
+                polyline={{
+                  positions: [
+                    Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.south, sade.height),
+                    Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.north, sade.height),
+                  ],
+                  width: 2,
+                  material: Color.RED,
+                }}
+              />
+              <Entity
+                position={Cartesian3.fromRadians(
+                  sade.rectangle.west,
+                  (sade.rectangle.south + sade.rectangle.north) / 2,
+                  sade.height,
+                )}
+                label={{
+                  text: `Length: ${sade.length.toFixed(2)}m`,
+                  font: '14pt sans-serif',
+                  fillColor: Color.WHITE,
+                  backgroundColor: Color.RED,
+                  showBackground: true,
+                  backgroundPadding: new Cartesian2(6, 4),
+                  pixelOffset: new Cartesian2(0, -10),
+                }}
+              />
+            </Entity>
+
+            {/** polyline entity representing the width of a sade zone */}
+            <Entity
+              polyline={{
+                positions: [
+                  Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.south, sade.height),
+                  Cartesian3.fromRadians(sade.rectangle.east, sade.rectangle.south, sade.height),
+                ],
+                width: 2,
+                material: Color.BLUE,
+              }}
+            >
+              <Entity
+                position={Cartesian3.fromRadians(
+                  (sade.rectangle.west + sade.rectangle.east) / 2,
+                  sade.rectangle.south,
+                  sade.height,
+                )}
+                label={{
+                  text: `Width: ${sade.width.toFixed(2)}m`,
+                  font: '14pt sans-serif',
+                  fillColor: Color.WHITE,
+                  backgroundColor: Color.BLUE,
+                  showBackground: true,
+                  backgroundPadding: new Cartesian2(6, 4),
+                  pixelOffset: new Cartesian2(0, -10),
+                }}
+              />
+            </Entity>
+            </React.Fragment>
           )}
-          {sade.longitude1 && sade.latitude1 && (
+
+          {sade.centerLong && sade.centerLat && (
             // point entity representing the center of the sade zone
             <Entity
-              position={Cartesian3.fromRadians(sade.longitude1, sade.latitude1, sade.height)}
+              position={Cartesian3.fromRadians(sade.centerLong, sade.centerLat, sade.height)}
               point={{
                 pixelSize: 10,
                 color: Color.RED,
@@ -143,60 +206,14 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
               }}
               label={{
                 text: sade.name,
-                font: '18px sans-serif',
+                font: '16pt sans-serif',
+                backgroundColor: Color.BLACK,
                 fillColor: Color.WHITE,
-                outlineColor: Color.BLACK,
-                outlineWidth: 1,
-                style: LabelStyle.FILL_AND_OUTLINE,
+                showBackground: true,
+                backgroundPadding: new Cartesian2(6, 4),
                 heightReference: HeightReference.RELATIVE_TO_GROUND,
                 verticalOrigin: VerticalOrigin.BOTTOM,
-                pixelOffset: new Cartesian2(0, -40), // Offset to position the label above the point
-                position: Cartesian3.fromDegrees(sade.longitude1, sade.latitude1, sade.height),
-              }}
-            />
-          )}
-
-          {/* TO-DO: specify length and width labels of sade zone */}
-          {sade.rectangle && (
-            <Entity
-              polyline={{
-                positions: Cartesian3.fromDegreesArray([
-                  CesiumMath.toDegrees(sade.rectangle.west),
-                  CesiumMath.toDegrees(sade.rectangle.south),
-                  CesiumMath.toDegrees(sade.rectangle.west),
-                  CesiumMath.toDegrees(sade.rectangle.north),
-                ]),
-                width: 2,
-                material: Color.RED,
-              }}
-              label={{
-                text: `Width: ${sade.width.toFixed(2)}m`,
-                fillColor: Color.WHITE,
-                showBackground: true,
-                backgroundPadding: new Cartesian2(6, 4),
-                pixelOffset: new Cartesian2(0, -40),
-              }}
-            />
-          )}
-
-          {sade.rectangle && (
-            <Entity
-              polyline={{
-                positions: Cartesian3.fromDegreesArray([
-                  CesiumMath.toDegrees(sade.rectangle.west),
-                  CesiumMath.toDegrees(sade.rectangle.south),
-                  CesiumMath.toDegrees(sade.rectangle.east),
-                  CesiumMath.toDegrees(sade.rectangle.south),
-                ]),
-                width: 2,
-                material: Color.BLUE,
-              }}
-              label={{
-                text: `Length: ${sade.length.toFixed(2)}m`,
-                fillColor: Color.WHITE,
-                showBackground: true,
-                backgroundPadding: new Cartesian2(6, 4),
-                pixelOffset: new Cartesian2(0, -20),
+                pixelOffset: new Cartesian2(0, -50), // Offset to position the label above the point
               }}
             />
           )}

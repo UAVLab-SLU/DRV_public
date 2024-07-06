@@ -3,137 +3,215 @@ import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui
 import { AccordionStyled, StyledInputLabel } from '../../css/SimulationPageStyles';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import DrawIcon from '@mui/icons-material/Draw';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import {ExpandMore} from '@mui/icons-material';
+import { ExpandMore } from '@mui/icons-material';
 import { SadeModel } from '../../model/SadeModel';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
+import { updateRectangle, updateRectangleByNewCenter } from '../../utils/mapUtils';
 import PropTypes from 'prop-types';
 
-const SadeSettings = ( {envConf, setEnvConf} ) => {
+const SadeSettings = ({ envConf, setEnvConf }) => {
+  const handleIncrement = () => {
+    let newSade = new SadeModel();
+    envConf.addNewSade(newSade);
+    envConf.activeSadeZoneIndex = null;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
 
-    const handleIncrement = () => {
-        let newSade = new SadeModel();
-        newSade.sadeName = `SADE ${envConf.getAllSades().length+1}`;
-        newSade.Name = newSade.sadeName;
-        envConf.addNewSade(newSade);
-        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  const handleDecrement = () => {
+    envConf.popLastSade();
+    envConf.activeSadeZoneIndex = null;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
+
+  const handleDelete = (index) => {
+    envConf.deleteSadeBasedOnIndex(index);
+    envConf.activeSadeZoneIndex = null;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
+
+  const handleRefresh = (index, sadeZoneName) => {
+    let newSade = new SadeModel();
+    envConf.updateSadeBasedOnIndex(index, newSade);
+    envConf.activeSadeZoneIndex = null;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
+
+  const setActiveSadeZoneIndex = (index) => {
+    envConf.activeSadeZoneIndex = index;
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
+
+  const handleChange = (e, index) => {
+    const { id, value, type } = e.target;
+    let sade = envConf.getSadeBasedOnIndex(index);
+    if (id === 'name') {
+      sade.name = value;
+    } else if (id === 'height') {
+      sade.height = value ? parseFloat(value) : 0;
+    } else if (id === 'length') {
+      sade.length = parseFloat(value);
+      sade.rectangle = value
+        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
+        : 0;
+    } else if (id === 'width') {
+      sade.width = parseFloat(value);
+      sade.rectangle = value
+        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
+        : 0;
+    } else if (id === 'centerLat') {
+      sade.centerLat = value ? parseFloat(value) : 0;
+      sade.rectangle = updateRectangleByNewCenter(
+        sade.centerLong,
+        sade.centerLat,
+        sade.length,
+        sade.width,
+      );
+    } else if (id === 'centerLong') {
+      sade.centerLong = value ? parseFloat(value) : 0;
+      sade.rectangle = updateRectangleByNewCenter(
+        sade.centerLong,
+        sade.centerLat,
+        sade.length,
+        sade.width,
+      );
     }
+    envConf.updateSadeBasedOnIndex(index, sade);
+    setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  };
 
-    const handleDecrement = () => {
-        envConf.popLastSade();
-        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+  const handleActionClick = (event, action, index, sadeName) => {
+    event.stopPropagation(); // Prevents the accordion from toggling
+    if (action === 'setActive') {
+      setActiveSadeZoneIndex(index);
+    } else if (action === 'refresh') {
+      handleRefresh(index, sadeName);
+    } else if (action === 'delete') {
+      handleDelete(index);
     }
+  };
 
-    const handleChange = (e, index) => {
-        const {id, value, type} = e.target;
-        let sade = envConf.getSadeBasedOnIndex(index);
-        if(id === "sadeName"){
-            sade.sadeName = value;
-        } else if(id === "height") {
-            sade.height = parseFloat(value);
-        } else if(id === "latitude1") {
-            sade.latitude1 = parseFloat(value);
-        } else if(id === "longitude1") {
-            sade.longitude1 = parseFloat(value);
-        } else if(id === "latitude2") {
-            sade.latitude2 = parseFloat(value);
-        } else if(id === "longitude2") {
-            sade.longitude2 = parseFloat(value);
-        } else if(id === "latitude3") {
-            sade.latitude3 = parseFloat(value);
-        } else if(id === "longitude3") {
-            sade.longitude3 = parseFloat(value);
-        } else if(id === "latitude4") {
-            sade.latitude4 = parseFloat(value);
-        } else if(id === "longitude4") {
-            sade.longitude4 = parseFloat(value);
-        }
-        envConf.updateSadeBasedOnIndex(index, sade);
-        setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
-    }
-
-    return (
-        <Grid container direction="column" style={{ padding: '12px', color: '#F5F5F5' }}>
-            <Grid item>
-                <strong>Configure SADE in your scenario</strong>
-            </Grid>
-            <Grid container direction="row" alignItems="center" justifyContent="flex-end" style={{ padding: '10px 0', fontSize: '18px', color: '#F5F5DC' }}>
-                <Grid item>
-                    Number of SADEs &nbsp;&nbsp;
-                    <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
-                        {envConf.getAllSades().length > 1 && <Button style={{ fontSize: '15px' }} onClick={handleDecrement}>-</Button>}
-                        {envConf.getAllSades().length && <Button style={{ fontSize: '15px' }} variant="contained" color="warning">{envConf.getAllSades().length}</Button>}
-                        <Button style={{ fontSize: '15px' }} onClick={handleIncrement} disabled={envConf.getAllSades().length === 10}>+</Button>
-                    </ButtonGroup>
-                </Grid>
-            </Grid>
-
-            {envConf.getAllSades()?.map((sade, index) => (
-                <AccordionStyled key={index}>
-                    <AccordionSummary
-                        expandIcon={<ExpandMore />}
-                        aria-controls="panel1a-content"
-                        id="panel1a-header"
-                        sx={{ backgroundColor: '#643E05' }}
-                    >
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Typography variant="h5" sx={{ color: '#F5F5F5', pb: 1 }}>
-                                {sade.sadeName}
-                            </Typography>
-                        </Box>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ backgroundColor: '#75531E47' }}>
-                        <Grid container spacing={2}>
-                            {[
-                                { label: 'Name', key: 'sadeName', type: 'text' },
-                                { label: 'Height', key: 'height', type: 'number' },
-                                { label: 'Latitude 1', key: 'latitude1', type: 'number' },
-                                { label: 'Longitude 1', key: 'longitude1', type: 'number' },
-                                { label: 'Latitude 2', key: 'latitude2', type: 'number' },
-                                { label: 'Longitude 2', key: 'longitude2', type: 'number' },
-                                { label: 'Latitude 3', key: 'latitude3', type: 'number' },
-                                { label: 'Longitude 3', key: 'longitude3', type: 'number' },
-                                { label: 'Latitude 4', key: 'latitude4', type: 'number' },
-                                { label: 'Longitude 4', key: 'longitude4', type: 'number' },
-                            ].map((field, i) => (
-                                <Grid item xs={6} key={i}>
-                                    <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
-                                    <TextField
-                                        sx={{
-                                            backgroundColor: '#71665E',
-                                            '& .MuiOutlinedInput-root': {
-                                                '& .MuiInputBase-input': {
-                                                    padding: '6px 8px',
-                                                    fontSize: '1.2rem',
-                                                },
-                                            },
-                                        }}
-                                        id={field.key}
-                                        type={field.type}
-                                        variant="outlined"
-                                        onChange={(e) => handleChange(e, index)}
-                                        value={sade[field.key] || ''}
-                                        fullWidth
-                                    />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </AccordionDetails>
-                </AccordionStyled>
-            ))}
+  return (
+    <Grid container direction='column' style={{ color: '#F5F5F5' }}>
+      <Grid
+        container
+        item
+        direction='row'
+        alignItems='center'
+        justifyContent='flex-end'
+        sx={{ mb: '30px', fontSize: '18px', color: '#F5F5DC' }}
+      >
+        <Grid item>
+          Number of SADEs &nbsp;&nbsp;
+          <ButtonGroup size='small' aria-label='small outlined button group' color='warning'>
+            {envConf.getAllSades().length > 0 && (
+              <Button sx={{ fontSize: '15px' }} onClick={handleDecrement}>
+                -
+              </Button>
+            )}
+            <Button style={{ fontSize: '15px' }} variant='contained' color='warning'>
+              {envConf.getAllSades().length}
+            </Button>
+            <Button
+              style={{ fontSize: '15px' }}
+              onClick={handleIncrement}
+              disabled={envConf.getAllSades().length === 10}
+            >
+              +
+            </Button>
+          </ButtonGroup>
         </Grid>
-    );
+      </Grid>
 
-}
+      {envConf.getAllSades()?.map((sade, index) => (
+        <Grid item key={index}>
+          <AccordionStyled key={index}>
+            <AccordionSummary
+              expandIcon={<ExpandMore style={{ color: '#F5F5DC' }} />}
+              aria-controls='panel1a-content'
+              id='panel1a-header'
+              sx={{ backgroundColor: '#643E05' }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <Typography variant='h5' sx={{ color: '#F5F5DC', pb: 1 }}>
+                  {sade.name}
+                </Typography>
+                <ButtonGroup size='large' variant='text' color='warning'>
+                  <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
+                    <DrawIcon
+                      style={{
+                        color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50',
+                      }}
+                    />
+                  </Button>
+                  <Button onClick={(e) => handleActionClick(e, 'refresh', index, sade.name)}>
+                    <RefreshIcon />
+                  </Button>
+                  <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
+                    <DeleteIcon />
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ backgroundColor: '#75531E47' }}>
+              <Grid container spacing={2}>
+                {[
+                  { label: 'Name', key: 'name', type: 'text' },
+                  { label: 'Height (m)', key: 'height', type: 'number' },
+                  { label: 'Length (m)', key: 'length', type: 'number' },
+                  { label: 'Width (m)', key: 'width', type: 'number' },
+                  { label: 'Center Latitude', key: 'centerLat', type: 'number' },
+                  { label: 'Center Longitude', key: 'centerLong', type: 'number' },
+                ].map(
+                  (field, i) =>
+                    (field.key == 'name' || sade.rectangle) && (
+                      <Grid item xs={6} key={i}>
+                        <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
+                        <TextField
+                          sx={{
+                            backgroundColor: '#71665E',
+                            '& .MuiOutlinedInput-root': {
+                              '& .MuiInputBase-input': {
+                                padding: '6px 8px',
+                                fontSize: '1.2rem',
+                              },
+                            },
+                          }}
+                          id={field.key}
+                          type={field.type}
+                          variant='outlined'
+                          onChange={(e) => handleChange(e, index)}
+                          value={sade[field.key] || ''}
+                          fullWidth
+                        />
+                      </Grid>
+                    ),
+                )}
+              </Grid>
+            </AccordionDetails>
+          </AccordionStyled>
+        </Grid>
+      ))}
+    </Grid>
+  );
+};
 
 SadeSettings.propTypes = {
-    envConf: PropTypes.object.isRequired,
-    setEnvConf: PropTypes.func.isRequired,
+  envConf: PropTypes.object.isRequired,
+  setEnvConf: PropTypes.func.isRequired,
 };
 
 export default SadeSettings;
-
-

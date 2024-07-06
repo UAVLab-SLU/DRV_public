@@ -1,116 +1,76 @@
-
-
 export class SadeModel {
+  constructor(name = 'Sade Zone') {
+    this._id = 0;
+    this._name = name;
+    this._centerLat = null;
+    this._centerLong = null;
+    this._height = 30;
+    this._length = null;
+    this._width = null;
+    this._rectangle = null;
+  }
 
-    constructor() {
-        this._id = 0;
-        this._sadeName = null;
-        this._Name = null;
-        this._latitude1 = null;
-        this._longitude1 = null;
-        this._latitude2 = null;
-        this._longitude2 = null;
-        this._latitude3 = null;
-        this._longitude3 = null;
-        this._latitude4 = null;
-        this._longitude4 = null;
-        this._height = null;
-    }
+  get id() {
+    return this._id;
+  }
 
-    get id() {
-        return this._id;
-    }
+  get name() {
+    return this._name;
+  }
 
-    get sadeName() {
-        return this._sadeName;
-    }
+  get centerLat() {
+    return this._centerLat;
+  }
 
-    get Name() {
-        return this._Name;
-    }
+  get centerLong() {
+    return this._centerLong;
+  }
 
-    get latitude1() {
-        return this._latitude1;
-    }
+  get height() {
+    return this._height;
+  }
 
-    get latitude2() {
-        return this._latitude2;
-    }
+  get length() {
+    return this._length;
+  }
 
-    get latitude3() {
-        return this._latitude3;
-    }
+  get width() {
+    return this._width;
+  }
 
-    get latitude4() {
-        return this._latitude4;
-    }
+  get rectangle() {
+    return this._rectangle;
+  }
 
-    get longitude1() {
-        return this._longitude1;
-    }
+  set id(value) {
+    this._id = value;
+  }
 
-    get longitude2() {
-        return this._longitude2;
-    }
+  set name(value) {
+    this._name = value;
+  }
 
-    get longitude3() {
-        return this._longitude3;
-    }
+  set centerLat(value) {
+    this._centerLat = value;
+  }
 
-    get longitude4() {
-        return this._longitude4;
-    }
+  set centerLong(value) {
+    this._centerLong = value;
+  }
 
-    get height() {
-        return this._height;
-    }
+  set height(value) {
+    this._height = value;
+  }
 
-    set id(value) {
-        this._id = value;
-    }
+  set length(value) {
+    this._length = value;
+  }
 
-    set sadeName(value) {
-        this._sadeName = value;
-    }
+  set width(value) {
+    this._width = value;
+  }
 
-    set Name(value) {
-        this._Name = value;
-    }
-
-    set latitude1(value) {
-        this._latitude1 = value;
-    }
-
-    set latitude2(value) {
-        this._latitude2 = value;
-    }
-
-    set latitude3(value) {
-        this._latitude3 = value;
-    }
-
-    set latitude4(value) {
-        this._latitude4 = value;
-    }
-
-    set longitude1(value) {
-        this._longitude1 = value;
-    }
-
-    set longitude2(value) {
-        this._longitude2 = value;
-    }
-
-    set longitude3(value) {
-        this._longitude3 = value;
-    }
-
-    set longitude4(value) {
-        this._longitude4 = value;
-    }
-
-    set height(value){
-        this._height = value;
-    }
-
+  set rectangle(value) {
+    this._rectangle = value;
+  }
 }

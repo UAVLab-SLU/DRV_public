@@ -28,8 +28,7 @@ const TimeLineSetterCesiumComponent = ({ viewerReady, viewerRef }) => {
 
                 if(viewerMaintainer.current){
                   date = JulianDate.fromDate(new Date(envJson.time));
-                  viewerMaintainer.current = false;
-                } 
+                }
 
                 const jsDate = JulianDate.toDate(date);
 
@@ -50,12 +49,13 @@ const TimeLineSetterCesiumComponent = ({ viewerReady, viewerRef }) => {
 
                 // Format the time with timezone information
                 const formattedTime = `${hours}:${minutes}:${seconds} UTC${timezoneOffsetHours >= 0 ? '+' : ''}${timezoneOffsetHours}`;
-
+                
                 return formattedTime;
               };
+              viewerMaintainer.current = false;
             }
         }
-    }, [viewerReady, envJson, viewerMaintainer.current])
+    }, [viewerReady, envJson])
 
     return (
         <>

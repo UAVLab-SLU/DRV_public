@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 export class SimulationConfigurationModel {
 
     constructor(){
+        const currentDate = new Date();
         this._environment = new EnvironmentModel();
         this._environment.enableFuzzy = false;
         this._environment.timeOfDayFuzzy = false;
@@ -14,9 +15,9 @@ export class SimulationConfigurationModel {
         this._environment.setOriginName(ENVIRONMENT_ORIGIN_VALUES[1].value)
         this._environment.setOriginLatitude(ENVIRONMENT_ORIGIN_VALUES[1].Latitude);
         this._environment.setOriginLongitude(ENVIRONMENT_ORIGIN_VALUES[1].Longitude);
-        this._environment.TimeOfDay = "10:00:00";
+        this._environment.TimeOfDay = currentDate.toUTCString().substring(17,25);;
         this._environment.UseGeo = true;
-        this._environment.time = dayjs('2020-01-01 10:00');
+        this._environment.time = dayjs(currentDate);
         this._drones = new Array();
         this._monitors = new MonitorModel();
     }

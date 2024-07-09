@@ -36,6 +36,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
             envConf.setOriginName(val.target.value);
         }
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+        viewerMaintainer.current = true;
     }
 
     const handleOriginChange = (val) => {
@@ -45,7 +46,6 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
             envConf.TimeOfDay = val.$H + ':' + val.$m + ':' + val.$s;
             envConf.time = val
-            viewerMaintainer.current = true;
         } else if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {
@@ -56,6 +56,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         }
         
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+        viewerMaintainer.current = true;
     }
 
 

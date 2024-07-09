@@ -36,7 +36,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
   };
 
-  const handleRefresh = (index, sadeZoneName) => {
+  const handleReset = (index, sadeZoneName) => {
     let newSade = new SadeModel();
     envConf.updateSadeBasedOnIndex(index, newSade);
     envConf.activeSadeZoneIndex = null;
@@ -90,8 +90,8 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     event.stopPropagation(); // Prevents the accordion from toggling
     if (action === 'setActive') {
       setActiveSadeZoneIndex(index);
-    } else if (action === 'refresh') {
-      handleRefresh(index, sadeName);
+    } else if (action === 'reset') {
+      handleReset(index, sadeName);
     } else if (action === 'delete') {
       handleDelete(index);
     }
@@ -151,21 +151,29 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                 </Typography>
                 <ButtonGroup size='large' variant='text' color='warning'>
                   <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
-                    <Tooltip title="click to activate, then hold SHIFT & drag the MOUSE to draw the sade-zone on the map." enterDelay={300} leaveDelay={500}>
+                    <Tooltip
+                      title='Click to activate, then hold SHIFT & drag the MOUSE to draw the sade-zone on the map.'
+                      enterDelay={300}
+                      leaveDelay={500}
+                    >
                       <DrawIcon
                         style={{
-                          color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50'
+                          color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50',
                         }}
                       />
                     </Tooltip>
                   </Button>
-                  <Button onClick={(e) => handleActionClick(e, 'refresh', index, sade.name)}>
-                    <Tooltip title="refreshes current sade-zone values" enterDelay={300} leaveDelay={200}>
+                  <Button onClick={(e) => handleActionClick(e, 'reset', index, sade.name)}>
+                    <Tooltip
+                      title='Resets current sade-zone values'
+                      enterDelay={300}
+                      leaveDelay={200}
+                    >
                       <RefreshIcon />
                     </Tooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
-                    <Tooltip title="deletes current sade-zone" enterDelay={300} leaveDelay={200}>
+                    <Tooltip title='Deletes current sade-zone' enterDelay={300} leaveDelay={200}>
                       <DeleteIcon />
                     </Tooltip>
                   </Button>

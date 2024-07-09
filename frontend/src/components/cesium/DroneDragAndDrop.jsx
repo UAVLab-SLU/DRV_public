@@ -4,10 +4,10 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Cartographic,
-  VerticalOrigin,
   Cartesian2,
-  HeightReference,
-  JulianDate, Ellipsoid, Color
+  JulianDate,
+  Ellipsoid,
+  Color,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
@@ -21,7 +21,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     if (viewerReady) {
       const viewer = viewerRef.current.cesiumElement;
       const canvas = viewer.canvas;
-      
+
       viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
         date = JulianDate.toDate(date);
         return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -42,7 +42,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         // Adjust X and Y coordinate relative to the canvas
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
         const droneInx = dragData.index;
         const ellipsoid = viewer.scene.globe.ellipsoid;
         const cesiumCanvasPosition = new Cartesian2(x, y);
@@ -52,7 +52,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
           const longitude = CesiumMath.toDegrees(cartographic.longitude);
 
-          // Use viewer.scene.pickFromRay to get the building height
+          // Use getPickRay to get the building height
           const ray = viewer.camera.getPickRay(cesiumCanvasPosition);
           const intersection = viewer.scene.pickFromRay(ray, []);
           let buildingHeight = 0;
@@ -60,12 +60,10 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           if (intersection && intersection.position) {
             buildingHeight = Cartographic.fromCartesian(intersection.position).height;
           }
-          console.log('Building Height:', buildingHeight);
 
-          const position = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, buildingHeight);
           setNewCameraPosition();
 
-          syncDroneLocation(droneInx, latitude, longitude, buildingHeight, position, dragData.src);
+          syncDroneLocation(latitude, longitude, buildingHeight, droneInx);
         }
       };
 
@@ -82,19 +80,21 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
   return (
     <>
       {mainJson.getAllDrones().map((drone, index) => {
-        if (!drone.cesiumPosition || !drone.cesiumImage) return null;
-
+        if (!drone.X || !drone.Y || !drone.Z) return null;
+        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z);
+        // to-do: set the camera orientation to top view
+        // to-do: lock the settings
         return (
           <React.Fragment key={index}>
             <Entity
-              position={drone.cesiumPosition}
+              position={position}
               billboard={{
-                image: drone.cesiumImage,
+                image: drone.image,
                 scale: 1,
               }}
             />
             <Entity
-              position={drone.cesiumPosition}
+              position={position}
               point={{
                 pixelSize: 7,
                 color: drone.color,
@@ -112,7 +112,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 DroneDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setNewCameraPosition: PropTypes.func.isRequired
+  setNewCameraPosition: PropTypes.func.isRequired,
 };
 
 export default DroneDragAndDrop;

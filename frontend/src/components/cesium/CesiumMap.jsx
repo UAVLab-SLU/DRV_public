@@ -15,7 +15,7 @@ import DroneDragAndDrop from './DroneDragAndDrop';
 import { useMainJson } from '../../model/MainJsonContext';
 
 const CesiumMap = () => {
-  const { envJson } = useMainJson();
+  const { mainJson, envJson } = useMainJson();
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [billboards, setBillboards] = useState([]);
@@ -32,13 +32,13 @@ const CesiumMap = () => {
   Ion.defaultAccessToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZTFmNzlmMy1mNjU4LTQwNGYtOTQ2YS0yOTZiZTMwNmM4NTkiLCJpZCI6MjE2MTY1LCJpYXQiOjE3MTYwODk0NzV9.52fSstXZ3CeFEcorDgCv__iCvdUecg3Q0bhaXum3ZnI';
 
-  const setNewCameraPosition = () => {
+  const setNewCameraPosition = (position = null) => {
     if (!viewerReady) return;
     const viewer = viewerRef.current.cesiumElement;
 
     const { camera } = viewer;
     setCameraPosition({
-      destination: camera.position,
+      destination: position === null ? camera.position : position,
       orientation: {
         heading: camera.heading,
         pitch: camera.pitch,
@@ -57,13 +57,19 @@ const CesiumMap = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setNewCameraPosition();
+  }, [mainJson]);
+
   const terrainProvider = createWorldTerrainAsync();
-  const osmBuildingsTileset = createOsmBuildingsAsync();
 
   return (
-    <Viewer ref={viewerRef} terrainProvider={terrainProvider} 
-    style={{cursor: envJson.activeSadeZoneIndex == null ? 'default': 'crosshair'}}>
-      <Cesium3DTileset url={IonResource.fromAssetId(OSMBuildingsAssetId)} />
+    <Viewer
+      ref={viewerRef}
+      terrainProvider={terrainProvider}
+      style={{ cursor: envJson.activeSadeZoneIndex == null ? 'default' : 'crosshair' }}
+    >
+      <Cesium3DTileset url={IonResource.fromAssetId(google3DTilesAssetId)} />
       <CameraFlyTo
         destination={cameraPosition.destination}
         orientation={cameraPosition.orientation}

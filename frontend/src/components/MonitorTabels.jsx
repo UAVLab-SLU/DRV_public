@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@mui/styles';
+import { styled as makeStyles } from '@mui/system';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';

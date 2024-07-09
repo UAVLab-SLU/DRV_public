@@ -12,9 +12,12 @@ import { StyledSelect } from '../../css/SimulationPageStyles';
 import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
+import { useMainJson } from '../../model/MainJsonContext';
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
+
+    const { viewerMaintainer } = useMainJson();
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
@@ -42,6 +45,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
             envConf.TimeOfDay = val.$H + ':' + val.$m + ':' + val.$s;
             envConf.time = val
+            viewerMaintainer.current = true;
         } else if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {

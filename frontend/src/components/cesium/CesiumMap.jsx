@@ -10,6 +10,7 @@ import {
   createWorldTerrainAsync,
   createOsmBuildingsAsync,
   Ion,
+  JulianDate,
   Color,
   PolygonHierarchy,
   LabelStyle,
@@ -27,6 +28,7 @@ import {
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
+import TimeLineSetterCesiumComponent from './TimeLineSetterCesiumComponent';
 
 const CesiumMap = ({ mainJson, setMainJson, id }) => {
   const viewerRef = useRef(null);
@@ -92,6 +94,11 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
         viewerReady={viewerReady}
         viewerRef={viewerRef}
         setNewCameraPosition={setNewCameraPosition}
+      />
+
+      <TimeLineSetterCesiumComponent
+        viewerReady={viewerReady}
+        viewerRef={viewerRef}
       />
     </Viewer>
   );

@@ -7,7 +7,7 @@ import {
   VerticalOrigin,
   Cartesian2,
   HeightReference,
-  JulianDate
+  JulianDate, Ellipsoid, Color
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
@@ -42,7 +42,8 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         // Adjust X and Y coordinate relative to the canvas
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-
+        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        const droneInx = dragData.index;
         const ellipsoid = viewer.scene.globe.ellipsoid;
         const cesiumCanvasPosition = new Cartesian2(x, y);
         const cartesian = viewer.camera.pickEllipsoid(cesiumCanvasPosition, ellipsoid);
@@ -50,28 +51,21 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
           const longitude = CesiumMath.toDegrees(cartographic.longitude);
+
+          // Use viewer.scene.pickFromRay to get the building height
+          const ray = viewer.camera.getPickRay(cesiumCanvasPosition);
+          const intersection = viewer.scene.pickFromRay(ray, []);
+          let buildingHeight = 0;
+
+          if (intersection && intersection.position) {
+            buildingHeight = Cartographic.fromCartesian(intersection.position).height;
+          }
+          console.log('Building Height:', buildingHeight);
+
+          const position = Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, buildingHeight);
           setNewCameraPosition();
 
-          const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
-          const droneInx = dragData.index;
-
-          syncDroneLocation(droneInx, latitude, longitude, dragData.src);
-          // find the terrain height at dropped location
-          // const terrainProvider = viewer.terrainProvider;
-          // const positions = [Cartographic.fromDegrees(longitude, latitude)];
-          // sampleTerrain(terrainProvider, 11, positions).then((updatedPositions) => {
-          //   const height = updatedPositions[0].height;
-
-
-          // Fixing the same drone dragging into multiple locations
-          //let removedOldDrones = fieldDrones.filter((data) => data.image !== dragData.src)
-          //removedOldDrones.push({
-          //  image: dragData.src,
-          //  position: Cartesian3.fromDegrees(longitude, latitude)
-          //})
-
-          // setFieldDrones(removedOldDrones);
-
+          syncDroneLocation(droneInx, latitude, longitude, buildingHeight, position, dragData.src);
         }
       };
 
@@ -87,19 +81,30 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
   return (
     <>
-      {mainJson.getAllDrones().map((fieldDrone, index) => (
-        fieldDrone.cesiumPosition && fieldDrone.cesiumImage && (<Entity
-          key={index}
-          position={fieldDrone.cesiumPosition}
-          billboard={{
-            image: fieldDrone.cesiumImage,
-            scale: 0.5,
-            verticalOrigin: VerticalOrigin.BOTTOM,
-            heightReference: HeightReference.CLAMP_TO_GROUND,
-          }}
-        />)
-      )
-      )}
+      {mainJson.getAllDrones().map((drone, index) => {
+        if (!drone.cesiumPosition || !drone.cesiumImage) return null;
+
+        return (
+          <React.Fragment key={index}>
+            <Entity
+              position={drone.cesiumPosition}
+              billboard={{
+                image: drone.cesiumImage,
+                scale: 1,
+              }}
+            />
+            <Entity
+              position={drone.cesiumPosition}
+              point={{
+                pixelSize: 7,
+                color: drone.color,
+                outlineColor: Color.WHITE,
+                outlineWidth: 2,
+              }}
+            />
+          </React.Fragment>
+        );
+      })}
     </>
   );
 };

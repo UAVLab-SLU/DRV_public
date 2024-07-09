@@ -11,12 +11,13 @@ export const MainJsonProvider = ({ children }) => {
   const [mainJson, setMainJson] = useState(new SimulationConfigurationModel());
   const [envJson, setEnvJson] = useState(mainJson.environment);
 
-  function syncDroneLocation(droneIndex, latitude, longitude, cesiumImage) {
+  function syncDroneLocation(droneIndex, latitude, longitude, height, position, cesiumImage) {
     let drone = mainJson.getDroneBasedOnIndex(droneIndex);
     drone.X = latitude;
     drone.Y = longitude;
+    drone.Z = height;
     drone.cesiumImage = cesiumImage;
-    drone.cesiumPosition = Cartesian3.fromDegrees(longitude, latitude)
+    drone.cesiumPosition = position;
     mainJson.updateDroneBasedOnIndex(droneIndex, drone);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }

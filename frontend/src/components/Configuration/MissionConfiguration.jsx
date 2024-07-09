@@ -190,7 +190,7 @@ export default function MissionConfiguration (mission) {
                 <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '10px 0', fontSize:'18px', color: '#F5F5DC' }}>
                     Number of sUAS &nbsp;&nbsp;
                     <ButtonGroup size="small" aria-label="small outlined button group" color="warning">
-                        {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
+                        <Button style={{fontSize:'15px'}} onClick={handleDecrement} disabled={droneCount===0}>-</Button>
                         <Button style={{fontSize:'15px'}} variant="contained" color="warning">{droneCount}</Button>
                         <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
                     </ButtonGroup>

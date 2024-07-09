@@ -5,30 +5,17 @@ import {
   CesiumTerrainProvider,
   IonResource,
   Math as CesiumMath,
-  ScreenSpaceEventType,
-  Cartographic,
   createWorldTerrainAsync,
   createOsmBuildingsAsync,
   Ion,
-  Color,
-  PolygonHierarchy,
-  LabelStyle,
-  VerticalOrigin,
-  Cartesian2,
-  HeightReference,
-  sampleTerrain,
-  Rectangle,
-  KeyboardEventModifier,
-  ScreenSpaceEventHandler,
-  CallbackProperty,
-  Ellipsoid,
-  defined,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
+import { useMainJson } from '../../model/MainJsonContext';
 
-const CesiumMap = ({ mainJson, setMainJson, id }) => {
+const CesiumMap = () => {
+  const { envJson } = useMainJson();
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [billboards, setBillboards] = useState([]);
@@ -74,8 +61,9 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
   const osmBuildingsTileset = createOsmBuildingsAsync();
 
   return (
-    <Viewer ref={viewerRef} terrainProvider={terrainProvider}>
-      <Cesium3DTileset url={IonResource.fromAssetId(google3DTilesAssetId)} />
+    <Viewer ref={viewerRef} terrainProvider={terrainProvider} 
+    style={{cursor: envJson.activeSadeZoneIndex == null ? 'default': 'crosshair'}}>
+      <Cesium3DTileset url={IonResource.fromAssetId(OSMBuildingsAssetId)} />
       <CameraFlyTo
         destination={cameraPosition.destination}
         orientation={cameraPosition.orientation}
@@ -95,12 +83,6 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
       />
     </Viewer>
   );
-};
-
-CesiumMap.propTypes = {
-  setMainJson: PropTypes.func.isRequired,
-  mainJson: PropTypes.object.isRequired,
-  id: PropTypes.string.isRequired,
 };
 
 export default CesiumMap;

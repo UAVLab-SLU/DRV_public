@@ -151,17 +151,23 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                 </Typography>
                 <ButtonGroup size='large' variant='text' color='warning'>
                   <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
-                    <DrawIcon
-                      style={{
-                        color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50',
-                      }}
-                    />
+                    <Tooltip title="click to activate, then hold SHIFT & drag the MOUSE to draw the sade-zone on the map." enterDelay={300} leaveDelay={500}>
+                      <DrawIcon
+                        style={{
+                          color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50'
+                        }}
+                      />
+                    </Tooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'refresh', index, sade.name)}>
-                    <RefreshIcon />
+                    <Tooltip title="refreshes current sade-zone values" enterDelay={300} leaveDelay={200}>
+                      <RefreshIcon />
+                    </Tooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
-                    <DeleteIcon />
+                    <Tooltip title="deletes current sade-zone" enterDelay={300} leaveDelay={200}>
+                      <DeleteIcon />
+                    </Tooltip>
                   </Button>
                 </ButtonGroup>
               </Box>

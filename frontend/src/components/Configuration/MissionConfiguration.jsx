@@ -6,7 +6,8 @@ import Button from '@mui/material/Button';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
-import Typography from '@mui/material/Typography'
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import {ExpandMore} from '@mui/icons-material';
 import { styled } from '@mui/system';;
 import DroneConfiguration from './DroneConfiguration'
@@ -18,6 +19,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { DroneModel } from '../../model/DroneModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 import { AccordionStyled } from '../../css/SimulationPageStyles';
+import { droneModels, droneTypes } from '../../constants/drone';
 
 
 export default function MissionConfiguration (mission) {
@@ -48,8 +50,8 @@ export default function MissionConfiguration (mission) {
             newDrone.id = droneCount;
             newDrone.droneName = "Drone "+ (droneCount + 1);
             newDrone.FlightController = "SimpleFlight";
-            newDrone.droneType = "Multi Rotor";
-            newDrone.droneModel = "DJI";
+            newDrone.droneType = droneTypes[0].value;
+            newDrone.droneModel = droneModels[droneTypes[0].value][0].value;
             newDrone.VehicleType = "SimpleFlight";
             newDrone.DefaultVehicleState = "Armed";
             newDrone.EnableCollisionPassthrogh = false;
@@ -212,13 +214,15 @@ export default function MissionConfiguration (mission) {
                                 <Typography variant="h5" >
                                     {drone.droneName}
                                 </Typography>
-                                <img
-                                    src={drone.image}
-                                    alt="Draggable Icon"
-                                    draggable="true"
-                                    onDragStart={(e) => handleDragStart(e, index)}
-                                    style={{ width: 40, cursor: 'grab', marginRight: 20 }}
-                                />
+                                <Tooltip title="drag and drop this drone to set or update its home location on the map." enterDelay={300} leaveDelay={200}>
+                                    <img
+                                        src={drone.image}
+                                        alt="Draggable Icon"
+                                        draggable="true"
+                                        onDragStart={(e) => handleDragStart(e, index)}
+                                        style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                                    />
+                                </Tooltip>
                             </Box>
                         </AccordionSummary>
                         

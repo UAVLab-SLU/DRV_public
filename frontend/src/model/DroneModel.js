@@ -20,8 +20,8 @@ export class DroneModel {
     this._Pitch = 0;
     this._Roll = 0;
     this._Yaw = 0;
-    this._Sensors = null;
-    this._MissionValue = null;
+    this._Sensors = '';
+    this._MissionValue = '';
     this._Mission = {
       name: '',
       param: [],
@@ -217,28 +217,28 @@ export class DroneModel {
   toJSONString() {
     return {
       id: this._id,
-      droneName: this._droneName,
-      FlightController: this._FlightController,
-      droneType: this._droneType,
-      droneModel: this._droneModel,
-      VehicleType: this._VehicleType,
-      DefaultVehicleState: this._DefaultVehicleState,
-      EnableCollisionPassthrogh: this._EnableCollisionPassthrogh,
-      EnableCollisions: this._EnableCollisions,
-      AllowAPIAlways: this._AllowAPIAlways,
-      EnableTrace: this._EnableTrace,
-      Name: this._Name,
+      drone_name: this._droneName,
+      flight_controller: this._FlightController,
+      drone_type: this._droneType,
+      drone_model: this._droneModel,
+      vehicle_type: this._VehicleType,
+      default_vehicle_state: this._DefaultVehicleState,
+      enable_collision_passthrough: this._EnableCollisionPassthrogh,
+      enable_collisions: this._EnableCollisions,
+      allow_api_always: this._AllowAPIAlways,
+      enable_trace: this._EnableTrace,
+      name: this._Name,
       image: this._image,
       color: this._color,
-      X: this._X,
-      Y: this._Y,
-      Z: this._Z,
-      Pitch: this._Pitch,
-      Roll: this._Roll,
-      Yaw: this._Yaw,
-      Sensors: this._Sensors,
-      MissionValue: this._MissionValue,
-      Mission: this._Mission,
+      x: this._X,
+      y: this._Y,
+      z: this._Z,
+      pitch: this._Pitch,
+      roll: this._Roll,
+      yaw: this._Yaw,
+      sensors: this._Sensors,
+      mission_value: this._MissionValue,
+      mission: this._Mission,
     };
   }
 }

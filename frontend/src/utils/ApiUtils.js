@@ -67,6 +67,8 @@ export function callAPI(endpoint,
         headers: headers,
     }
     if (httpMethod === 'POST') {
+        headers.append("Content-Type", "application/json");
+        requestOptions["headers"] = headers;
         requestOptions["body"] = JSON.stringify(jsonBody);
     } else if (httpMethod === "GET") {
         URL = constructURL(URL, jsonBody);

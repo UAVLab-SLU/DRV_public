@@ -4,7 +4,7 @@ export class WindModel {
     constructor() {
         this._windType = "";
         this._windDirection = "";
-        this._windVelocity = "";
+        this._windVelocity = 0;
         this._fluctuationPercentage = 0;
     }
 
@@ -33,7 +33,7 @@ export class WindModel {
     }
 
     set windVelocity(value){
-        this._windVelocity = value;
+        this._windVelocity = parseInt(value);
     }
 
     set fluctuationPercentage(value) {
@@ -42,10 +42,10 @@ export class WindModel {
 
     toJSONString(){
         return {
-            "windType" : this._windType,
-            "windDirection" : this._windDirection,
-            "windVelocity" : this._windVelocity,
-            "fluctuationPercentage" : this._fluctuationPercentage,
+            "wind_type" : this._windType,
+            "wind_direction" : this._windDirection,
+            "wind_velocity" : this._windVelocity,
+            "fluctuation_percentage" : this._fluctuationPercentage,
         }
     }
 }

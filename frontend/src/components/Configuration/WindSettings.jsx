@@ -33,8 +33,8 @@ const WindSettings = ({ envConf, setEnvConf }) => {
         let wind = envConf.getWindBasedOnIndex(index);
         wind.windType = updatedData.windType ? updatedData.windType : wind.windType;
         wind.windDirection = updatedData.windDirection ? updatedData.windDirection : wind.windDirection;
-        wind.windVelocity = updatedData.windVelocity ? updatedData.windVelocity : wind.windVelocity;
-        wind.fluctuationPercentage = updatedData.fluctuationPercentage ? updatedData.fluctuationPercentage : wind.fluctuationPercentage;
+        wind.windVelocity = updatedData.windVelocity ? parseInt(updatedData.windVelocity) : wind.windVelocity;
+        wind.fluctuationPercentage = updatedData.fluctuationPercentage ? parseFloat(updatedData.fluctuationPercentage) : wind.fluctuationPercentage;
         envConf.updateWindBasedOnIndex(index, wind);
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
     };

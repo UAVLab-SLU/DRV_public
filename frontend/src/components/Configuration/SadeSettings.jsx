@@ -197,7 +197,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                   { label: 'Center Longitude', key: 'centerLong', type: 'number' },
                 ].map(
                   (field, i) =>
-                    (field.key == 'name' || sade.rectangle) && (
+                    (field.key == 'name' || field.key == 'height' || sade.rectangle) && (
                       <Grid item xs={6} key={i}>
                         <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
                         <TextField

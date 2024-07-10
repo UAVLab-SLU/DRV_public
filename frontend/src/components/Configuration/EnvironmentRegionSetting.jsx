@@ -17,9 +17,9 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         if (val.target.value != "Specify Region") {
             ENVIRONMENT_ORIGIN_VALUES.map(obj => {
                 if (obj.value == val.target.value) {
-                    envConf.setOriginLatitude(obj.Latitude);
-                    envConf.setOriginLongitude(obj.Longitude);
-                    envConf.setOriginHeight(obj.Height);
+                    envConf.setOriginLatitude(obj.latitude);
+                    envConf.setOriginLongitude(obj.longitude);
+                    envConf.setOriginHeight(obj.height);
                     envConf.setOriginName(obj.value);
                 }
             })
@@ -105,7 +105,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: ".0001" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.Latitude}
+                            value={envConf.Origin.latitude}
                             disabled={envConf.Origin.Name == "Specify Region" ? false : true}
                             fullWidth
                         />
@@ -135,7 +135,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: ".0001" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.Longitude}
+                            value={envConf.Origin.longitude}
                             disabled={envConf.Origin.Name == "Specify Region" ? false : true}
                             fullWidth
                         />

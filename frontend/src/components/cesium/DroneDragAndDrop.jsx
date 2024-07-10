@@ -44,9 +44,8 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         const y = event.clientY - rect.top;
         const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
         const droneInx = dragData.index;
-        const ellipsoid = viewer.scene.globe.ellipsoid;
         const cesiumCanvasPosition = new Cartesian2(x, y);
-        const cartesian = viewer.camera.pickEllipsoid(cesiumCanvasPosition, ellipsoid);
+        const cartesian = viewer.scene.pickPosition(cesiumCanvasPosition);
         if (cartesian) {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
@@ -81,9 +80,8 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     <>
       {mainJson.getAllDrones().map((drone, index) => {
         if (!drone.X || !drone.Y || !drone.Z) return null;
-        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z);
-        // to-do: set the camera orientation to top view
-        // to-do: lock the settings
+        // increase drone height by 1 meter to make it fully visible on buildings and grounds
+        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z + 1);
         return (
           <React.Fragment key={index}>
             <Entity

@@ -4,7 +4,7 @@ export class SadeModel {
     this._name = name;
     this._centerLat = null;
     this._centerLong = null;
-    this._height = 30;
+    this._height = 100;
     this._length = null;
     this._width = null;
     this._rectangle = null;

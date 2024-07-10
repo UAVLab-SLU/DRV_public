@@ -9,13 +9,10 @@ import {
   ScreenSpaceEventHandler,
   Ellipsoid,
   Math as CesiumMath,
-  defined,
   Cartesian3,
   Cartesian2,
-  CornerType,
   HeightReference,
   VerticalOrigin,
-  LabelStyle,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
@@ -28,7 +25,7 @@ import {
 } from '../../utils/mapUtils';
 
 const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
+  const { envJson, setEnvJson } = useMainJson();
   const [mouseDown, setMouseDown] = useState(false);
   const [firstPoint, setFirstPoint] = useState(null);
 
@@ -79,7 +76,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
     handler.setInputAction(() => {
       // make sure this event listener executes only when activeSadeZoneIndex is not null
-      if (envJson.activeSadeZoneIndex == null ) return;
+      if (envJson.activeSadeZoneIndex == null) return;
       setMouseDown(false);
       // Clear the first point
       setFirstPoint(null);
@@ -87,7 +84,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
       envJson.activeSadeZoneIndex = null;
       setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
       console.log('env json', envJson);
-    }, ScreenSpaceEventType.LEFT_UP );
+    }, ScreenSpaceEventType.LEFT_UP);
 
     return () => {
       handler.destroy();
@@ -123,75 +120,83 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           {/** rectangle entity representing the sade zone */}
           {sade.rectangle && (
             <React.Fragment>
-            <Entity
-              rectangle={{
-                coordinates: sade.rectangle,
-                material: Color.GREEN.withAlpha(0.5),
-                outline: true,
-                outlineColor: Color.WHITE,
-                outlineWidth: 2,
-                extrudedHeight: sade.height,
-              }}
-            />
-            
-            {/** polyline entity representing the length of a sade zone */}
-            <Entity>
+              <Entity
+                rectangle={{
+                  coordinates: sade.rectangle,
+                  material: Color.GREEN.withAlpha(0.5),
+                  outline: true,
+                  outlineColor: Color.WHITE,
+                  outlineWidth: 2,
+                  extrudedHeight: sade.height,
+                }}
+              />
+
+              {/** polyline entity representing the length of a sade zone */}
+              <Entity>
+                <Entity
+                  polyline={{
+                    positions: [
+                      Cartesian3.fromRadians(
+                        sade.rectangle.west,
+                        sade.rectangle.south,
+                        sade.height,
+                      ),
+                      Cartesian3.fromRadians(
+                        sade.rectangle.west,
+                        sade.rectangle.north,
+                        sade.height,
+                      ),
+                    ],
+                    width: 2,
+                    material: Color.RED,
+                  }}
+                />
+                <Entity
+                  position={Cartesian3.fromRadians(
+                    sade.rectangle.west,
+                    (sade.rectangle.south + sade.rectangle.north) / 2,
+                    sade.height,
+                  )}
+                  label={{
+                    text: `Length: ${sade.length.toFixed(2)}m`,
+                    font: '14pt sans-serif',
+                    fillColor: Color.WHITE,
+                    backgroundColor: Color.RED,
+                    showBackground: true,
+                    backgroundPadding: new Cartesian2(6, 4),
+                    pixelOffset: new Cartesian2(0, -10),
+                  }}
+                />
+              </Entity>
+
+              {/** polyline entity representing the width of a sade zone */}
               <Entity
                 polyline={{
                   positions: [
                     Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.south, sade.height),
-                    Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.north, sade.height),
+                    Cartesian3.fromRadians(sade.rectangle.east, sade.rectangle.south, sade.height),
                   ],
                   width: 2,
-                  material: Color.RED,
+                  material: Color.BLUE,
                 }}
-              />
-              <Entity
-                position={Cartesian3.fromRadians(
-                  sade.rectangle.west,
-                  (sade.rectangle.south + sade.rectangle.north) / 2,
-                  sade.height,
-                )}
-                label={{
-                  text: `Length: ${sade.length.toFixed(2)}m`,
-                  font: '14pt sans-serif',
-                  fillColor: Color.WHITE,
-                  backgroundColor: Color.RED,
-                  showBackground: true,
-                  backgroundPadding: new Cartesian2(6, 4),
-                  pixelOffset: new Cartesian2(0, -10),
-                }}
-              />
-            </Entity>
-
-            {/** polyline entity representing the width of a sade zone */}
-            <Entity
-              polyline={{
-                positions: [
-                  Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.south, sade.height),
-                  Cartesian3.fromRadians(sade.rectangle.east, sade.rectangle.south, sade.height),
-                ],
-                width: 2,
-                material: Color.BLUE,
-              }}
-            >
-              <Entity
-                position={Cartesian3.fromRadians(
-                  (sade.rectangle.west + sade.rectangle.east) / 2,
-                  sade.rectangle.south,
-                  sade.height,
-                )}
-                label={{
-                  text: `Width: ${sade.width.toFixed(2)}m`,
-                  font: '14pt sans-serif',
-                  fillColor: Color.WHITE,
-                  backgroundColor: Color.BLUE,
-                  showBackground: true,
-                  backgroundPadding: new Cartesian2(6, 4),
-                  pixelOffset: new Cartesian2(0, -10),
-                }}
-              />
-            </Entity>
+              >
+                <Entity
+                  position={Cartesian3.fromRadians(
+                    (sade.rectangle.west + sade.rectangle.east) / 2,
+                    sade.rectangle.south,
+                    sade.height,
+                  )}
+                  label={{
+                    text: `Width: ${sade.width.toFixed(2)}m`,
+                    font: '14pt sans-serif',
+                    fillColor: Color.WHITE,
+                    backgroundColor: Color.BLUE,
+                    showBackground: true,
+                    backgroundPadding: new Cartesian2(6, 4),
+                    pixelOffset: new Cartesian2(0, -10),
+                  }}
+                />
+              </Entity>
             </React.Fragment>
           )}
 

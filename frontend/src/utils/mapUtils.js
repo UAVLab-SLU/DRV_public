@@ -5,7 +5,6 @@ function degreesToRadians(degrees) {
 }
 
 export function distanceInMetersBetweenEarthCoords(lat1, lon1, lat2, lon2) {
-  console.log(lat1, lon1, lat2, lon2);
   var earthRadiusKm = 6371;
 
   var dLat = degreesToRadians(lat2 - lat1);

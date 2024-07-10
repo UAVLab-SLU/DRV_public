@@ -10,8 +10,6 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import SensorConfiguration from './SensorConfiguration'
 import Tooltip from '@mui/material/Tooltip';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import styled from '@emotion/styled';
 import { OutlinedInput } from '@mui/material';
 import Typography from '@mui/material/Typography';
@@ -19,44 +17,12 @@ import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 import { StyledInputLabel } from '../../css/SimulationPageStyles';
-
-const flightPaths = [
-    { value: 'fly_in_circle', label: 'Circle', id: 1 },
-    { value: 'fly_to_points', label: 'Square', id: 1 },
-    // {value:'fly_straight',label:'Straight', id:1}
-]
-
-const droneTypes = [
-    { value: 'FixedWing', label: 'Fixed Wing' },
-    { value: 'MultiRotor', label: 'Multi Rotor' }
-]
-
-const droneModels = {
-    FixedWing: [
-        { value: 'SenseflyeBeeX', label: 'Sensefly eBee X', src: '/images/SenseflyeBeeX.png' },
-        { value: 'TrinityF90', label: 'Trinity F90', src: '/images/TrinityF90.png' }
-    ],
-    MultiRotor: [
-        { value: 'ParrotANAFI', label: 'Parrot ANAFI', src: '/images/Parrot-ANAFI.png' },
-        { value: 'DJI', label: 'DJI', src: '/images/DJI.png' },
-        { value: 'VOXLm500', label: 'VOXL m500', src: '/images/VOXLm500.png' },
-        { value: 'AureliaX6Pro', label: 'Aurelia X6 Pro', src: '/images/Aurelia-X6-Pro.png' },
-        { value: 'IF1200', label: 'IF 1200', src: '/images/IF1200.png' },
-        { value: 'Craziefly2.1', label: 'Craziefly 2.1', src: '/images/Craziefly2.1.png' },
-        {/*value: 'StreamLineDesignX189', label: 'StreamLineDesign X189', src: null*/ }
-    ]
-}
-
-const locations = [
-    { value: 'GeoLocation', id: 1 },
-    { value: 'Cartesian Coordinate', id: 2 }
-]
+import {droneModels, droneTypes} from '../../constants/drone';
 
 export default function DroneConfiguration({ name, id, index }) {
     const { mainJson, setMainJson } = useMainJson();
     console.log('DroneConfiguration-----', mainJson.getAllDrones()[index]);
-    const [selectedLoc, setSelectedLoc] = useState('GeoLocation')
-    const [selectedDroneType, setselectedDroneType] = useState(droneTypes[1].value);
+    const [selectedLoc, setSelectedLoc] = useState('GeoLocation');
 
     const handleLocChange = (event) => {
         setSelectedLoc(event.target.value);
@@ -71,8 +37,6 @@ export default function DroneConfiguration({ name, id, index }) {
     };
 
     const handleDroneTypeChange = (event) => {
-        handleSnackBarVisibility(true)
-        setselectedDroneType(event.target.value);
         let drone = mainJson.getDroneBasedOnIndex(index);
         drone.droneType = event.target.value;
         mainJson.updateDroneBasedOnIndex(index, drone);
@@ -80,7 +44,6 @@ export default function DroneConfiguration({ name, id, index }) {
     };
 
     const handleDroneModelChange = (event) => {
-        handleSnackBarVisibility(true)
         let drone = mainJson.getDroneBasedOnIndex(index);
         drone.droneModel = event.target.value;
         mainJson.updateDroneBasedOnIndex(index, drone);
@@ -120,17 +83,6 @@ export default function DroneConfiguration({ name, id, index }) {
         // }))
     }
 
-    const [snackBarState, setSnackBarState] = useState({
-        open: false,
-    });
-
-    const handleSnackBarVisibility = (val) => {
-        setSnackBarState(prevState => ({
-            ...prevState,
-            open: val
-        }))
-    }
-
     const StyledSelect = styled(Select)(({ theme }) => ({
         backgroundColor: '#F5F5DC',
         '& .MuiInputBase-input': {
@@ -143,17 +95,6 @@ export default function DroneConfiguration({ name, id, index }) {
 
     return (
         <div>
-            <Snackbar open={snackBarState.open}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right'
-                }}
-                autoHideDuration={6000} onClose={e => handleSnackBarVisibility(false)}>
-                <Alert onClose={e => handleSnackBarVisibility(false)} severity="info" sx={{ width: '100%' }}>
-                    Drone Type and Drone Model Changes is under Developement !
-                </Alert>
-            </Snackbar>
-
             <Container maxWidth="md">
                 <Grid container spacing={0.8}>
                     <Grid item xs={12} sx={{ mt: 1 }}>
@@ -246,8 +187,8 @@ export default function DroneConfiguration({ name, id, index }) {
                             onChange={handleDroneModelChange}
                             fullWidth
                         >
-                            {droneModels[selectedDroneType].map(val => (
-                                <MenuItem value={val.value} key={val.value}>
+                            {droneModels[mainJson.getDroneBasedOnIndex(index).droneType].map((val, i)  => (
+                                <MenuItem value={val.value} key={`drone-model-${i}`}>
                                     <em>{val.label}</em>
                                 </MenuItem>
                             ))}
@@ -256,9 +197,9 @@ export default function DroneConfiguration({ name, id, index }) {
 
                     {/* Drone Image Field */}
                     <Grid item xs={12}>
-                        {selectedDroneType && (
+                        {mainJson.getDroneBasedOnIndex(index).droneType && (
                             <Box mt={2} display="flex" justifyContent="center" alignItems="center">
-                                <img src={droneModels[selectedDroneType].find((m) => m.value === mainJson.getDroneBasedOnIndex(index).droneModel)?.src}
+                                <img src={droneModels[mainJson.getDroneBasedOnIndex(index).droneType].find((m) => m.value === mainJson.getDroneBasedOnIndex(index).droneModel)?.src}
                                     alt=""
                                     style={{ maxWidth: '70%', maxHeight: '150px', objectFit: 'fill', marginTop: '8px' }} />
                             </Box>

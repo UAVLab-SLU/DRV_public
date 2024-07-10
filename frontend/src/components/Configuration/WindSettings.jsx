@@ -13,7 +13,7 @@ import { EnvironmentModel } from '../../model/EnvironmentModel';
 
 const GridBackDropFilter = styled(Grid)({
     backgroundColor: '#14151471',
-    '-webkitBackdropFilter': 'sepia(100%)',
+    'WebkitBackdropFilter': 'sepia(100%)',
     backdropFilter: 'sepia(100%)',
 })
 
@@ -69,7 +69,7 @@ const WindSettings = ({ envConf, setEnvConf }) => {
             ))}
 
             <Grid item container xs={12}>
-                <GridBackDropFilter xs={10}
+                <GridBackDropFilter item xs={10}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
                     <IconButton
                         onClick={addNewWindBlock}

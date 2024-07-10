@@ -78,6 +78,8 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     );
 
     handler.setInputAction(() => {
+      // make sure this event listener executes only when activeSadeZoneIndex is not null
+      if (envJson.activeSadeZoneIndex == null ) return;
       setMouseDown(false);
       // Clear the first point
       setFirstPoint(null);
@@ -85,7 +87,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
       envJson.activeSadeZoneIndex = null;
       setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
       console.log('env json', envJson);
-    }, ScreenSpaceEventType.LEFT_UP);
+    }, ScreenSpaceEventType.LEFT_UP );
 
     return () => {
       handler.destroy();

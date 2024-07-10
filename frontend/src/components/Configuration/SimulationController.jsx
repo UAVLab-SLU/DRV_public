@@ -156,9 +156,7 @@ export default function SimulationController(data) {
             variant="h6" component="h5">
             Latitude: { envJson.getOriginLatitude() }; Longitude: {envJson.getOriginLongitude() }
           </Typography>
-          <CesiumMap mainJson={mainJson} 
-                      setMainJson={setMainJson} 
-                      id="Drones" /> 
+          <CesiumMap /> 
         </Box>
       </Box>
 

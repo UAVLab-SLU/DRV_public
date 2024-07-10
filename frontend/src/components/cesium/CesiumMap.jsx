@@ -5,32 +5,18 @@ import {
   CesiumTerrainProvider,
   IonResource,
   Math as CesiumMath,
-  ScreenSpaceEventType,
-  Cartographic,
   createWorldTerrainAsync,
   createOsmBuildingsAsync,
   Ion,
-  JulianDate,
-  Color,
-  PolygonHierarchy,
-  LabelStyle,
-  VerticalOrigin,
-  Cartesian2,
-  HeightReference,
-  sampleTerrain,
-  Rectangle,
-  KeyboardEventModifier,
-  ScreenSpaceEventHandler,
-  CallbackProperty,
-  Ellipsoid,
-  defined,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
 import TimeLineSetterCesiumComponent from './TimeLineSetterCesiumComponent';
+import { useMainJson } from '../../model/MainJsonContext';
 
-const CesiumMap = ({ mainJson, setMainJson, id }) => {
+const CesiumMap = () => {
+  const { mainJson, envJson } = useMainJson();
   const viewerRef = useRef(null);
   const [viewerReady, setViewerReady] = useState(false);
   const [billboards, setBillboards] = useState([]);
@@ -47,13 +33,13 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
   Ion.defaultAccessToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlZTFmNzlmMy1mNjU4LTQwNGYtOTQ2YS0yOTZiZTMwNmM4NTkiLCJpZCI6MjE2MTY1LCJpYXQiOjE3MTYwODk0NzV9.52fSstXZ3CeFEcorDgCv__iCvdUecg3Q0bhaXum3ZnI';
 
-  const setNewCameraPosition = () => {
+  const setNewCameraPosition = (position = null) => {
     if (!viewerReady) return;
     const viewer = viewerRef.current.cesiumElement;
 
     const { camera } = viewer;
     setCameraPosition({
-      destination: camera.position,
+      destination: position === null ? camera.position : position,
       orientation: {
         heading: camera.heading,
         pitch: camera.pitch,
@@ -72,11 +58,18 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setNewCameraPosition();
+  }, [mainJson]);
+
   const terrainProvider = createWorldTerrainAsync();
-  const osmBuildingsTileset = createOsmBuildingsAsync();
 
   return (
-    <Viewer ref={viewerRef} terrainProvider={terrainProvider}>
+    <Viewer
+      ref={viewerRef}
+      terrainProvider={terrainProvider}
+      style={{ cursor: envJson.activeSadeZoneIndex == null ? 'default' : 'crosshair' }}
+    >
       <Cesium3DTileset url={IonResource.fromAssetId(google3DTilesAssetId)} />
       <CameraFlyTo
         destination={cameraPosition.destination}
@@ -102,12 +95,6 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
       />
     </Viewer>
   );
-};
-
-CesiumMap.propTypes = {
-  setMainJson: PropTypes.func.isRequired,
-  mainJson: PropTypes.object.isRequired,
-  id: PropTypes.string.isRequired,
 };
 
 export default CesiumMap;

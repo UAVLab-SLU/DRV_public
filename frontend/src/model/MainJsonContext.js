@@ -28,12 +28,11 @@ export const MainJsonProvider = ({ children }) => {
     setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }
 
-  function syncDroneLocation(droneIndex, latitude, longitude, cesiumImage) {
+  function syncDroneLocation(latitude, longitude, height, droneIndex) {
     let drone = mainJson.getDroneBasedOnIndex(droneIndex);
     drone.X = latitude;
     drone.Y = longitude;
-    drone.cesiumImage = cesiumImage;
-    drone.cesiumPosition = Cartesian3.fromDegrees(longitude, latitude)
+    drone.Z = height;
     mainJson.updateDroneBasedOnIndex(droneIndex, drone);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }
@@ -46,5 +45,5 @@ export const MainJsonProvider = ({ children }) => {
 };
 
 MainJsonProvider.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };

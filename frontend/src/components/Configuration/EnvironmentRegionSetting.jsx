@@ -17,7 +17,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
-    const { viewerMaintainer } = useMainJson();
+    const { viewerMaintainer,timeOfDayRef, timeRef  } = useMainJson();
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
@@ -36,7 +36,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
             envConf.setOriginName(val.target.value);
         }
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
-        viewerMaintainer.current = true;
+        //viewerMaintainer.current = true;
     }
 
     const handleOriginChange = (val) => {
@@ -46,6 +46,9 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
             envConf.TimeOfDay = val.$H + ':' + val.$m + ':' + val.$s;
             envConf.time = val
+            timeOfDayRef.current = val.$H + ':' + val.$m + ':' + val.$s;
+            timeRef.current = val
+
         } else if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {
@@ -54,9 +57,9 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
             // future implementation
             envConf.setOriginHeight(parseFloat(val.target.value));
         }
-        
+        // viewerMaintainer.current = true;
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
-        viewerMaintainer.current = true;
+        
     }
 
 
@@ -177,7 +180,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                                         views={['hours', 'minutes', 'seconds']}
                                         inputFormat="HH:mm:ss"
                                         mask="__:__:__"
-                                        value={envConf.time}
+                                        value={timeRef.current}
                                         onChange={handleOriginChange}
                                         renderInput={(params) => <TextField {...params}
                                         // helperText="Enter Time of Day (24 Hour Format)"

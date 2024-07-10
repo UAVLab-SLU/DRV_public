@@ -96,7 +96,7 @@ export class SadeModel {
       "height" : this._height,
       "length" : this._length,
       "width" : this._width,
-      "rectangle" : this._rectangle
+      // "rectangle" : this._rectangle
     }
   }
 

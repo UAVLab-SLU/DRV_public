@@ -18,7 +18,9 @@ import PropTypes from 'prop-types';
 
 const SadeSettings = ({ envConf, setEnvConf }) => {
   const handleIncrement = () => {
+    let sade_id = envConf.getAllSades().length + 1;
     let newSade = new SadeModel();
+    newSade.id = sade_id;
     envConf.addNewSade(newSade);
     envConf.activeSadeZoneIndex = null;
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
@@ -44,7 +46,11 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
   };
 
   const setActiveSadeZoneIndex = (index) => {
-    envConf.activeSadeZoneIndex = index;
+    if(envConf.activeSadeZoneIndex === index){
+      envConf.activeSadeZoneIndex = null;
+    } else {
+      envConf.activeSadeZoneIndex = index;
+    }
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
   };
 

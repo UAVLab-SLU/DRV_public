@@ -17,6 +17,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
 import { useMainJson } from '../../model/MainJsonContext';
 import { StyledTab, StyledTabs } from '../../css/SimulationPageStyles'
+import { callAPI } from '../../utils/ApiUtils';
 
 
 const StyledButton = styled(Button)`
@@ -40,7 +41,7 @@ export default function SimulationController(data) {
 
   // START of DOM model ===================
   const navigate = useNavigate();
-  const { mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
+  const { mainJson, setMainJson, envJson, setEnvJson, getJSONStringForAPI } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
@@ -77,22 +78,22 @@ export default function SimulationController(data) {
   };
 
   const invokePostAPI = () => {
-    console.log("mainJson-----", mainJson)
+    console.log("mainJson-----", mainJson.toJSONString())
     if (activeStep === steps.length - 1) {
 
       let mainJSONStringed = mainJson.toJSONString();
-      navigate('/report-dashboard', {
-        state: { mainJson: mainJSONStringed }
+      // navigate('/report-dashboard', {
+      //   state: { mainJson: mainJSONStringed }
+      // })
+
+      callAPI("addTask", "POST", mainJSONStringed, "JSON")
+      .then((data) => {
+        console.log(data);
       })
-      fetch('http://127.0.0.1:5000/addTask', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        body: JSON.stringify(mainJSONStringed),
+      .catch((error) => {
+        console.error('Error fetching data:', error);
       })
-        .then(res => res.json())
-        .then(res => console.log(res));
+
     }
   }
 

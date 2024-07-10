@@ -6,7 +6,7 @@ export class MonitorModel {
     }
 
     toJSONString(){
-        return null;
+        return {};
     }
 
 }

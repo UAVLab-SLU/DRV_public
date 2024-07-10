@@ -16,13 +16,15 @@ export const MainJsonProvider = ({ children }) => {
   const timeRef = useRef(mainJson.time);
 
   const setMainJson = (input) => {
-    viewerMaintainer.current = true;
+    envJson.time = timeRef.current;
+    envJson.TimeOfDay = timeOfDayRef.current;
     input.environment = envJson;
     setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(input));
   }
 
   const setEnvJson = (input) => {
-    viewerMaintainer.current = true;
+    input.time = timeRef.current;
+    input.TimeOfDay = timeOfDayRef.current;
     mainJson.environment = input;
     setEnvJsonSetter(EnvironmentModel.getReactStateBasedUpdate(input))
     setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));

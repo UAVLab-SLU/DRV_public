@@ -41,9 +41,6 @@ const TimeLineSetterCesiumComponent = ({ viewerReady, viewerRef }) => {
           const seconds = jsDate.getSeconds();
           timeRef.current = dayjs(new Date(date));
           timeOfDayRef.current = `${hours}:${minutes}:${seconds}`;
-          // envJson.time = dayjs(new Date(date));
-          // envJson.TimeOfDay = `${hours}:${minutes}:${seconds}`;
-          // setEnvJson(envJson);
         }
       })
     }

@@ -3,21 +3,15 @@ import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import { TextField } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import Stack from '@mui/material/Stack';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StyledSelect } from '../../css/SimulationPageStyles';
 import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
-import { useMainJson } from '../../model/MainJsonContext';
+import TimeGridComponent from './TimeGridComponent';
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
-    const { viewerMaintainer,timeOfDayRef, timeRef  } = useMainJson();
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
@@ -43,13 +37,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
         let keys = Object.keys(val)
 
-        if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
-            envConf.TimeOfDay = val.$H + ':' + val.$m + ':' + val.$s;
-            envConf.time = val
-            timeOfDayRef.current = val.$H + ':' + val.$m + ':' + val.$s;
-            timeRef.current = val
-
-        } else if (val.target.id === "Latitude") {
+        if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {
             envConf.setOriginLongitude(parseFloat(val.target.value));
@@ -59,7 +47,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         }
         // viewerMaintainer.current = true;
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
-        
+
     }
 
 
@@ -164,30 +152,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                     </Grid>
                     <Grid item xs={6}>
                         {/* <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'> */}
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <Stack spacing={3}
-                                    sx={{
-                                        backgroundColor: '#F5F5DC',
-                                        '& .MuiOutlinedInput-root': {
-                                            '& .MuiInputBase-input': {
-                                                padding: '6px 8px',
-                                            },
-                                        },
-                                    }}>
-                                    <TimePicker
-                                        ampm={false}
-                                        openTo="hours"
-                                        views={['hours', 'minutes', 'seconds']}
-                                        inputFormat="HH:mm:ss"
-                                        mask="__:__:__"
-                                        value={timeRef.current}
-                                        onChange={handleOriginChange}
-                                        renderInput={(params) => <TextField {...params}
-                                        // helperText="Enter Time of Day (24 Hour Format)"
-                                        />}
-                                    />
-                                </Stack>
-                            </LocalizationProvider>
+                        <TimeGridComponent envConf={envConf} setEnvConf={setEnvConf} />
                         {/* </Tooltip> */}
                     </Grid>
                 </Grid>

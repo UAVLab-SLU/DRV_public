@@ -7,37 +7,24 @@ import { StyledSelect } from '../../css/SimulationPageStyles';
 import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
-<<<<<<< HEAD
 import * as React from 'react';
-
-=======
 import TimeGridComponent from './TimeGridComponent';
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
-<<<<<<< HEAD
     const pinImage = [
         { src: '/images/pin-icon.png'}
     ];
-=======
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
             ENVIRONMENT_ORIGIN_VALUES.map(obj => {
                 if (obj.value == val.target.value) {
-<<<<<<< HEAD
-                    envConf.setOriginLatitude(obj.Latitude);
-                    envConf.setOriginLongitude(obj.Longitude);
-                    envConf.setOriginRadius(obj.Radius);
-                    envConf.setOriginHeight(obj.Height);
-=======
                     envConf.setOriginLatitude(obj.latitude);
                     envConf.setOriginLongitude(obj.longitude);
+                    envConf.setOriginRadius(obj.radius);
                     envConf.setOriginHeight(obj.height);
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
                     envConf.setOriginName(obj.value);
                 }
             })
@@ -197,7 +184,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: "0.1", min: "0" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.Radius === 0 || envConf.Origin.Radius === '' ? '' : envConf.Origin.Radius}
+                            value={envConf.Origin.radius === 0 || envConf.Origin.radius === '' ? '' : envConf.Origin.radius}
                             fullWidth
                         />
                     </Grid>

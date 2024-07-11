@@ -12,7 +12,6 @@ export class EnvironmentModel {
         this._time = null; 
         this._Wind = [];
         this._Origin = {
-<<<<<<< HEAD
             "Latitude": 0,
             "Longitude": 0,
             "Name": "Specify Region",
@@ -21,16 +20,8 @@ export class EnvironmentModel {
             "Position": 0,
         };
         this._sades = [];
-        this._Origin.Image = null;
-=======
-            "latitude": 0,
-            "longitude": 0,
-            "name": "Specify Region",
-            "height": 0
-        };
-        this._sades = [];
+        this._Origin.image = null;
         this._activeSadeZoneIndex = null;
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
     }
 
     // Getters
@@ -124,19 +115,15 @@ export class EnvironmentModel {
     }
 
     getOriginRadius(){
-        return this._Origin.Radius;
+        return this._Origin.radius;
     }
 
     getOriginHeight(){
-<<<<<<< HEAD
-        return this._Origin.Height;
+        return this._Origin.height;
     }
 
     getOriginPosition(){
-        return this._Origin.Position;
-=======
-        return this._Origin.height
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
+        return this._Origin.position;
     }
 
     getOriginName(){
@@ -144,7 +131,7 @@ export class EnvironmentModel {
     }
 
     getOriginImage(){
-        return this._Origin.Image;
+        return this._Origin.image;
     }
 
     setOriginLatitude(value){
@@ -156,7 +143,7 @@ export class EnvironmentModel {
     }
 
     setOriginRadius(value){
-        this._Origin.Radius = value;
+        this._Origin.radius = value;
     }
 
     setOriginHeight(value){
@@ -164,7 +151,7 @@ export class EnvironmentModel {
     }
 
     setOriginPosition(value){
-        this._Origin.Position = value;
+        this._Origin.position = value;
     }
 
     setOriginName(value){
@@ -172,7 +159,7 @@ export class EnvironmentModel {
     }
 
     setOriginImage(value){
-        this._Origin.Image = value;
+        this._Origin.image = value;
     }
 
     addNewWind(windObj){

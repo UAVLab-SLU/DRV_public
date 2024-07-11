@@ -144,36 +144,12 @@ export default function MissionConfiguration(mission) {
     }));
   };
 
-<<<<<<< HEAD
-    const handleDecrement = () => {
-        setDroneCount(droneCount -1)
-        popDrone()
-    }
-
-    
-    const handleSnackBarVisibility = (val) => {
-        setSnackBarState(prevState => ({
-            ...prevState,
-            open: val
-        }))
-    }
-
-    const handleDragStart = (event, index) => {
-        const imgSrc = event.target.src;
-        const dragData = {
-            type: 'drone',
-            src: imgSrc,
-            index: index
-        };
-        
-        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
-=======
   const handleDragStart = (event, index) => {
     const imgSrc = event.target.src;
     const dragData = {
+      type: 'drone',
       src: imgSrc,
       index: index,
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
     };
 
     event.dataTransfer.setData('text/plain', JSON.stringify(dragData));

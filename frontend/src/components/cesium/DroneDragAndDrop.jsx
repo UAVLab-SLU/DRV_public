@@ -60,32 +60,9 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
           setNewCameraPosition();
 
-<<<<<<< HEAD
-          const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
-          const droneInx = dragData.index;
-
           if (dragData.type === 'drone'){
-            syncDroneLocation(droneInx, latitude, longitude, dragData.src);
+            syncDroneLocation(latitude, longitude, buildingHeight, droneInx);
           }
-          // find the terrain height at dropped location
-          // const terrainProvider = viewer.terrainProvider;
-          // const positions = [Cartographic.fromDegrees(longitude, latitude)];
-          // sampleTerrain(terrainProvider, 11, positions).then((updatedPositions) => {
-          //   const height = updatedPositions[0].height;
-
-
-          // Fixing the same drone dragging into multiple locations
-          //let removedOldDrones = fieldDrones.filter((data) => data.image !== dragData.src)
-          //removedOldDrones.push({
-          //  image: dragData.src,
-          //  position: Cartesian3.fromDegrees(longitude, latitude)
-          //})
-
-          // setFieldDrones(removedOldDrones);
-
-=======
-          syncDroneLocation(latitude, longitude, buildingHeight, droneInx);
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
         }
       };
 

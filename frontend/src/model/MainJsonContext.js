@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { SimulationConfigurationModel } from './SimulationConfigurationModel';
 import { EnvironmentModel } from './EnvironmentModel';
 import { Cartesian3 } from 'cesium';
-import { EnvironmentModel } from './EnvironmentModel';
 
 const MainJsonContext = createContext();
 
@@ -50,11 +49,7 @@ export const MainJsonProvider = ({ children }) => {
   }
 
   return (
-<<<<<<< HEAD
-    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation, syncRadiusLocation }}>
-=======
-    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation, viewerMaintainer, timeOfDayRef, timeRef }}>
->>>>>>> b41fb86ad170084ff643486329d30f99117f0626
+    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation, syncRadiusLocation, viewerMaintainer, timeOfDayRef, timeRef }}>
       {children}
     </MainJsonContext.Provider>
   );

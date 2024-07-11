@@ -6,12 +6,9 @@ function degreesToRadians(degrees) {
 
 export function distanceInMetersBetweenEarthCoords(lat1, lon1, lat2, lon2) {
   var earthRadiusKm = 6371;
-
-  var dLat = degreesToRadians(lat2 - lat1);
-  var dLon = degreesToRadians(lon2 - lon1);
-
-  lat1 = degreesToRadians(lat1);
-  lat2 = degreesToRadians(lat2);
+  // lat1, lon1, lat2, lon2 parameters must be in radians
+  var dLat = lat2 - lat1;
+  var dLon = lon2 - lon1;
 
   var a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -53,31 +50,10 @@ export function updateRectangle(centerLon, centerLat, length, width) {
   const halfWidthInDegrees = metersToLongitude(width / 2, centerLat);
   const halfLengthInDegrees = metersToLatitude(length / 2);
 
-  return new Rectangle(
+  return new Rectangle.fromDegrees(
     centerLon - halfWidthInDegrees,
     centerLat - halfLengthInDegrees,
     centerLon + halfWidthInDegrees,
     centerLat + halfLengthInDegrees,
   );
-}
-
-export function updateRectangleByNewCenter(newLon, newLat, length, width) {
-  const halfWidthInDegrees = metersToLongitude(width / 2, newLat);
-  const halfLengthInDegrees = metersToLatitude(length / 2);
-
-  return new Rectangle(
-    newLon - halfWidthInDegrees, // west
-    newLat - halfLengthInDegrees, // south
-    newLon + halfWidthInDegrees, // east
-    newLat + halfLengthInDegrees, // north
-  );
-}
-
-export function computeCircle(radius) {
-  const positions = [];
-  for (let i = 0; i < 360; i++) {
-    const radians = CesiumMath.toRadians(i);
-    positions.push(new Cartesian2(radius * Math.cos(radians), radius * Math.sin(radians)));
-  }
-  return positions;
 }

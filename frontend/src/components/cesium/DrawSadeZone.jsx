@@ -17,12 +17,7 @@ import {
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
-import {
-  findRectangleLength,
-  findRectangleWidth,
-  computeCircle,
-  computeMidpoints,
-} from '../../utils/mapUtils';
+import { findRectangleLength, findRectangleWidth } from '../../utils/mapUtils';
 
 const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
   const { envJson, setEnvJson } = useMainJson();
@@ -111,8 +106,8 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     // Calculate the center of the rectangle
     const centerLongitude = (rect.east + rect.west) / 2;
     const centerLatitude = (rect.north + rect.south) / 2;
-    sade.centerLat = centerLatitude;
-    sade.centerLong = centerLongitude;
+    sade.centerLat = CesiumMath.toDegrees(centerLatitude);
+    sade.centerLong = CesiumMath.toDegrees(centerLongitude);
     envJson.updateSadeBasedOnIndex(currentInx, sade);
     setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
   };
@@ -211,7 +206,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           {sade.centerLong && sade.centerLat && (
             // point entity representing the center of the sade zone
             <Entity
-              position={Cartesian3.fromRadians(sade.centerLong, sade.centerLat, sade.height)}
+              position={Cartesian3.fromDegrees(sade.centerLong, sade.centerLat, sade.height)}
               point={{
                 pixelSize: 10,
                 color: Color.RED,

@@ -13,7 +13,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import { ExpandMore } from '@mui/icons-material';
 import { SadeModel } from '../../model/SadeModel';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
-import { updateRectangle, updateRectangleByNewCenter } from '../../utils/mapUtils';
+import { updateRectangle } from '../../utils/mapUtils';
 import PropTypes from 'prop-types';
 
 const SadeSettings = ({ envConf, setEnvConf }) => {
@@ -56,29 +56,19 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     } else if (id === 'height') {
       sade.height = value != '' ? parseFloat(value) : 0;
     } else if (id === 'length') {
-      sade.length = parseFloat(value);
+      sade.length = value != '' ? parseFloat(value) : 0;
       sade.rectangle =
         value != '' ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width) : 0;
     } else if (id === 'width') {
-      sade.width = parseFloat(value);
+      sade.width = value != '' ? parseFloat(value) : 0;
       sade.rectangle =
         value != '' ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width) : 0;
     } else if (id === 'centerLat') {
       sade.centerLat = value != '' ? parseFloat(value) : 0;
-      sade.rectangle = updateRectangleByNewCenter(
-        sade.centerLong,
-        sade.centerLat,
-        sade.length,
-        sade.width,
-      );
+      sade.rectangle = updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width);
     } else if (id === 'centerLong') {
       sade.centerLong = value != '' ? parseFloat(value) : 0;
-      sade.rectangle = updateRectangleByNewCenter(
-        sade.centerLong,
-        sade.centerLat,
-        sade.length,
-        sade.width,
-      );
+      sade.rectangle = updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width);
     }
     envConf.updateSadeBasedOnIndex(index, sade);
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
@@ -140,19 +130,19 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
                   width: '100%',
                 }}
               >
                 <Typography variant='h5' sx={{ color: '#F5F5DC', pb: 1 }}>
                   {sade.name}
                 </Typography>
-                <ButtonGroup size='large' variant='text' color='warning'>
+                <ButtonGroup size='large' variant='text' color='warning' sx={{ ml: 3 }}>
                   <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
                     <Tooltip
                       title='Click to activate, then hold SHIFT & drag the MOUSE to draw the sade-zone on the map.'
                       enterDelay={300}
-                      leaveDelay={500}
+                      leaveDelay={200}
+                      placement='top'
                     >
                       <DrawIcon
                         style={{
@@ -166,12 +156,18 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                       title='Resets current sade-zone values'
                       enterDelay={300}
                       leaveDelay={200}
+                      placement='top'
                     >
                       <RefreshIcon />
                     </Tooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
-                    <Tooltip title='Deletes current sade-zone' enterDelay={300} leaveDelay={200}>
+                    <Tooltip
+                      title='Deletes current sade-zone'
+                      enterDelay={300}
+                      leaveDelay={200}
+                      placement='top'
+                    >
                       <DeleteIcon />
                     </Tooltip>
                   </Button>
@@ -189,27 +185,53 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                   { label: 'Center Longitude', key: 'centerLong', type: 'number', step: 0.0001 },
                 ].map(
                   (field, i) =>
-                    (field.key == 'name' || field.key == 'height' || sade.rectangle != null) && (
+                    (field.key === 'name' || field.key === 'height' || sade.rectangle !== null) && (
                       <Grid item xs={6} key={i}>
                         <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
-                        <TextField
-                          sx={{
-                            backgroundColor: '#71665E',
-                            '& .MuiOutlinedInput-root': {
-                              '& .MuiInputBase-input': {
-                                padding: '6px 8px',
-                                fontSize: '1.2rem',
+                        {['centerLat', 'centerLong'].includes(field.key) ? (
+                          <Tooltip
+                            title={`Stepping distance of 0.0001, equivalent to 1m`}
+                            placement='bottom'
+                          >
+                            <TextField
+                              sx={{
+                                backgroundColor: '#71665E',
+                                '& .MuiOutlinedInput-root': {
+                                  '& .MuiInputBase-input': {
+                                    padding: '6px 8px',
+                                    fontSize: '1.2rem',
+                                  },
+                                },
+                              }}
+                              id={field.key}
+                              type={field.type}
+                              variant='outlined'
+                              onChange={(e) => handleChange(e, index)}
+                              value={sade[field.key] ?? 0}
+                              inputProps={{ step: field.step ?? null }}
+                              fullWidth
+                            />
+                          </Tooltip>
+                        ) : (
+                          <TextField
+                            sx={{
+                              backgroundColor: '#71665E',
+                              '& .MuiOutlinedInput-root': {
+                                '& .MuiInputBase-input': {
+                                  padding: '6px 8px',
+                                  fontSize: '1.2rem',
+                                },
                               },
-                            },
-                          }}
-                          id={field.key}
-                          type={field.type}
-                          variant='outlined'
-                          onChange={(e) => handleChange(e, index)}
-                          value={sade[field.key] ?? 0}
-                          inputProps={{ step: field.step ?? null }}
-                          fullWidth
-                        />
+                            }}
+                            id={field.key}
+                            type={field.type}
+                            variant='outlined'
+                            onChange={(e) => handleChange(e, index)}
+                            value={sade[field.key] ?? 0}
+                            inputProps={{ step: field.step ?? null }}
+                            fullWidth
+                          />
+                        )}
                       </Grid>
                     ),
                 )}

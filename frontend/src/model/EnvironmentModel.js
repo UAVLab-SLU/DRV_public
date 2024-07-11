@@ -12,10 +12,10 @@ export class EnvironmentModel {
         this._time = null; 
         this._Wind = [];
         this._Origin = {
-            "Latitude": 0,
-            "Longitude": 0,
-            "Name": "Specify Region",
-            "Height": 0
+            "latitude": 0,
+            "longitude": 0,
+            "name": "Specify Region",
+            "height": 0
         };
         this._sades = [];
         this._activeSadeZoneIndex = null;
@@ -104,35 +104,35 @@ export class EnvironmentModel {
     }
 
     getOriginLatitude(){
-        return this._Origin.Latitude;
+        return this._Origin.latitude;
     }
 
     getOriginLongitude(){
-        return this._Origin.Longitude;
+        return this._Origin.longitude;
     }
 
     getOriginHeight(){
-        return this._Origin.Height
+        return this._Origin.height
     }
 
     getOriginName(){
-        return this._Origin.Name;
+        return this._Origin.name;
     }
 
     setOriginLatitude(value){
-        this._Origin.Latitude = value;
+        this._Origin.latitude = value;
     }
 
     setOriginLongitude(value){
-        this._Origin.Longitude = value;
+        this._Origin.longitude = value;
     }
 
     setOriginHeight(value){
-        this._Origin.Height = value;
+        this._Origin.height = value;
     }
 
     setOriginName(value){
-        this._Origin.Name = value;
+        this._Origin.name = value;
     }
 
     addNewWind(windObj){
@@ -205,16 +205,16 @@ export class EnvironmentModel {
 
     toJSONString(){
         return {
-            "enableFuzzy": this._enableFuzzy,
-            "timeOfDayFuzzy": this._timeOfDayFuzzy,
-            "positionFuzzy": this._positionFuzzy,
-            "windFuzzy": this._windFuzzy,
-            "Wind": this._Wind?.map( (obj) => obj.toJSONString() ),
-            "Origin": this._Origin,
-            "TimeOfDay": this._TimeOfDay,
-            "UseGeo": this.UseGeo,
+            "enable_fuzzy": this._enableFuzzy,
+            "time_of_day_fuzzy": this._timeOfDayFuzzy,
+            "position_fuzzy": this._positionFuzzy,
+            "wind_fuzzy": this._windFuzzy,
+            "wind": this._Wind?.map( (obj) => obj.toJSONString() ),
+            "origin": this._Origin,
+            "time_of_day": this._TimeOfDay,
+            "use_geo": this.UseGeo,
             "time": this._time,
-            "Sade" : this._sades?.map( (obj) => obj.toJSONString() )
+            "sades" : this._sades?.map( (obj) => obj.toJSONString() )
         }
     }
 

@@ -8,14 +8,15 @@ import {
   Cartesian2,
   HeightReference,
   JulianDate,
-  Color
+  //Ellipsoid,
+  Color,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncRadiusLocation, envJson } = useMainJson();
+  const { syncRadiusLocation, envJson, setEnvJson } = useMainJson();
   const [safeZones, setSafeZones] = useState([]);
 
   // radius drag and drop event listeners
@@ -28,6 +29,7 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
         date = JulianDate.toDate(date);
         return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
       };
+
       // Ensure the canvas is focusable
       canvas.setAttribute('tabindex', '0');
 
@@ -46,6 +48,7 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
         const y = event.clientY - rect.top;
 
         const ellipsoid = viewer.scene.globe.ellipsoid;
+        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
         const cesiumCanvasPosition = new Cartesian2(x, y);
         const cartesian = viewer.camera.pickEllipsoid(cesiumCanvasPosition, ellipsoid);
         if (cartesian) {
@@ -62,20 +65,20 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
             buildingHeight = Cartographic.fromCartesian(intersection.position).height;
           }
           
-          setNewCameraPosition();
-
-          const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+          setNewCameraPosition();          
 
           if (dragData.type == 'radius'){
             syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
             setSafeZones(currentZones => [...currentZones, {
               position: cartesian,
               image: dragData.src,
-              radius: dragData.radius === '' || dragData.radius === 0 ? 0 : dragData.radius
+              radius: dragData.radius
             }]);
           }
         }
       };
+
+      console.log(envJson.Origin);
 
       canvas.addEventListener('dragover', dragOverHandler);
       canvas.addEventListener('drop', dropHandler);

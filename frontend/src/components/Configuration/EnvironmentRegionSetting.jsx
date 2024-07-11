@@ -8,6 +8,7 @@ import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/cons
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
 import * as React from 'react';
+
 import TimeGridComponent from './TimeGridComponent';
 
 
@@ -48,7 +49,6 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         } else if (val.target.id === "Longitude") {
             envConf.setOriginLongitude(parseFloat(val.target.value));
         } else if (val.target.id === "Height") {
-            // future implementation
             envConf.setOriginHeight(parseFloat(val.target.value));
         } else if (val.target.id === "Radius") {
             envConf.setOriginRadius(parseFloat(val.target.value));
@@ -184,7 +184,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: "0.1", min: "0" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.radius === 0 || envConf.Origin.radius === '' ? '' : envConf.Origin.radius}
+                            value={envConf.Origin.radius}
                             fullWidth
                         />
                     </Grid>

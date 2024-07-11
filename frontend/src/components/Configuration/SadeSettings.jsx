@@ -54,19 +54,17 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
     if (id === 'name') {
       sade.name = value;
     } else if (id === 'height') {
-      sade.height = value ? parseFloat(value) : 0;
+      sade.height = value != '' ? parseFloat(value) : 0;
     } else if (id === 'length') {
       sade.length = parseFloat(value);
-      sade.rectangle = value
-        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
-        : 0;
+      sade.rectangle =
+        value != '' ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width) : 0;
     } else if (id === 'width') {
       sade.width = parseFloat(value);
-      sade.rectangle = value
-        ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width)
-        : 0;
+      sade.rectangle =
+        value != '' ? updateRectangle(sade.centerLong, sade.centerLat, sade.length, sade.width) : 0;
     } else if (id === 'centerLat') {
-      sade.centerLat = value ? parseFloat(value) : 0;
+      sade.centerLat = value != '' ? parseFloat(value) : 0;
       sade.rectangle = updateRectangleByNewCenter(
         sade.centerLong,
         sade.centerLat,
@@ -74,7 +72,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
         sade.width,
       );
     } else if (id === 'centerLong') {
-      sade.centerLong = value ? parseFloat(value) : 0;
+      sade.centerLong = value != '' ? parseFloat(value) : 0;
       sade.rectangle = updateRectangleByNewCenter(
         sade.centerLong,
         sade.centerLat,
@@ -184,14 +182,14 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
               <Grid container spacing={2}>
                 {[
                   { label: 'Name', key: 'name', type: 'text' },
-                  { label: 'Height (m)', key: 'height', type: 'number' },
-                  { label: 'Length (m)', key: 'length', type: 'number' },
-                  { label: 'Width (m)', key: 'width', type: 'number' },
-                  { label: 'Center Latitude', key: 'centerLat', type: 'number' },
-                  { label: 'Center Longitude', key: 'centerLong', type: 'number' },
+                  { label: 'Height (m)', key: 'height', type: 'number', step: 1 },
+                  { label: 'Length (m)', key: 'length', type: 'number', step: 1 },
+                  { label: 'Width (m)', key: 'width', type: 'number', step: 1 },
+                  { label: 'Center Latitude', key: 'centerLat', type: 'number', step: 0.0001 },
+                  { label: 'Center Longitude', key: 'centerLong', type: 'number', step: 0.0001 },
                 ].map(
                   (field, i) =>
-                    (field.key == 'name' || field.key == 'height' || sade.rectangle) && (
+                    (field.key == 'name' || field.key == 'height' || sade.rectangle != null) && (
                       <Grid item xs={6} key={i}>
                         <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
                         <TextField
@@ -208,7 +206,8 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                           type={field.type}
                           variant='outlined'
                           onChange={(e) => handleChange(e, index)}
-                          value={sade[field.key] || ''}
+                          value={sade[field.key] ?? 0}
+                          inputProps={{ step: field.step ?? null }}
                           fullWidth
                         />
                       </Grid>

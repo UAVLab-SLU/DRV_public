@@ -1,4 +1,4 @@
-
+import { SadeModel } from "./SadeModel";
 
 export class EnvironmentModel {
 
@@ -12,6 +12,7 @@ export class EnvironmentModel {
         this._time = null; 
         this._Wind = [];
         this._Origin = {
+<<<<<<< HEAD
             "Latitude": 0,
             "Longitude": 0,
             "Name": "Specify Region",
@@ -21,6 +22,15 @@ export class EnvironmentModel {
         };
         this._sades = [];
         this._Origin.Image = null;
+=======
+            "latitude": 0,
+            "longitude": 0,
+            "name": "Specify Region",
+            "height": 0
+        };
+        this._sades = [];
+        this._activeSadeZoneIndex = null;
+>>>>>>> b41fb86ad170084ff643486329d30f99117f0626
     }
 
     // Getters
@@ -60,6 +70,10 @@ export class EnvironmentModel {
         return this._Origin;
     }
 
+    get activeSadeZoneIndex(){
+        return this._activeSadeZoneIndex;
+    }
+
     // Setters
     set enableFuzzy(value) {
         this._enableFuzzy = value;
@@ -97,12 +111,16 @@ export class EnvironmentModel {
         this._Wind = value;
     }
 
+    set activeSadeZoneIndex(value) {
+        this._activeSadeZoneIndex = value;
+    }
+
     getOriginLatitude(){
-        return this._Origin.Latitude;
+        return this._Origin.latitude;
     }
 
     getOriginLongitude(){
-        return this._Origin.Longitude;
+        return this._Origin.longitude;
     }
 
     getOriginRadius(){
@@ -110,15 +128,19 @@ export class EnvironmentModel {
     }
 
     getOriginHeight(){
+<<<<<<< HEAD
         return this._Origin.Height;
     }
 
     getOriginPosition(){
         return this._Origin.Position;
+=======
+        return this._Origin.height
+>>>>>>> b41fb86ad170084ff643486329d30f99117f0626
     }
 
     getOriginName(){
-        return this._Origin.Name;
+        return this._Origin.name;
     }
 
     getOriginImage(){
@@ -126,11 +148,11 @@ export class EnvironmentModel {
     }
 
     setOriginLatitude(value){
-        this._Origin.Latitude = value;
+        this._Origin.latitude = value;
     }
 
     setOriginLongitude(value){
-        this._Origin.Longitude = value;
+        this._Origin.longitude = value;
     }
 
     setOriginRadius(value){
@@ -138,7 +160,7 @@ export class EnvironmentModel {
     }
 
     setOriginHeight(value){
-        this._Origin.Height = value;
+        this._Origin.height = value;
     }
 
     setOriginPosition(value){
@@ -146,7 +168,7 @@ export class EnvironmentModel {
     }
 
     setOriginName(value){
-        this._Origin.Name = value;
+        this._Origin.name = value;
     }
 
     setOriginImage(value){
@@ -173,6 +195,10 @@ export class EnvironmentModel {
 
     getAllSades(){
         return this._sades;
+    }
+
+    getSadesCount() {
+        return this._sades.length;
     }
 
     getSadeBasedOnIndex(index){
@@ -212,6 +238,7 @@ export class EnvironmentModel {
         model.time = instance.time;
         model.Origin = instance.Origin;
         model.Wind = instance.Wind;
+        model.activeSadeZoneIndex = instance.activeSadeZoneIndex;
         const sades = instance.getAllSades();
         for(let i =0; i < sades.length; i++){
             model.addNewSade(sades[i]);
@@ -221,16 +248,16 @@ export class EnvironmentModel {
 
     toJSONString(){
         return {
-            "enableFuzzy": this._enableFuzzy,
-            "timeOfDayFuzzy": this._timeOfDayFuzzy,
-            "positionFuzzy": this._positionFuzzy,
-            "windFuzzy": this._windFuzzy,
-            "Wind": this._Wind?.map( (obj) => obj.toJSONString() ),
-            "Origin": this._Origin,
-            "TimeOfDay": this._TimeOfDay,
-            "UseGeo": this.UseGeo,
+            "enable_fuzzy": this._enableFuzzy,
+            "time_of_day_fuzzy": this._timeOfDayFuzzy,
+            "position_fuzzy": this._positionFuzzy,
+            "wind_fuzzy": this._windFuzzy,
+            "wind": this._Wind?.map( (obj) => obj.toJSONString() ),
+            "origin": this._Origin,
+            "time_of_day": this._TimeOfDay,
+            "use_geo": this.UseGeo,
             "time": this._time,
-            "Sade" : this._sades?.map( (obj) => obj.toJSONString() )
+            "sades" : this._sades?.map( (obj) => obj.toJSONString() )
         }
     }
 

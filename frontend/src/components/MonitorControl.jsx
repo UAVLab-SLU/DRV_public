@@ -27,7 +27,7 @@ const ContainerStyled = styled(Container)({
     padding: '5px',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     backdropFilter: 'sepia(100%)',
-    '-webkitBackdropFilter': 'sepia(100%)',
+    'WebkitBackdropFilter': 'sepia(100%)',
 })
 
 export default function MonitorControl(monJson) {

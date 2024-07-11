@@ -3,33 +3,41 @@ import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import { TextField } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import Stack from '@mui/material/Stack';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StyledSelect } from '../../css/SimulationPageStyles';
 import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
+<<<<<<< HEAD
 import * as React from 'react';
 
+=======
+import TimeGridComponent from './TimeGridComponent';
+>>>>>>> b41fb86ad170084ff643486329d30f99117f0626
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
+<<<<<<< HEAD
     const pinImage = [
         { src: '/images/pin-icon.png'}
     ];
+=======
+>>>>>>> b41fb86ad170084ff643486329d30f99117f0626
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
             ENVIRONMENT_ORIGIN_VALUES.map(obj => {
                 if (obj.value == val.target.value) {
+<<<<<<< HEAD
                     envConf.setOriginLatitude(obj.Latitude);
                     envConf.setOriginLongitude(obj.Longitude);
                     envConf.setOriginRadius(obj.Radius);
                     envConf.setOriginHeight(obj.Height);
+=======
+                    envConf.setOriginLatitude(obj.latitude);
+                    envConf.setOriginLongitude(obj.longitude);
+                    envConf.setOriginHeight(obj.height);
+>>>>>>> b41fb86ad170084ff643486329d30f99117f0626
                     envConf.setOriginName(obj.value);
                 }
             })
@@ -41,16 +49,14 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
             envConf.setOriginName(val.target.value);
         }
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+        //viewerMaintainer.current = true;
     }
 
     const handleOriginChange = (val) => {
 
         let keys = Object.keys(val)
 
-        if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
-            envConf.TimeOfDay = val.$H + ':' + val.$m + ':' + val.$s;
-            envConf.time = val
-        } else if (val.target.id === "Latitude") {
+        if (val.target.id === "Latitude") {
             envConf.setOriginLatitude(parseFloat(val.target.value));
         } else if (val.target.id === "Longitude") {
             envConf.setOriginLongitude(parseFloat(val.target.value));
@@ -60,8 +66,9 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         } else if (val.target.id === "Radius") {
             envConf.setOriginRadius(parseFloat(val.target.value));
         }
-        
+        // viewerMaintainer.current = true;
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
+
     }
     
     const handleDragStart = (event) => {
@@ -130,7 +137,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: ".0001" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.Latitude}
+                            value={envConf.Origin.latitude}
                             disabled={envConf.Origin.Name == "Specify Region" ? false : true}
                             fullWidth
                         />
@@ -160,7 +167,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             type="number"
                             inputProps={{ step: ".0001" }}
                             onChange={handleOriginChange}
-                            value={envConf.Origin.Longitude}
+                            value={envConf.Origin.longitude}
                             disabled={envConf.Origin.Name == "Specify Region" ? false : true}
                             fullWidth
                         />
@@ -215,30 +222,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                     </Grid>
                     <Grid item xs={6}>
                         {/* <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'> */}
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <Stack spacing={3}
-                                    sx={{
-                                        backgroundColor: '#F5F5DC',
-                                        '& .MuiOutlinedInput-root': {
-                                            '& .MuiInputBase-input': {
-                                                padding: '6px 8px',
-                                            },
-                                        },
-                                    }}>
-                                    <TimePicker
-                                        ampm={false}
-                                        openTo="hours"
-                                        views={['hours', 'minutes', 'seconds']}
-                                        inputFormat="HH:mm:ss"
-                                        mask="__:__:__"
-                                        value={envConf.time}
-                                        onChange={handleOriginChange}
-                                        renderInput={(params) => <TextField {...params}
-                                        // helperText="Enter Time of Day (24 Hour Format)"
-                                        />}
-                                    />
-                                </Stack>
-                            </LocalizationProvider>
+                        <TimeGridComponent envConf={envConf} setEnvConf={setEnvConf} />
                         {/* </Tooltip> */}
                     </Grid>
                 </Grid>

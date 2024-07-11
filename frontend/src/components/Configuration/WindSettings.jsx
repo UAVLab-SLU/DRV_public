@@ -13,7 +13,7 @@ import { EnvironmentModel } from '../../model/EnvironmentModel';
 
 const GridBackDropFilter = styled(Grid)({
     backgroundColor: '#14151471',
-    '-webkitBackdropFilter': 'sepia(100%)',
+    'WebkitBackdropFilter': 'sepia(100%)',
     backdropFilter: 'sepia(100%)',
 })
 
@@ -33,8 +33,8 @@ const WindSettings = ({ envConf, setEnvConf }) => {
         let wind = envConf.getWindBasedOnIndex(index);
         wind.windType = updatedData.windType ? updatedData.windType : wind.windType;
         wind.windDirection = updatedData.windDirection ? updatedData.windDirection : wind.windDirection;
-        wind.windVelocity = updatedData.windVelocity ? updatedData.windVelocity : wind.windVelocity;
-        wind.fluctuationPercentage = updatedData.fluctuationPercentage ? updatedData.fluctuationPercentage : wind.fluctuationPercentage;
+        wind.windVelocity = updatedData.windVelocity ? parseInt(updatedData.windVelocity) : wind.windVelocity;
+        wind.fluctuationPercentage = updatedData.fluctuationPercentage ? parseFloat(updatedData.fluctuationPercentage) : wind.fluctuationPercentage;
         envConf.updateWindBasedOnIndex(index, wind);
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
     };
@@ -69,7 +69,7 @@ const WindSettings = ({ envConf, setEnvConf }) => {
             ))}
 
             <Grid item container xs={12}>
-                <GridBackDropFilter xs={10}
+                <GridBackDropFilter item xs={10}
                     sx={{ border: '1px white solid', textAlign: 'center' }}>
                     <IconButton
                         onClick={addNewWindBlock}

@@ -73,4 +73,31 @@ export class SadeModel {
   set rectangle(value) {
     this._rectangle = value;
   }
+
+  static getReactStateBasedUpdate(instance) {
+    let model = new SadeModel();
+    model.id = instance.id;
+    model.name = instance.name;
+    model.centerLat = instance.centerLat;
+    model.centerLong = instance.centerLong;
+    model.height = instance.height;
+    model.length = instance.length;
+    model.width = instance.width;
+    model.rectangle = instance.rectangle;
+    return model
+  }
+
+  toJSONString() {
+    return {
+      "sade_id" : this._id,
+      "sade_name" : this._name,
+      "center_latitude" : this._centerLat,
+      "center_longitude" : this._centerLong,
+      "height" : this._height,
+      "length" : this._length,
+      "width" : this._width,
+      // "rectangle" : this._rectangle
+    }
+  }
+
 }

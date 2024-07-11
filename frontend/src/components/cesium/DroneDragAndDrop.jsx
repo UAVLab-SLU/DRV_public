@@ -12,9 +12,11 @@ import {
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
+import dayjs from 'dayjs';
+import { EnvironmentModel } from '../../model/EnvironmentModel';
 
 const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncDroneLocation, mainJson } = useMainJson();
+  const { syncDroneLocation, mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
 
   // drone drag and drop event listeners
   useEffect(() => {
@@ -22,10 +24,6 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
       const viewer = viewerRef.current.cesiumElement;
       const canvas = viewer.canvas;
 
-      viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
-        date = JulianDate.toDate(date);
-        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-      };
       // Ensure the canvas is focusable
       canvas.setAttribute('tabindex', '0');
 
@@ -74,7 +72,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         canvas.removeEventListener('drop', dropHandler);
       };
     }
-  }, [viewerReady, mainJson]);
+  }, [viewerReady, mainJson, envJson]);
 
   return (
     <>

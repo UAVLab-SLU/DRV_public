@@ -36,6 +36,28 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
 
     handler.setInputAction(
       (movement) => {
+        setNewCameraPosition();
+        setMouseDown(true);
+        viewer.canvas.style.border = '2px dashed red';
+        // Disable camera rotation while the user is drawing a Sade-zone
+        viewer.scene.screenSpaceCameraController.enableRotate = false;
+
+        const cartesian = viewer.camera.pickEllipsoid(
+          movement.position,
+          viewer.scene.globe.ellipsoid,
+        );
+        if (cartesian) {
+          const rectPoint = Cartographic.fromCartesian(cartesian, Ellipsoid.WGS84);
+          // Set the starting point of the rectangle
+          setFirstPoint(rectPoint);
+        }
+      },
+      ScreenSpaceEventType.LEFT_DOWN,
+      KeyboardEventModifier.SHIFT,
+    );
+
+    handler.setInputAction(
+      (movement) => {
         if (!mouseDown) return;
         const cartesian = viewer.camera.pickEllipsoid(
           movement.endPosition,
@@ -57,39 +79,25 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     );
 
     handler.setInputAction(
-      (movement) => {
+      () => {
+        // make sure this event listener executes only when activeSadeZoneIndex is not null
+        if (envJson.activeSadeZoneIndex == null) return;
+
+        viewer.canvas.style.border = 'none';
+        viewer.scene.screenSpaceCameraController.enableRotate = true;
+
+        setMouseDown(false);
+        // Clear the first-point, indicating that the current Sade-zone drawing is finished
+        setFirstPoint(null);
         setNewCameraPosition();
-        setMouseDown(true);
-        const cartesian = viewer.camera.pickEllipsoid(
-          movement.position,
-          viewer.scene.globe.ellipsoid,
-        );
-        if (cartesian) {
-          const rectPoint = Cartographic.fromCartesian(cartesian, Ellipsoid.WGS84);
-          // Set the starting point of the rectangle
-          setFirstPoint(rectPoint);
-        }
+
+        envJson.activeSadeZoneIndex = null;
+        setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
       },
-      ScreenSpaceEventType.LEFT_DOWN,
+      ScreenSpaceEventType.LEFT_UP,
       KeyboardEventModifier.SHIFT,
     );
-
-    handler.setInputAction(() => {
-      // make sure this event listener executes only when activeSadeZoneIndex is not null
-      if (envJson.activeSadeZoneIndex == null) return;
-      setMouseDown(false);
-      // Clear the first point
-      setFirstPoint(null);
-      setNewCameraPosition();
-      envJson.activeSadeZoneIndex = null;
-      setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
-      console.log('env json', envJson);
-    }, ScreenSpaceEventType.LEFT_UP);
-
-    return () => {
-      handler.destroy();
-    };
-  }, [viewerReady, firstPoint]);
+  }, [viewerReady, firstPoint, envJson.activeSadeZoneIndex]);
 
   const updateSadeZone = (rect) => {
     const currentInx = envJson.activeSadeZoneIndex;

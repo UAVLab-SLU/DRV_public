@@ -8,7 +8,7 @@ import {
   Cartesian2,
   HeightReference,
   JulianDate,
-  //Ellipsoid,
+  Ellipsoid,
   Color,
 } from 'cesium';
 import PropTypes from 'prop-types';
@@ -16,8 +16,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncRadiusLocation, envJson, setEnvJson } = useMainJson();
-  const [safeZones, setSafeZones] = useState([]);
+  const { syncRadiusLocation, envJson} = useMainJson();
 
   // radius drag and drop event listeners
   useEffect(() => {
@@ -69,11 +68,6 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
 
           if (dragData.type == 'radius'){
             syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
-            setSafeZones(currentZones => [...currentZones, {
-              position: cartesian,
-              image: dragData.src,
-              radius: dragData.radius
-            }]);
           }
         }
       };
@@ -93,10 +87,8 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
 
   return (
     <>
-     {/* {safeZones.map((zone, index) => ( */}
       {envJson.Origin.radius > 0 && (
         <Entity
-          //key={index}
           position={envJson.getOriginPosition()}
           billboard={{
             image: envJson.getOriginImage(),
@@ -113,7 +105,6 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
           }}
         />
       )}
-     {/* ))} */}
     </>
   );
 };

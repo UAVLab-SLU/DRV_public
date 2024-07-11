@@ -93,10 +93,10 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
 
   return (
     <>
-     {safeZones.map((zone, index) => (
-      zone.radius > 0 && (
+     {/* {safeZones.map((zone, index) => ( */}
+      {envJson.Origin.radius > 0 && (
         <Entity
-          key={index}
+          //key={index}
           position={envJson.getOriginPosition()}
           billboard={{
             image: envJson.getOriginImage(),
@@ -104,16 +104,16 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
             verticalOrigin: VerticalOrigin.BOTTOM,
           }}
           ellipse={{
-            semiMinorAxis: zone.radius * 1609.34, // Convert miles to meters
-            semiMajorAxis: zone.radius * 1609.34, // Convert miles to meters
+            semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+            semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
             material: Color.GREEN.withAlpha(0.3),
             outline: true,
             outlineColor: Color.GREEN,
             height: envJson.getOriginHeight(),
           }}
         />
-      )
-     ))}
+      )}
+     {/* ))} */}
     </>
   );
 };

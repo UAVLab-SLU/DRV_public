@@ -12,12 +12,12 @@ export class EnvironmentModel {
         this._time = null; 
         this._Wind = [];
         this._Origin = {
-            "Latitude": 0,
-            "Longitude": 0,
-            "Name": "Specify Region",
-            "Height": 0,
-            "Radius": 0,
-            "Position": 0,
+            "latitude": 0,
+            "longitude": 0,
+            "name": "Specify Region",
+            "height": 0,
+            "radius": 0,
+            "position": 0,
         };
         this._sades = [];
         this._Origin.image = null;

@@ -10,6 +10,7 @@ import {
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
+import RadiusDragAndDrop from './RadiusDragAndDrop';
 
 const CesiumMap = ({ mainJson, setMainJson, id }) => {
   const viewerRef = useRef(null);
@@ -71,6 +72,12 @@ const CesiumMap = ({ mainJson, setMainJson, id }) => {
 
       <DrawSadeZone
         viewerReady={viewerReady} viewerRef={viewerRef} setNewCameraPosition={setNewCameraPosition}
+      />
+
+      <RadiusDragAndDrop
+        viewerReady={viewerReady}
+        viewerRef={viewerRef}
+        setNewCameraPosition={setNewCameraPosition}
       />
     </Viewer>
   );

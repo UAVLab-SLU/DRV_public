@@ -7,16 +7,18 @@ import {
   VerticalOrigin,
   Cartesian2,
   HeightReference,
-  JulianDate
+  JulianDate,
+  Color
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
-const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncDroneLocation, mainJson } = useMainJson();
+const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
+  const { syncRadiusLocation, envJson } = useMainJson();
+  const [safeZones, setSafeZones] = useState([]);
 
-  // drone drag and drop event listeners
+  // radius drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
       const viewer = viewerRef.current.cesiumElement;
@@ -33,7 +35,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         event.preventDefault(); // Necessary to allow the drop
         canvas.style.border = '2px dashed red'; // Visual feedback
       };
-
+    
       const dropHandler = (event) => {
         event.preventDefault();
         canvas.style.border = ''; // Remove visual feedback
@@ -50,30 +52,28 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
           const longitude = CesiumMath.toDegrees(cartographic.longitude);
+
+          // Use getPickRay to get the building height
+          const ray = viewer.camera.getPickRay(cesiumCanvasPosition);
+          const intersection = viewer.scene.pickFromRay(ray, []);
+          let buildingHeight = 0;
+
+          if (intersection && intersection.position) {
+            buildingHeight = Cartographic.fromCartesian(intersection.position).height;
+          }
+          
           setNewCameraPosition();
 
           const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
-          const droneInx = dragData.index;
 
-          if (dragData.type === 'drone'){
-            syncDroneLocation(droneInx, latitude, longitude, dragData.src);
+          if (dragData.type == 'radius'){
+            syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
+            setSafeZones(currentZones => [...currentZones, {
+              position: cartesian,
+              image: dragData.src,
+              radius: dragData.radius === '' || dragData.radius === 0 ? 0 : dragData.radius
+            }]);
           }
-          // find the terrain height at dropped location
-          // const terrainProvider = viewer.terrainProvider;
-          // const positions = [Cartographic.fromDegrees(longitude, latitude)];
-          // sampleTerrain(terrainProvider, 11, positions).then((updatedPositions) => {
-          //   const height = updatedPositions[0].height;
-
-
-          // Fixing the same drone dragging into multiple locations
-          //let removedOldDrones = fieldDrones.filter((data) => data.image !== dragData.src)
-          //removedOldDrones.push({
-          //  image: dragData.src,
-          //  position: Cartesian3.fromDegrees(longitude, latitude)
-          //})
-
-          // setFieldDrones(removedOldDrones);
-
         }
       };
 
@@ -85,31 +85,40 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         canvas.removeEventListener('drop', dropHandler);
       };
     }
-  }, [viewerReady, mainJson]);
+  }, [viewerReady, envJson]);
+
 
   return (
     <>
-      {mainJson.getAllDrones().map((fieldDrone, index) => (
-        fieldDrone.cesiumPosition && fieldDrone.cesiumImage && (<Entity
+     {safeZones.map((zone, index) => (
+      zone.radius > 0 && (
+        <Entity
           key={index}
-          position={fieldDrone.cesiumPosition}
+          position={envJson.getOriginPosition()}
           billboard={{
-            image: fieldDrone.cesiumImage,
+            image: envJson.getOriginImage(),
             scale: 0.5,
             verticalOrigin: VerticalOrigin.BOTTOM,
-            heightReference: HeightReference.CLAMP_TO_GROUND,
           }}
-        />)
+          ellipse={{
+            semiMinorAxis: zone.radius * 1609.34, // Convert miles to meters
+            semiMajorAxis: zone.radius * 1609.34, // Convert miles to meters
+            material: Color.GREEN.withAlpha(0.3),
+            outline: true,
+            outlineColor: Color.GREEN,
+            height: envJson.getOriginHeight(),
+          }}
+        />
       )
-      )}
+     ))}
     </>
   );
 };
 
-DroneDragAndDrop.propTypes = {
+RadiusDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
   setNewCameraPosition: PropTypes.func.isRequired
 };
 
-export default DroneDragAndDrop;
+export default RadiusDragAndDrop;

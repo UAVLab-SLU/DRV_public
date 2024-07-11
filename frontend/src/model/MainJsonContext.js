@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { SimulationConfigurationModel } from './SimulationConfigurationModel';
+import { EnvironmentModel } from './EnvironmentModel';
 import { Cartesian3 } from 'cesium';
 
 const MainJsonContext = createContext();
@@ -21,8 +22,17 @@ export const MainJsonProvider = ({ children }) => {
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }
 
+  function syncRadiusLocation(latitude, longitude, height, image) {
+    envJson.setOriginLatitude(latitude);
+    envJson.setOriginLongitude(longitude);
+    envJson.setOriginHeight(height);
+    envJson.setOriginImage(image);
+    envJson.setOriginPosition(Cartesian3.fromDegrees(envJson.getOriginLongitude(), envJson.getOriginLatitude(), envJson.getOriginHeight()));
+    setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
+  }
+
   return (
-    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation }}>
+    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation, syncRadiusLocation }}>
       {children}
     </MainJsonContext.Provider>
   );

@@ -15,9 +15,12 @@ export class EnvironmentModel {
             "Latitude": 0,
             "Longitude": 0,
             "Name": "Specify Region",
-            "Height": 0
+            "Height": 0,
+            "Radius": 0,
+            "Position": 0,
         };
         this._sades = [];
+        this._Origin.Image = null;
     }
 
     // Getters
@@ -102,12 +105,24 @@ export class EnvironmentModel {
         return this._Origin.Longitude;
     }
 
+    getOriginRadius(){
+        return this._Origin.Radius;
+    }
+
     getOriginHeight(){
-        return this._Origin.Height
+        return this._Origin.Height;
+    }
+
+    getOriginPosition(){
+        return this._Origin.Position;
     }
 
     getOriginName(){
         return this._Origin.Name;
+    }
+
+    getOriginImage(){
+        return this._Origin.Image;
     }
 
     setOriginLatitude(value){
@@ -118,12 +133,24 @@ export class EnvironmentModel {
         this._Origin.Longitude = value;
     }
 
+    setOriginRadius(value){
+        this._Origin.Radius = value;
+    }
+
     setOriginHeight(value){
         this._Origin.Height = value;
     }
 
+    setOriginPosition(value){
+        this._Origin.Position = value;
+    }
+
     setOriginName(value){
         this._Origin.Name = value;
+    }
+
+    setOriginImage(value){
+        this._Origin.Image = value;
     }
 
     addNewWind(windObj){
@@ -177,6 +204,9 @@ export class EnvironmentModel {
         model.positionFuzzy = instance.positionFuzzy;
         model.setOriginLatitude(instance.setOriginLatitude);
         model.setOriginLongitude(instance.setOriginLongitude);
+        model.setOriginHeight(instance.setOriginHeight);
+        model.setOriginRadius(instance.setOriginRadius);
+        model.setOriginPosition(instance.setOriginPosition);
         model.TimeOfDay =instance.TimeOfDay;
         model.UseGeo = instance.UseGeo;
         model.time = instance.time;

@@ -61,6 +61,7 @@ export default function EnvironmentConfiguration(env) {
         model.positionFuzzy = false;
         model.setOriginLatitude(41.980381);
         model.setOriginLongitude(-87.934524);
+        model.setOriginRadius(0);
         model.TimeOfDay = "10:00:00";
         model.UseGeo = true;
         model.time = dayjs('2020-01-01 10:00');

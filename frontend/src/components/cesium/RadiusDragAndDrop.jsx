@@ -16,17 +16,29 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncRadiusLocation, envJson} = useMainJson();
+  const { syncRadiusLocation, envJson } = useMainJson();
 
   // radius drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
       const viewer = viewerRef.current.cesiumElement;
       const canvas = viewer.canvas;
-      
+
       viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
         date = JulianDate.toDate(date);
-        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let seconds = date.getSeconds();
+        if (hours < 10) {
+          hours = `0${hours}`;
+        }
+        if (minutes < 10) {
+          minutes = `0${minutes}`;
+        }
+        if (seconds < 10) {
+          seconds = `0${seconds}`;
+        }
+        return hours + ':' + minutes + ':' + seconds;
       };
 
       // Ensure the canvas is focusable
@@ -36,7 +48,7 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
         event.preventDefault(); // Necessary to allow the drop
         canvas.style.border = '2px dashed red'; // Visual feedback
       };
-    
+
       const dropHandler = (event) => {
         event.preventDefault();
         canvas.style.border = ''; // Remove visual feedback
@@ -63,10 +75,10 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
           if (intersection && intersection.position) {
             buildingHeight = Cartographic.fromCartesian(intersection.position).height;
           }
-          
-          setNewCameraPosition();          
 
-          if (dragData.type == 'radius'){
+          setNewCameraPosition();
+
+          if (dragData.type == 'radius') {
             syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
           }
         }

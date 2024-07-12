@@ -229,7 +229,7 @@ export class DroneModel {
       allow_api_always: this._AllowAPIAlways,
       enable_trace: this._EnableTrace,
       name: this._Name,
-      image: this._image,
+      // image: this._image,
       color: this._color,
       x: this._X,
       y: this._Y,
@@ -238,8 +238,8 @@ export class DroneModel {
       roll: this._Roll,
       yaw: this._Yaw,
       sensors: this._Sensors,
-      mission_value: this._MissionValue,
-      mission: this._Mission,
+      // mission_value: this._MissionValue,
+      // mission: this._Mission,
     };
   }
 }

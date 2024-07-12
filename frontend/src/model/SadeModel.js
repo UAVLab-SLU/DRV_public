@@ -1,7 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class SadeModel {
-  constructor(name = 'Sade Zone') {
-    this._id = 0;
-    this._name = name;
+  constructor() {
+    this._id = uuidv4();
+    this._name = `Sade-${this._id.substring(0, 4)}`;
     this._centerLat = null;
     this._centerLong = null;
     this._height = 100;
@@ -84,20 +86,19 @@ export class SadeModel {
     model.length = instance.length;
     model.width = instance.width;
     model.rectangle = instance.rectangle;
-    return model
+    return model;
   }
 
   toJSONString() {
     return {
-      "sade_id" : this._id,
-      "sade_name" : this._name,
-      "center_latitude" : this._centerLat,
-      "center_longitude" : this._centerLong,
-      "height" : this._height,
-      "length" : this._length,
-      "width" : this._width,
+      sade_id: this._id,
+      sade_name: this._name,
+      center_latitude: this._centerLat,
+      center_longitude: this._centerLong,
+      height: this._height,
+      length: this._length,
+      width: this._width,
       // "rectangle" : this._rectangle
-    }
+    };
   }
-
 }

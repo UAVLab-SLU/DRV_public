@@ -3,6 +3,8 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -19,23 +21,11 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { DroneModel } from '../../model/DroneModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 import { AccordionStyled } from '../../css/SimulationPageStyles';
-import { droneModels, droneTypes } from '../../constants/drone';
+import { droneModels, droneTypes, droneImages } from '../../constants/drone';
 
 export default function MissionConfiguration(mission) {
   const { mainJson, setMainJson } = useMainJson();
-
-  const droneImages = [
-    { src: '/images/drone-red.png', color: '#FFCCCC' },
-    { src: '/images/drone-green.png', color: '#CCFFCC' },
-    { src: '/images/drone-blue.png', color: '#CCCCFF' },
-    { src: '/images/drone-yellow.png', color: '#FFFFCC' },
-    { src: '/images/drone-pink.png', color: '#FFCCFF' },
-    { src: '/images/drone-indigo.png', color: '#CCFFFF' },
-    { src: '/images/drone-gold.png', color: '#F0E68C' },
-    { src: '/images/drone-darkblue.png', color: '#E6E6FA' },
-    { src: '/images/drone-orange.png', color: '#FFDAB9' },
-    { src: '/images/drone-purple.png', color: '#DABDF9' },
-  ];
+  const [duplicateNameIndex, setDuplicateNameIndex] = React.useState(null);
 
   const [droneCount, setDroneCount] = React.useState(mainJson.getAllDrones().length);
   const [snackBarState, setSnackBarState] = React.useState({
@@ -44,8 +34,6 @@ export default function MissionConfiguration(mission) {
 
   const setDrone = () => {
     let newDrone = new DroneModel();
-    newDrone.id = droneCount;
-    newDrone.droneName = 'Drone ' + (droneCount + 1);
     newDrone.FlightController = 'SimpleFlight';
     newDrone.droneType = droneTypes[0].value;
     newDrone.droneModel = droneModels[droneTypes[0].value][0].value;
@@ -55,7 +43,6 @@ export default function MissionConfiguration(mission) {
     newDrone.EnableCollisions = true;
     newDrone.AllowAPIAlways = true;
     newDrone.EnableTrace = false;
-    newDrone.Name = 'Drone ' + (droneCount + 1);
     newDrone.image = droneImages[droneCount].src;
     newDrone.color = droneImages[droneCount].color;
     newDrone.X = mainJson.environment.getOriginLatitude() + 0.0001 * droneCount;
@@ -154,6 +141,12 @@ export default function MissionConfiguration(mission) {
     event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
   };
 
+  const handleDeleteDrone = (index) => {
+    setDroneCount(droneCount - 1);
+    mainJson.deleteDroneBasedOnIndex(index);
+    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  };
+
   return (
     <div>
       <Snackbar
@@ -225,44 +218,60 @@ export default function MissionConfiguration(mission) {
         </Grid>
 
         {mainJson.getAllDrones()?.map((drone, index) => (
-          <AccordionStyled key={index}>
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
-              aria-controls='panel1a-content'
-              id='panel1a-header'
-              sx={{ backgroundColor: `${drone.color}cf` }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                }}
-              >
-                <Typography variant='h5'>{drone.droneName}</Typography>
-                <Tooltip
-                  title='Drag and drop this drone to set or update its home location on the map.'
-                  enterDelay={300}
-                  leaveDelay={200}
+          <Grid container spacing={0} key={index}>
+            <Grid item xs={11.5}>
+              <AccordionStyled key={index}>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  aria-controls='panel1a-content'
+                  id='panel1a-header'
+                  sx={{ backgroundColor: `${drone.color}cf` }}
                 >
-                  <img
-                    src={drone.image}
-                    alt='Draggable Icon'
-                    draggable='true'
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    style={{ width: 40, cursor: 'grab', marginRight: 20 }}
-                  />
-                </Tooltip>
-              </Box>
-            </AccordionSummary>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                    }}
+                  >
+                    <Typography variant='h5'>
+                      {drone.name.length > 10 ? `${drone.name.substring(0, 10)}...` : drone.name}
+                    </Typography>
+                    <Tooltip
+                      title='Drag and drop this drone to set or update its home location on the map.'
+                      enterDelay={300}
+                      leaveDelay={200}
+                    >
+                      <img
+                        src={drone.image}
+                        alt='Draggable Icon'
+                        draggable='true'
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                      />
+                    </Tooltip>
+                  </Box>
+                </AccordionSummary>
 
-            <AccordionDetails sx={{ backgroundColor: `${drone.color}31` }}>
-              <Box>
-                <DroneConfiguration name={drone.droneName} id={drone.id} index={index} />
-              </Box>
-            </AccordionDetails>
-          </AccordionStyled>
+                <AccordionDetails sx={{ backgroundColor: `${drone.color}31` }}>
+                  <DroneConfiguration
+                    index={index}
+                    duplicateNameIndex={duplicateNameIndex}
+                    setDuplicateNameIndex={setDuplicateNameIndex}
+                  />
+                </AccordionDetails>
+              </AccordionStyled>
+            </Grid>
+            <Grid item xs={0.5}>
+              <IconButton
+                onClick={() => handleDeleteDrone(index)}
+                style={{ color: drone.color, marginTop: '17px' }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
         ))}
       </Box>
     </div>

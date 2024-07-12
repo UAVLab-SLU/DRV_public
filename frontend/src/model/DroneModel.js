@@ -1,7 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class DroneModel {
   constructor() {
-    this._id = 0;
-    this._droneName = '';
+    this._id = uuidv4();
+    this._Name = `Drone-${this._id.substring(0, 4)}`;
     this._FlightController = '';
     this._droneType = '';
     this._droneModel = '';
@@ -11,7 +13,6 @@ export class DroneModel {
     this._EnableCollisions = false;
     this._AllowAPIAlways = false;
     this._EnableTrace = false;
-    this._Name = '';
     this._image = '';
     this._color = '';
     this._X = 0;

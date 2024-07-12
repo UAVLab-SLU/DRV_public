@@ -18,9 +18,9 @@ export class EnvironmentModel {
             "height": 0,
             "radius": 0,
             "position": 0,
+            "image" : null,
         };
         this._sades = [];
-        this._Origin.image = null;
         this._activeSadeZoneIndex = null;
     }
 
@@ -234,13 +234,16 @@ export class EnvironmentModel {
     }
 
     toJSONString(){
+
+        let origin = this._Origin
+        delete origin.image
         return {
-            "enable_fuzzy": this._enableFuzzy,
-            "time_of_day_fuzzy": this._timeOfDayFuzzy,
-            "position_fuzzy": this._positionFuzzy,
-            "wind_fuzzy": this._windFuzzy,
+            // "enable_fuzzy": this._enableFuzzy,
+            // "time_of_day_fuzzy": this._timeOfDayFuzzy,
+            // "position_fuzzy": this._positionFuzzy,
+            // "wind_fuzzy": this._windFuzzy,
             "wind": this._Wind?.map( (obj) => obj.toJSONString() ),
-            "origin": this._Origin,
+            "origin": origin,
             "time_of_day": this._TimeOfDay,
             "use_geo": this.UseGeo,
             "time": this._time,

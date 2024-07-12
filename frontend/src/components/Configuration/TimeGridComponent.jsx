@@ -20,7 +20,19 @@ const TimeGridComponent = ({ envConf, setEnvConf }) => {
         let keys = Object.keys(val)
 
         if (keys.includes("$H") && keys.includes("$m") && keys.includes("$s")) {
-            timeOfDayRef.current = val.$H + ':' + val.$m + ':' + val.$s;
+            let hours = val.$H;
+            let minutes = val.$m;
+            let seconds = val.$s;
+            if (hours < 10) {
+                hours = `0${hours}`;
+            }
+            if (minutes < 10){
+                minutes = `0${minutes}`;
+            }
+            if (seconds < 10){
+                seconds = `0${seconds}`;
+            }
+            timeOfDayRef.current = hours + ':' + minutes + ':' + seconds;
             timeRef.current = val;
             setLocalTimeState(val);
             viewerMaintainer.current = true;
@@ -31,7 +43,7 @@ const TimeGridComponent = ({ envConf, setEnvConf }) => {
         if (!viewerMaintainer.current) {
             setLocalTimeState(timeRef.current)
         }
-        if(loopForever){
+        if (loopForever) {
             setLoopForever(false);
         } else {
             setLoopForever(true);

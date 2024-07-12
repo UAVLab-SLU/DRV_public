@@ -36,10 +36,19 @@ const TimeLineSetterCesiumComponent = ({ viewerReady, viewerRef }) => {
           // set the current time to state
           date = viewer.clock.currentTime;
           const jsDate = JulianDate.toDate(date);
-          const hours = jsDate.getHours();
-          const minutes = jsDate.getMinutes();
-          const seconds = jsDate.getSeconds();
+          let hours = jsDate.getHours();
+          let minutes = jsDate.getMinutes();
+          let seconds = jsDate.getSeconds();
           timeRef.current = dayjs(new Date(date));
+          if (hours < 10) {
+            hours = `0${hours}`
+          }
+          if (minutes < 10) {
+            minutes = `0${minutes}`;
+          }
+          if (seconds < 10) {
+            seconds = `0${seconds}`;
+          }
           timeOfDayRef.current = `${hours}:${minutes}:${seconds}`;
         }
       })

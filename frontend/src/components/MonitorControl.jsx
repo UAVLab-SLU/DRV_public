@@ -18,98 +18,90 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
-import styled from '@emotion/styled';
-import { makeStyles } from '@mui/styles';
-import EnvironmentConfiguration from './EnvironmentConfiguration';
+import { styled } from '@mui/system';
+import EnvironmentConfiguration from './Configuration/EnvironmentConfiguration';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        padding: '5px'
-    },
-    transparentBackground: {
-        backgroundColor: 'transparent !important'
-    },
-    backdropFilter: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'sepia(100%)',
-        '-webkitBackdropFilter': 'sepia(100%)',
-    }
-}));
 
-export default function MonitorControl (monJson) {
+const ContainerStyled = styled(Container)({
+    width: '100%',
+    padding: '5px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'sepia(100%)',
+    'WebkitBackdropFilter': 'sepia(100%)',
+})
+
+export default function MonitorControl(monJson) {
     const [value, setValue] = React.useState('2');
     const [verticalValue, setVerticalValue] = React.useState('1.1');
     const [zoneCount, setZoneCount] = React.useState(1);
-    const classes = useStyles();
 
     const handleIncrement = () => {
-        setZoneCount(zoneCount +1)
+        setZoneCount(zoneCount + 1)
     }
-    
+
     const [monitor, setMonitor] = React.useState(monJson.mainJsonValue.monitors != null ? monJson.mainJsonValue.monitors : {
         circular_deviation_monitor: {
-            enable:false,
-            param:[15]
+            enable: false,
+            param: [15]
         },
         collision_monitor: {
-            enable:false,
-            param:[]
+            enable: false,
+            param: []
         },
         unordered_waypoint_monitor: {
-            enable:false,
-            param:[1]
+            enable: false,
+            param: [1]
         },
         ordered_waypoint_monitor: {
-            enable:false,
-            param:[1]
+            enable: false,
+            param: [1]
         },
         point_deviation_monitor: {
-            enable:false,
-            param:[15]
+            enable: false,
+            param: [15]
         },
         min_sep_dist_monitor: {
-            enable:false,
-            param:[1,1]
+            enable: false,
+            param: [1, 1]
         },
         landspace_monitor: {
-            enable:false,
-            param:[]
+            enable: false,
+            param: []
         },
         no_fly_zone_monitor: {
-            enable:false,
-            param:[
+            enable: false,
+            param: [
                 [
-                //     [
-                //         [1, -10, 0],
-                //         [1, 10, 0],
-                //         [5, -10, 0],
-                //         [5, 10, 0],
-                //         [1, -10, -999],
-                //         [1, 10, -999],
-                //         [5, -10, -999],
-                //         [5, 10, -999],
-                //     ],
-                //     [
-                //         [-1, -10, 0],
-                //         [-1, 10, 0],
-                //         [-5, -10, 0],
-                //         [-5, 10, 0],
-                //         [-1, -10, -999],
-                //         [-1, 10, -999],
-                //         [-5, -10, -999],
-                //         [-5, 10, -999],
-                //     ]
+                    //     [
+                    //         [1, -10, 0],
+                    //         [1, 10, 0],
+                    //         [5, -10, 0],
+                    //         [5, 10, 0],
+                    //         [1, -10, -999],
+                    //         [1, 10, -999],
+                    //         [5, -10, -999],
+                    //         [5, 10, -999],
+                    //     ],
+                    //     [
+                    //         [-1, -10, 0],
+                    //         [-1, 10, 0],
+                    //         [-5, -10, 0],
+                    //         [-5, 10, 0],
+                    //         [-1, -10, -999],
+                    //         [-1, 10, -999],
+                    //         [-5, -10, -999],
+                    //         [-5, 10, -999],
+                    //     ]
                 ]
             ]
         },
-        drift_monitor:{
-            enable:false,
-            param:[1]
+        drift_monitor: {
+            enable: false,
+            param: [1]
         },
-        battery_monitor:{
-            enable:false,
-            param:[1]
+        battery_monitor: {
+            enable: false,
+            param: [1]
         }
     })
 
@@ -130,16 +122,18 @@ export default function MonitorControl (monJson) {
         },
         TimeOfDay: "10:00:00",
         UseGeo: true,
-        time:dayjs('2020-01-01 10:00')
-    }); 
+        time: dayjs('2020-01-01 10:00')
+    });
 
     const environmentJson = (event) => {
         monJson.monitorJson(event, "environment");
-    }    
+    }
     //new added
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
+
+
     const handleBatteruMonitor = (val) => {
         setMonitor(prevState => ({
             ...prevState,
@@ -189,7 +183,7 @@ export default function MonitorControl (monJson) {
     //     }))
     // }
 
-    const  handleWayPointThreshChange= (val) => {
+    const handleWayPointThreshChange = (val) => {
         setMonitor(prevState => ({
             ...prevState,
             unordered_waypoint_monitor: {
@@ -219,7 +213,7 @@ export default function MonitorControl (monJson) {
         }))
     }
 
-    const  handleDeviationPercent= (val) => {
+    const handleDeviationPercent = (val) => {
         setMonitor(prevState => ({
             ...prevState,
             point_deviation_monitor: {
@@ -240,17 +234,17 @@ export default function MonitorControl (monJson) {
         }))
     }
 
-    const  handleOrderedPtChange= (val) => {
+    const handleOrderedPtChange = (val) => {
         setMonitor(prevState => ({
             ...prevState,
             ordered_waypoint_monitor: {
                 ...monitor.ordered_waypoint_monitor,
-                param:[ parseFloat(val.target.value)]
+                param: [parseFloat(val.target.value)]
             }
         }))
     }
 
-    const handleDriftThreshChange= (val) => {
+    const handleDriftThreshChange = (val) => {
         setMonitor(prevState => ({
             ...prevState,
             drift_monitor: {
@@ -262,7 +256,7 @@ export default function MonitorControl (monJson) {
         }))
     }
 
-    const handleNoFlyPointsChange= (val) => {
+    const handleNoFlyPointsChange = (val) => {
         // TODO: input is a list of list just like no_fly_zone_monitor param 1
         // setMonitor(prevState => ({
         //     ...prevState,
@@ -277,7 +271,7 @@ export default function MonitorControl (monJson) {
 
     const handleChange = (even, newValue) => {
         setValue(newValue);
-        if(newValue =='1') {
+        if (newValue == '1') {
             setVerticalValue('1.1')
         } else {
             setVerticalValue('2.1')
@@ -316,7 +310,7 @@ export default function MonitorControl (monJson) {
             ...prevState,
             [id]: {
                 ...monitor[id],
-                enable:val.target.checked
+                enable: val.target.checked
             }
         }))
     }
@@ -333,13 +327,13 @@ export default function MonitorControl (monJson) {
         setMonitor(prevState => ({
             ...prevState,
             landspace_monitor: {
-            ...monitor.landspace_monitor,
-                        param: [
-                            parseFloat(monitor.landspace_monitor.param[0]),
-                            newVal
-                            ]
-                    }
-                }))
+                ...monitor.landspace_monitor,
+                param: [
+                    parseFloat(monitor.landspace_monitor.param[0]),
+                    newVal
+                ]
+            }
+        }))
     }
 
     const setLandspaceParameters = (parmData) => {
@@ -364,14 +358,14 @@ export default function MonitorControl (monJson) {
         setMonitor(prevState => ({
             ...prevState,
             landspace_monitor: {
-            ...monitor.landspace_monitor,
-                        param: [
-                            parseFloat(val.target.value),
-                            monitor.landspace_monitor.param[1]
-                            ]
+                ...monitor.landspace_monitor,
+                param: [
+                    parseFloat(val.target.value),
+                    monitor.landspace_monitor.param[1]
+                ]
 
-                    }
-                }))
+            }
+        }))
     }
 
     const handleZoneDelete = (index) => {
@@ -380,17 +374,17 @@ export default function MonitorControl (monJson) {
         console.log('newRows---', newRows)
         let innerRows = [...newRows]
         console.log('innerRows---', innerRows[index])
-        innerRows.splice(index,1)
+        innerRows.splice(index, 1)
         newRows = [innerRows]
         console.log('new rows after set', newRows)
         setMonitor(prevState => ({
             ...prevState,
             no_fly_zone_monitor: {
-                    ...monitor.no_fly_zone_monitor,
-                    param: [newRows]
+                ...monitor.no_fly_zone_monitor,
+                param: [newRows]
             }
         }))
-        setZoneCount(zoneCount-1)
+        setZoneCount(zoneCount - 1)
     }
 
     const setNoFlyParameters = (parmData, index) => {
@@ -405,13 +399,13 @@ export default function MonitorControl (monJson) {
             newVal.push(mainArr)
         })
         let newRows = [...monitor.no_fly_zone_monitor.param[0]]
-        newRows.splice(index,1)
+        newRows.splice(index, 1)
         newRows.push(newVal)
         setMonitor(prevState => ({
             ...prevState,
             no_fly_zone_monitor: {
-                    ...monitor.no_fly_zone_monitor,
-                    param: [newRows]
+                ...monitor.no_fly_zone_monitor,
+                param: [newRows]
             }
         }))
     }
@@ -423,18 +417,18 @@ export default function MonitorControl (monJson) {
             description: "Test if a drone collides with other drones or the environment",
             btns: null,
             images: null,
-            colorText:monitor.collision_monitor.enable == true ? 'green': null,
+            colorText: monitor.collision_monitor.enable == true ? 'green' : null,
             // <div>
             //     <img src="/images/collision.png" width="70%"/>
             // </div>,
             enableBtn:
                 <Grid container direction="row">
-                        <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
-                        <FormGroup>
-                            <FormControlLabel control={<Switch checked={monitor.collision_monitor.enable} onChange={(e) => handleChangeSwitch(e, "collision_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.collision_monitor.enable ? "Enabled" : "Disabled"} />
-                        </FormGroup>
+                    <strong style={{ paddingTop: '7px' }}>Status</strong>&nbsp;&nbsp;&nbsp;
+                    <FormGroup>
+                        <FormControlLabel control={<Switch checked={monitor.collision_monitor.enable} onChange={(e) => handleChangeSwitch(e, "collision_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.collision_monitor.enable ? "Enabled" : "Disabled"} />
+                    </FormGroup>
                 </Grid>,
-            tableData:null,
+            tableData: null,
             isMultipleTable: false
         },
         {
@@ -442,14 +436,14 @@ export default function MonitorControl (monJson) {
             value: '1.2',
             description: "Test whether the drones land at safe landing locations",
             btns: null,
-            colorText:monitor.landspace_monitor.enable == true ? 'green': null,
-                // <React.Fragment>{monitor.landspace_monitor.enable === true ?
-                //     <Grid item xs={8}>
-                //         <Tooltip title={"Minimum distance between the drone and the safe landing spot"}>
-                //             <TextField label="Threshold (meter)" type="number" step="0.1" variant="standard" onChange={setLandspaceThreshold} value={monitor.landspace_monitor.param[0]}/>
-                //         </Tooltip>
-                //     </Grid>:null}
-                // </React.Fragment>
+            colorText: monitor.landspace_monitor.enable == true ? 'green' : null,
+            // <React.Fragment>{monitor.landspace_monitor.enable === true ?
+            //     <Grid item xs={8}>
+            //         <Tooltip title={"Minimum distance between the drone and the safe landing spot"}>
+            //             <TextField label="Threshold (meter)" type="number" step="0.1" variant="standard" onChange={setLandspaceThreshold} value={monitor.landspace_monitor.param[0]}/>
+            //         </Tooltip>
+            //     </Grid>:null}
+            // </React.Fragment>
 
 
             // bodyText:
@@ -466,17 +460,17 @@ export default function MonitorControl (monJson) {
             //     <img src="/images/landspace.png" width="70%"/>
             // </div>,
             enableBtn:
-            
-            <Grid container direction="row">
-                <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
-                <FormGroup>
-                    <FormControlLabel control={<Switch checked={monitor.landspace_monitor.enable} onChange={(e) => handleChangeSwitch(e, "landspace_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.landspace_monitor.enable ? "Enabled" : "Disabled"} />
-                </FormGroup>
-            </Grid>,
 
-            tableData:<React.Fragment>{monitor.landspace_monitor.enable === true ? 
-            <><Grid item xs={12}><strong>Configure safe landing spots for drones </strong></Grid>
-            <MonitorTabels hideAltitude="true" errorMessage="false" jsonVal={setLandspaceParameters} /></>:null}</React.Fragment>,
+                <Grid container direction="row">
+                    <strong style={{ paddingTop: '7px' }}>Status</strong>&nbsp;&nbsp;&nbsp;
+                    <FormGroup>
+                        <FormControlLabel control={<Switch checked={monitor.landspace_monitor.enable} onChange={(e) => handleChangeSwitch(e, "landspace_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.landspace_monitor.enable ? "Enabled" : "Disabled"} />
+                    </FormGroup>
+                </Grid>,
+
+            tableData: <React.Fragment>{monitor.landspace_monitor.enable === true ?
+                <><Grid item xs={12}><strong>Configure safe landing spots for drones </strong></Grid>
+                    <MonitorTabels hideAltitude="true" errorMessage="false" jsonVal={setLandspaceParameters} /></> : null}</React.Fragment>,
             isMultipleTable: false
         },
         // {
@@ -499,38 +493,38 @@ export default function MonitorControl (monJson) {
             name: "Drift",
             value: '2.1',
             description: "Test whether the drones drift from its planned flight path",
-            colorText:monitor.point_deviation_monitor.enable == true ? 'green': null,
+            colorText: monitor.point_deviation_monitor.enable == true ? 'green' : null,
             btns:
-                <React.Fragment>{monitor.point_deviation_monitor.enable == true ? 
-                <Grid item xs={12}>
-                    <Grid item xs={12} style={{paddingBottom:20}}><strong>Configure the acceptable flight drift </strong></Grid>
-                    <FormGroup>
-                        <Tooltip title="Max total acceptable deviation from the actual flight path (in meters)" placement='bottom'>
-                            <Grid item xs={6}>
-                                <TextField id="standard-basic" label="Deviation/Drift (in meters)" type="number" step="0.1" variant="standard" onChange={handleDeviationPercent} value={monitor.point_deviation_monitor.param[0]}></TextField>
-                            </Grid>
-                        </Tooltip>
-                    </FormGroup>
-                    <Grid item xs={12} style={{paddingTop:50}}>
-                    <Alert severity="info">
-                        Note: Flight drift is calculated by analyzing whether the sUAS or drone drifts away from the planned path and breaches the configured distace at any point in the mission
-                     </Alert>
-                        
+                <React.Fragment>{monitor.point_deviation_monitor.enable == true ?
+                    <Grid item xs={12}>
+                        <Grid item xs={12} style={{ paddingBottom: 20 }}><strong>Configure the acceptable flight drift </strong></Grid>
+                        <FormGroup>
+                            <Tooltip title="Max total acceptable deviation from the actual flight path (in meters)" placement='bottom'>
+                                <Grid item xs={6}>
+                                    <TextField id="standard-basic" label="Deviation/Drift (in meters)" type="number" step="0.1" variant="standard" onChange={handleDeviationPercent} value={monitor.point_deviation_monitor.param[0]}></TextField>
+                                </Grid>
+                            </Tooltip>
+                        </FormGroup>
+                        <Grid item xs={12} style={{ paddingTop: 50 }}>
+                            <Alert severity="info">
+                                Note: Flight drift is calculated by analyzing whether the sUAS or drone drifts away from the planned path and breaches the configured distace at any point in the mission
+                            </Alert>
+
                         </Grid>
-                </Grid> 
-                : null}</React.Fragment>,
+                    </Grid>
+                    : null}</React.Fragment>,
             images: null,
             // <div>
             //     <img src="/images/circular_and_point_deviation.png" width="70%"/>
             // </div>,
             enableBtn:
-                <Grid container direction="row"><strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
-                
-                <FormControlLabel control={<Switch checked={monitor.point_deviation_monitor.enable} onChange={(e) => {
-                    handleChangeSwitch(e, "point_deviation_monitor")
-                    handleChangeSwitch(e, "circular_deviation_monitor")
-                }} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.point_deviation_monitor.enable ? "Enabled" : "Disabled"} /></Grid>,
-            tableData:null,
+                <Grid container direction="row"><strong style={{ paddingTop: '7px' }}>Status</strong>&nbsp;&nbsp;&nbsp;
+
+                    <FormControlLabel control={<Switch checked={monitor.point_deviation_monitor.enable} onChange={(e) => {
+                        handleChangeSwitch(e, "point_deviation_monitor")
+                        handleChangeSwitch(e, "circular_deviation_monitor")
+                    }} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.point_deviation_monitor.enable ? "Enabled" : "Disabled"} /></Grid>,
+            tableData: null,
             isMultipleTable: false
 
         },
@@ -538,37 +532,37 @@ export default function MonitorControl (monJson) {
             name: "Airspace",
             value: '2.6',
             description: "Test whether the drones avoid entering no fly zones",
-            colorText:monitor.no_fly_zone_monitor.enable == true ? 'green': null,
-            btns:null
+            colorText: monitor.no_fly_zone_monitor.enable == true ? 'green' : null,
+            btns: null
             // <React.Fragment>{monitor.no_fly_zone_monitor.enable == true ?
-              
+
             //     </Grid>:null}</React.Fragment>
-                ,
-            bodyText:null
-                // <Box sx={{ width: '100%' }} style={{paddingTop:20}}>
-                //     <Typography component="div" variant="h6" >
-                //         Default to two 10*5 area in front and behind the origin
-                //     </Typography>
-                //     <Typography component="div" variant="h6" >
-                //         User input implementation in progress
-                //     </Typography>
-                // </Box>
-                ,
-            images:null,
-                // <div>
-                //     <img src="/images/no_fly_zone.png" width="70%"/>
-                // </div>,
+            ,
+            bodyText: null
+            // <Box sx={{ width: '100%' }} style={{paddingTop:20}}>
+            //     <Typography component="div" variant="h6" >
+            //         Default to two 10*5 area in front and behind the origin
+            //     </Typography>
+            //     <Typography component="div" variant="h6" >
+            //         User input implementation in progress
+            //     </Typography>
+            // </Box>
+            ,
+            images: null,
+            // <div>
+            //     <img src="/images/no_fly_zone.png" width="70%"/>
+            // </div>,
             enableBtn:
                 <Grid container direction="row">
-                    <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
+                    <strong style={{ paddingTop: '7px' }}>Status</strong>&nbsp;&nbsp;&nbsp;
                     <FormGroup>
                         <FormControlLabel control={<Switch checked={monitor.no_fly_zone_monitor.enable} onChange={(e) => handleChangeSwitch(e, "no_fly_zone_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.no_fly_zone_monitor.enable ? "Enabled" : "Disabled"} />
                     </FormGroup>
                 </Grid>,
             mutlipleBtn:
-                <React.Fragment>{monitor.no_fly_zone_monitor.enable == true ? 
-                   
-                            <><Grid item xs={12}><strong>Configure no-fly zones : Ferature Development in Progress </strong></Grid>
+                <React.Fragment>{monitor.no_fly_zone_monitor.enable == true ?
+
+                    <><Grid item xs={12}><strong>Configure no-fly zones : Ferature Development in Progress </strong></Grid>
                         {/* <ButtonGroup size="small" aria-label="small outlined button group" style={{paddingTop:20}}>
                             <Button onClick={handleIncrement}>AddZone</Button>
                         </ButtonGroup>     */}
@@ -577,15 +571,15 @@ export default function MonitorControl (monJson) {
 
 
                         <img src="../images/dummy_map_configurator.png"></img>
-                    <Alert severity="info">Note : We are excited to announce that we are currently developing a new feature that will allow users to create 3D polygons on the map to define one or more no fly zones. This feature will give users greater control over where their drones can and cannot fly, helping to ensure safer and more responsible drone operation.           </Alert>
-                    
-                    
-                            <div style={{ padding: 15 }}>
+                        <Alert severity="info">Note : We are excited to announce that we are currently developing a new feature that will allow users to create 3D polygons on the map to define one or more no fly zones. This feature will give users greater control over where their drones can and cannot fly, helping to ensure safer and more responsible drone operation.           </Alert>
 
 
-                        
-                    </div></>:null}</React.Fragment>,
-                // TODO : Implement Multiple tables correctly later
+                        <div style={{ padding: 15 }}>
+
+
+
+                        </div></> : null}</React.Fragment>,
+            // TODO : Implement Multiple tables correctly later
             // isMultipleTable: monitor.no_fly_zone_monitor.enable == true ? true : false,
             isMultipleTable: false,
             // tableData:<MonitorTabels hideAltitude="false" jsonVal={setNoFlyParameters}/>
@@ -593,37 +587,37 @@ export default function MonitorControl (monJson) {
         {
             name: "Separation",
             value: '2.7',
-            colorText:monitor.min_sep_dist_monitor.enable == true ? 'green': null,
+            colorText: monitor.min_sep_dist_monitor.enable == true ? 'green' : null,
             description: "Test whether the drones breach the minimum separation distance with other drones",
             btns:
-            <React.Fragment>{monitor.min_sep_dist_monitor.enable == true ? <React.Fragment>
-               
-                <Grid item xs={12}><strong>Configure minimum separation distances </strong></Grid>
-                
-                <Tooltip title="Enter Minimum Horizontal separation distance in Meters" placement='bottom'>
-                <Grid item xs={6}>
-                <TextField id="standard-basic" label="Minimum Horizontal Separation (meters)" type="number" step="0.1" variant="standard" style = {{width:250}} onChange={handleMinHorizontalSepChange} value={monitor.min_sep_dist_monitor.param[0] }></TextField>
-                </Grid>
-                </Tooltip>
+                <React.Fragment>{monitor.min_sep_dist_monitor.enable == true ? <React.Fragment>
 
-                {/* <TODO>Hidden from the UI later. Revisit later after propoerly implementing it on the backend</TODO> */}
+                    <Grid item xs={12}><strong>Configure minimum separation distances </strong></Grid>
 
-                {/* <Tooltip title="Enter Minumum Lateral separation distance in Meters" placement='bottom'>
+                    <Tooltip title="Enter Minimum Horizontal separation distance in Meters" placement='bottom'>
+                        <Grid item xs={6}>
+                            <TextField id="standard-basic" label="Minimum Horizontal Separation (meters)" type="number" step="0.1" variant="standard" style={{ width: 250 }} onChange={handleMinHorizontalSepChange} value={monitor.min_sep_dist_monitor.param[0]}></TextField>
+                        </Grid>
+                    </Tooltip>
+
+                    {/* <TODO>Hidden from the UI later. Revisit later after propoerly implementing it on the backend</TODO> */}
+
+                    {/* <Tooltip title="Enter Minumum Lateral separation distance in Meters" placement='bottom'>
                 <Grid item xs={6}>
                 <TextField id="standard-basic" label="Minimum Lateral Separation (meters)" type="number" step="0.1" variant="standard" style = {{width:250}} onChange={handleMinLateralSepChange} value={monitor.min_sep_dist_monitor.param[1]}></TextField>
                 </Grid>
                 </Tooltip> */}
-            </React.Fragment>:null}</React.Fragment>,
+                </React.Fragment> : null}</React.Fragment>,
             images: null,
             // <img src="/images/min_separation_distance.png" width="70%"/>,
             enableBtn:
                 <Grid container direction="row">
-                    <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
+                    <strong style={{ paddingTop: '7px' }}>Status</strong>&nbsp;&nbsp;&nbsp;
                     <FormGroup>
                         <FormControlLabel control={<Switch checked={monitor.min_sep_dist_monitor.enable} onChange={(e) => handleChangeSwitch(e, "min_sep_dist_monitor")} inputProps={{ 'aria-label': 'controlled' }} />} label={monitor.min_sep_dist_monitor.enable ? "Enabled" : "Disabled"} />
                     </FormGroup>
                 </Grid>,
-            tableData:null,
+            tableData: null,
             isMultipleTable: false
         },
     ]
@@ -652,42 +646,42 @@ export default function MonitorControl (monJson) {
     }
     const CheckboxComponent = () => {
 
-      return(
-        <div>
-        <div>
-            <input
-            type="checkbox"
-            name="timeOfDayFuzzy"
-            checked={envConf.timeOfDayFuzzy}
-            onChange={handleFuzzyTimeChange}
-            />
-        <label htmlFor="timeOfDayFuzzy">Time of Day</label>
-            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
-        </div>
+        return (
+            <div>
+                <div>
+                    <input
+                        type="checkbox"
+                        name="timeOfDayFuzzy"
+                        checked={envConf.timeOfDayFuzzy}
+                        onChange={handleFuzzyTimeChange}
+                    />
+                    <label htmlFor="timeOfDayFuzzy">Time of Day</label>
+                    <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the time of day.</p>
+                </div>
 
-        <div>
-            <input
-                type="checkbox"
-                name="position"
-                checked={envConf.positionFuzzy}
-                onChange={handleFuzzyPositionChange}
-            />
-        <label htmlFor="position">Position</label>
-        <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
-        </div>
+                <div>
+                    <input
+                        type="checkbox"
+                        name="position"
+                        checked={envConf.positionFuzzy}
+                        onChange={handleFuzzyPositionChange}
+                    />
+                    <label htmlFor="position">Position</label>
+                    <p style={{ fontSize: '12px', fontStyle: 'oblique' }}>Check the box if you would like there to be a Fuzzy Test for the drone position.</p>
+                </div>
 
-        <div>
-            <input
-            type="checkbox"
-            name="wind"
-            checked={envConf.windFuzzy}
-            onChange={handleFuzzyWindChange}
-            />
-            <label htmlFor="wind">Wind</label>
-            <p style={{ fontSize: '12px', fontStyle: 'oblique' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
-        </div>
-        </div>
-      );
+                <div>
+                    <input
+                        type="checkbox"
+                        name="wind"
+                        checked={envConf.windFuzzy}
+                        onChange={handleFuzzyWindChange}
+                    />
+                    <label htmlFor="wind">Wind</label>
+                    <p style={{ fontSize: '12px', fontStyle: 'oblique' }}> Check the box if you would like there to be a Fuzzy Test for the wind. </p>
+                </div>
+            </div>
+        );
     };
 
     const StyledTabs = styled(Tabs)({
@@ -720,7 +714,7 @@ export default function MonitorControl (monJson) {
         },
     }));
 
-    const HeaderTab = styled(Tab)(({theme}) => ({
+    const HeaderTab = styled(Tab)(({ theme }) => ({
         textTransform: 'none',
         fontSize: 14,
         fontWeight: 'bold',
@@ -730,125 +724,124 @@ export default function MonitorControl (monJson) {
         backgroundColor: '#F5F5DC', // Beige background
         transition: 'background-color 0.3s, color 0.3s',
         '&:hover': {
-        backgroundColor: '#DEB887', // Light brown when hovered
-        color: '#FFFFFF',
+            backgroundColor: '#DEB887', // Light brown when hovered
+            color: '#FFFFFF',
         },
         '&.Mui-selected': {
-        backgroundColor: '#A0522D', // Darker brown when selected
-        color: '#FFFFFF',
-        borderBottom: '5px solid #FFB500',
+            backgroundColor: '#A0522D', // Darker brown when selected
+            color: '#FFFFFF',
+            borderBottom: '5px solid #FFB500',
         },
     }));
-    
-    return(
+
+    return (
         <div>
-            <Container
-            sx={{ width: '100%', paddingTop: 2, boxSizing: 'border-box'}}
-            classes={{ root: classes.backdropFilter }}
+            <ContainerStyled
+                sx={{ width: '100%', paddingTop: 2, boxSizing: 'border-box' }}
             >
                 {/* <Container style={{overflow: 'scroll', height:'80%'}} > */}
-                    <Box sx={{ width: '100%', typography: 'body1' }}>
-                        <TabContext value={value}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <StyledTabs
-                                    value={value}
-                                    onChange={handleChange}
-                                    variant="scrollable"
-                                    scrollButtons="auto"
-                                >
-                                    {/* <Tab label="Global Monitors" value="1" /> */}
-                                    <HeaderTab label="Test Properties" value="2" />
-                                    <HeaderTab label= "Fuzzy Test Configuration" value ="Fuzzy" />
-                                </StyledTabs>
-                            </Box>
-                            
-                            <TabPanel value="2">
-                                <Box sx={{ width: '100%', typography: 'body1' }}>
-                                <TabContext value={verticalValue}>
-                            <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
+                <Box sx={{ width: '100%', typography: 'body1' }}>
+                    <TabContext value={value}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <StyledTabs
-                                orientation="vertical"
-                                value={verticalValue}
-                                onChange={handleVerticalChange}
+                                value={value}
+                                onChange={handleChange}
                                 variant="scrollable"
                                 scrollButtons="auto"
-                                sx={{ borderRight: 1, borderColor: 'divider' }}
                             >
-                                {singleMonitors.map(function(single, index) {
-                                    return <StyledTab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems:"block", color:single.colorText}} wrapped/>
-                                })}
+                                {/* <Tab label="Global Monitors" value="1" /> */}
+                                <HeaderTab label="Test Properties" value="2" />
+                                <HeaderTab label="Fuzzy Test Configuration" value="Fuzzy" />
                             </StyledTabs>
+                        </Box>
 
-                            {singleMonitors.map(function(sing, index) {
-                                return(
-                                    <TabPanel key={index} value={sing.value}
-                                    sx={{
-                                        maxHeight: '57vh', 
-                                        overflowY: 'auto',
-                                        '&::-webkit-scrollbar': {
-                                          display: 'none'
-                                        },
-                                        scrollbarWidth: 'none',
-                                        msOverflowStyle: 'none'
-                                      }}>
-                                        <Container maxWidth="md">
-                                            <Typography>
-                                                <Grid container spacing={2} direction="row" style={{fontSize:"20px"}} >
-                                                   <Grid item xs={12}><strong>Description: </strong>{sing.description}</Grid>
-                                                </Grid>
-                                                <Grid container direction="row">
-                                                    {sing.enableBtn}
-                                                </Grid>
-                                                <br/>
-                                                <Grid container spacing={2} direction="row">
-                                                    {sing.btns}
-                                                </Grid>
-                                                {/* <Grid container spacing={2} direction="row">
+                        <TabPanel value="2">
+                            <Box sx={{ width: '100%', typography: 'body1' }}>
+                                <TabContext value={verticalValue}>
+                                    <Box sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex' }}>
+                                        <StyledTabs
+                                            orientation="vertical"
+                                            value={verticalValue}
+                                            onChange={handleVerticalChange}
+                                            variant="scrollable"
+                                            scrollButtons="auto"
+                                            sx={{ borderRight: 1, borderColor: 'divider' }}
+                                        >
+                                            {singleMonitors.map(function (single, index) {
+                                                return <StyledTab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems: "block", color: single.colorText }} wrapped />
+                                            })}
+                                        </StyledTabs>
+
+                                        {singleMonitors.map(function (sing, index) {
+                                            return (
+                                                <TabPanel key={index} value={sing.value}
+                                                    sx={{
+                                                        maxHeight: '57vh',
+                                                        overflowY: 'auto',
+                                                        '&::-webkit-scrollbar': {
+                                                            display: 'none'
+                                                        },
+                                                        scrollbarWidth: 'none',
+                                                        msOverflowStyle: 'none'
+                                                    }}>
+                                                    <Container maxWidth="md">
+                                                        <Typography>
+                                                            <Grid container spacing={2} direction="row" style={{ fontSize: "20px" }} >
+                                                                <Grid item xs={12}><strong>Description: </strong>{sing.description}</Grid>
+                                                            </Grid>
+                                                            <Grid container direction="row">
+                                                                {sing.enableBtn}
+                                                            </Grid>
+                                                            <br />
+                                                            <Grid container spacing={2} direction="row">
+                                                                {sing.btns}
+                                                            </Grid>
+                                                            {/* <Grid container spacing={2} direction="row">
                                                     <Grid item xs={12}>
                                                         {sing.bodyText}
                                                     </Grid>
                                                 </Grid> */}
-                                                {/* <Grid container spacing={2} direction="row" alignContent="center" justifyContent="center" style={{padding:'35px'}}>
+                                                            {/* <Grid container spacing={2} direction="row" alignContent="center" justifyContent="center" style={{padding:'35px'}}>
                                                     
                                                 </Grid> */}
-                                                <Grid item xs={12}>
-                                                    {sing.mutlipleBtn}
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    {sing.tableData}
-                                                </Grid>
-                                                {sing.isMultipleTable == false ? null : 
-                                                    <React.Fragment> 
-                                                        {Array.apply(0, Array(zoneCount)).map(function (x, i) {
-                                                            return <div key={i}>
-                                                                <Typography style={{border:'1px solid', padding: '12px', marginBottom: '10px'}}> <strong>Zone {i+1}</strong>
-                                                                <ButtonGroup size="small" color="secondary" aria-label="small outlined button group" style={{float:'right', paddingBottom:'20px'}}>
-                                                                    <Button  style={{color:'red'}}>Delete Zone</Button>
-                                                                </ButtonGroup>
-                                                                <div style={{paddingTop: '10px'}}>
-                                                                <MonitorTabels hideAltitude="false" errorMessage="true" jsonVal={(e) => setNoFlyParameters(e, i)}/>
-                                                                </div>
-                                                                </Typography>
-                                                                </div>;
-                                                        })}
-                                                    </React.Fragment>
-                                                }
-                                            </Typography>
-                                        </Container>
-                                    </TabPanel>
-                                )
-                            })}
-                        </Box>
+                                                            <Grid item xs={12}>
+                                                                {sing.mutlipleBtn}
+                                                            </Grid>
+                                                            <Grid item xs={12}>
+                                                                {sing.tableData}
+                                                            </Grid>
+                                                            {sing.isMultipleTable == false ? null :
+                                                                <React.Fragment>
+                                                                    {Array.apply(0, Array(zoneCount)).map(function (x, i) {
+                                                                        return <div key={i}>
+                                                                            <Typography style={{ border: '1px solid', padding: '12px', marginBottom: '10px' }}> <strong>Zone {i + 1}</strong>
+                                                                                <ButtonGroup size="small" color="secondary" aria-label="small outlined button group" style={{ float: 'right', paddingBottom: '20px' }}>
+                                                                                    <Button style={{ color: 'red' }}>Delete Zone</Button>
+                                                                                </ButtonGroup>
+                                                                                <div style={{ paddingTop: '10px' }}>
+                                                                                    <MonitorTabels hideAltitude="false" errorMessage="true" jsonVal={(e) => setNoFlyParameters(e, i)} />
+                                                                                </div>
+                                                                            </Typography>
+                                                                        </div>;
+                                                                    })}
+                                                                </React.Fragment>
+                                                            }
+                                                        </Typography>
+                                                    </Container>
+                                                </TabPanel>
+                                            )
+                                        })}
+                                    </Box>
+                                </TabContext>
+                            </Box>
+                        </TabPanel>
+                        <TabPanel value="Fuzzy">
+                            <CheckboxComponent />
+                        </TabPanel>
                     </TabContext>
-                                </Box>
-                            </TabPanel>
-                            <TabPanel value="Fuzzy">
-                                    <CheckboxComponent/>
-                            </TabPanel>
-                        </TabContext>
-                    </Box>
+                </Box>
                 {/* </Container> */}
-            </Container>
+            </ContainerStyled>
         </div>
     )
 }

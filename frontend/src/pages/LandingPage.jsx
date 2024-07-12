@@ -1,96 +1,44 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
+import {
+  LandingPageContainer, Nav, SiteTitle,
+  MainContent, NavList, NavListItem, AboutLink, modalStyle
+} from '../css/LandingPageStyles';
 
-const useStyles = makeStyles((theme) => ({
-  landingPage: {
-    fontFamily: 'Roboto, sans-serif',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  nav: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '1.5rem',
-    backgroundColor: '#0000CD',
-    fontFamily: 'Arial, sans-serif',
-  },
-  siteTitle: {
-    color: '#fff',
-    textDecoration: 'none',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    fontFamily: 'Arial, sans-serif',
-  },
-  mainContent: {
-    padding: '2rem',
-  },
-  navList: {
-    listStyleType: 'none',
-    margin: 0,
-    padding: 0,
-    fontFamily: 'Arial, sans-serif',
-  },
-  navListItem: {
-    display: 'inline-block',
-    marginLeft: '1rem',
-  },
-  aboutLink: {
-    textDecoration: 'none',
-    color: '#fff',
-    padding: '0.5rem 1rem',
-    borderRadius: '30px',
-    transition: 'background-color 0.3s ease',
-  },
-}));
 
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 800,
-  height: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-};
+
 
 export default function LandingPage() {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={classes.landingPage}>
-      <nav className={classes.nav}>
-        <a href="/" className={classes.siteTitle}>
+    <LandingPageContainer>
+      <Nav>
+        <SiteTitle href="/">
           Drone World
-        </a>
-        <ul className={classes.navList}>
-          <li className={classes.navListItem}>
+        </SiteTitle>
+        <NavList>
+          <NavListItem>
             <Box component="span">
-              <Button
-                className={classes.aboutLink}
+              <AboutLink
                 onClick={() => setOpen(true)}
                 style={{ color: '#fff' }}
               >
                 About Us
-              </Button>
+              </AboutLink>
             </Box>
-          </li>
-        </ul>
-      </nav>
+          </NavListItem>
+        </NavList>
+      </Nav>
 
       {/* Main content area */}
-      <div className={classes.mainContent} style={{ paddingTop: '9rem', color: '#333' }}>
+      <MainContent style={{ paddingTop: '9rem', color: '#333' }}>
         <h1>Welcome to Drone World!</h1>
-        <div className={classes.buttonContainer}>
+        <div>
           <Link to="/home">
             <Button
               variant="contained"
@@ -103,7 +51,7 @@ export default function LandingPage() {
             </Button>
           </Link>
         </div>
-      </div>
+      </MainContent>
 
       {/* About Us Modal */}
       <Modal
@@ -139,6 +87,6 @@ export default function LandingPage() {
           </Typography>
         </Box>
       </Modal>
-    </div>
+    </LandingPageContainer>
   );
 }

@@ -14,7 +14,8 @@ https://sluedu-my.sharepoint.com/:f:/g/personal/ankit_agrawal_1_slu_edu/ElbD1q-O
 using password: DroneWorld
 
 2. Extract it to the project folder in `unreal_app/editor_mode`.
-![img.png](img.png)
+
+![img.png](/frontend/public/images/readMeAssets/img.png)
 
 it contains all the large files that are not allowed to be uploaded to github.
 

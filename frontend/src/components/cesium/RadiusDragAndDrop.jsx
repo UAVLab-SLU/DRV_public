@@ -4,7 +4,9 @@ import {
   Cartesian3,
   Math as CesiumMath,
   Cartographic,
+  VerticalOrigin,
   Cartesian2,
+  HeightReference,
   JulianDate,
   Ellipsoid,
   Color,
@@ -12,17 +14,20 @@ import {
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
-import dayjs from 'dayjs';
-import { EnvironmentModel } from '../../model/EnvironmentModel';
 
-const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncDroneLocation, mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
+const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
+  const { syncRadiusLocation, envJson} = useMainJson();
 
-  // drone drag and drop event listeners
+  // radius drag and drop event listeners
   useEffect(() => {
     if (viewerReady) {
       const viewer = viewerRef.current.cesiumElement;
       const canvas = viewer.canvas;
+      
+      viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
+        date = JulianDate.toDate(date);
+        return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+      };
 
       // Ensure the canvas is focusable
       canvas.setAttribute('tabindex', '0');
@@ -31,7 +36,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         event.preventDefault(); // Necessary to allow the drop
         canvas.style.border = '2px dashed red'; // Visual feedback
       };
-
+    
       const dropHandler = (event) => {
         event.preventDefault();
         canvas.style.border = ''; // Remove visual feedback
@@ -40,10 +45,11 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         // Adjust X and Y coordinate relative to the canvas
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
-        const droneInx = dragData.index;
+
+        const ellipsoid = viewer.scene.globe.ellipsoid;
+        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
         const cesiumCanvasPosition = new Cartesian2(x, y);
-        const cartesian = viewer.scene.pickPosition(cesiumCanvasPosition);
+        const cartesian = viewer.camera.pickEllipsoid(cesiumCanvasPosition, ellipsoid);
         if (cartesian) {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
@@ -57,14 +63,16 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
           if (intersection && intersection.position) {
             buildingHeight = Cartographic.fromCartesian(intersection.position).height;
           }
+          
+          setNewCameraPosition();          
 
-          setNewCameraPosition();
-
-          if (dragData.type === 'drone'){
-            syncDroneLocation(latitude, longitude, buildingHeight, droneInx);
+          if (dragData.type == 'radius'){
+            syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
           }
         }
       };
+
+      console.log(envJson.Origin);
 
       canvas.addEventListener('dragover', dragOverHandler);
       canvas.addEventListener('drop', dropHandler);
@@ -74,43 +82,37 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         canvas.removeEventListener('drop', dropHandler);
       };
     }
-  }, [viewerReady, mainJson, envJson]);
+  }, [viewerReady, envJson]);
+
 
   return (
     <>
-      {mainJson.getAllDrones().map((drone, index) => {
-        if (!drone.X || !drone.Y || !drone.Z) return null;
-        // increase drone height by 1 meter to make it fully visible on buildings and grounds
-        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z + 1);
-        return (
-          <React.Fragment key={index}>
-            <Entity
-              position={position}
-              billboard={{
-                image: drone.image,
-                scale: 1,
-              }}
-            />
-            <Entity
-              position={position}
-              point={{
-                pixelSize: 7,
-                color: drone.color,
-                outlineColor: Color.WHITE,
-                outlineWidth: 2,
-              }}
-            />
-          </React.Fragment>
-        );
-      })}
+      {envJson.Origin.radius > 0 && (
+        <Entity
+          position={envJson.getOriginPosition()}
+          billboard={{
+            image: envJson.getOriginImage(),
+            scale: 0.5,
+            verticalOrigin: VerticalOrigin.BOTTOM,
+          }}
+          ellipse={{
+            semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+            semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+            material: Color.GREEN.withAlpha(0.3),
+            outline: true,
+            outlineColor: Color.GREEN,
+            height: envJson.getOriginHeight(),
+          }}
+        />
+      )}
     </>
   );
 };
 
-DroneDragAndDrop.propTypes = {
+RadiusDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setNewCameraPosition: PropTypes.func.isRequired,
+  setNewCameraPosition: PropTypes.func.isRequired
 };
 
-export default DroneDragAndDrop;
+export default RadiusDragAndDrop;

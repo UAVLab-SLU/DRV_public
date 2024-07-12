@@ -147,6 +147,7 @@ export default function MissionConfiguration(mission) {
   const handleDragStart = (event, index) => {
     const imgSrc = event.target.src;
     const dragData = {
+      type: 'drone',
       src: imgSrc,
       index: index,
     };

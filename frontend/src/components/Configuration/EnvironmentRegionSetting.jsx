@@ -7,11 +7,16 @@ import { StyledSelect } from '../../css/SimulationPageStyles';
 import { ENVIRONMENT_ORIGINS, ENVIRONMENT_ORIGIN_VALUES } from '../../utils/const';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import PropTypes from 'prop-types';
+import * as React from 'react';
+
 import TimeGridComponent from './TimeGridComponent';
 
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
 
+    const pinImage = [
+        { src: '/images/pin-icon.png'}
+    ];
 
     const handleRegionBasedPropSetting = (val) => {
         if (val.target.value != "Specify Region") {
@@ -19,6 +24,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                 if (obj.value == val.target.value) {
                     envConf.setOriginLatitude(obj.latitude);
                     envConf.setOriginLongitude(obj.longitude);
+                    envConf.setOriginRadius(obj.radius);
                     envConf.setOriginHeight(obj.height);
                     envConf.setOriginName(obj.value);
                 }
@@ -26,6 +32,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         } else {
             envConf.setOriginLatitude(0);
             envConf.setOriginLongitude(0);
+            envConf.setOriginRadius(0);
             envConf.setOriginHeight(0);
             envConf.setOriginName(val.target.value);
         }
@@ -42,13 +49,25 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
         } else if (val.target.id === "Longitude") {
             envConf.setOriginLongitude(parseFloat(val.target.value));
         } else if (val.target.id === "Height") {
-            // future implementation
             envConf.setOriginHeight(parseFloat(val.target.value));
+        } else if (val.target.id === "Radius") {
+            envConf.setOriginRadius(parseFloat(val.target.value));
         }
         // viewerMaintainer.current = true;
         setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
 
     }
+    
+    const handleDragStart = (event) => {
+        const imgSrc = event.target.src;
+        const dragData = {
+            type: 'radius',
+            src: imgSrc,
+            radius: envConf.Origin.Radius || 0
+        };
+        
+        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+    };
 
 
     return (
@@ -138,6 +157,44 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
                             value={envConf.Origin.longitude}
                             disabled={envConf.Origin.Name == "Specify Region" ? false : true}
                             fullWidth
+                        />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <Grid item xs={12}>
+                <Grid container alignItems="center" direction="row">
+                    <Grid item xs={4}>
+                        <InputLabel id="radius-label" sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}>
+                            Enter radius (miles)
+                        </InputLabel>
+                    </Grid>
+                    <Grid item xs={5}>
+                        <TextField
+                            sx={{
+                                backgroundColor: '#F5F5DC',
+                                '& .MuiOutlinedInput-root': {
+                                    '& .MuiInputBase-Input': {
+                                        padding: '6px 8px',
+                                    },
+                                },
+                            }}
+                            id="Radius"
+                            variant="outlined"
+                            type="number"
+                            inputProps={{ step: "0.1", min: "0" }}
+                            onChange={handleOriginChange}
+                            value={envConf.Origin.radius}
+                            fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={1}>
+                        <img
+                            src={pinImage[0].src}
+                            alt="Draggable Icon"
+                            draggable="true"
+                            onDragStart={(e) => handleDragStart(e)}
+                            style={{ width: 40, cursor: 'grab', marginRight: 20 }}
                         />
                     </Grid>
                 </Grid>

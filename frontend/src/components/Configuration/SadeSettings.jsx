@@ -21,9 +21,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
   const [duplicateNameIndex, setDuplicateNameIndex] = useState(null);
 
   const handleIncrement = () => {
-    let sade_id = envConf.getAllSades().length + 1;
     let newSade = new SadeModel();
-    newSade.id = sade_id;
     envConf.addNewSade(newSade);
     envConf.activeSadeZoneIndex = null;
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));

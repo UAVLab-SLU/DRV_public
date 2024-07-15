@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Typography, Grid, InputLabel, MenuItem, FormControl, Select } from '@mui/material';
+import { Box, Button, Modal, Typography, Grid, InputLabel, MenuItem, FormControl, Select, Divider } from '@mui/material';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import {
@@ -6,6 +6,10 @@ import {
   StyledButton,
   StyledLink,
   homePageBoxStyle,
+  StyledBackground,
+  StyledBox,
+  StyledHiddenBox,
+  StyledDivider,
 } from '../css/commonStyles';
 
 import {
@@ -28,17 +32,32 @@ const Home = () => {
     backendStatus: 'idle'
   });
   const [open, setOpen] = useState(false); // State for modal
+  const [hoveredButton, setHoveredButton] = useState(null);
   // END of Model ===============================
 
 
   // START of Controller =============================
+  const handleMouseEnter = (event) => {
+    setHoveredButton(event);
+    handleReqIdChange(event);
+  };
+  const handleMouseLeave = () => {
+    setHoveredButton(null);
+  };
+
   const statusStyle = getStatusStyle(backendInfo);
 
-  const setPropsHandleReqIdChange = (event) => {
-    const result = handleReqIdChange(event);
-    setSelectedValue(result.selectedValue);
-    setText(result.text);
-    setTitle(result.title);
+  const handleReqIdChange = (event) => {
+    if (event === "SADE") {
+      setText('Two sUAS (Small Unmanned Aircraft System) shall be able to complete a circular and square flight mission in windy weather conditions without colliding with stationary objects, the terrain, or other aircraft and drifting from its planned path by more than 10 meters.');
+      setTitle("Circular and Square Flight Mission in Windy Weather");
+    } else if (event === "PX4") {
+      setText('Two sUAS (Small Unmanned Aircraft Systems) shall be able to complete their missions in windy weather conditions while maintaining a minimum separation distance of at least 5 meters between each other and without drifting by more than 5 meters.');
+      setTitle("sUAS Mission Coordination in Windy Weather")
+    } else if (event === "AIRSIM") {
+      setText('Two sUAS (Small Unmanned Aircraft Systems) shall be able to complete their respective missions in windy weather conditions without drifting from their planned path by more than 15 meters.');
+      setTitle("sUAS Mission in Windy Weather with Path Accuracy")
+    }
   };
 
   useEffect(() => {
@@ -62,54 +81,69 @@ const Home = () => {
   // START of View =============================
   return (
     <React.Fragment>
-      <Typography style={{ width: 1000 }}>
-        <Grid spacing={5} direction="row" style={{ marginTop: '15px', paddingTop: '15px', paddingLeft: '290px' }}>
-          <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5}>
-            <Typography>
-              Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
-            </Typography>
-          </Box>
-          <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 280, top: -80 }}>
+      <Box sx={StyledBackground}>
+        <Box sx={StyledBox}>
+          {/* Title and subtitle */}
+          <Typography style={{fontSize: '60px', color:'white', fontWeight:'bold'}}>
+            DRONE WORLD
+          </Typography>
+          <Typography style={{marginTop:'130px', fontSize: '27px', color:'white'}}>
+            TYPE OF SIMULATION
+          </Typography>
+          <Divider sx={StyledDivider}/>
+          {/* Buttons */}
+          <Grid container spacing={8} direction="column" style={{ marginTop: '8px', paddingTop: '8px', alignItems: 'center' }}>
+            <Grid item>
+              <StyledLink to='/simulation' state={{ req: selectedValue.toString(), descs: text.toString(), title: title.toString() }}>
+                <StyledButton
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('SADE')}
+                  onMouseLeave={handleMouseLeave}>
+                  SADE
+                </StyledButton>
+              </StyledLink>
+            </Grid>
+            <Grid item>
+              <StyledLink to='/simulation' state={{ req: selectedValue.toString(), descs: text.toString(), title: title.toString() }}>
+                <StyledButton
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('PX4')}
+                  onMouseLeave={handleMouseLeave}>
+                  PX4
+                </StyledButton>
+              </StyledLink>
+            </Grid>
+            <Grid item>
+              <StyledLink to='/simulation' state={{ req: selectedValue.toString(), descs: text.toString(), title: title.toString() }}>
+                <StyledButton
+                  variant="contained"
+                  onMouseEnter={() => handleMouseEnter('PX4')}
+                  onMouseLeave={handleMouseLeave}>
+                  AIRSIM
+                  </StyledButton>
+              </StyledLink>
+            </Grid>
+          </Grid>
+        </Box>
+        {/* Box behind hidden text */}
+        <Box sx={{...StyledHiddenBox, visibility: hoveredButton ? 'visible' : 'hidden'}}>
+          <Typography variant="h6">{title}</Typography>
+          <Typography>{text}</Typography>
+        </Box>
+        {/* Backend Status */}
+        <Typography style={{ position: 'absolute', top: '25px', left: 0 }}>
+          <Grid container spacing={2} direction="row" style={{ marginTop: '15px',paddingTop: '15px', paddingLeft: '1500px' }}>
+            <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5}>
               <Typography>
-                Queued Tasks: {backendInfo.numQueuedTasks}
+                Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>
               </Typography>
-            </div>
-          </div>
-        </Grid>
-      </Typography>
-      <Box
-        sx={homePageBoxStyle}
-      >
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Requirement ID</InputLabel>
-          <Select
-            labelId="req-id"
-            id="req-id-select"
-            value={selectedValue}
-            label="Requirement ID"
-            onChange={setPropsHandleReqIdChange}
-          >
-            <MenuItem value="UAV-301">UAV-301: Circular Flight Mission in Windy Weather</MenuItem>
-            <MenuItem value="UAV-302">UAV-302: sUAS Mission Coordination in Windy Weather</MenuItem>
-            <MenuItem value="UAV-303">UAV-303: sUAS Mission in Windy Weather with Path Accuracy</MenuItem>
-          </Select>
-        </FormControl>
-
-        <Typography variant="h6" component="h4" style={{ marginTop: '3em' }}>
-          {selectedValue === '' ? text : `Title: ${title}`}
+            </Box>
+            <Typography style={{ marginTop: '17px', marginLeft: '50px' }}>
+              Queued Tasks: {backendInfo.numQueuedTasks}
+            </Typography>
+          </Grid>
         </Typography>
-
-        <Typography variant="h6" component="h4" style={{ marginTop: '1em' }}>
-          {selectedValue !== '' && `Description: ${text}`}
-        </Typography>
-
-        <StyledLink to='/simulation' state={{ req: selectedValue.toString(), descs: text.toString(), title: title.toString() }}>
-          <StyledButton variant='contained' disabled={text === "Please select a requirement identifier" ? true : false}>
-            Start Scenario Configuration
-          </StyledButton>
-        </StyledLink>
-
+      </Box>
 
         {/*Remove this code when implementing the header About us. Widen the component. Add a close button.*/}
         {/* Button to test Modal*/}
@@ -157,7 +191,7 @@ const Home = () => {
           </Box>
         </Modal>
 
-      </Box>
+      {/* </Box> */}
     </React.Fragment>
   );
 };

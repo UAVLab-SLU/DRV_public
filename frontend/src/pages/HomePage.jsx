@@ -132,7 +132,7 @@ const Home = () => {
         </Box>
         {/* Backend Status */}
         <Typography style={{ position: 'absolute', top: '25px', left: 0 }}>
-          <Grid container spacing={2} direction="row" style={{ paddingTop: '15px', paddingLeft: '1500px' }}>
+          <Grid container spacing={2} direction="row" style={{ marginTop: '15px',paddingTop: '15px', paddingLeft: '1500px' }}>
             <Box border={1} borderColor={statusStyle.color} p={2} borderRadius={2} width={200} mb={5}>
               <Typography>
                 Backend Status: <span style={statusStyle}>{backendInfo.backendStatus}</span>

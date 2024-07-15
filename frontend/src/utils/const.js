@@ -42,7 +42,17 @@ export const ENVIRONMENT_ORIGINS = [
   { value: 'Specify Region', id: 30 },
 ];
 
+export const originTypes = {
+  MichiganLakeBeach: 'Michigan Lake Beach',
+  ChicagoOhareAirport: 'Chicago O’Hare Airport',
+  SpecifyRegion: 'Specify Region',
+};
+
 export const ENVIRONMENT_ORIGIN_VALUES = [
   { value: 'Michigan Lake Beach', latitude: 42.211223, longitude: -86.390394, height: 170 },
   { value: 'Chicago O’Hare Airport', latitude: 41.980381, longitude: -87.934524, height: 200 },
 ];
+
+export const imageUrls = {
+  location: '/images/pin-icon.png',
+};

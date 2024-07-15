@@ -20,15 +20,15 @@ export const MainJsonProvider = ({ children }) => {
     envJson.TimeOfDay = timeOfDayRef.current;
     input.environment = envJson;
     setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(input));
-  }
+  };
 
   const setEnvJson = (input) => {
     input.time = timeRef.current;
     input.TimeOfDay = timeOfDayRef.current;
     mainJson.environment = input;
-    setEnvJsonSetter(EnvironmentModel.getReactStateBasedUpdate(input))
+    setEnvJsonSetter(EnvironmentModel.getReactStateBasedUpdate(input));
     setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-  }
+  };
 
   function syncDroneLocation(latitude, longitude, height, droneIndex) {
     let drone = mainJson.getDroneBasedOnIndex(droneIndex);
@@ -39,17 +39,28 @@ export const MainJsonProvider = ({ children }) => {
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   }
 
-  function syncRadiusLocation(latitude, longitude, height, image) {
+  function syncRegionLocation(latitude, longitude, height, image) {
     envJson.setOriginLatitude(latitude);
     envJson.setOriginLongitude(longitude);
     envJson.setOriginHeight(height);
     envJson.setOriginImage(image);
-    envJson.setOriginPosition(Cartesian3.fromDegrees(envJson.getOriginLongitude(), envJson.getOriginLatitude(), envJson.getOriginHeight()));
     setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
   }
 
   return (
-    <MainJsonContext.Provider value={{ mainJson, setMainJson, envJson, setEnvJson, syncDroneLocation, syncRadiusLocation, viewerMaintainer, timeOfDayRef, timeRef }}>
+    <MainJsonContext.Provider
+      value={{
+        mainJson,
+        setMainJson,
+        envJson,
+        setEnvJson,
+        syncDroneLocation,
+        syncRegionLocation,
+        viewerMaintainer,
+        timeOfDayRef,
+        timeRef,
+      }}
+    >
       {children}
     </MainJsonContext.Provider>
   );

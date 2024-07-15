@@ -25,7 +25,7 @@ import { droneModels, droneTypes, droneImages } from '../../constants/drone';
 
 export default function MissionConfiguration(mission) {
   const { mainJson, setMainJson } = useMainJson();
-  const [duplicateNameIndex, setDuplicateNameIndex] = React.useState(null);
+  const [duplicateNameIndex, setDuplicateNameIndex] = React.useState(-1);
 
   const [droneCount, setDroneCount] = React.useState(mainJson.getAllDrones().length);
   const [snackBarState, setSnackBarState] = React.useState({

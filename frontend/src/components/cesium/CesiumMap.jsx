@@ -11,7 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
-import RadiusDragAndDrop from './RadiusDragAndDrop';
+import RadiusDragAndDrop from './RegionDragAndDrop';
 import TimeLineSetterCesiumComponent from './TimeLineSetterCesiumComponent';
 import { useMainJson } from '../../model/MainJsonContext';
 
@@ -105,10 +105,7 @@ const CesiumMap = ({ activeConfigStep }) => {
         setNewCameraPosition={setNewCameraPosition}
       />
 
-      <TimeLineSetterCesiumComponent
-        viewerReady={viewerReady}
-        viewerRef={viewerRef}
-      />
+      <TimeLineSetterCesiumComponent viewerReady={viewerReady} viewerRef={viewerRef} />
     </Viewer>
   );
 };

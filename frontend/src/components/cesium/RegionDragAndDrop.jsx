@@ -16,7 +16,7 @@ import { useMainJson } from '../../model/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
-  const { syncRadiusLocation, envJson } = useMainJson();
+  const { syncRegionLocation, envJson } = useMainJson();
 
   // radius drag and drop event listeners
   useEffect(() => {
@@ -58,10 +58,9 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
-        const ellipsoid = viewer.scene.globe.ellipsoid;
-        const dragData = JSON.parse(event.dataTransfer.getData("text/plain"));
+        const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
         const cesiumCanvasPosition = new Cartesian2(x, y);
-        const cartesian = viewer.camera.pickEllipsoid(cesiumCanvasPosition, ellipsoid);
+        const cartesian = viewer.scene.pickPosition(cesiumCanvasPosition);
         if (cartesian) {
           const cartographic = Cartographic.fromCartesian(cartesian);
           const latitude = CesiumMath.toDegrees(cartographic.latitude);
@@ -78,13 +77,11 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
 
           setNewCameraPosition();
 
-          if (dragData.type == 'radius') {
-            syncRadiusLocation(latitude, longitude, buildingHeight, dragData.src);
+          if (dragData.type == 'region') {
+            syncRegionLocation(latitude, longitude, buildingHeight, dragData.src);
           }
         }
       };
-
-      console.log(envJson.Origin);
 
       canvas.addEventListener('dragover', dragOverHandler);
       canvas.addEventListener('drop', dropHandler);
@@ -96,35 +93,34 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
     }
   }, [viewerReady, envJson]);
 
-
   return (
-    <>
-      {envJson.Origin.radius > 0 && (
-        <Entity
-          position={envJson.getOriginPosition()}
-          billboard={{
-            image: envJson.getOriginImage(),
-            scale: 0.5,
-            verticalOrigin: VerticalOrigin.BOTTOM,
-          }}
-          ellipse={{
-            semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
-            semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
-            material: Color.GREEN.withAlpha(0.3),
-            outline: true,
-            outlineColor: Color.GREEN,
-            height: envJson.getOriginHeight(),
-          }}
-        />
+    <Entity
+      position={Cartesian3.fromDegrees(
+        envJson.Origin.longitude,
+        envJson.Origin.latitude,
+        envJson.Origin.height,
       )}
-    </>
+      billboard={{
+        image: envJson.getOriginImage(),
+        scale: 0.5,
+        verticalOrigin: VerticalOrigin.BOTTOM,
+      }}
+      ellipse={{
+        semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+        semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+        material: Color.GREEN.withAlpha(0.3),
+        outline: true,
+        outlineColor: Color.GREEN,
+        height: envJson.Origin.height,
+      }}
+    />
   );
 };
 
 RadiusDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setNewCameraPosition: PropTypes.func.isRequired
+  setNewCameraPosition: PropTypes.func.isRequired,
 };
 
 export default RadiusDragAndDrop;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, TextField, IconButton, InputLabel, Tooltip, MenuItem } from '@mui/material';
+import { Grid, TextField, IconButton } from '@mui/material';
 import { AccordionStyled, StyledInputLabel } from '../../css/SimulationPageStyles';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { ExpandMore } from '@mui/icons-material';
+import { BootstrapTooltip } from '../../css/muiStyles';
 import { SadeModel } from '../../model/SadeModel';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 import { updateRectangle } from '../../utils/mapUtils';
@@ -150,10 +151,8 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                 </Typography>
                 <ButtonGroup size='large' variant='text' color='warning' sx={{ mr: 3 }}>
                   <Button onClick={(e) => handleActionClick(e, 'setActive', index)}>
-                    <Tooltip
+                    <BootstrapTooltip
                       title='Click to activate, then hold SHIFT & drag the MOUSE to draw the sade-zone on the map.'
-                      enterDelay={300}
-                      leaveDelay={200}
                       placement='top'
                     >
                       <DrawIcon
@@ -161,27 +160,17 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                           color: envConf.activeSadeZoneIndex === index ? '#F5F5DC' : '#FF7F50',
                         }}
                       />
-                    </Tooltip>
+                    </BootstrapTooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'reset', index, sade)}>
-                    <Tooltip
-                      title='Resets current sade-zone values'
-                      enterDelay={300}
-                      leaveDelay={200}
-                      placement='top'
-                    >
+                    <BootstrapTooltip title='Resets current sade-zone values' placement='top'>
                       <RefreshIcon />
-                    </Tooltip>
+                    </BootstrapTooltip>
                   </Button>
                   <Button onClick={(e) => handleActionClick(e, 'delete', index)}>
-                    <Tooltip
-                      title='Deletes current sade-zone'
-                      enterDelay={300}
-                      leaveDelay={200}
-                      placement='top'
-                    >
+                    <BootstrapTooltip title='Deletes current sade-zone' placement='top'>
                       <DeleteIcon />
-                    </Tooltip>
+                    </BootstrapTooltip>
                   </Button>
                 </ButtonGroup>
               </Box>
@@ -239,7 +228,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                         <Grid item xs={6} key={i}>
                           <StyledInputLabel id={field.key}>{field.label}</StyledInputLabel>
                           {['centerLat', 'centerLong'].includes(field.key) ? (
-                            <Tooltip
+                            <BootstrapTooltip
                               title={`Stepping distance of 0.0001, equivalent to 1m`}
                               placement='bottom'
                             >
@@ -261,7 +250,7 @@ const SadeSettings = ({ envConf, setEnvConf }) => {
                                 inputProps={{ step: field.step ?? null }}
                                 fullWidth
                               />
-                            </Tooltip>
+                            </BootstrapTooltip>
                           ) : (
                             <TextField
                               sx={{

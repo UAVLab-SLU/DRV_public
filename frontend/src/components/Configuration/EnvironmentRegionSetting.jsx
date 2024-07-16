@@ -4,6 +4,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import { TextField } from '@mui/material';
 import { StyledSelect } from '../../css/SimulationPageStyles';
+import { BootstrapTooltip } from '../../css/muiStyles';
 import {
   ENVIRONMENT_ORIGINS,
   ENVIRONMENT_ORIGIN_VALUES,
@@ -147,7 +148,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
               id='latitude-label'
               sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}
             >
-              Latitude
+              Origin Latitude
             </InputLabel>
           </Grid>
           <Grid item xs={6}>
@@ -180,7 +181,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
               id='longitude-label'
               sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}
             >
-              Longitude
+              Origin Longitude
             </InputLabel>
           </Grid>
           <Grid item xs={6}>
@@ -213,7 +214,7 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
               id='radius-label'
               sx={{ marginRight: 2, flexShrink: 0, color: '#F5F5DC', width: '200px' }}
             >
-              Enter radius (miles)
+              Radius (miles)
             </InputLabel>
           </Grid>
           <Grid item xs={envConf.Origin.name === originTypes.SpecifyRegion ? 5.5 : 6}>
@@ -237,13 +238,18 @@ const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
           </Grid>
           {envConf.Origin.name === originTypes.SpecifyRegion && (
             <Grid item xs={1}>
-              <img
-                src={imageUrls.location}
-                alt='Draggable Icon'
-                draggable='true'
-                onDragStart={(e) => handleDragStart(e)}
-                style={{ width: 40, cursor: 'grab', marginRight: 20 }}
-              />
+              <BootstrapTooltip
+                title='Drag the icon to the map to specify the center of the region'
+                placement='top'
+              >
+                <img
+                  src={imageUrls.location}
+                  alt='Draggable Icon'
+                  draggable='true'
+                  onDragStart={(e) => handleDragStart(e)}
+                  style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                />
+              </BootstrapTooltip>
             </Grid>
           )}
         </Grid>

@@ -9,6 +9,7 @@ import {
   HeightReference,
   JulianDate,
   Ellipsoid,
+  LabelStyle,
   Color,
 } from 'cesium';
 import PropTypes from 'prop-types';
@@ -98,12 +99,11 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
       position={Cartesian3.fromDegrees(
         envJson.Origin.longitude,
         envJson.Origin.latitude,
-        envJson.Origin.height,
+        envJson.Origin.height + 0.1,
       )}
       billboard={{
         image: envJson.getOriginImage(),
         scale: 0.5,
-        verticalOrigin: VerticalOrigin.BOTTOM,
       }}
       ellipse={{
         semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
@@ -113,6 +113,16 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
         outlineColor: Color.YELLOW,
         outlineWidth: 4,
         height: envJson.Origin.height,
+      }}
+      label={{
+        text: 'Simulation Origin',
+        font: '14pt monospace',
+        style: LabelStyle.FILL_AND_OUTLINE,
+        fillColor: Color.BLACK,
+        outlineColor: Color.YELLOW,
+        outlineWidth: 1,
+        verticalOrigin: VerticalOrigin.BOTTOM,
+        pixelOffset: Cartesian2(0, -100),
       }}
     />
   );

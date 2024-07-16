@@ -1,22 +1,20 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
-import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { ExpandMore } from '@mui/icons-material';
-import { styled } from '@mui/system';
 import DroneConfiguration from './DroneConfiguration';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
+import { BootstrapTooltip } from '../../css/muiStyles';
 import { useMainJson } from '../../model/MainJsonContext';
 import { DroneModel } from '../../model/DroneModel';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
@@ -239,11 +237,7 @@ export default function MissionConfiguration(mission) {
                     <Typography variant='h5'>
                       {drone.name.length > 10 ? `${drone.name.substring(0, 10)}...` : drone.name}
                     </Typography>
-                    <Tooltip
-                      title='Drag and drop this drone to set or update its home location on the map.'
-                      enterDelay={300}
-                      leaveDelay={200}
-                    >
+                    <BootstrapTooltip title='Drag and drop this drone to set or update its home location on the map.'>
                       <img
                         src={drone.image}
                         alt='Draggable Icon'
@@ -251,7 +245,7 @@ export default function MissionConfiguration(mission) {
                         onDragStart={(e) => handleDragStart(e, index)}
                         style={{ width: 40, cursor: 'grab', marginRight: 20 }}
                       />
-                    </Tooltip>
+                    </BootstrapTooltip>
                   </Box>
                 </AccordionSummary>
 

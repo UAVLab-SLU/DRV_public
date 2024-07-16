@@ -37,14 +37,11 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
         // Disable camera rotation while the user is drawing a Sade-zone
         viewer.scene.screenSpaceCameraController.enableRotate = false;
 
-        const cartesian = viewer.camera.pickEllipsoid(
-          movement.position,
-          viewer.scene.globe.ellipsoid,
-        );
+        const cartesian = viewer.scene.pickPosition(movement.position);
         if (cartesian) {
-          const rectPoint = Cartographic.fromCartesian(cartesian, Ellipsoid.WGS84);
+          const cartographic = Cartographic.fromCartesian(cartesian);
           // Set the starting point of the rectangle
-          setFirstPoint(rectPoint);
+          setFirstPoint(cartographic);
         }
       },
       ScreenSpaceEventType.LEFT_DOWN,
@@ -54,12 +51,9 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     handler.setInputAction(
       (movement) => {
         if (!mouseDown) return;
-        const cartesian = viewer.camera.pickEllipsoid(
-          movement.endPosition,
-          viewer.scene.globe.ellipsoid,
-        );
+        const cartesian = viewer.scene.pickPosition(movement.endPosition);
         if (cartesian && firstPoint) {
-          const tempCartographic = Cartographic.fromCartesian(cartesian, Ellipsoid.WGS84);
+          const tempCartographic = Cartographic.fromCartesian(cartesian);
           const rect = new Rectangle(
             Math.min(tempCartographic.longitude, firstPoint.longitude),
             Math.min(tempCartographic.latitude, firstPoint.latitude),

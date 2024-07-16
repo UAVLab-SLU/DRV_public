@@ -35,7 +35,6 @@ const CesiumMap = ({ activeConfigStep }) => {
   const setNewCameraPosition = (position = null, pitch = null) => {
     if (!viewerReady) return;
     const viewer = viewerRef.current.cesiumElement;
-
     const { camera } = viewer;
     setCameraPosition({
       destination: position === null ? camera.position : position,
@@ -68,7 +67,6 @@ const CesiumMap = ({ activeConfigStep }) => {
     } else {
       // Enable camera pitch
       viewer.scene.screenSpaceCameraController.enableTilt = true;
-      setNewCameraPosition();
     }
   }, [mainJson, activeConfigStep]);
 

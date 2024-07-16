@@ -16,7 +16,7 @@ export class EnvironmentModel {
       longitude: ENVIRONMENT_ORIGIN_VALUES[1].longitude,
       name: ENVIRONMENT_ORIGIN_VALUES[1].value,
       height: ENVIRONMENT_ORIGIN_VALUES[1].height,
-      radius: 0,
+      radius: 0.1,
       image: imageUrls.location,
     };
     this._sades = [];

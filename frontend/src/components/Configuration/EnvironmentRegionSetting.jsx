@@ -18,25 +18,61 @@ import TimeGridComponent from './TimeGridComponent';
 
 const EnvironmentRegionSetting = ({ envConf, setEnvConf }) => {
   const handleRegionBasedPropSetting = (val) => {
-    if (val.target.value != originTypes.SpecifyRegion) {
-      ENVIRONMENT_ORIGIN_VALUES.map((obj) => {
-        if (obj.value == val.target.value) {
-          envConf.setOriginLatitude(obj.latitude);
-          envConf.setOriginLongitude(obj.longitude);
-          envConf.setOriginRadius(0);
-          envConf.setOriginHeight(obj.height);
-          envConf.setOriginName(obj.value);
+    if (val.target.value !== originTypes.SpecifyRegion) {
+      ENVIRONMENT_ORIGIN_VALUES.forEach((obj) => {
+        if (obj.value === val.target.value) {
+          updateOriginSettings({
+            latitude: obj.latitude,
+            longitude: obj.longitude,
+            radius: 0.1,
+            height: obj.height,
+            name: obj.value,
+          });
         }
       });
     } else {
-      envConf.setOriginLatitude(0);
-      envConf.setOriginLongitude(0);
-      envConf.setOriginRadius(0);
-      envConf.setOriginHeight(0);
-      envConf.setOriginName(val.target.value);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            updateOriginSettings({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              radius: 0.1,
+              height: 0,
+              name: val.target.value,
+            });
+          },
+          (error) => {
+            console.error('Error obtaining location: ', error);
+            setDefaultOriginValues(val);
+          },
+        );
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+        setDefaultOriginValues(val);
+      }
     }
+  };
+
+  const updateOriginSettings = ({ latitude, longitude, radius, height, name }) => {
+    envConf.setOriginLatitude(latitude);
+    envConf.setOriginLongitude(longitude);
+    envConf.setOriginRadius(radius);
+    envConf.setOriginHeight(height);
+    envConf.setOriginName(name);
+
     setEnvConf(EnvironmentModel.getReactStateBasedUpdate(envConf));
     //viewerMaintainer.current = true;
+  };
+
+  const setDefaultOriginValues = (val) => {
+    updateOriginSettings({
+      latitude: 0,
+      longitude: 0,
+      radius: 0.1,
+      height: 0,
+      name: val.target.value,
+    });
   };
 
   const handleOriginChange = (val) => {

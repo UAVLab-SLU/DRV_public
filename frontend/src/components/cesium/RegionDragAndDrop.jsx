@@ -108,9 +108,10 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
       ellipse={{
         semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
         semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
-        material: Color.GREEN.withAlpha(0.3),
+        material: Color.TRANSPARENT,
         outline: true,
-        outlineColor: Color.GREEN,
+        outlineColor: Color.YELLOW,
+        outlineWidth: 4,
         height: envJson.Origin.height,
       }}
     />

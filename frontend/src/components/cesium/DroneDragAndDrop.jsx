@@ -80,7 +80,8 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     <>
       {mainJson.getAllDrones().map((drone, index) => {
         if (!drone.X || !drone.Y || !drone.Z) return null;
-        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z);
+        // increase drone height by 1 meter to make it fully visible on buildings and grounds
+        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z + 1);
         return (
           <React.Fragment key={index}>
             <Entity
@@ -88,7 +89,6 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
               billboard={{
                 image: drone.image,
                 scale: 1,
-                eyeOffset: new Cartesian3(0.0, 0.0, -500.0),
               }}
             />
             <Entity

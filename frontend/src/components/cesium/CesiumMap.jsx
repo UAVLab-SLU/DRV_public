@@ -11,7 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import DrawSadeZone from './DrawSadeZone';
 import DroneDragAndDrop from './DroneDragAndDrop';
-import RadiusDragAndDrop from './RadiusDragAndDrop';
+import RadiusDragAndDrop from './RegionDragAndDrop';
 import TimeLineSetterCesiumComponent from './TimeLineSetterCesiumComponent';
 import { useMainJson } from '../../model/MainJsonContext';
 
@@ -35,7 +35,6 @@ const CesiumMap = ({ activeConfigStep }) => {
   const setNewCameraPosition = (position = null, pitch = null) => {
     if (!viewerReady) return;
     const viewer = viewerRef.current.cesiumElement;
-
     const { camera } = viewer;
     setCameraPosition({
       destination: position === null ? camera.position : position,
@@ -68,7 +67,6 @@ const CesiumMap = ({ activeConfigStep }) => {
     } else {
       // Enable camera pitch
       viewer.scene.screenSpaceCameraController.enableTilt = true;
-      setNewCameraPosition();
     }
   }, [mainJson, activeConfigStep]);
 
@@ -105,10 +103,7 @@ const CesiumMap = ({ activeConfigStep }) => {
         setNewCameraPosition={setNewCameraPosition}
       />
 
-      <TimeLineSetterCesiumComponent
-        viewerReady={viewerReady}
-        viewerRef={viewerRef}
-      />
+      <TimeLineSetterCesiumComponent viewerReady={viewerReady} viewerRef={viewerRef} />
     </Viewer>
   );
 };

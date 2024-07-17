@@ -185,8 +185,7 @@ export default function MissionConfiguration(mission) {
       >
         <Grid container direction='row' style={{ padding: '12px', color: '#F5F5DC' }}>
           <strong>
-            Configure sUAS (small unmanned aircraft system) or drone characteristics in your
-            scenario
+            Add uncrewed aerial vehicle to simulation
           </strong>
         </Grid>
         <Grid

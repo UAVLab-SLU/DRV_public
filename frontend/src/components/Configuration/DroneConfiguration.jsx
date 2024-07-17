@@ -88,7 +88,6 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
       padding: '6px 8px',
       height: '1em',
       fontSize: '1.2rem',
-      fontFamily: 'Roboto',
     },
     margin: 0,
   }));
@@ -96,13 +95,7 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
   return (
     <div>
       <Container maxWidth='md'>
-        <Grid container spacing={0.8}>
-          <Grid item xs={12} sx={{ mt: 1 }}>
-            <Typography variant='h5' sx={{ color: '#F5F5DC', pb: 1 }}>
-              Drone Settings
-            </Typography>
-          </Grid>
-
+        <Grid container spacing={0.8} sx={{ mt: 2 }}>
           {/* Drone Name Field */}
           <Grid item xs={4}>
             <StyledInputLabel id='name'>Name</StyledInputLabel>
@@ -150,7 +143,7 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
 
           {/* Drone Type Field */}
           <Grid item xs={4}>
-            <StyledInputLabel id='drone-type'>Drone Type</StyledInputLabel>
+            <StyledInputLabel id='drone-type'>Vehicle Type</StyledInputLabel>
           </Grid>
           <Grid item xs={6}>
             <StyledSelect
@@ -164,7 +157,6 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
                   },
                   '& .MuiMenuItem-root': {
                     fontSize: '1.2rem',
-                    fontFamily: 'Roboto',
                   },
                 },
               }}
@@ -181,7 +173,7 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
 
           {/* Drone Model Field */}
           <Grid item xs={4}>
-            <StyledInputLabel id='drone-model'>Drone Model</StyledInputLabel>
+            <StyledInputLabel id='drone-model'>Vehicle Model</StyledInputLabel>
           </Grid>
           <Grid item xs={6}>
             <StyledSelect
@@ -194,7 +186,6 @@ export default function DroneConfiguration({ index, duplicateNameIndex, setDupli
                   },
                   '& .MuiMenuItem-root': {
                     fontSize: '1.2rem',
-                    fontFamily: 'Roboto',
                   },
                 },
               }}

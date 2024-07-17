@@ -32,7 +32,7 @@ const StyledButton = styled(Button)`
 
 const steps = [
   'Environment Configuration',
-  'Mission Configuration',
+  'sUAS Configuration', // Was "Mission Configuration"
   //'Test Configuration'
 ];
 
@@ -107,7 +107,7 @@ export default function SimulationController(data) {
       ),
     },
     {
-      name: 'Mission Configuration',
+      name: 'sUAS Configuration',
       id: 2,
       comp: (
         <MissionConfiguration
@@ -168,7 +168,7 @@ export default function SimulationController(data) {
         <Box sx={{ width: '45%' }}>
           <StyledTabs value={activeStep} onChange={handleTabChange} aria-label='Configuration Tabs'>
             <StyledTab label='Environment' />
-            <StyledTab label='Mission' />
+            <StyledTab label='sUAS' />
             {/* <StyledTab label="Test" /> */}
           </StyledTabs>
           <div>{activeStep != steps.length && stepsComponent[activeStep].comp}</div>

@@ -5,8 +5,8 @@ export const flightPaths = [
 ];
 
 export const droneTypes = [
-  { value: 'FixedWing', label: 'Fixed Wing' },
   { value: 'MultiRotor', label: 'Multi Rotor' },
+  // { value: 'FixedWing', label: 'Fixed Wing' },
 ];
 
 export const droneModels = {

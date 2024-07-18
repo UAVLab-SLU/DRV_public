@@ -116,7 +116,7 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
       }}
       label={{
         text: 'Simulation Origin',
-        font: '14pt monospace',
+        fontSize: '14pt',
         style: LabelStyle.FILL_AND_OUTLINE,
         fillColor: Color.BLACK,
         outlineColor: Color.YELLOW,

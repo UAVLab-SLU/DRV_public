@@ -156,7 +156,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
                   )}
                   label={{
                     text: `Length: ${sade.length.toFixed(2)}m`,
-                    font: '14pt sans-serif',
+                    fontSize: '14pt',
                     fillColor: Color.WHITE,
                     backgroundColor: Color.RED,
                     showBackground: true,
@@ -185,7 +185,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
                   )}
                   label={{
                     text: `Width: ${sade.width.toFixed(2)}m`,
-                    font: '14pt sans-serif',
+                    fontSize: '14pt',
                     fillColor: Color.WHITE,
                     backgroundColor: Color.BLUE,
                     showBackground: true,
@@ -210,7 +210,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
               }}
               label={{
                 text: sade.name,
-                font: '16pt sans-serif',
+                fontSize: '16pt',
                 backgroundColor: Color.BLACK,
                 fillColor: Color.WHITE,
                 showBackground: true,

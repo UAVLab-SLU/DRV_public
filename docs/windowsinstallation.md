@@ -6,6 +6,7 @@ editor mode allows real time adjustment to the environment but requires unreal e
 The executable mode does not require unreal engine. 
 ### Editor mode
 
+<<<<<<< HEAD:windowsinstallation.md
 you need to download the content and extract it to the game folder.
 
 1. Download the "Content.rar" from 
@@ -20,9 +21,12 @@ using password: DroneWorld
 it contains all the large files that are not allowed to be uploaded to github.
 
 If you do not download the patch, the unreal editor will not be able to load the project.
+=======
+Clone https://github.com/UAVLab-SLU/DRV-Unreal
+>>>>>>> 91ae7f507d1feed769c1728dedf27ff7cd48c703:docs/windowsinstallation.md
 
 ### Executable mode 
-1. Download the "0.4.0.rar" from
+1. Download the latest "DRV_{version}.zip" from
 https://sluedu-my.sharepoint.com/:f:/g/personal/ankit_agrawal_1_slu_edu/ElbD1q-O8fBFgGDqov6Mh5EBsJ90YyPj2fzsIznTP6AX-w?e=XZaPiX
 2. Run the "Blocks.exe" file
 

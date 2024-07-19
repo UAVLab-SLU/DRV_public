@@ -8,6 +8,8 @@ import {
   JulianDate,
   Ellipsoid,
   Color,
+  HeightReference,
+  DistanceDisplayCondition,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
@@ -80,8 +82,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
     <>
       {mainJson.getAllDrones().map((drone, index) => {
         if (!drone.X || !drone.Y || !drone.Z) return null;
-        // increase drone height by 1 meter to make it fully visible on buildings and grounds
-        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z + 1);
+        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z);
         return (
           <React.Fragment key={index}>
             <Entity
@@ -89,6 +90,9 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => {
               billboard={{
                 image: drone.image,
                 scale: 1,
+                heightReference: HeightReference.CLAMP_TO_GROUND,
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                distanceDisplayCondition: new DistanceDisplayCondition(0.0, 50000000000.0)
               }}
             />
             <Entity

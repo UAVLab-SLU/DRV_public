@@ -11,6 +11,7 @@ import {
   Ellipsoid,
   LabelStyle,
   Color,
+  DistanceDisplayCondition,
 } from 'cesium';
 import PropTypes from 'prop-types';
 import { useMainJson } from '../../model/MainJsonContext';
@@ -104,6 +105,9 @@ const RadiusDragAndDrop = ({ viewerReady, viewerRef, setNewCameraPosition }) => 
       billboard={{
         image: envJson.getOriginImage(),
         scale: 0.5,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new DistanceDisplayCondition(0.0, 50000000000.0)
       }}
       ellipse={{
         semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters

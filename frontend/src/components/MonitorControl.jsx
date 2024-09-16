@@ -122,7 +122,7 @@ export default function MonitorControl (monJson) {
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
-    const handleBatteruMonitor = (val) => {
+    const handleBatteryMonitor = (val) => {
         setMonitor(prevState => ({
             ...prevState,
             battery_monitor: {
@@ -608,6 +608,33 @@ export default function MonitorControl (monJson) {
             tableData:null,
             isMultipleTable: false
         },
+        {
+            name: "Battery",
+            value: '2.8',
+            description: "Test whether the drone's battery dropped below the certain percentage",
+            colorText:monitor.battery_monitor.enable == true ? 'green': null,
+            btns:
+                <React.Fragment>{monitor.battery_monitor.enable == true ? 
+                <Grid item xs={12}>
+                    <Grid item xs={12} style={{paddingBottom:20}}><strong>Configure the current battery capacity </strong></Grid>
+                    <FormGroup>
+                        <Tooltip title="Input the current battery capacity of the drone as % (0-100)" placement='bottom'>
+                            <Grid item xs={6}>
+                                <TextField id="standard-basic" label="Battery Capacity (%)" type="number" step="0.1" variant="standard" style={{width:'160px'}} inputProps={{min:0, max:100}} onChange={handleBatteryMonitor} value={monitor.battery_monitor.param[0]}></TextField>
+                            </Grid>
+                        </Tooltip>
+                    </FormGroup>
+                </Grid>
+                : null}</React.Fragment>,
+            images: null,
+            enableBtn:
+                <Grid container direction="row"><strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
+                <FormControlLabel control={<Switch checked={monitor.battery_monitor.enable} onChange={(e) => {
+                    handleChangeSwitch(e, "battery_monitor")
+                }} inputProps={{'aria-label': 'controlled'}} />} label={monitor.battery_monitor.enable ? "Enabled" : "Disabled"} /></Grid>,
+            tableData: null,
+            isMultipleTable: false
+        }
     ]
     const handleFuzzyWindChange = (val) => {
         setEnvConf(prevState => ({

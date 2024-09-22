@@ -221,4 +221,3 @@ reliability, and efficiency of sUAS applications.
 };
 
 export default Home;
-             

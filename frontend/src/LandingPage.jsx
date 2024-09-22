@@ -131,17 +131,19 @@ export default function LandingPage() {
   return (
     <div className={classes.landingPage}>
       <nav className={classes.nav}>
-        <Link to='/' className={classes.siteTitle}></Link>
+        <Link to='/' className={classes.siteTitle}>
+        </Link>
         <ul className={classes.navList}>
           <li className={classes.navListItem}>
-            <Box component='span' onClick={handleAccordionToggle}></Box>
+            <Box component="span" onClick={handleAccordionToggle}></Box>
 
-            <Box component='span'>
+            <Box component="span">
               <Button
                 className={classes.aboutLink}
                 onClick={() => setOpen(true)}
                 style={{ color: '#fff' }}
-              ></Button>
+              >               
+              </Button>
             </Box>
           </li>
         </ul>
@@ -183,9 +185,9 @@ export default function LandingPage() {
 
       <div className={classes.mainContent} style={{ paddingTop: '9rem' }}>
         <div className={classes.buttonContainer}>
-          <Link to='/home'>
+          <Link to="/home">
             <Button
-              variant='contained'
+              variant="contained"
               sx={{
                 color: 'white',
                 padding: '15px 30px',

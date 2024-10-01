@@ -12,7 +12,7 @@ class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
         self.bucket_name = 'droneworld'  # The bucket created in GCS
-        self.storage_client = storage.Client()  # Initializes the GCS client
+        self.storage_client = storage.Client.from_service_account_json('key.json')  # Initializes the GCS client
         self.bucket = self.storage_client.bucket(self.bucket_name)  # Points to the GCS bucket
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
@@ -63,9 +63,11 @@ class AirSimApplication:
     def save_report(self):
         pass
 
-    @abstractmethod
     def upload_to_gcs(self, file_name, content):
-        pass
+        """Uploads a file to the GCS bucket."""
+        blob = self.bucket.blob(f'reports/{file_name}')
+        blob.upload_from_string(content)
+        print(f"File {file_name} uploaded to GCS.")
 
     def save_pic(self, picture):
         self.snap_shots.append(picture)

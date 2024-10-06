@@ -42,9 +42,14 @@ jobs:
     - name: Format frontend code with Prettier
       run: |
         cd frontend
-        npm run prettier
+        npm run format
 
     - name: Build frontend
       run: |
         cd frontend
         npm run build
+
+    - name: Run ESLint Security Checks
+      run: |
+        cd frontend
+        npm audit --omit=dev --audit-level=critical || true

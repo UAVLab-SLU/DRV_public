@@ -11,7 +11,9 @@ from PythonClient.multirotor.monitor.gsc_storage_service import GCSStorageServic
 class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
+        #implementation of the GCS service
         self.gcs = GCSStorageService('droneworld')
+
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
         self.point_mission_names = {"FlyStraight"}
@@ -62,6 +64,7 @@ class AirSimApplication:
         pass
 
     def upload_to_gcs(self, file_name, content):
+        #uses the concrete of 
         self.gcs.uploadToService(file_name,content)
  
 

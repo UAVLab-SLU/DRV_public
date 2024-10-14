@@ -148,6 +148,7 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
                                                   )
         if interactive_html_content:
             # Upload the HTML file directly to GC
+            file_name = f"html_reports/{self.target_drone}/interactive/{self.target_drone}_interactive.html"
             self.air_sim_app.upload_to_gcs(file_name, interactive_html_content)
             print(f"Report successfully uploaded to {file_name} in GCS.")
         else:

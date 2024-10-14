@@ -6,14 +6,12 @@ from abc import abstractmethod
 
 from PythonClient import airsim
 from google.cloud import storage
-
+from PythonClient.multirotor.monitor.gsc_storage_service import GCSStorageService
 
 class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
-        self.bucket_name = 'droneworld'  # The bucket created in GCS
-        self.storage_client = storage.Client.from_service_account_json('key.json')  # Initializes the GCS client
-        self.bucket = self.storage_client.bucket(self.bucket_name)  # Points to the GCS bucket
+        self.gcs = GCSStorageService('droneworld')
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
         self.point_mission_names = {"FlyStraight"}
@@ -64,10 +62,8 @@ class AirSimApplication:
         pass
 
     def upload_to_gcs(self, file_name, content):
-        """Uploads a file to the GCS bucket."""
-        blob = self.bucket.blob(f'reports/{file_name}')
-        blob.upload_from_string(content)
-        print(f"File {file_name} uploaded to GCS.")
+        self.gcs.uploadToService(file_name,content)
+ 
 
     def save_pic(self, picture):
         self.snap_shots.append(picture)

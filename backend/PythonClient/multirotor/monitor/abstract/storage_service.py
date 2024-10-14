@@ -5,3 +5,4 @@ class StorageServiceInterface:
         """Uploads a file to service"""
         print("uploadToService not Implemented")
     pass
+

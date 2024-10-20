@@ -147,8 +147,7 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
                                                   actual_position_list=self.est_position_array,
                                                   full_target_directory=graph_dir,
                                                   drone_name=self.target_drone,
-                                                  title=title
-                                                  )
+                                                  title=title)
         #Generate timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 

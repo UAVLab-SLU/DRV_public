@@ -1,12 +1,10 @@
 # sUAS shall not deviate from their planned routes by more than [10%] of the total distance.
 from time import sleep
-from datetime import datetime
 import threading
 
 from PythonClient.multirotor.util.geo.geo_util import GeoUtil
 from PythonClient.multirotor.util.graph.three_dimensional_grapher import ThreeDimensionalGrapher
 from PythonClient.multirotor.monitor.abstract.single_drone_mission_monitor import SingleDroneMissionMonitor
-from PythonClient.multirotor.airsim_application import AirSimApplication
 
 lock = threading.Lock()
 
@@ -26,8 +24,6 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
         self.deviation_percentage = deviation_percentage
         self.dt = 0.02  # 50 Hz
         self.point_queue = None
-        self.air_sim_app = AirSimApplication() 
-        self.grapher = ThreeDimensionalGrapher()
 
     def start(self):
         if type(self.mission).__name__ not in self.polygon_mission_names:
@@ -136,28 +132,26 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
             title = f"{self.target_drone} Planned vs. Actual\nDrone speed: {self.mission.speed} m/s\nWind: {self.wind_speed_text}"
         else:
             title = f"(FAILED) {self.target_drone} Planned vs. Actual\nDrone speed: {self.mission.speed} m/s\nWind: {self.wind_speed_text}"
-
-        self.grapher.draw_trace_vs_planned(planed_position_list=self.mission.points,
+        grapher = ThreeDimensionalGrapher()
+        grapher.draw_trace_vs_planned(planed_position_list=self.mission.points,
                                       actual_position_list=self.est_position_array,
                                       full_target_directory=graph_dir,
                                       drone_name=self.target_drone,
                                       title=title)
 
-        interactive_html_content = self.grapher.draw_interactive_trace_vs_planned(planed_position_list=self.mission.points,
+        interactive_html_content = grapher.draw_interactive_trace_vs_planned(planed_position_list=self.mission.points,
                                                   actual_position_list=self.est_position_array,
                                                   full_target_directory=graph_dir,
                                                   drone_name=self.target_drone,
                                                   title=title)
-        #Generate timestamp
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
+        
+        timestamp = self.get_current_time_string()
         # Upload the HTML file directly to GCS
-        file_name = f"html_reports/{self.target_drone}/interactive/{self.target_drone}_{timestamp}_interactive.html"
-        #file_name = f"{self.target_drone}/{self.target_drone}_interactive.html"    
+        gcs_path = f"{self.log_subdir}/{self.__class__.__name__}/{self.target_drone}_interactive.html"
         with lock:
             try:        
-                self.air_sim_app.upload_to_gcs(file_name, interactive_html_content)
-                print(f"Html Report successfully uploaded to {file_name} in GCS.")
+                self.upload_to_gcs(gcs_path, interactive_html_content, content_type='text/html')
+                print(f"Html Report successfully uploaded to {gcs_path} in GCS.")
             except Exception as e:
                 print(f"Failed to upload to GCS. Error: {str(e)}")
 

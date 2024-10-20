@@ -1,11 +1,14 @@
 # sUAS shall not deviate from their planned routes by more than [10%] of the total distance.
 from time import sleep
 from datetime import datetime
+import threading
 
 from PythonClient.multirotor.util.geo.geo_util import GeoUtil
 from PythonClient.multirotor.util.graph.three_dimensional_grapher import ThreeDimensionalGrapher
 from PythonClient.multirotor.monitor.abstract.single_drone_mission_monitor import SingleDroneMissionMonitor
 from PythonClient.multirotor.airsim_application import AirSimApplication
+
+lock = threading.Lock()
 
 class PointDeviationMonitor(SingleDroneMissionMonitor):
 
@@ -146,10 +149,18 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
                                                   drone_name=self.target_drone,
                                                   title=title
                                                   )
-        if interactive_html_content:
-            # Upload the HTML file directly to GC
-            self.air_sim_app.upload_to_gcs(file_name, interactive_html_content)
-            print(f"Report successfully uploaded to {file_name} in GCS.")
-        else:
-            print(f"Failed to upload to GCS.")
+        #Generate timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        # Upload the HTML file directly to GCS
+        file_name = f"html_reports/{self.target_drone}/interactive/{self.target_drone}_{timestamp}_interactive.html"
+        #file_name = f"{self.target_drone}/{self.target_drone}_interactive.html"    
+        with lock:
+            try:        
+                self.air_sim_app.upload_to_gcs(file_name, interactive_html_content)
+                print(f"Html Report successfully uploaded to {file_name} in GCS.")
+            except Exception as e:
+                print(f"Failed to upload to GCS. Error: {str(e)}")
+
+        
 

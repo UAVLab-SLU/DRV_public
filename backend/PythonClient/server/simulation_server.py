@@ -24,8 +24,8 @@ task_dispatcher = SimulationTaskManager()
 threading.Thread(target=task_dispatcher.start).start()
 task_number = 1
 
-storage_client = storage.Client()
-bucket_name = 'droneworld'
+storage_client = storage.Client.from_service_account_json('key.json') # Use service account credentials from 'key.json'
+bucket = storage_client.bucket('droneworld') # Reference the bucket
 
 # For Frontend to fetch all missions available to use
 #@app.route('/mission', methods=['GET'])
@@ -60,7 +60,6 @@ def count_drone_files(bucket, report_file_name):
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
     # Fetch the list of reports from GCS bucket
-    bucket = storage_client.bucket(bucket_name)
     blobs = bucket.list_blobs(prefix='reports/', delimiter='/')
 
     report_files = []
@@ -68,7 +67,7 @@ def list_reports():
     global_monitors = ['MinSepDistMonitor']
 
     for blob in blobs:
-        if blob.name.endswith('.txt'):
+        if '/reports/' in blob.name and blob.name.endswith('.txt'):
             file_name = blob.name # Keep the full path for nested directories
             drone_count = count_drone_files(bucket, file_name)
             all_monitors_pass = check_monitor_pass_fail(bucket, file_name, monitors)
@@ -86,7 +85,7 @@ def list_reports():
 @app.route('/list-folder-contents/<folder_name>', methods=['POST'])
 def list_folder_contents(folder_name):
     base_directory = f'reports/{folder_name}/'
-    blobs = storage_client.bucket(bucket_name).list_blobs(prefix=base_directory)
+    blobs = bucket.list_blobs(prefix=base_directory)
 
     if not any(blobs):
         return jsonify({'error': 'Folder not found'}), 404
@@ -115,7 +114,7 @@ def list_folder_contents(folder_name):
     return jsonify(result)
 
 def process_directory(directory, result, fuzzy_path_value):
-    blobs = storage_client.bucket(bucket_name).list_blobs(prefix=directory)
+    blobs = bucket.list_blobs(prefix=directory)
     
     for blob in blobs:
         file_name = blob.name.split("/")[-1]
@@ -204,7 +203,6 @@ def get_report(dir_name=''):
     report_root_dir = 'reports/'
     dir_path = os.path.join(report_root_dir, dir_name)
 
-    bucket = storage_client.bucket(bucket_name)
     blobs = bucket.list_blobs(prefix=dir_path)
 
     if not blobs:

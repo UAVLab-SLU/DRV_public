@@ -150,9 +150,8 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
         with lock:
             try:        
                 self.upload_to_gcs(gcs_path, interactive_html_content, content_type='text/html')
-                print(f"Html Report successfully uploaded to {gcs_path} in GCS.")
             except Exception as e:
-                print(f"Failed to upload to GCS. Error: {str(e)}")
+                print(f"Failed to upload html to GCS. Error: {str(e)}")
 
         
 

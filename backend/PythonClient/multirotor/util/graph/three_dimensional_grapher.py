@@ -195,9 +195,4 @@ class ThreeDimensionalGrapher:
             #                              zaxis_range=[-max_val, max_val]))
             html_content = fig.to_html(full_html=True)
 
-            setup_dir(full_target_directory)
-            file_name = os.path.join(full_target_directory, str(drone_name) + "_interactive.html")
-            fig.write_html(file_name)
-            plt.close()
-
             return html_content

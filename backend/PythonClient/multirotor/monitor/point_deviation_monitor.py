@@ -145,9 +145,8 @@ class PointDeviationMonitor(SingleDroneMissionMonitor):
                                                   drone_name=self.target_drone,
                                                   title=title)
         
-        timestamp = self.get_current_time_string()
         # Upload the HTML file directly to GCS
-        gcs_path = f"{self.log_subdir}/{self.__class__.__name__}/{self.target_drone}_interactive.html"
+        gcs_path = f"{self.log_subdir}/FlyToPoints/{self.__class__.__name__}/{self.target_drone}_interactive.html"
         with lock:
             try:        
                 self.upload_to_gcs(gcs_path, interactive_html_content, content_type='text/html')

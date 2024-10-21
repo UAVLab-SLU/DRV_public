@@ -12,7 +12,7 @@ class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
         #implementation of the GCS service
-        self.gcs = GCSStorageService('droneworld')
+        self.storage_service = GCSStorageService('droneworld')
 
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
@@ -65,7 +65,7 @@ class AirSimApplication:
 
     def upload_to_gcs(self, file_name, content):
         #uses the concrete of 
-        self.gcs.uploadToService(file_name,content)
+        self.storage_service.uploadToService(file_name,content)
  
 
     def save_pic(self, picture):

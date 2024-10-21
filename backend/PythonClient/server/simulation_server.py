@@ -32,7 +32,30 @@ bucket_name = 'droneworld'
 #def mission():
 #     directory = '../multirotor/mission'
 #     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+def check_monitor_pass_fail(bucket, file_name, monitors):
+        monitor_pass = True
+        blob = bucket.blob(file_name) # Full path
+        content = blob.download_as_text()
 
+        for monitor in monitors:
+            if monitor in content and 'FAIL' in content:
+                monitor_pass = False
+                break
+        return monitor_pass
+
+def count_drone_files(bucket, report_file_name):
+        count = 0
+        flytopoints_prefix = f'{report_file_name}/FlyToPoints/' # Full path
+
+        try:
+            blobs = bucket.list_blobs(prefix=flytopoints_prefix)
+            count = sum(1 for blob in blobs if 'CollisionMonitor' in blob.name and blob.name.endswith('.txt'))
+
+        except Exception as e:
+            logging.error(f"Error counting drone files for {flytopoints_prefix}: {str(e)}")
+            count = 0
+            
+        return count 
 
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
@@ -57,32 +80,7 @@ def list_reports():
                 'fail': 0 if all_monitors_pass else drone_count
             })
     
-    return {'reports': report_files}
-
-    def check_monitor_pass_fail(bucket, file_name, monitors):
-        monitor_pass = True
-        blob = bucket.blob(file_name) # Full path
-        content = blob.download_as_text()
-
-        for monitor in monitors:
-            if monitor in content and 'FAIL' in content:
-                monitor_pass = False
-                break
-        return monitor_pass
-        
-    def count_drone_files(bucket, report_file_name):
-        count = 0
-        flytopoints_prefix = f'{report_file_name}/FlyToPoints/' # Full path
-
-        try:
-            blobs = bucket.list_blobs(prefix=flytopoints_prefix)
-            count = sum(1 for blob in blobs if 'CollisionMonitor' in blob.name and blob.name.endswith('.txt'))
-
-        except Exception as e:
-            logging.error(f"Error counting drone files for {flytopoints_prefix}: {str(e)}")
-            count = 0
-            
-        return count            
+    return {'reports': report_files}               
     
 #Folder content with base64
 @app.route('/list-folder-contents/<folder_name>', methods=['POST'])
@@ -109,6 +107,7 @@ def list_folder_contents(folder_name):
 
     if fuzzy_folders:
         for fuzzy_folder in fuzzy_folders:
+            fuzzy_directory = fuzzy_folder
             process_directory(fuzzy_directory, result, fuzzy_folder)
     else:
         process_directory(base_directory, result, "")

@@ -5,13 +5,12 @@ import time
 from abc import abstractmethod
 
 from PythonClient import airsim
-from google.cloud import storage
-from PythonClient.multirotor.monitor.gsc_storage_service import GCSStorageService
+from PythonClient.multirotor.storage.gsc_storage_service import GCSStorageService
 
 class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
-        #implementation of the GCS service
+        # implementation of the GCS service
         self.storage_service = GCSStorageService('droneworld')
 
         self.circular_mission_names = {"FlyInCircle"}
@@ -63,11 +62,13 @@ class AirSimApplication:
     def save_report(self):
         pass
 
-    def upload_to_gcs(self, file_name, content):
-        #uses the concrete of 
-        self.storage_service.uploadToService(file_name,content)
+    def save_report_to_storage(self, file_name, content, content_type='text/plain'):
+        """
+        Saves the content as a report and uploads it using the storage service.
+        Uses the upload_to_service method of the storage service.
+        """
+        self.storage_service.upload_to_service(file_name, content, content_type)
  
-
     def save_pic(self, picture):
         self.snap_shots.append(picture)
 

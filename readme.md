@@ -8,8 +8,6 @@ DroneWis is a CFD-based wind simulation component that is integrated with DroneR
 
 ## DRV + DroneWis
 
-Instruction for ASE 2024 reviewers:
-
 1. Switch to the branch `ASE-docker`
 
 2. Use the docker compose.yaml file to run the complete system. 
@@ -71,6 +69,26 @@ pages={2082--2085}, year={2023},
           organization={IEEE}
         }
 ```
+3. **DroneWiS: Automated Simulation Testing of small Unmanned Aerial System in Realistic Windy Conditions**
+   ```bibtex
+   @inproceedings{10.1145/3691620.3695351,
+    author = {Zhang, Bohan and Agrawal, Ankit},
+    title = {DroneWiS: Automated Simulation Testing of small Unmanned Aerial System in Realistic Windy Conditions},
+    year = {2024},
+    isbn = {9798400712487},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3691620.3695351},
+    doi = {10.1145/3691620.3695351},
+    abstract = {The continuous evolution of small Unmanned Aerial Systems (sUAS) demands advanced testing methodologies to ensure their safe and reliable operations in the real-world. To push the boundaries of sUAS         simulation testing in realistic environments, we previously developed the DroneReqValidator (DRV) platform [11], allowing developers to automatically conduct simulation testing in digital twin of earth. In this paper, we present DRV 2.0, which introduces a novel component called DroneWiS (Drone Wind Simulation). DroneWiS allows sUAS developers to automatically simulate realistic windy conditions and test the resilience of sUAS against wind. Unlike current state-of-the-art simulation tools such as Gazebo and AirSim that only simulate basic wind conditions, DroneWiS leverages Computational Fluid Dynamics (CFD) to compute the unique wind flows caused by the interaction of wind with the objects in the environment such as buildings and uneven terrains. This simulation capability provides deeper insights to developers about the navigation capability of sUAS in challenging and realistic windy conditions. DroneWiS equips sUAS developers with a powerful tool to test, debug, and improve the reliability and safety of sUAS in real-world. A working demonstration is available at https://youtu.be/khBHEBST8Wc.},
+    booktitle = {Proceedings of the 39th IEEE/ACM International Conference on Automated Software Engineering},
+    pages = {2358–2361},
+    numpages = {4},
+    keywords = {testing, environmental factors, unmanned aerial systems},
+    location = {Sacramento, CA, USA},
+    series = {ASE '24}
+    }
+    ```
 
 ## Contributing
 

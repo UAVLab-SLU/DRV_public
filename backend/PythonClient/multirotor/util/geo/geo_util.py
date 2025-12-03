@@ -1,5 +1,6 @@
 import math
 import requests
+import os
 
 class Vector:
     """
@@ -189,10 +190,21 @@ class GeoUtil:
 
     @staticmethod
     def get_elevation(lat, lng):
-        #curl -L -X GET 'https://maps.googleapis.com/maps/api/elevation/json?locations=39.7391536%2C-104.9847034&key=AIzaSyAZg02ECdzNzTvjTLbIRr61eh-P9mCq2ac'
-        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key=AIzaSyDl5tkiX4Z8CKS8NNngmYLwpnGCtig9DCg"
+        #curl -L -X GET 'https://maps.googleapis.com/maps/api/elevation/json?locations={lat=39.7391536}%2C{long=-104.9847034}&key={api_key}'
+        api_key = os.getenv('GOOGLE_MAPS_API_KEY', 'google maps api key')
+        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key={api_key}"
         response = requests.get(url).json()
-        if 'results' in response:
+        
+        # Check if the request was successful
+        if response.get('status') != 'OK':
+            print(f"Error from API: {response.get('status')}")
+            print(f"API Response: {response}")
+            return None
+
+        # Check if 'results' is in the response and not empty
+        if 'results' in response and response['results']:
             return response['results'][0]['elevation']
         else:
+            print(f"No elevation data found for location: {lat}, {lng}")
+            print(f"API Response: {response}")
             return None

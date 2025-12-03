@@ -5,11 +5,14 @@ import time
 from abc import abstractmethod
 
 from PythonClient import airsim
-
+from PythonClient.multirotor.storage.storage_config import get_storage_service
 
 class AirSimApplication:
     # Parent class for all airsim client side mission and monitors
     def __init__(self):
+        # Set up the storage service
+        self.storage_service = get_storage_service()
+
         self.circular_mission_names = {"FlyInCircle"}
         self.polygon_mission_names = {"FlyToPoints", "FlyToPointsGeo"}
         self.point_mission_names = {"FlyStraight"}
@@ -59,6 +62,13 @@ class AirSimApplication:
     def save_report(self):
         pass
 
+    def save_report_to_storage(self, file_name, content, content_type='text/plain'):
+        """
+        Saves the content as a report and uploads it using the storage service.
+        Uses the upload_to_service method of the storage service.
+        """
+        self.storage_service.upload_to_service(file_name, content, content_type)
+ 
     def save_pic(self, picture):
         self.snap_shots.append(picture)
 

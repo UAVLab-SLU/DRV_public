@@ -13,7 +13,10 @@ import DroneConfiguration from './DroneConfiguration'
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
-
+import Tooltip from '@mui/material/Tooltip';
+import { imageUrls } from '../../utils/const';
+import { useMainJson } from '../../contexts/MainJsonContext';
+import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -23,6 +26,8 @@ const useStyles = makeStyles((theme) => ({
   }));
 
 export default function MissionConfiguration (mission) {
+    const { mainJson, setMainJson } = useMainJson();
+    const [duplicateNameIndex, setDuplicateNameIndex] = React.useState(-1);
     const classes = useStyles();
     const [droneCount, setDroneCount] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones.length : 1);
     const [droneArray, setDroneArray] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones : [{
@@ -100,6 +105,14 @@ export default function MissionConfiguration (mission) {
         //     Yaw: 0
         // }
     }]);
+
+    React.useEffect(() => {
+        if(droneArray.length===1){
+            mainJson.addNewDrone(droneArray[droneCount-1]);
+            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        }
+    }, []);
+
     const setDrone = () => {
         droneArray.push({
             id: (droneCount), 
@@ -176,7 +189,20 @@ export default function MissionConfiguration (mission) {
             //     Yaw: 0
             // }
         })
+        mainJson.addNewDrone(droneArray[droneCount]);
+        setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
+
+    const handleDragStart = (event, index) => {
+        const imgSrc = event.target.src;
+        const dragData = {
+          type: 'drone',
+          src: imgSrc,
+          index: index,
+        };
+
+        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+      };
 
     const popDrone = () =>{
         droneArray.pop()
@@ -188,10 +214,35 @@ export default function MissionConfiguration (mission) {
     }
 
     const handleDecrement = () => {
-        setDroneCount(droneCount -1)
-        popDrone()
-    }
-
+        // Ensure droneCount is greater than 0 to prevent negative counts
+        if (droneCount > 0) {
+          setDroneCount(prevCount => prevCount - 1);
+      
+          // Update the drone array by removing the last element
+          setDroneArray(prevArray => {
+            const updatedArray = prevArray.slice(0, -1); // Creates a new array without the last element
+      
+            // Call mainJson.popLastDrone() if it exists
+            if (mainJson && typeof mainJson.popLastDrone === 'function') {
+              mainJson.popLastDrone();
+            } else {
+              console.warn('mainJson.popLastDrone is not a function');
+            }
+      
+            // Safely update mainJson state
+            if (typeof SimulationConfigurationModel?.getReactStateBasedUpdate === 'function') {
+              setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+            } else {
+              console.warn('SimulationConfigurationModel.getReactStateBasedUpdate is not a function');
+            }
+      
+            return updatedArray;
+          });
+        } else {
+          console.warn('Drone count is already at zero.');
+        }
+      };
+    
     const setDroneName = (e, index) => {
         setDroneArray(objs => {
             return objs.map((obj, i) => {
@@ -204,6 +255,13 @@ export default function MissionConfiguration (mission) {
                 return obj
             })
         })
+
+        const updatedDrone = mainJson.getDroneBasedOnIndex(index);
+        if (updatedDrone) {
+            updatedDrone.droneName = e;
+            mainJson.updateDroneBasedOnIndex(index, updatedDrone);
+            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        }
     }
 
     React.useEffect(() => {
@@ -233,7 +291,7 @@ export default function MissionConfiguration (mission) {
     }
 
     return (
-        <Box sx={{border:1, borderRadius: 3, maxHeight: (mission.windowHeight)-200, overflow:'scroll', padding: 3}} >
+        <Box sx={{width: '100%', border:1, borderRadius: 3, overflow:'scroll', padding: 3}} >
             {/* <Container fixed> */}
             <Grid container  direction="row" style={{padding: '12px'}} ><strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong></Grid>
                     <Alert severity="info">
@@ -261,7 +319,32 @@ export default function MissionConfiguration (mission) {
                                     aria-controls="panel1a-content"
                                     id="panel1a-header"
                                     >
-                                    <Typography className={classes.heading}>{drone.droneName}</Typography>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            width: '100%',
+                                        }}
+                                    >
+                                        <Typography className={classes.heading}>{drone.droneName}</Typography>
+                                        <Grid container alignItems="center" columnSpacing={2} sx={{ width: 'auto' }}>
+                                            <Grid item>
+                                                <Tooltip title="Click to fly this drone on the map."></Tooltip>
+                                            </Grid>
+                                            <Grid item>
+                                                <Tooltip title="Drag and Drop this drone to set or update its home location on the map.">
+                                                    <img
+                                                        src={imageUrls.drone_icon}
+                                                        alt="Draggable Icon"
+                                                        draggable="true"
+                                                        onDragStart={(e) => handleDragStart(e, index)}
+                                                        style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                                                    />
+                                                </Tooltip>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
                                     </AccordionSummary>
                                     <AccordionDetails>
                                     <Typography>

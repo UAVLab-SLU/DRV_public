@@ -28,14 +28,11 @@ class GlobalMonitor(AirSimApplication):
 
     def save_report(self):
         with lock:
-            log_dir = os.path.join(self.dir_path,
-                                   self.log_subdir) + os.sep + "GlobalMonitors" + os.sep + self.__class__.__name__
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
+            # Directly create the file name for GCS
+            file_name = "log.txt"
+            gcs_path = f"{self.log_subdir}/GlobalMonitors/{self.__class__.__name__}/{file_name}"
 
-            filename = log_dir + os.sep + "log.txt"
-
-            with open(filename, 'w') as outfile:
-                outfile.write(self.log_text)
+            # Upload directly to GCS (log_text is uploaded as file content)
+            self.save_report_to_storage(gcs_path, self.log_text)
 
             # print("DEBUG:" + log_dir)

@@ -17,6 +17,7 @@ import MonitorTabels from './MonitorTabels';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 import dayjs from 'dayjs';
 
@@ -91,7 +92,7 @@ export default function MonitorControl (monJson) {
         },
         battery_monitor:{
             enable:false,
-            param:[1]
+            param:[1,1]
         }
     })
 
@@ -122,14 +123,14 @@ export default function MonitorControl (monJson) {
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
-    const handleBatteruMonitor = (val) => {
+    const handleBatteryMonitor = (val, index) => {
         setMonitor(prevState => ({
             ...prevState,
             battery_monitor: {
-                ...monitor.battery_monitor,
-                param: [
-                    parseFloat(val.target.value)
-                ]
+                ...prevState.battery_monitor,
+                param: prevState.battery_monitor.param.map((item, i) =>
+                    i === index ? parseFloat(val.target.value) : item
+                )
             }
         }))
     }
@@ -608,6 +609,46 @@ export default function MonitorControl (monJson) {
             tableData:null,
             isMultipleTable: false
         },
+        {
+            name: "Battery",
+            value: '2.8',
+            description: "Test whether the drone's battery dropped below the certain percentage",
+            colorText:monitor.battery_monitor.enable == true ? 'green': null,
+            btns:
+                <React.Fragment>{monitor.battery_monitor.enable == true ? 
+                <Grid item xs={12}>
+                    <Grid item xs={12} style={{paddingBottom:20}}><strong>Configure the current battery capacity </strong></Grid>
+                    <FormGroup>
+                        {/* Input for current battery capacity */}
+                        <Tooltip title="Input the current battery capacity of the drone as % (0-100)" placement='bottom'>
+                            <Grid item xs={6} style={{marginBottom: '20px'}}>
+                                <TextField id="battery-capacity" label="Battery Capacity (%)" type="number" step="0.1" variant="standard" style={{width: '190px'}} inputProps={{min:0, max:100}} onChange={(val) => handleBatteryMonitor(val, 0)} value={monitor.battery_monitor.param[0]}></TextField>
+                            </Grid>
+                        </Tooltip>
+                        {/* Input for target failure battery percentage */}
+                        <Tooltip title="Input the target failure battery percentage for testing" placement='bottom'>
+                            <Grid item xs={6}>
+                                <TextField id="target-failure" label="Target Failure Percentage (%)" type="number" step="0.1" variant="standard" style={{width: '190px'}} inputProps={{min:0, max:100}} onChange={(val) => handleBatteryMonitor(val, 1)} value={monitor.battery_monitor.param[1]}></TextField>
+                            </Grid>                         
+                        </Tooltip>
+                    </FormGroup>
+                    <Grid item xs={12} style={{paddingTop:50}}>
+                     <Alert severity="info">
+                        <AlertTitle>Info</AlertTitle>
+                        This feature is still in development.
+                    </Alert>
+                    </Grid>
+                </Grid>
+                : null}</React.Fragment>,
+            images: null,
+            enableBtn:
+                <Grid container direction="row"><strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
+                <FormControlLabel control={<Switch checked={monitor.battery_monitor.enable} onChange={(e) => {
+                    handleChangeSwitch(e, "battery_monitor")
+                }} inputProps={{'aria-label': 'controlled'}} />} label={monitor.battery_monitor.enable ? "Enabled" : "Disabled"} /></Grid>,
+            tableData: null,
+            isMultipleTable: false
+        }
     ]
     const handleFuzzyWindChange = (val) => {
         setEnvConf(prevState => ({
@@ -701,7 +742,7 @@ export default function MonitorControl (monJson) {
                                                 onChange={handleVerticalChange}
                                                 variant="scrollable"
                                                 scrollButtons="auto"
-                                                sx={{ borderRight: 1, borderColor: 'divider' }}
+                                                sx={{ borderRight: 1, borderColor: 'divider', minWidth:'100px' }}
                                             >
                                                 {singleMonitors.map(function(single, index) {
                                                     return <Tab key={index} label={single.name} value={single.value} style={{ justifyContent: "block", alignItems:"block", color:single.colorText}} wrapped/>

@@ -2,9 +2,7 @@ import datetime
 import os
 import threading
 from enum import Enum
-
 from PythonClient.multirotor.airsim_application import AirSimApplication
-
 
 lock = threading.Lock()
 
@@ -34,23 +32,16 @@ class GenericMission(AirSimApplication):
 
     def save_report(self):
         with lock:
-            log_dir = os.path.join(self.dir_path, self.log_subdir, self.__class__.__name__)
-            # print("DEBUG:" + log_dir)
-            if not os.path.exists(log_dir):
-                try:
-                    os.makedirs(log_dir)
-                except:
-                    print("Folder exist, thread unsafe")
+            # Directly create the file name for GCS
+            file_name = self.__class__.__name__ + "_" + self.target_drone + "_log.txt"
+            gcs_path = f"{self.log_subdir}/{self.__class__.__name__}/{file_name}"
 
-            with open(log_dir + os.sep + self.__class__.__name__ + "_" + self.target_drone + "_log.txt", 'w') as outfile:
-                outfile.write(self.log_text)
+            # Upload directly to GCS (log_text is uploaded as file content)
+            self.save_report_to_storage(gcs_path, self.log_text)
 
     def kill_mission(self):
         self.state = self.State.END
         # kill all threads
-
-
-
 
 
 if __name__ == '__main__':

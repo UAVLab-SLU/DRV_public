@@ -31,8 +31,51 @@ import Checkbox from '@mui/material/Checkbox';
 import { DeleteOutline } from '@mui/icons-material';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import { EnvironmentModel } from '../model/EnvironmentModel';
+
+const buildEnvironmentModel = (conf, baseModel) => {
+  const model = EnvironmentModel.getReactStateBasedUpdate(baseModel ?? new EnvironmentModel());
+
+  const originSource = conf?.Origin ?? conf?._Origin ?? {};
+  const windSource = conf?.Wind ?? conf?._Wind ?? model.Wind;
+
+  const latitude =
+    originSource.Latitude ?? originSource.latitude ?? model.getOriginLatitude() ?? 0;
+  const longitude =
+    originSource.Longitude ?? originSource.longitude ?? model.getOriginLongitude() ?? 0;
+  const height = originSource.Height ?? originSource.height ?? model.getOriginHeight() ?? 0;
+  const name = originSource.Name ?? originSource.name ?? model.getOriginName() ?? '';
+  const radius = originSource.Radius ?? originSource.radius ?? model.getOriginRadius();
+
+  const originImage = originSource.image ?? model.getOriginImage();
+  model.Origin = {
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+    height: Number(height),
+    name,
+    radius: Number(radius),
+    image: originImage,
+  };
+
+  model.TimeOfDay = conf?.TimeOfDay ?? conf?._TimeOfDay ?? model.TimeOfDay;
+  model.time = conf?.time ?? conf?._time ?? model.time;
+  model.enableFuzzy = Boolean(conf?.enableFuzzy ?? conf?._enableFuzzy ?? model.enableFuzzy);
+  model.timeOfDayFuzzy = Boolean(
+    conf?.timeOfDayFuzzy ?? conf?._timeOfDayFuzzy ?? model.timeOfDayFuzzy
+  );
+  model.positionFuzzy = Boolean(
+    conf?.positionFuzzy ?? conf?._positionFuzzy ?? model.positionFuzzy
+  );
+  model.windFuzzy = Boolean(conf?.windFuzzy ?? conf?._windFuzzy ?? model.windFuzzy);
+  model.UseGeo = conf?.UseGeo ?? conf?._UseGeo ?? model.UseGeo;
+  model.Wind = windSource;
+
+  return model;
+};
+
 
 export default function EnvironmentConfiguration (env) {  
+    console.log('EnvironmentConfiguration props', env);
     const [backendInfo, setBackendInfo] = useState({ 
         numQueuedTasks: 0,
         backendStatus: 'idle'
@@ -98,10 +141,22 @@ export default function EnvironmentConfiguration (env) {
     const environmentJson = (event) => {
         env.environmentJson(event, env.id);
     }    
-    //new added
+    
     React.useEffect(() => {
-        environmentJson(envConf)
-    }, [envConf])
+        //console.log("Passing data up", envConf);
+        const model = buildEnvironmentModel(envConf, env.environmentJSON);
+        //console.log('Model origin lat/long', model.getOriginLatitude?.(), model.getOriginLongitude?.(), model._Origin);
+
+        if (env.environmentJSONSetState){
+            env.environmentJSONSetState(model, env.id);
+        }
+
+        if (env.environmentJson){
+            env.environmentJson(envConf, env.id);
+        }
+        
+    }, [envConf, env.environmentJSON]);
+
 
     const Direction = [
         {value:'N', id:5},
@@ -169,7 +224,7 @@ export default function EnvironmentConfiguration (env) {
         setEnvConf(prevState => ({
             ...prevState,
             time: val,
-            TimeOfDay: val.$H + ':' + val.$m + ':' + val.$s
+            TimeOfDay: dayjs(val).format('HH:mm:ss')
         }))
     }
     /*
@@ -183,15 +238,33 @@ export default function EnvironmentConfiguration (env) {
         }))
     } 
     */
-    const handleWindChange = (val) => {
-        setEnvConf((prevState) => ({
-          ...prevState,
-          Wind: {
-            ...prevState.Wind,
-            Velocity: val.target.type === "number" ? parseFloat(val.target.value) : 0,
-          },
+    const handleWindChange = (e) => {
+        const v = e.target.value;
+
+        
+        if (v === '') {
+            setEnvConf(prev => ({
+            ...prev,
+            Wind: { ...prev.Wind, Force: '' },   
+            }));
+            return;
+        }
+
+        const n = Number(v);
+        if (Number.isNaN(n)) {
+            return;
+        }
+
+       
+        const clamped = Math.min(50, Math.max(0, n));
+        setEnvConf(prev => ({
+            ...prev,
+            Wind: { ...prev.Wind, Force: clamped },
         }));
-      };
+    };
+
+
+
     const handleOriginChange = (val) => {
         setEnvConf(prevState => ({
             ...prevState,
@@ -599,14 +672,14 @@ const handleSnackBarVisibility = (val) => {
              {fuzzyAlert ? "Fuzzy Testing Changes is under development !" : "Wind Type Changes is under Developement !"}
         </Alert>
     </Snackbar>
-    <Box sx={{ width: '100%',border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
+    <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
         {/* <Container fixed > */}
             <Typography>
-                <Grid container spacing={5} direction="row" >
+                <Grid container spacing={5} direction="column" alignItems="center" >
                     {/* <Grid item xs={3}>
                         <Typography id="standard-basic" label="Wind" mt={4}>Wind</Typography>
                     </Grid> */}
-                    <Grid item xs={3}> 
+                    <Grid item xs={12}> 
                         <FormControl variant="standard" sx={{ minWidth: 150 }}>
                             <InputLabel id="WindType">Wind Type</InputLabel>
                                 <Select
@@ -624,7 +697,7 @@ const handleSnackBarVisibility = (val) => {
                     </Grid>
 
                     {/* {selectedWindType !== "Wind Shear" && ( */}
-                    <Grid item xs={3}>
+                    <Grid item xs={12}>
                         <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                             <InputLabel id="Direction">Wind Direction</InputLabel>
                             <Select label="Direction" value={envConf.Wind.Direction} onChange={handleDirection}>
@@ -661,20 +734,21 @@ const handleSnackBarVisibility = (val) => {
 
                     {/* {selectedWindType !== "Wind Shear" && ( */}
                     <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                        <Grid item xs={3}>
+                        <Grid item xs={12}>
                             <TextField id="Force" 
                                 label="Wind Velocity (m/s)" 
                                 variant="standard" type="number" 
                                 onChange={handleWindChange} 
                                 value={envConf.Wind.Force} 
-                                inputProps={{ min: 0 }}/>
+                                inputProps={{ min: 0, max: 50, }}
+                                helperText={`Allowed range: 0-50 m/s`}/>
                         </Grid>
                     </Tooltip>
                     {/* )} */}
                     
 
                     {(selectedWindType === "Turbulent Wind" || selectedWindType === "Wind Shear")  && (
-                            <Grid item xs={3}>
+                            <Grid item xs={12}>
                                  <Tooltip title="Enter Fluctuation %" placement='bottom'>
                                 <TextField id="Fluctuation %" 
                                     label="Fluctuation %" 
@@ -785,8 +859,8 @@ const handleSnackBarVisibility = (val) => {
                     </Dialog> */}
                 </Grid>
                 {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((<Typography key={index}><Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
-                    <Grid item xs={3}></Grid>
-                            <Grid item xs={3}>
+                    <Grid item xs={12}></Grid>
+                            <Grid item xs={12}>
                                 <FormControl variant="standard" sx = {{ minWidth: 150 }}>
                                     <InputLabel id="Direction">Wind Direction</InputLabel>
                                     <Select label="Direction" value={shear.windDirection} onChange={(e) => handleShearWindDirection(e.target.value, index)}>
@@ -800,7 +874,7 @@ const handleSnackBarVisibility = (val) => {
                             </Grid>
                     
                             <Tooltip title="Enter Wind Velocity in Meters per second" placement='bottom'>
-                                <Grid item xs={3}>
+                                <Grid item xs={12}>
                                     <TextField id="Velocity" 
                                         label="Wind Velocity (m/s)" 
                                         variant="standard" type="number" 
@@ -809,7 +883,7 @@ const handleSnackBarVisibility = (val) => {
                                         inputProps={{ min: 0 }}/>
                                 </Grid>
                             </Tooltip>
-                            <Grid item xs={3}>
+                            <Grid item xs={12}>
                             <Tooltip title="Enter Fluctuation %" placement='bottom'>
                             <TextField id="Fluctuation%" 
                                     label="Fluctuation %" 
@@ -833,8 +907,8 @@ const handleSnackBarVisibility = (val) => {
                 )))}
 
 
-                <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>  
-                    <Grid item xs={3} >
+                <Grid container spacing={5} direction="column" alignItems="center" sx={{ marginTop: '10px' }}>  
+                    <Grid item xs={12} >
                         <FormControl variant="standard" sx={{ minWidth: 150 }}>
                             <InputLabel id="Origin">Region</InputLabel>
                             <Select label="Region" value={envConf.Origin.Name} onChange={handleOrigin} >
@@ -846,18 +920,18 @@ const handleSnackBarVisibility = (val) => {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={12}>
                         <TextField id="Latitude" label="Latitude" variant="standard" type="number" 
                         inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Latitude}
                          disabled={envConf.Origin.Name=="Specify Region" ? false : true} 
                          />
                     </Grid>
 
-                    <Grid item xs={3}>
+                    <Grid item xs={12}>
                         <TextField id="Longitude" label="Longitude" variant="standard" type="number" inputProps={{ step: ".0001" }} onChange={handleOriginChange} value={envConf.Origin.Longitude} disabled={envConf.Origin.Name=="Specify Region" ? false : true} />
                     </Grid>
 
-                    <Grid item xs={3}>
+                    <Grid item xs={12}>
         <TextField id="Height" label="Altitude" variant="standard" type="number" inputProps={{ step: "1" }} onChange={handleOriginChange} value={envConf.Origin.Height} disabled={envConf.Origin.Name=="Specify Region" ? false : true}
         helperText={envConf.Origin.Name == "Specify Region" ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value.":  null}/>
     </Grid>
@@ -871,9 +945,9 @@ const handleSnackBarVisibility = (val) => {
                     </Grid> */}
                 </Grid>
 
-                    <Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
+                    <Grid container spacing={5} direction="column" alignItems="center" sx={{ marginTop: '20px' }}>
                         <Tooltip title="Enter time of day (24 Hours Format)" placement='bottom'>
-                            <Grid item xs={3}>
+                            <Grid item xs={12}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <Stack spacing={3}>
                                     <TimePicker

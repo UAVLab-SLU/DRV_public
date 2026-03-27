@@ -1,5 +1,81 @@
 // Cypress Test for E2E Frontend Flow
 describe('DroneWorld Application Flow', () => {
+  const installMockOpfs = (win) => {
+    const files = new Map();
+    let directoryCreated = false;
+
+    const createFileHandle = (name) => ({
+      kind: 'file',
+      createWritable: () =>
+        Promise.resolve({
+          write: (content) => {
+            const existing = files.get(name) || { content: '', lastModified: Date.now() };
+            existing.content = String(content);
+            existing.lastModified = Date.now();
+            files.set(name, existing);
+            return Promise.resolve();
+          },
+          close: () => Promise.resolve(),
+        }),
+      getFile: () => {
+        const existing = files.get(name);
+        return Promise.resolve({
+          name,
+          size: existing.content.length,
+          lastModified: existing.lastModified,
+          text: () => Promise.resolve(existing.content),
+        });
+      },
+    });
+
+    const savedSettingsDirectory = {
+      getFileHandle: (name, options = {}) => {
+        if (!files.has(name)) {
+          if (!options.create) {
+            return Promise.reject(new Error('NotFoundError'));
+          }
+          files.set(name, { content: '', lastModified: Date.now() });
+        }
+
+        return Promise.resolve(createFileHandle(name));
+      },
+      removeEntry: (name) => {
+        files.delete(name);
+        return Promise.resolve();
+      },
+      async *entries() {
+        for (const [name] of files.entries()) {
+          yield [name, createFileHandle(name)];
+        }
+      },
+    };
+
+    const rootDirectory = {
+      getDirectoryHandle: (name, options = {}) => {
+        if (name !== 'saved-settings') {
+          return Promise.reject(new Error(`Unexpected directory: ${name}`));
+        }
+
+        if (!directoryCreated && !options.create) {
+          return Promise.reject(new Error('NotFoundError'));
+        }
+
+        directoryCreated = true;
+        return Promise.resolve(savedSettingsDirectory);
+      },
+    };
+
+    Object.defineProperty(win.navigator, 'storage', {
+      configurable: true,
+      value: {
+        getDirectory: () => Promise.resolve(rootDirectory),
+      },
+    });
+
+    win.URL.createObjectURL = () => 'blob:mock-settings';
+    win.URL.revokeObjectURL = () => {};
+  };
+
   it('should handle direct /dashboard access without route state', () => {
     cy.visit('/dashboard');
     cy.contains('No Report Selected').should('be.visible');
@@ -27,10 +103,15 @@ describe('DroneWorld Application Flow', () => {
     cy.intercept('GET', `${finalBackendUrl}/list-reports`).as('listReports');
     cy.intercept('GET', `${finalBackendUrl}/currentRunning`).as('getBackendStatus');
     cy.intercept('POST', `${finalBackendUrl}/addTask`).as('addTask');
+    cy.intercept('POST', `${finalBackendUrl}/api/simulation/settings/preview`).as('previewSettings');
     cy.intercept('POST', `${finalBackendUrl}/list-folder-contents/*`).as('listFolderContents');
     
     // Step 1: Visit the landing page
-    cy.visit('/');
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        installMockOpfs(win);
+      },
+    });
     
     // Wait for the initial backend reports call to complete
     cy.wait('@listReports');
@@ -69,26 +150,39 @@ describe('DroneWorld Application Flow', () => {
     cy.contains('button', 'Finish').should('exist');
     cy.contains('button', 'Finish').should('be.visible');
 
-    // Step 8: Click "Finish" and verify user remains on /simulation
+    // Step 8: Click "Finish", choose save-and-submit, and verify preview + submission both happen
     cy.contains('button', 'Finish').click();
+    cy.contains('Save settings.json before submission?').should('be.visible');
+    cy.contains('button', 'Yes, save and submit').click();
+    cy.wait('@previewSettings').then(({ request, response }) => {
+      expect(request.body).to.exist;
+      expect(response, 'preview settings response').to.exist;
+      expect(response.statusCode).to.eq(200);
+    });
     cy.wait('@addTask').then(({ request, response }) => {
       expect(request.body).to.exist;
       expect(response, 'addTask response').to.exist;
       expect(response.statusCode).to.eq(200);
     });
-    cy.url().should('include', '/simulation');
-    cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/simulation`);
+    cy.url().should('include', '/reports');
+    cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/reports`);
+
+    // Step 9: Verify saved settings history UI contains the saved snapshot
+    cy.get('nav').contains('a', 'Saved Settings').should('be.visible').click();
+    cy.url().should('include', '/saved-settings');
+    cy.contains('h4', 'Saved Settings').should('be.visible');
+    cy.contains(/settings-\d{8}T\d{9}\.json/).should('be.visible');
 
     // Wait until the backend reports endpoint exposes at least one Batch report
     waitForAnyBatchReport();
 
-    // Step 9: Verify "Reports" button exists in top nav, click it, and verify navigation to /reports
+    // Step 10: Verify "Reports" button exists in top nav, click it, and verify navigation to /reports
     cy.get('nav').contains('a', 'Reports').should('be.visible').click();
     cy.url().should('include', '/reports');
     cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/reports`);
     cy.contains('h6', /^Batch\b/, { timeout: 10000 }).should('be.visible').as('latestBatchTitle');
 
-    // Step 10: Use the newest Batch tile to verify timestamp, local write, and download behavior
+    // Step 11: Use the newest Batch tile to verify timestamp, local write, and download behavior
     cy.window().then((win) => {
       cy.stub(win, 'open').as('windowOpen');
     });
@@ -118,7 +212,7 @@ describe('DroneWorld Application Flow', () => {
     cy.get('@downloadButton').click();
     cy.get('@windowOpen').should('have.been.called');
 
-    // Step 11: Preview the newest batch report and verify dashboard navigation/rendering
+    // Step 12: Preview the newest batch report and verify dashboard navigation/rendering
     cy.get('@latestBatchTitle')
       .closest('.MuiCard-root')
       .within(() => {
@@ -134,7 +228,7 @@ describe('DroneWorld Application Flow', () => {
     cy.contains(/Detailed Report/, { timeout: 10000 }).should('be.visible');
     cy.contains('Interactable HTMLs').should('be.visible');
 
-    // Step 12: Use dashboard Back action and verify return to reports
+    // Step 13: Use dashboard Back action and verify return to reports
     cy.contains('Back').should('be.visible').click();
     cy.url().should('include', '/reports');
   });

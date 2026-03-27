@@ -37,11 +37,12 @@ def str_to_number(s):
 
 
 class SimulationTaskManager:
-    def __init__(self):
+    def __init__(self, initialize_environment=True):
         self.__save_raw_request = False  # for debugging, set to true to save raw request to file
         self.__drone_positions_seen = set()  # prevent duplicate drone positions from crashing DroneWorld
         self.__current_task_batch = "None"
-        self.__environment_check()
+        if initialize_environment:
+            self.__environment_check()
         self.unreal_state = {"state": "start"}
         self.__user_directory = os.path.join(os.path.expanduser('~'), "Documents", "AirSim")
         self.__FUZZY_TEST_MAX_WIND = 15  # 15 m/s 2023 Jan. max wind speed in st.louis
@@ -92,21 +93,41 @@ class SimulationTaskManager:
 
     def __update_settings(self, raw_request_json):
         self.unreal_off()
-        # Always rebuild these from scratch for each task update.
-        self.__drone_mission_pair_list.clear()
-        self.__monitor_list.clear()
-        new_setting_dot_json = copy.deepcopy(self.__DEFAULT_EMPTY_SETTINGS_DOT_JSON)
         self.__handle_streaming_settings(raw_request_json)
-        self.__populate_drone_and_mission_settings(new_setting_dot_json, raw_request_json)
-        self.__handle_wind_settings(new_setting_dot_json, raw_request_json)
-        self.__handle_settings_time_of_day(new_setting_dot_json, raw_request_json)
-        self.__populate_monitor_list(raw_request_json)
-        self.__save_settings_dot_json(new_setting_dot_json)
+        final_settings_dot_json = self._build_final_settings_payload(
+            raw_request_json,
+            persist_cesium=True,
+        )
+        self.__save_settings_dot_json(final_settings_dot_json)
         print("Settings deployed, waiting for DroneWorld to catch up")
         self.unreal_off()
         sleep(2)
         self.unreal_on()
         sleep(1)
+
+    def _build_final_settings_payload(self, raw_request_json, persist_cesium):
+        # Always rebuild these from scratch for each task update or preview.
+        self.__drone_mission_pair_list.clear()
+        self.__monitor_list.clear()
+
+        new_setting_dot_json = copy.deepcopy(self.__DEFAULT_EMPTY_SETTINGS_DOT_JSON)
+        self.__populate_drone_and_mission_settings(
+            new_setting_dot_json,
+            raw_request_json,
+            persist_cesium=persist_cesium,
+        )
+        self.__handle_wind_settings(new_setting_dot_json, raw_request_json)
+        self.__handle_settings_time_of_day(new_setting_dot_json, raw_request_json)
+        self.__populate_monitor_list(raw_request_json)
+        return self.__finalize_settings_dot_json(new_setting_dot_json)
+
+    @classmethod
+    def generate_settings_preview(cls, raw_request_json):
+        preview_manager = cls(initialize_environment=False)
+        return preview_manager._build_final_settings_payload(
+            raw_request_json,
+            persist_cesium=False,
+        )
 
     def __run_fuzzy_test_batch(self, current_queue_top, fuzzy_test_dict):
 
@@ -184,7 +205,7 @@ class SimulationTaskManager:
             with open(os.path.join(uuid + ".json"), "w") as f:
                 json.dump(raw_request_json, f, indent=4)
 
-    def __populate_drone_and_mission_settings(self, new_setting_dot_json, raw_request_json):
+    def __populate_drone_and_mission_settings(self, new_setting_dot_json, raw_request_json, persist_cesium=True):
         print(new_setting_dot_json)
         for single_drone_setting in raw_request_json["Drones"]:
             # Must-exist params for setting.json or mission dispatch
@@ -213,7 +234,8 @@ class SimulationTaskManager:
                     "Longitude": origin_longitude_,
                     "Altitude": origin_height_
                 }
-                self.__handle_cesium(origin_latitude_, origin_longitude_, origin_height_)
+                if persist_cesium:
+                    self.__handle_cesium(origin_latitude_, origin_longitude_, origin_height_)
                 drone_name, drone_x, drone_y, drone_z = self.__handle_mission_settings(
                     single_drone_setting_copy, cesium_origin)
             else:
@@ -358,18 +380,11 @@ class SimulationTaskManager:
         del single_drone_setting_copy['Z']
 
     @staticmethod
-    def __save_settings_dot_json(new_setting_dot_json):
+    def __finalize_settings_dot_json(new_setting_dot_json):
         debug_settings_candidates = [
             os.path.join(PROJECT_ROOT, "settings.json"),
             os.path.join(BACKEND_ROOT, "settings.json"),
         ]
-        output_path = os.path.join(
-            os.path.expanduser("~"),
-            "Documents",
-            "AirSim",
-            "settings.json"
-        )
-
         json_debug_mode = os.getenv("JSON_DEBUG_MODE", "false").strip().lower() == "true"
 
         if json_debug_mode:
@@ -386,6 +401,16 @@ class SimulationTaskManager:
 
         # Always emit Cosys-AirSim settings with the expected schema version.
         new_setting_dot_json["SettingsVersion"] = 2.0
+        return new_setting_dot_json
+
+    @staticmethod
+    def __save_settings_dot_json(new_setting_dot_json):
+        output_path = os.path.join(
+            os.path.expanduser("~"),
+            "Documents",
+            "AirSim",
+            "settings.json"
+        )
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w") as f:

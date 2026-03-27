@@ -55,6 +55,18 @@ simulation_state = {
     "drones": []
 }
 
+
+def _validate_task_payload(task_data):
+    if not task_data:
+        raise ValidationError("No task data provided", details={"missing_fields": ["task payload"]})
+
+    missing_fields = [field for field in ["Drones", "environment"] if field not in task_data]
+    if missing_fields:
+        raise ValidationError(
+            "Task payload missing required sections",
+            details={"missing_fields": missing_fields},
+        )
+
 # === New API Routes ===
 
 @app.route('/api/simulation', methods=['GET'])
@@ -186,12 +198,7 @@ def add_task():
     global task_number
     try:
         task_data = request.get_json(silent=True)
-        if not task_data:
-            raise ValidationError("No task data provided", details={"missing_fields": ["task payload"]})
-
-        missing_fields = [field for field in ["Drones", "environment"] if field not in task_data]
-        if missing_fields:
-            raise ValidationError("Task payload missing required sections", details={"missing_fields": missing_fields})
+        _validate_task_payload(task_data)
 
         # Generate a unique UUID string for the task
         uuid_string = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + "_Batch_" + str(task_number)
@@ -202,6 +209,26 @@ def add_task():
     except Exception as e:
         print(f"Error adding task: {e}")
         raise SimulationFailedError("Failed to add task", details={"exception": str(e)})
+
+
+@app.route('/api/simulation/settings/preview', methods=['POST'])
+def preview_settings():
+    """
+    Generates the exact AirSim settings.json payload for the provided task without writing files.
+    """
+    try:
+        task_data = request.get_json(silent=True)
+        _validate_task_payload(task_data)
+        settings = SimulationTaskManager.generate_settings_preview(task_data)
+        return jsonify({"settings": settings}), 200
+    except ValidationError:
+        raise
+    except Exception as e:
+        print(f"Error previewing settings: {e}")
+        raise SimulationFailedError(
+            "Failed to preview settings",
+            details={"exception": str(e)},
+        )
 
 @app.route('/currentRunning', methods=['GET'])
 def get_current_running():

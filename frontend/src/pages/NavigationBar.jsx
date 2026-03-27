@@ -97,6 +97,11 @@ function NavigationBar() {
               </Link>
           </li>
           <li className={classes.navListItem}>
+              <Link to="/saved-settings" className = {classes.navLink} style={{ textDecoration: location.pathname === "/saved-settings" ? "underline" : "none" }} >
+                Saved Settings
+              </Link>
+          </li>
+          <li className={classes.navListItem}>
               <Link to="/simulation" className = {classes.navLink} style={{ textDecoration: location.pathname === "/simulation" ? "underline" : "none" }}>
                 Simulation
               </Link>

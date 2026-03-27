@@ -77,8 +77,8 @@ function ReportSection({ title, reports, onPreview, onDownload }) {
   return (
     <Box sx={{ mt: 3 }}>
       <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
-        <AssessmentOutlinedIcon fontSize='small' sx={{ color: '#0f172a' }} />
-        <Typography variant='h5' fontWeight={700} sx={{ color: '#0f172a' }}>
+        <AssessmentOutlinedIcon fontSize='small' sx={{ color: 'var(--dw-color-text-primary)' }} />
+        <Typography variant='h5' fontWeight={700} sx={{ color: 'var(--dw-color-text-primary)' }}>
           {title}
         </Typography>
       </Stack>
@@ -100,18 +100,25 @@ function ReportSection({ title, reports, onPreview, onDownload }) {
                 <Card
                   sx={{
                     height: '100%',
-                    border: '1px solid #dbeafe',
-                    background: 'linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%)',
-                    boxShadow: '0 4px 14px rgba(15, 23, 42, 0.06)',
+                    border: '1px solid var(--dw-color-border)',
+                    background: 'var(--dw-gradient-card)',
+                    boxShadow: 'var(--dw-shadow-soft)',
                   }}
                 >
                   <CardContent>
                     <Stack direction='row' justifyContent='space-between' alignItems='flex-start'>
                       <Box>
-                        <Typography variant='h6' fontWeight={700} sx={{ color: '#0f172a' }}>
+                        <Typography
+                          variant='h6'
+                          fontWeight={700}
+                          sx={{ color: 'var(--dw-color-text-primary)' }}
+                        >
                           {batchName}
                         </Typography>
-                        <Typography variant='body2' sx={{ color: '#475569' }}>
+                        <Typography
+                          variant='body2'
+                          sx={{ color: 'var(--dw-color-text-secondary)' }}
+                        >
                           {report.timestampLabel}
                         </Typography>
                       </Box>
@@ -129,10 +136,18 @@ function ReportSection({ title, reports, onPreview, onDownload }) {
                     </Stack>
 
                     <Stack direction='row' spacing={3} sx={{ mt: 2, mb: 1 }}>
-                      <Stat label='Pass' value={report.pass} color='#16a34a' />
-                      <Stat label='Fail' value={report.fail} color='#dc2626' />
-                      <Stat label='Drones' value={report.drone_count} color='#0ea5e9' />
-                      <Stat label='Pass %' value={`${passPercent}%`} color='#334155' />
+                      <Stat label='Pass' value={report.pass} color='var(--dw-color-success)' />
+                      <Stat label='Fail' value={report.fail} color='var(--dw-color-error)' />
+                      <Stat
+                        label='Drones'
+                        value={report.drone_count}
+                        color='var(--dw-color-info)'
+                      />
+                      <Stat
+                        label='Pass %'
+                        value={`${passPercent}%`}
+                        color='var(--dw-color-neutral-strong)'
+                      />
                     </Stack>
                   </CardContent>
                   <Divider />
@@ -201,9 +216,9 @@ export default function ReportDashboard() {
   }, []);
 
   const groupedReports = useMemo(() => {
-    const normalized = (reports || []).map(normalizeReport).sort((a, b) =>
-      a.sortKey < b.sortKey ? 1 : -1,
-    );
+    const normalized = (reports || [])
+      .map(normalizeReport)
+      .sort((a, b) => (a.sortKey < b.sortKey ? 1 : -1));
     return normalized.reduce(
       (acc, report) => {
         const key = report.report_type === 'mock' ? 'mock' : 'real';
@@ -217,10 +232,13 @@ export default function ReportDashboard() {
   const handlePreview = async (report) => {
     setPreviewing(report.filename);
     try {
-      const res = await fetch(`${BASE_URL}/list-folder-contents/${encodeURIComponent(report.filename)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const res = await fetch(
+        `${BASE_URL}/list-folder-contents/${encodeURIComponent(report.filename)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
       if (!res.ok) throw new Error('Failed to load report contents');
       const data = await res.json();
       navigate('/dashboard', {
@@ -248,17 +266,21 @@ export default function ReportDashboard() {
       sx={{
         width: '100%',
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #e0f2fe 0%, #f8fafc 100%)',
+        background: 'var(--dw-gradient-page)',
         py: 4,
       }}
     >
       <Container maxWidth='lg'>
         <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 3 }}>
           <Box>
-            <Typography variant='h4' fontWeight={800} sx={{ color: '#0f172a' }}>
+            <Typography
+              variant='h4'
+              fontWeight={800}
+              sx={{ color: 'var(--dw-color-text-primary)' }}
+            >
               Reports
             </Typography>
-            <Typography variant='body1' sx={{ color: '#475569' }}>
+            <Typography variant='body1' sx={{ color: 'var(--dw-color-text-secondary)' }}>
               View, preview, and download simulation reports. Mock simulator runs are shown
               separately from real flights.
             </Typography>
@@ -268,7 +290,10 @@ export default function ReportDashboard() {
               variant='contained'
               startIcon={<HomeIcon />}
               onClick={() => navigate('/')}
-              sx={{ bgcolor: '#1e3a8a', '&:hover': { bgcolor: '#172554' } }}
+              sx={{
+                backgroundColor: 'var(--dw-color-primary)',
+                '&:hover': { backgroundColor: 'var(--dw-color-primary-hover)' },
+              }}
             >
               Home
             </Button>
@@ -312,13 +337,22 @@ export default function ReportDashboard() {
           onClose={() => setSnackOpen(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Alert onClose={() => setSnackOpen(false)} severity={error ? 'error' : 'info'} sx={{ width: '100%' }}>
+          <Alert
+            onClose={() => setSnackOpen(false)}
+            severity={error ? 'error' : 'info'}
+            sx={{ width: '100%' }}
+          >
             {error || 'No reports found yet.'}
           </Alert>
         </Snackbar>
 
         {previewing && (
-          <Stack direction='row' spacing={1} alignItems='center' sx={{ mt: 2, color: '#0f172a' }}>
+          <Stack
+            direction='row'
+            spacing={1}
+            alignItems='center'
+            sx={{ mt: 2, color: 'var(--dw-color-text-primary)' }}
+          >
             <CircularProgress size={18} />
             <Typography variant='body2'>Loading {previewing}…</Typography>
           </Stack>

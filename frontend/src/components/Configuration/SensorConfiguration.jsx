@@ -25,7 +25,7 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: 800,
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  border: '2px solid var(--dw-color-border-strong)',
   boxShadow: 24,
   p: 4,
 };
@@ -195,7 +195,7 @@ export default function SensorConfiguration(param) {
                       <BottomNavigationAction
                         value={btns.name}
                         label={btns.name}
-                        style={{ color: 'black' }}
+                        style={{ color: 'var(--dw-color-text-primary)' }}
                         icon={
                           <Fab color='primary' size='small'>
                             {' '}

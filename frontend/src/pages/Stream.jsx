@@ -6,26 +6,26 @@ import LiveTvIcon from '@mui/icons-material/LiveTv';
 const useStyles = makeStyles(() => ({
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(180deg, #e0f2fe 0%, #f8fafc 100%)',
+    background: 'var(--dw-gradient-page)',
     padding: '2.5rem 1.25rem 4rem',
     position: 'relative',
     overflow: 'hidden',
   },
   heading: {
-    color: '#0f172a',
+    color: 'var(--dw-color-text-primary)',
     fontWeight: 800,
   },
   subheading: {
-    color: '#475569',
+    color: 'var(--dw-color-text-secondary)',
     lineHeight: 1.6,
   },
   theatreFrame: {
     width: '100%',
     minHeight: 540,
     borderRadius: 24,
-    border: '1px solid #dbeafe',
-    background: 'linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%)',
-    boxShadow: '0 4px 14px rgba(15, 23, 42, 0.06)',
+    border: '1px solid var(--dw-color-border)',
+    background: 'var(--dw-gradient-card)',
+    boxShadow: 'var(--dw-shadow-soft)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -42,18 +42,17 @@ const useStyles = makeStyles(() => ({
   scanLines: {
     position: 'absolute',
     inset: 0,
-    background:
-      'repeating-linear-gradient(0deg, rgba(148, 163, 184, 0.12) 0px, rgba(148, 163, 184, 0.12) 1px, transparent 1px, transparent 6px)',
+    background: 'var(--dw-pattern-scan-lines)',
     pointerEvents: 'none',
   },
   placeholderCard: {
     width: 'min(90%, 820px)',
     borderRadius: 18,
-    background: '#ffffff',
-    border: '1px solid #dbeafe',
+    background: 'var(--dw-color-surface)',
+    border: '1px solid var(--dw-color-border)',
     padding: '2.5rem 1.75rem',
     textAlign: 'center',
-    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.08)',
+    boxShadow: 'var(--dw-shadow-strong)',
     zIndex: 2,
     '@media (max-width: 600px)': {
       padding: '1.5rem 1rem',
@@ -61,16 +60,16 @@ const useStyles = makeStyles(() => ({
   },
   icon: {
     fontSize: '3rem',
-    color: '#1d4ed8',
+    color: 'var(--dw-color-info-strong)',
     marginBottom: '0.8rem',
   },
   placeholderTitle: {
-    color: '#0f172a',
+    color: 'var(--dw-color-text-primary)',
     fontWeight: 700,
     marginBottom: '0.75rem',
   },
   placeholderText: {
-    color: '#475569',
+    color: 'var(--dw-color-text-secondary)',
     lineHeight: 1.7,
     marginBottom: '1.25rem',
   },

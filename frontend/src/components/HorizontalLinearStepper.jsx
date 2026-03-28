@@ -16,6 +16,7 @@ import CesiumMap from './cesium/CesiumMap';
 import { mapControls } from '../constants/map';
 import ControlsDisplay from './Configuration/ControlsDisplay';
 import { BASE_URL } from '../utils/const';
+import { parseApiError } from '../utils/apiError';
 
 const StyledButton = styled(Button)`
   border-radius: 25px;
@@ -219,21 +220,20 @@ export default function HorizontalLinearStepper(data) {
         body: JSON.stringify(payload),
       });
 
-      const bodyText = await res.text(); 
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${bodyText}`);
-
-      let data;
-      try {
-        data = JSON.parse(bodyText);
-      } catch {
-        data = { raw: bodyText };
+      if (!res.ok) {
+        const apiError = await parseApiError(res);
+        console.error('Submit failed:', apiError.code, apiError.details);
+        setSubmitError(apiError.message);
+        return false;
       }
+
+      const data = await res.json();
       console.log('Task queued:', data);
       return true;
 
     } catch (err) {
       console.error('Submit failed:', err);
-      setSubmitError(`Submit failed: ${err.message}`);
+      setSubmitError('Unable to reach the server. Please try again.');
       return false;
     }
   }

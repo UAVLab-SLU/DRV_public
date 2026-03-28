@@ -18,6 +18,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
 import { BASE_URL } from '../utils/const';
+import { getErrorMessage } from '../utils/apiError';
 
 const useStyles = makeStyles(() => ({
   landingPage: {
@@ -103,6 +104,11 @@ export default function LandingPage() {
       setIsloading(true);
       try {
         const response = await fetch(`${BASE_URL}/list-reports`, { method: 'GET' });
+        if (!response.ok) {
+          const msg = await getErrorMessage(response);
+          console.error('Error fetching report data:', msg);
+          return;
+        }
         const data = await response.json();
         const batchFiles = data.reports.filter((file) => file.filename.includes('Batch'));
         setFilesPresent(batchFiles.length > 0);

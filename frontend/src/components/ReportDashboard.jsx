@@ -25,6 +25,7 @@ import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../utils/const';
+import { getErrorMessage } from '../utils/apiError';
 
 const formatTimestamp = (filename) => {
   if (!filename) return { display: '', sortKey: filename || '' };
@@ -185,13 +186,16 @@ export default function ReportDashboard() {
       setError('');
       try {
         const res = await fetch(`${BASE_URL}/list-reports`);
-        if (!res.ok) throw new Error('Failed to fetch reports');
+        if (!res.ok) {
+          const msg = await getErrorMessage(res);
+          throw new Error(msg);
+        }
         const data = await res.json();
         setReports(data.reports ?? []);
         setSnackOpen((data.reports ?? []).length === 0);
       } catch (err) {
         console.error(err);
-        setError('Could not load reports.');
+        setError(err.message || 'Could not load reports.');
         setSnackOpen(true);
       } finally {
         setIsLoading(false);
@@ -221,7 +225,10 @@ export default function ReportDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error('Failed to load report contents');
+      if (!res.ok) {
+        const msg = await getErrorMessage(res);
+        throw new Error(msg);
+      }
       const data = await res.json();
       navigate('/dashboard', {
         state: {
@@ -231,7 +238,7 @@ export default function ReportDashboard() {
       });
     } catch (err) {
       console.error(err);
-      setError('Unable to open report. Please try again.');
+      setError(err.message || 'Unable to open report. Please try again.');
       setSnackOpen(true);
     } finally {
       setPreviewing('');

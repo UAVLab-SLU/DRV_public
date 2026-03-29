@@ -55,6 +55,11 @@ class MockTaskManager:
 
     def add_task(self, raw_request_json, uuid):
         print("add task recieved")
+        prebuilt_settings = raw_request_json.get("_prebuilt_settings")
+        if isinstance(prebuilt_settings, dict):
+            settings_path = os.path.join(self.__user_directory, "settings.json")
+            with open(settings_path, "w") as outfile:
+                json.dump(prebuilt_settings, outfile, indent=4)
         self.mission_queue.put((raw_request_json, uuid))
 
     def get_current_task_batch(self): 

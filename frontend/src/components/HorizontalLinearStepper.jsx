@@ -207,7 +207,7 @@ export default function HorizontalLinearStepper(data) {
         }
 
         const previewSettings = await fetchSettingsPreview(payload);
-        await saveSnapshot(previewSettings);
+        await saveSnapshot(previewSettings, payload);
       }
 
       const submitted = await queueTask(payload);
@@ -349,11 +349,11 @@ export default function HorizontalLinearStepper(data) {
             </Box>
           </Box>
           <Dialog open={saveDialogOpen} onClose={() => !isSubmitting && setSaveDialogOpen(false)} fullWidth>
-            <DialogTitle>Save settings.json before submission?</DialogTitle>
+            <DialogTitle>Save settings.json and task.json before submission?</DialogTitle>
             <DialogContent>
               <Typography sx={{ mb: 1 }}>
-                Do you want to save the exact generated `settings.json` to browser-private storage
-                before submitting this simulation task?
+                Do you want to save both the exact generated `settings.json` and the raw `task.json`
+                payload to browser-private storage before submitting this simulation task?
               </Typography>
               {!isSavedSettingsSupported() && (
                 <Typography color='error.main'>
@@ -385,7 +385,7 @@ export default function HorizontalLinearStepper(data) {
                 onClick={() => handleFinishDecision(true)}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Working...' : 'Yes, save and submit'}
+                {isSubmitting ? 'Working...' : 'Yes, save both and submit'}
               </StyledButton>
             </DialogActions>
           </Dialog>

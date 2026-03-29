@@ -1,20 +1,25 @@
 import React from 'react';
 import { Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import {
   deleteSnapshot,
   downloadSnapshot,
   isSupported,
   listSnapshots,
+  readSnapshot,
 } from '../services/savedSettingsStorage';
+import { BASE_URL } from '../utils/const';
 
 function formatSavedAt(lastModified) {
   return new Date(lastModified).toLocaleString();
 }
 
 export default function SavedSettings() {
+  const navigate = useNavigate();
   const [snapshots, setSnapshots] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [busySnapshotName, setBusySnapshotName] = React.useState('');
   const opfsSupported = isSupported();
 
   const loadSnapshots = React.useCallback(async () => {
@@ -61,13 +66,51 @@ export default function SavedSettings() {
     }
   };
 
+  const handleSimulate = async (name) => {
+    setBusySnapshotName(name);
+    try {
+      const snapshot = await readSnapshot(name);
+      if (!snapshot.hasTask) {
+        throw new Error('This saved entry does not include task.json, so it cannot be simulated.');
+      }
+      if (!snapshot.canSimulate) {
+        throw new Error(
+          'Saved fuzzy-test entries cannot be simulated from a single settings.json snapshot.'
+        );
+      }
+
+      const simulationPayload = {
+        ...snapshot.taskJson,
+        _prebuilt_settings: snapshot.settingsJson,
+      };
+
+      const response = await fetch(`${BASE_URL}/addTask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(simulationPayload),
+      });
+      const bodyText = await response.text();
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${bodyText}`);
+      }
+
+      setError('');
+      navigate('/reports');
+    } catch (simulationError) {
+      setError(simulationError.message || 'Failed to simulate saved settings.');
+    } finally {
+      setBusySnapshotName('');
+    }
+  };
+
   return (
     <Box sx={{ minHeight: '70vh', px: 4, py: 5 }}>
       <Typography variant='h4' sx={{ mb: 1 }}>
         Saved Settings
       </Typography>
       <Typography sx={{ mb: 3 }}>
-        Browser-private `settings.json` snapshots saved before simulation submission.
+        Browser-private snapshots of `settings.json` and, when available, the matching `task.json`
+        payload saved before simulation submission.
       </Typography>
 
       {!opfsSupported && (
@@ -100,8 +143,21 @@ export default function SavedSettings() {
               <Typography color='text.secondary'>
                 {(snapshot.size / 1024).toFixed(1)} KB
               </Typography>
+              <Typography color='text.secondary'>
+                {snapshot.hasTask ? 'Includes task.json replay data' : 'Legacy settings-only snapshot'}
+              </Typography>
             </CardContent>
             <CardActions>
+              {snapshot.canSimulate && (
+                <Button
+                  color='success'
+                  variant='outlined'
+                  onClick={() => handleSimulate(snapshot.name)}
+                  disabled={busySnapshotName === snapshot.name}
+                >
+                  {busySnapshotName === snapshot.name ? 'Simulating...' : 'Simulate'}
+                </Button>
+              )}
               <Button variant='outlined' onClick={() => handleDownload(snapshot.name)}>
                 Download
               </Button>

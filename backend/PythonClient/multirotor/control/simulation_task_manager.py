@@ -94,10 +94,17 @@ class SimulationTaskManager:
     def __update_settings(self, raw_request_json):
         self.unreal_off()
         self.__handle_streaming_settings(raw_request_json)
-        final_settings_dot_json = self._build_final_settings_payload(
-            raw_request_json,
-            persist_cesium=True,
-        )
+        prebuilt_settings_dot_json = raw_request_json.get("_prebuilt_settings")
+        if isinstance(prebuilt_settings_dot_json, dict):
+            final_settings_dot_json = self.__prepare_prebuilt_settings_run(
+                raw_request_json,
+                prebuilt_settings_dot_json,
+            )
+        else:
+            final_settings_dot_json = self._build_final_settings_payload(
+                raw_request_json,
+                persist_cesium=True,
+            )
         self.__save_settings_dot_json(final_settings_dot_json)
         print("Settings deployed, waiting for DroneWorld to catch up")
         self.unreal_off()
@@ -128,6 +135,15 @@ class SimulationTaskManager:
             raw_request_json,
             persist_cesium=False,
         )
+
+    def __prepare_prebuilt_settings_run(self, raw_request_json, prebuilt_settings_dot_json):
+        self.__drone_mission_pair_list.clear()
+        self.__monitor_list.clear()
+        self.__populate_runtime_task_state(raw_request_json)
+        self.__sync_cesium_from_saved_settings(raw_request_json, prebuilt_settings_dot_json)
+        saved_settings_copy = copy.deepcopy(prebuilt_settings_dot_json)
+        saved_settings_copy["SettingsVersion"] = 2.0
+        return saved_settings_copy
 
     def __run_fuzzy_test_batch(self, current_queue_top, fuzzy_test_dict):
 
@@ -204,6 +220,37 @@ class SimulationTaskManager:
         if self.__save_raw_request:
             with open(os.path.join(uuid + ".json"), "w") as f:
                 json.dump(raw_request_json, f, indent=4)
+
+    def __populate_runtime_task_state(self, raw_request_json):
+        for single_drone_setting in raw_request_json["Drones"]:
+            mission_dict = copy.deepcopy(single_drone_setting.get("Mission", {}))
+            mission_name = mission_dict.get("name")
+            params = mission_dict.get("param", [])
+            if mission_name is None:
+                continue
+            if params is None:
+                params = []
+            self.__drone_mission_pair_list.append(
+                (mission_name, single_drone_setting["Name"], copy.deepcopy(params))
+            )
+        self.__populate_monitor_list(raw_request_json)
+
+    def __sync_cesium_from_saved_settings(self, raw_request_json, saved_settings_dot_json):
+        origin_geopoint = saved_settings_dot_json.get("OriginGeopoint", {})
+        latitude = origin_geopoint.get("Latitude")
+        longitude = origin_geopoint.get("Longitude")
+        altitude = origin_geopoint.get("Altitude")
+
+        if latitude is None or longitude is None or altitude is None:
+            origin_payload = raw_request_json.get("environment", {}).get("Origin", {})
+            latitude = origin_payload.get("Latitude")
+            longitude = origin_payload.get("Longitude")
+            altitude = origin_payload.get("Altitude", origin_payload.get("Height"))
+
+        if latitude is None or longitude is None or altitude is None:
+            return
+
+        self.__handle_cesium(latitude, longitude, altitude)
 
     def __populate_drone_and_mission_settings(self, new_setting_dot_json, raw_request_json, persist_cesium=True):
         print(new_setting_dot_json)

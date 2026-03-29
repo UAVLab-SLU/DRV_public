@@ -67,6 +67,19 @@ def _validate_task_payload(task_data):
             details={"missing_fields": missing_fields},
         )
 
+    prebuilt_settings = task_data.get("_prebuilt_settings")
+    if prebuilt_settings is not None and not isinstance(prebuilt_settings, dict):
+        raise ValidationError(
+            "Prebuilt settings must be an object",
+            details={"invalid_fields": ["_prebuilt_settings"]},
+        )
+
+    if prebuilt_settings is not None and "FuzzyTest" in task_data:
+        raise ValidationError(
+            "Saved settings replay is not supported for fuzzy tests",
+            details={"invalid_fields": ["FuzzyTest", "_prebuilt_settings"]},
+        )
+
 # === New API Routes ===
 
 @app.route('/api/simulation', methods=['GET'])

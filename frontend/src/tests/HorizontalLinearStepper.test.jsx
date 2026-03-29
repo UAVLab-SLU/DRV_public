@@ -187,6 +187,10 @@ describe('HorizontalLinearStepper finish flow', () => {
       expect(saveSnapshot).toHaveBeenCalledWith(
         expect.objectContaining({
           SettingsVersion: 2.0,
+        }),
+        expect.objectContaining({
+          Drones: expect.any(Array),
+          environment: expect.any(Object),
         })
       );
       expect(global.fetch).toHaveBeenCalledTimes(2);

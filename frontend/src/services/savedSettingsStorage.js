@@ -29,13 +29,45 @@ async function getSnapshotHandle(name) {
   return savedSettingsDirectory.getFileHandle(name);
 }
 
-export async function saveSnapshot(settingsJson) {
+function normalizeSnapshotRecord(name, rawText, lastModified, size) {
+  const parsed = JSON.parse(rawText);
+  const isBundleRecord =
+    parsed &&
+    typeof parsed === 'object' &&
+    !Array.isArray(parsed) &&
+    Object.prototype.hasOwnProperty.call(parsed, 'settings');
+  const settingsJson = isBundleRecord ? parsed.settings : parsed;
+  const taskJson = isBundleRecord ? parsed.task ?? null : null;
+  const savedAt = isBundleRecord ? parsed.savedAt ?? null : null;
+
+  return {
+    name,
+    text: rawText,
+    json: settingsJson,
+    settingsJson,
+    settingsText: JSON.stringify(settingsJson, null, 2),
+    taskJson,
+    hasTask: Boolean(taskJson),
+    canSimulate: Boolean(taskJson) && !Boolean(taskJson?.FuzzyTest),
+    savedAt,
+    lastModified,
+    size,
+  };
+}
+
+export async function saveSnapshot(settingsJson, taskJson = null) {
   const savedSettingsDirectory = await getSavedSettingsDirectory(true);
   const name = buildSnapshotName();
   const snapshotHandle = await savedSettingsDirectory.getFileHandle(name, { create: true });
   const writable = await snapshotHandle.createWritable();
+  const snapshotRecord = {
+    version: 2,
+    savedAt: new Date().toISOString(),
+    settings: settingsJson,
+    task: taskJson,
+  };
 
-  await writable.write(JSON.stringify(settingsJson, null, 2));
+  await writable.write(JSON.stringify(snapshotRecord, null, 2));
   await writable.close();
 
   const savedFile = await snapshotHandle.getFile();
@@ -43,6 +75,8 @@ export async function saveSnapshot(settingsJson) {
     name,
     lastModified: savedFile.lastModified,
     size: savedFile.size,
+    hasTask: Boolean(taskJson),
+    canSimulate: Boolean(taskJson) && !Boolean(taskJson?.FuzzyTest),
   };
 }
 
@@ -65,11 +99,8 @@ export async function listSnapshots() {
     }
 
     const savedFile = await handle.getFile();
-    snapshots.push({
-      name,
-      lastModified: savedFile.lastModified,
-      size: savedFile.size,
-    });
+    const rawText = await savedFile.text();
+    snapshots.push(normalizeSnapshotRecord(name, rawText, savedFile.lastModified, savedFile.size));
   }
 
   return snapshots.sort((left, right) => {
@@ -84,14 +115,7 @@ export async function readSnapshot(name) {
   const snapshotHandle = await getSnapshotHandle(name);
   const savedFile = await snapshotHandle.getFile();
   const text = await savedFile.text();
-
-  return {
-    name,
-    text,
-    json: JSON.parse(text),
-    lastModified: savedFile.lastModified,
-    size: savedFile.size,
-  };
+  return normalizeSnapshotRecord(name, text, savedFile.lastModified, savedFile.size);
 }
 
 export async function deleteSnapshot(name) {
@@ -101,7 +125,7 @@ export async function deleteSnapshot(name) {
 
 export async function downloadSnapshot(name) {
   const snapshot = await readSnapshot(name);
-  const blob = new Blob([snapshot.text], { type: 'application/json' });
+  const blob = new Blob([snapshot.settingsText], { type: 'application/json' });
   const url = window.URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;

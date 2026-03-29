@@ -126,6 +126,7 @@ describe('savedSettingsStorage', () => {
       SettingsVersion: 2.0,
       label: 'second',
     });
+    expect(secondSnapshotContents.taskJson).toBeNull();
 
     const originalCreateElement = document.createElement.bind(document);
     const clickSpy = jest.fn();
@@ -151,5 +152,20 @@ describe('savedSettingsStorage', () => {
   test('returns false when OPFS is unavailable', () => {
     global.navigator = {};
     expect(isSupported()).toBe(false);
+  });
+
+  test('stores task payload together with settings payload when provided', async () => {
+    const snapshot = await saveSnapshot(
+      { SettingsVersion: 2.0, label: 'bundle-settings' },
+      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } }
+    );
+
+    const bundledSnapshot = await readSnapshot(snapshot.name);
+    expect(bundledSnapshot.hasTask).toBe(true);
+    expect(bundledSnapshot.canSimulate).toBe(true);
+    expect(bundledSnapshot.taskJson).toEqual({
+      Drones: [{ Name: 'Drone1' }],
+      environment: { UseGeo: false },
+    });
   });
 });

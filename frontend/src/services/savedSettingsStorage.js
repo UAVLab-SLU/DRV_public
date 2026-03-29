@@ -15,6 +15,20 @@ function buildSnapshotName(date = new Date()) {
   )}${pad(date.getMinutes())}${pad(date.getSeconds())}${pad(date.getMilliseconds(), 3)}.json`;
 }
 
+function getSnapshotStem(name) {
+  return name.endsWith('.json') ? name.slice(0, -5) : name;
+}
+
+function triggerJsonDownload(filename, jsonText) {
+  const blob = new Blob([jsonText], { type: 'application/json' });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  window.URL.revokeObjectURL(url);
+}
+
 async function getSavedSettingsDirectory(create = true) {
   if (!isSupported()) {
     throw new Error('Browser private file storage is not supported in this browser.');
@@ -47,8 +61,8 @@ function normalizeSnapshotRecord(name, rawText, lastModified, size) {
     settingsJson,
     settingsText: JSON.stringify(settingsJson, null, 2),
     taskJson,
-    hasTask: Boolean(taskJson),
-    canSimulate: Boolean(taskJson) && !Boolean(taskJson?.FuzzyTest),
+    hasTask: taskJson != null,
+    canSimulate: taskJson != null && !taskJson?.FuzzyTest,
     savedAt,
     lastModified,
     size,
@@ -75,8 +89,8 @@ export async function saveSnapshot(settingsJson, taskJson = null) {
     name,
     lastModified: savedFile.lastModified,
     size: savedFile.size,
-    hasTask: Boolean(taskJson),
-    canSimulate: Boolean(taskJson) && !Boolean(taskJson?.FuzzyTest),
+    hasTask: taskJson != null,
+    canSimulate: taskJson != null && !taskJson?.FuzzyTest,
   };
 }
 
@@ -123,14 +137,19 @@ export async function deleteSnapshot(name) {
   await savedSettingsDirectory.removeEntry(name);
 }
 
-export async function downloadSnapshot(name) {
+export async function downloadSettingsSnapshot(name) {
   const snapshot = await readSnapshot(name);
-  const blob = new Blob([snapshot.settingsText], { type: 'application/json' });
-  const url = window.URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = snapshot.name;
-  anchor.click();
-  window.URL.revokeObjectURL(url);
+  triggerJsonDownload(snapshot.name, snapshot.settingsText);
+  return snapshot;
+}
+
+export async function downloadTaskSnapshot(name) {
+  const snapshot = await readSnapshot(name);
+  if (snapshot.taskJson == null) {
+    throw new Error('This saved entry does not include task.json.');
+  }
+
+  const snapshotStem = getSnapshotStem(snapshot.name);
+  triggerJsonDownload(`${snapshotStem}-task.json`, JSON.stringify(snapshot.taskJson, null, 2));
   return snapshot;
 }

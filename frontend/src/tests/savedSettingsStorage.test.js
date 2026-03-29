@@ -2,7 +2,8 @@
 import '@testing-library/jest-dom';
 import {
   deleteSnapshot,
-  downloadSnapshot,
+  downloadSettingsSnapshot,
+  downloadTaskSnapshot,
   isSupported,
   listSnapshots,
   readSnapshot,
@@ -107,7 +108,7 @@ describe('savedSettingsStorage', () => {
     jest.restoreAllMocks();
   });
 
-  test('saves, lists, reads, downloads, and deletes snapshots', async () => {
+  test('saves, lists, reads, downloads settings, and deletes snapshots', async () => {
     expect(isSupported()).toBe(true);
 
     const firstSnapshot = await saveSnapshot({ SettingsVersion: 2.0, label: 'first' });
@@ -139,7 +140,7 @@ describe('savedSettingsStorage', () => {
       return originalCreateElement(tagName);
     });
 
-    await downloadSnapshot(secondSnapshot.name);
+    await downloadSettingsSnapshot(secondSnapshot.name);
     expect(window.URL.createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-settings');
@@ -167,5 +168,28 @@ describe('savedSettingsStorage', () => {
       Drones: [{ Name: 'Drone1' }],
       environment: { UseGeo: false },
     });
+  });
+
+  test('downloads task payload with the snapshot stem when present', async () => {
+    const snapshot = await saveSnapshot(
+      { SettingsVersion: 2.0, label: 'bundle-settings' },
+      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } }
+    );
+
+    const originalCreateElement = document.createElement.bind(document);
+    const anchor = { click: jest.fn() };
+    jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      if (tagName === 'a') {
+        return anchor;
+      }
+      return originalCreateElement(tagName);
+    });
+
+    await downloadTaskSnapshot(snapshot.name);
+
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
+    expect(anchor.download).toBe(snapshot.name.replace(/\.json$/, '-task.json'));
+    expect(anchor.click).toHaveBeenCalled();
+    expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-settings');
   });
 });

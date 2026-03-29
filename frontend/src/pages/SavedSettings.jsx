@@ -3,7 +3,8 @@ import { Box, Button, Card, CardActions, CardContent, Stack, Typography } from '
 import { useNavigate } from 'react-router-dom';
 import {
   deleteSnapshot,
-  downloadSnapshot,
+  downloadSettingsSnapshot,
+  downloadTaskSnapshot,
   isSupported,
   listSnapshots,
   readSnapshot,
@@ -45,12 +46,21 @@ export default function SavedSettings() {
     loadSnapshots();
   }, [loadSnapshots]);
 
-  const handleDownload = async (name) => {
+  const handleDownloadSettings = async (name) => {
     try {
-      await downloadSnapshot(name);
+      await downloadSettingsSnapshot(name);
       setError('');
     } catch (downloadError) {
-      setError(downloadError.message || 'Failed to download saved settings.');
+      setError(downloadError.message || 'Failed to download settings.json.');
+    }
+  };
+
+  const handleDownloadTask = async (name) => {
+    try {
+      await downloadTaskSnapshot(name);
+      setError('');
+    } catch (downloadError) {
+      setError(downloadError.message || 'Failed to download task.json.');
     }
   };
 
@@ -158,9 +168,14 @@ export default function SavedSettings() {
                   {busySnapshotName === snapshot.name ? 'Simulating...' : 'Simulate'}
                 </Button>
               )}
-              <Button variant='outlined' onClick={() => handleDownload(snapshot.name)}>
-                Download
+              <Button variant='outlined' onClick={() => handleDownloadSettings(snapshot.name)}>
+                Download Settings
               </Button>
+              {snapshot.hasTask && (
+                <Button variant='outlined' onClick={() => handleDownloadTask(snapshot.name)}>
+                  Download Task (Payload)
+                </Button>
+              )}
               <Button color='error' variant='outlined' onClick={() => handleDelete(snapshot.name)}>
                 Delete
               </Button>

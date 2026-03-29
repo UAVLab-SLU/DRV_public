@@ -71,9 +71,7 @@ describe('DroneWorld Application Flow', () => {
         getDirectory: () => Promise.resolve(rootDirectory),
       },
     });
-
-    win.URL.createObjectURL = () => 'blob:mock-settings';
-    win.URL.revokeObjectURL = () => {};
+    // Leave URL.createObjectURL untouched. Cesium and browser worker setup rely on the real API.
   };
 
   it('should handle direct /dashboard access without route state', () => {
@@ -152,8 +150,8 @@ describe('DroneWorld Application Flow', () => {
 
     // Step 8: Click "Finish", choose save-and-submit, and verify preview + submission both happen
     cy.contains('button', 'Finish').click();
-    cy.contains('Save settings.json before submission?').should('be.visible');
-    cy.contains('button', 'Yes, save and submit').click();
+    cy.contains('Save settings.json and task.json before submission?').should('be.visible');
+    cy.contains('button', 'Yes, save both and submit').click();
     cy.wait('@previewSettings').then(({ request, response }) => {
       expect(request.body).to.exist;
       expect(response, 'preview settings response').to.exist;

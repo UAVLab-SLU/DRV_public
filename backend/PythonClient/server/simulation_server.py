@@ -5,6 +5,7 @@ import time
 import sys
 from flask import Flask, request, render_template, Response, jsonify, send_file
 from flask_cors import CORS
+from flasgger import Swagger
 
 # Add parent directories to the Python path for module imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -31,6 +32,59 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 CORS(app)
 register_error_handlers(app)
+
+# --- OpenAPI / Swagger configuration ---
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": "apispec",
+            "route": "/apispec.json",
+            "rule_filter": lambda rule: True,
+            "model_filter": lambda tag: True,
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/api/docs",
+    "openapi": "3.0.3",
+}
+
+swagger_template = {
+    "openapi": "3.0.3",
+    "info": {
+        "title": "DroneWorld API",
+        "description": (
+            "Backend API for the DroneWorld drone simulation platform. "
+            "Provides endpoints for configuring simulations, managing drones, "
+            "running tasks, and retrieving reports."
+        ),
+        "version": "1.0.0",
+        "contact": {"name": "OSS @ SLU", "url": "https://github.com/oss-slu/DroneWorld"},
+        "license": {"name": "MIT"},
+    },
+    "components": {
+        "schemas": {
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {"type": "string", "example": "VALIDATION_ERROR"},
+                            "message": {"type": "string", "example": "Invalid input data"},
+                            "details": {"type": "object"},
+                            "timestamp": {"type": "string", "format": "date-time"},
+                            "request_id": {"type": "string", "format": "uuid"},
+                        },
+                    }
+                },
+            }
+        }
+    },
+}
+
+Swagger(app, config=swagger_config, template=swagger_template)
 
 # Initialize the SimulationTaskManager or the fake, depending on .env variables
 simulator_type = os.getenv('SIMULATOR_TYPE', 'real')
@@ -59,12 +113,66 @@ simulation_state = {
 
 @app.route('/api/simulation', methods=['GET'])
 def get_simulation_state():
-    """Retrieve the current simulation state."""
+    """Retrieve the current simulation state.
+    ---
+    tags:
+      - Simulation
+    responses:
+      200:
+        description: Current simulation configuration state
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                environment:
+                  type: object
+                monitors:
+                  type: object
+                drones:
+                  type: array
+                  items:
+                    type: object
+    """
     return jsonify(simulation_state), 200
 
 @app.route('/api/simulation/drones', methods=['POST'])
 def add_drone():
-    """Add a new drone to the simulation."""
+    """Add a new drone to the simulation.
+    ---
+    tags:
+      - Simulation
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: string
+                example: "Drone1"
+          example:
+            id: "Drone1"
+            X: 0.0
+            Y: 0.0
+            Z: -5.0
+    responses:
+      201:
+        description: Drone added successfully
+        content:
+          application/json:
+            schema:
+              type: object
+      422:
+        description: Validation error — missing id field
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+    """
     new_drone = request.get_json(silent=True) or {}
     if "id" not in new_drone:
         raise ValidationError("Invalid drone data", details={"missing_fields": ["id"]})
@@ -74,7 +182,39 @@ def add_drone():
 
 @app.route('/api/simulation/drones/<drone_id>', methods=['PUT'])
 def update_drone(drone_id):
-    """Update an existing drone's configuration."""
+    """Update an existing drone's configuration.
+    ---
+    tags:
+      - Simulation
+    parameters:
+      - name: drone_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the drone to update
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      200:
+        description: Drone updated successfully
+      404:
+        description: Drone not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      422:
+        description: Invalid drone data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+    """
     updated_drone = request.get_json(silent=True)
     if not updated_drone:
         raise ValidationError("Invalid drone data", details={"missing_fields": ["drone payload"]})
@@ -86,7 +226,27 @@ def update_drone(drone_id):
 
 @app.route('/api/simulation/drones/<drone_id>', methods=['DELETE'])
 def delete_drone(drone_id):
-    """Remove a drone from the simulation."""
+    """Remove a drone from the simulation.
+    ---
+    tags:
+      - Simulation
+    parameters:
+      - name: drone_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the drone to remove
+    responses:
+      200:
+        description: Drone deleted successfully
+      404:
+        description: Drone not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+    """
     for i, drone in enumerate(simulation_state["drones"]):
         if str(drone["id"]) == drone_id:
             del simulation_state["drones"][i]
@@ -95,7 +255,42 @@ def delete_drone(drone_id):
 
 @app.route('/api/simulation/environment', methods=['PUT'])
 def update_environment():
-    """Update the simulation environment settings."""
+    """Update the simulation environment settings.
+    ---
+    tags:
+      - Simulation
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              UseGeo:
+                type: boolean
+              Origin:
+                type: object
+                properties:
+                  Latitude:
+                    type: number
+                  Longitude:
+                    type: number
+                  Altitude:
+                    type: number
+              Wind:
+                type: object
+              TimeOfDay:
+                type: string
+    responses:
+      200:
+        description: Environment updated successfully
+      422:
+        description: Missing environment configuration
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+    """
     new_environment = request.get_json(silent=True)
     if new_environment is None:
         raise ValidationError("Environment configuration is required", details={"missing_fields": ["environment"]})
@@ -104,7 +299,26 @@ def update_environment():
 
 @app.route('/api/simulation/monitors', methods=['PUT'])
 def update_monitors():
-    """Update the simulation monitor settings."""
+    """Update the simulation monitor settings.
+    ---
+    tags:
+      - Simulation
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      200:
+        description: Monitors updated successfully
+      422:
+        description: Missing monitor configuration
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+    """
     new_monitors = request.get_json(silent=True)
     if new_monitors is None:
         raise ValidationError("Monitor configuration is required", details={"missing_fields": ["monitors"]})
@@ -115,8 +329,41 @@ def update_monitors():
 
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
-    """
-    Lists all report batches from the storage service.
+    """Lists all report batches from the storage service.
+    ---
+    tags:
+      - Reports
+    responses:
+      200:
+        description: List of report batches
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reports:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      filename:
+                        type: string
+                      pass:
+                        type: integer
+                      fail:
+                        type: integer
+                      drone_count:
+                        type: integer
+                      report_type:
+                        type: string
+                      contains_fuzzy:
+                        type: boolean
+      500:
+        description: Storage error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     try:
         reports = storage_service.list_reports()
@@ -129,8 +376,26 @@ def list_reports():
 
 @app.route('/list-folder-contents/<folder_name>', methods=['POST'])
 def list_folder_contents(folder_name):
-    """
-    Lists the contents of a specific report folder from the storage service.
+    """Lists the contents of a specific report folder from the storage service.
+    ---
+    tags:
+      - Reports
+    parameters:
+      - name: folder_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Name of the report folder
+    responses:
+      200:
+        description: Folder contents listing
+      500:
+        description: Storage error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     try:
         folder_contents = storage_service.list_folder_contents(folder_name)
@@ -143,8 +408,41 @@ def list_folder_contents(folder_name):
 
 @app.route('/serve-html/<folder_name>/<path:relative_path>', methods=['GET'])
 def serve_html(folder_name, relative_path):
-    """
-    Serves HTML files using the storage service.
+    """Serves HTML files using the storage service.
+    ---
+    tags:
+      - Reports
+    parameters:
+      - name: folder_name
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: relative_path
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Path to the HTML file within the folder
+    responses:
+      200:
+        description: HTML file content
+        content:
+          text/html:
+            schema:
+              type: string
+      404:
+        description: HTML file not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      500:
+        description: Storage error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     try:
         file_contents, status_code = storage_service.serve_html(folder_name, relative_path)
@@ -160,9 +458,37 @@ def serve_html(folder_name, relative_path):
 
 @app.route('/download-report/<folder_name>', methods=['GET'])
 def download_report(folder_name):
-    """
-    Generates and streams a zip archive for a given report folder.
-    Only supported for storage backends that implement `get_report_archive`.
+    """Download a report folder as a zip archive.
+    ---
+    tags:
+      - Reports
+    parameters:
+      - name: folder_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Name of the report folder to download
+    responses:
+      200:
+        description: Zip archive of the report
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      404:
+        description: Report archive not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      501:
+        description: Download not supported by storage backend
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     try:
         if not hasattr(storage_service, "get_report_archive"):
@@ -179,8 +505,73 @@ def download_report(folder_name):
 
 @app.route('/addTask', methods=['POST'])
 def add_task():
-    """
-    Adds a new simulation task to the queue.
+    """Add a new simulation task to the queue.
+    ---
+    tags:
+      - Tasks
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - Drones
+              - environment
+            properties:
+              Drones:
+                type: array
+                items:
+                  type: object
+                description: List of drone configurations
+              environment:
+                type: object
+                description: Environment settings for the simulation
+              monitors:
+                type: object
+                description: Optional monitor settings
+              FuzzyTest:
+                type: object
+                description: Optional fuzzy test configuration
+          example:
+            Drones:
+              - id: "Drone1"
+                X: 0.0
+                Y: 0.0
+                Z: -5.0
+                MissionValue: "fly_to_points"
+                Mission:
+                  name: "fly_to_points"
+                  param: []
+            environment:
+              UseGeo: true
+              Origin:
+                Latitude: 38.627
+                Longitude: -90.199
+                Altitude: 203
+    responses:
+      200:
+        description: Task queued successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_id:
+                  type: string
+                  example: "2025-11-18-10-30-00_Batch_1"
+      422:
+        description: Validation error — missing required fields
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      500:
+        description: Simulation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     print("Backend recieved addTask")
     global task_number
@@ -205,8 +596,23 @@ def add_task():
 
 @app.route('/currentRunning', methods=['GET'])
 def get_current_running():
-    """
-    Retrieves the current running task and the queue size.
+    """Retrieve the current running task and queue size.
+    ---
+    tags:
+      - Tasks
+    responses:
+      200:
+        description: Current task status and queue size
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_task:
+                  type: string
+                  enum: ["None", "Running"]
+                queue_size:
+                  type: integer
     """
     current_task_batch = task_dispatcher.get_current_task_batch()
     if current_task_batch == "None":
@@ -217,8 +623,36 @@ def get_current_running():
 @app.route('/report')
 @app.route('/report/<path:dir_name>')
 def get_report(dir_name=''):
-    """
-    Serves reports from the storage service.
+    """Browse report files from the storage service.
+    ---
+    tags:
+      - Reports
+    parameters:
+      - name: dir_name
+        in: path
+        required: false
+        schema:
+          type: string
+        description: Report directory name (optional — lists root if omitted)
+    responses:
+      200:
+        description: Rendered HTML page listing report files
+        content:
+          text/html:
+            schema:
+              type: string
+      404:
+        description: No reports found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      501:
+        description: Listing not supported by storage backend
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     try:
         if dir_name:
@@ -244,8 +678,37 @@ def get_report(dir_name=''):
 
 @app.route('/stream/<drone_name>/<camera_name>')
 def stream(drone_name, camera_name):
-    """
-    Streams camera data for a specific drone and camera.
+    """Stream live camera feed from a drone.
+    ---
+    tags:
+      - Streaming
+    parameters:
+      - name: drone_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Name of the drone
+      - name: camera_name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Name of the camera on the drone
+    responses:
+      200:
+        description: MJPEG video stream (multipart response)
+        content:
+          multipart/x-mixed-replace:
+            schema:
+              type: string
+              format: binary
+      500:
+        description: Stream failed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
     """
     if task_dispatcher.unreal_state.get('state') == 'idle':
         return "No task running", 200
@@ -261,20 +724,61 @@ def stream(drone_name, camera_name):
 
 @app.route('/state', methods=['GET'])
 def get_state():
-    """
-    Returns the current state of the simulation.
+    """Get the current simulation engine state.
+    ---
+    tags:
+      - Simulation
+    responses:
+      200:
+        description: Simulation engine state
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  enum: ["idle", "running"]
     """
     return jsonify(task_dispatcher.unreal_state), 200
 
 @app.route('/cesiumCoordinate', methods=['GET'])
 def get_map():
-    """
-    Loads Cesium map settings.
+    """Load Cesium map coordinate settings.
+    ---
+    tags:
+      - Simulation
+    responses:
+      200:
+        description: Cesium map settings
+        content:
+          application/json:
+            schema:
+              type: object
     """
     return task_dispatcher.load_cesium_setting(), 200
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
+    """Health check endpoint.
+    ---
+    tags:
+      - System
+    responses:
+      200:
+        description: Backend is reachable
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "ok"
+                message:
+                  type: string
+                  example: "Backend is reachable!"
+    """
     return jsonify({"status": "ok", "message": "Backend is reachable!"})
 
 # === Run the Flask App ===

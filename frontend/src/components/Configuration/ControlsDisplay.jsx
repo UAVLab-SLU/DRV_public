@@ -11,10 +11,10 @@ const mapControlDisplay = ({ mapControl }) => {
       <Grid item xs={12}>
         <Typography
           sx={{
-            backgroundColor: '#d88100',
+            backgroundColor: 'var(--dw-color-control-header-bg)',
             p: 0.5,
             paddingLeft: 2,
-            color: 'white',
+            color: 'var(--dw-color-text-inverse)',
             fontWeight: 'bold',
             fontSize: 18,
           }}
@@ -22,7 +22,7 @@ const mapControlDisplay = ({ mapControl }) => {
           {mapControl.header}
         </Typography>
       </Grid>
-      <Grid item xs={12} sx={{ p: 2, bgcolor: 'black' }}>
+      <Grid item xs={12} sx={{ p: 2, bgcolor: 'var(--dw-color-control-panel-bg)' }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           {mapControl.body.map((control, index) => (
             <Box
@@ -34,10 +34,14 @@ const mapControlDisplay = ({ mapControl }) => {
                   <img key={idx} src={iconUrl} alt='Icon' style={{ width: 30, marginRight: 1 }} />
                 ))}
               </Box>
-              <Typography sx={{ color: 'orange', marginRight: 0.8, fontSize: 14 }}>
+              <Typography
+                sx={{ color: 'var(--dw-color-control-command)', marginRight: 0.8, fontSize: 14 }}
+              >
                 {control.command}
               </Typography>
-              <Typography sx={{ color: 'white', fontSize: 14 }}>{control.info}</Typography>
+              <Typography sx={{ color: 'var(--dw-color-control-info)', fontSize: 14 }}>
+                {control.info}
+              </Typography>
             </Box>
           ))}
         </Box>

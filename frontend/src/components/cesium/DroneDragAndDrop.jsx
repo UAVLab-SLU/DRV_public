@@ -39,7 +39,7 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
 
       const dragOverHandler = (event) => {
         event.preventDefault(); // Necessary to allow the drop
-        canvas.style.border = '2px dashed red'; // Visual feedback
+        canvas.style.border = '2px dashed var(--dw-color-drag-outline)'; // Visual feedback
       };
 
       const dropHandler = (event) => {
@@ -97,7 +97,6 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
             <Entity
               position={position}
               billboard={{
-                
                 image: imageUrls.drone_thick_orange,
                 scale: labelVisible ? 1 : 0.75,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,

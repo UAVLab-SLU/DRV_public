@@ -6,16 +6,16 @@ import { makeStyles } from '@mui/styles';
 const useStyles = makeStyles(() => ({
   pageContainer: {
     minHeight: '100vh',
-    backgroundColor: '#1e40af',
+    backgroundColor: 'var(--dw-color-about-page-bg)',
     padding: '2rem 0',
   },
   glassTile: {
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'var(--dw-color-surface-glass)',
     backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid var(--dw-color-surface-glass-border)',
     borderRadius: '32px',
     padding: '4rem',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     textAlign: 'center',
     height: '400px',
     display: 'flex',
@@ -32,12 +32,12 @@ const useStyles = makeStyles(() => ({
     marginBottom: '2rem',
     marginLeft: '0.5rem',
     marginRight: '0.5rem',
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'var(--dw-color-surface-glass)',
     backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid var(--dw-color-surface-glass-border)',
     borderRadius: '32px',
     padding: '50px 60px',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     textAlign: 'center',
     display: 'flex',
     alignItems: 'center',
@@ -52,12 +52,12 @@ const useStyles = makeStyles(() => ({
     marginBottom: '2rem',
     marginLeft: '0.5rem',
     marginRight: '0.5rem',
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'var(--dw-color-surface-glass)',
     backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid var(--dw-color-surface-glass-border)',
     borderRadius: '32px',
     padding: '50px 60px',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     textAlign: 'center',
     display: 'flex',
     alignItems: 'center',
@@ -72,12 +72,12 @@ const useStyles = makeStyles(() => ({
     marginBottom: '2rem',
     marginLeft: '0.5rem',
     marginRight: '0.5rem',
-    background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3730a3 100%)',
+    background: 'var(--dw-gradient-about-callout)',
     backdropFilter: 'none',
     border: 'none',
     borderRadius: '32px',
     padding: '6rem',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     textAlign: 'center',
     minHeight: '120px',
     display: 'flex',
@@ -92,7 +92,7 @@ const useStyles = makeStyles(() => ({
     marginBottom: '2rem',
   },
   title: {
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     fontWeight: 700,
     marginBottom: '3rem',
     textAlign: 'center',
@@ -105,24 +105,24 @@ const commonStyles = {
     marginBottom: '1rem',
   },
   heading: {
-    color: '#000',
+    color: 'var(--dw-color-text-primary)',
     fontWeight: 'bold',
     marginBottom: '1rem',
   },
   description: {
     fontSize: '1rem',
-    color: '#374151',
+    color: 'var(--dw-color-about-text-secondary)',
     lineHeight: 1.6,
     fontWeight: 'normal',
   },
   tableHeader: {
     fontSize: '1.5rem',
     fontWeight: 'bold',
-    color: '#1e40af',
+    color: 'var(--dw-color-about-heading)',
   },
   tableDescription: {
     fontSize: '1rem',
-    color: '#374151',
+    color: 'var(--dw-color-about-text-secondary)',
     fontWeight: 'light',
   },
 };
@@ -157,7 +157,7 @@ function AboutUs() {
               variant='h3'
               component='h1'
               sx={{
-                color: '#1e40af',
+                color: 'var(--dw-color-about-heading)',
                 fontWeight: 'bold',
                 marginBottom: '1rem',
               }}
@@ -168,7 +168,7 @@ function AboutUs() {
               component='span'
               sx={{
                 fontSize: '1.1rem',
-                color: '#374151',
+                color: 'var(--dw-color-about-text-secondary)',
                 lineHeight: 1.6,
               }}
             >
@@ -260,7 +260,7 @@ function AboutUs() {
               variant='h4'
               component='h2'
               sx={{
-                color: '#fff',
+                color: 'var(--dw-color-text-inverse)',
                 fontWeight: 'bold',
                 marginBottom: '1.5rem',
               }}
@@ -271,7 +271,7 @@ function AboutUs() {
               component='span'
               sx={{
                 fontSize: '1rem',
-                color: '#fff',
+                color: 'var(--dw-color-text-inverse)',
                 lineHeight: 1.6,
                 fontWeight: 'normal',
               }}

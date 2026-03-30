@@ -45,13 +45,13 @@ const Home = () => {
   const getStatusStyle = () => {
     switch (backendInfo.backendStatus) {
       case 'idle':
-        return { color: 'green' };
+        return { color: 'var(--dw-color-status-idle)' };
       case 'running':
-        return { color: 'blue' };
+        return { color: 'var(--dw-color-status-running)' };
       case 'error':
-        return { color: 'red' };
+        return { color: 'var(--dw-color-status-error)' };
       default:
-        return { color: 'gray' };
+        return { color: 'var(--dw-color-status-unknown)' };
     }
   };
   const statusStyle = getStatusStyle();
@@ -102,10 +102,7 @@ const Home = () => {
     const intervalId = setInterval(fetchStatus, 1000); // poll every 5s
 
     return () => clearInterval(intervalId); // cleanup on unmount
-
-
   }, []);
-
 
   // Modal styles
   const modalStyle = {
@@ -116,7 +113,7 @@ const Home = () => {
     width: 800, // Increase the width
     height: 400, // Increase the height
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    border: '2px solid var(--dw-color-border-strong)',
     boxShadow: 24,
     p: 4,
   };
@@ -132,7 +129,13 @@ const Home = () => {
           </Box>
         </Grid>
         <Grid item>
-          <Box border={1} borderColor='grey.400' p={2} borderRadius={2} minWidth={220}>
+          <Box
+            border={1}
+            borderColor='var(--dw-color-border-muted)'
+            p={2}
+            borderRadius={2}
+            minWidth={220}
+          >
             <Typography>Queued Tasks: {backendInfo.numQueuedTasks}</Typography>
           </Box>
         </Grid>
@@ -202,8 +205,7 @@ const Home = () => {
               Close
             </Button>
 
-            <Typography id='modal-modal-title' variant='h6' component='h2'>
-            </Typography>
+            <Typography id='modal-modal-title' variant='h6' component='h2'></Typography>
 
             <Typography id='modal-modal-description' sx={{ mt: 2 }}>
               <p>

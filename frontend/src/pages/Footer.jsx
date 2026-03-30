@@ -2,8 +2,8 @@ const commonButtonStyle = {
   textDecoration: 'none',
   padding: '8px 16px',
   borderRadius: '6px',
-  backgroundColor: 'white',
-  color: '#8c8c8c',
+  backgroundColor: 'var(--dw-color-footer-bg)',
+  color: 'var(--dw-color-footer-text)',
   fontWeight: 300,
   fontSize: '14px',
 };
@@ -20,8 +20,8 @@ const containerStyle = {
   alignItems: 'center',
   padding: '16px',
   fontFamily: 'Arial, sans-serif',
-  backgroundColor: 'white',
-  color: '#8c8c8c',
+  backgroundColor: 'var(--dw-color-footer-bg)',
+  color: 'var(--dw-color-footer-text)',
   fontWeight: 300,
   fontSize: '14px',
 };
@@ -33,7 +33,7 @@ function Footer() {
         style={{
           ...containerStyle,
           gap: '12px',
-          borderTop: '1px solid #e5e7eb',
+          borderTop: '1px solid var(--dw-color-border-muted)',
         }}
       >
         <a

@@ -16,7 +16,7 @@ const BackendHealthTitle = ({ classes }) => {
             'Content-Type': 'application/json',
           },
         });
-        
+
         if (response.ok) {
           setIsHealthy(true);
         } else {
@@ -41,16 +41,22 @@ const BackendHealthTitle = ({ classes }) => {
   }, []);
 
   const titleStyle = {
-    color: isHealthy ? 'inherit' : 'red',
+    color: isHealthy ? 'inherit' : 'var(--dw-color-error)',
     transition: 'color 0.3s ease',
   };
 
   return (
-    <Link 
-      to="/" 
+    <Link
+      to='/'
       className={classes.siteTitle}
       style={titleStyle}
-      title={isChecking ? 'Checking backend...' : (isHealthy ? 'Backend connected' : 'Backend disconnected')}
+      title={
+        isChecking
+          ? 'Checking backend...'
+          : isHealthy
+          ? 'Backend connected'
+          : 'Backend disconnected'
+      }
     >
       Drone World 🚁
     </Link>

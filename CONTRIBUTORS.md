@@ -25,7 +25,7 @@ Also, make sure to [join our Slack](https://join.slack.com/t/oss-slu/shared_invi
       <a href="https://github.com/ahmedbektic">@ahmedbektic</a>
     </td>
     <td align="center">
-      <img src="docs/team/defaultphoto.webp" width="120" height="120" style="border-radius:50%" alt="Henry Barsanti"/><br/>
+      <img src="docs/team/HenryBarsanti.jpeg" width="120" height="120" style="border-radius:50%; object-fit:cover; object-position:top;" alt="Henry Barsanti"/><br/>
       <strong>Henry Barsanti</strong><br/>
       <em>Internal Developer</em><br/>
       <a href="https://github.com/Hbarsanti">@Hbarsanti</a>

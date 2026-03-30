@@ -1,5 +1,7 @@
 # DroneWorld
 
+> Meet the team → [Contributors](CONTRIBUTORS.md)
+
 ## Overview
 
 **Drone World**, a key component of DRV, is an advanced simulation platform for testing small unmanned aerial systems (sUAS). It enables users to configure detailed test scenarios by specifying:

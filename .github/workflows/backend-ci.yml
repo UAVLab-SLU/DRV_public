@@ -10,6 +10,9 @@ on:
       - main
       - docker-main
 
+permissions:
+  contents: read
+
 jobs:
   backend-setup:
     runs-on: windows-latest

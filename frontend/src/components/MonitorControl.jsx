@@ -264,7 +264,7 @@ export default function MonitorControl (monJson) {
             description: "Test if a drone collides with other drones or the environment",
             btns: null,
             images: null,
-            colorText:monitor.collision_monitor.enable == true ? 'green': null,
+            colorText:monitor.collision_monitor.enable == true ? 'var(--dw-color-success)': null,
             enableBtn:
                 <Grid container direction="row">
                         <strong style={{paddingTop:'7px'}}>Status</strong>&nbsp;&nbsp;&nbsp;
@@ -280,7 +280,7 @@ export default function MonitorControl (monJson) {
             value: '1.2',
             description: "Test whether the drones land at safe landing locations",
             btns: null,
-            colorText:monitor.landspace_monitor.enable == true ? 'green': null,
+            colorText:monitor.landspace_monitor.enable == true ? 'var(--dw-color-success)': null,
             images: null,
             enableBtn:
              
@@ -300,7 +300,7 @@ export default function MonitorControl (monJson) {
             name: "Drift",
             value: '2.1',
             description: "Test whether the drones drift from its planned flight path",
-            colorText:monitor.point_deviation_monitor.enable == true ? 'green': null,
+            colorText:monitor.point_deviation_monitor.enable == true ? 'var(--dw-color-success)': null,
             btns:
                 <React.Fragment>{monitor.point_deviation_monitor.enable == true ? 
                 <Grid item xs={12}>
@@ -336,7 +336,7 @@ export default function MonitorControl (monJson) {
             name: "Airspace",
             value: '2.6',
             description: "Test whether the drones avoid entering no fly zones",
-            colorText:monitor.no_fly_zone_monitor.enable == true ? 'green': null,
+            colorText:monitor.no_fly_zone_monitor.enable == true ? 'var(--dw-color-success)': null,
             btns:null,
             bodyText:null,
             images:null,
@@ -365,7 +365,7 @@ export default function MonitorControl (monJson) {
         {
             name: "Separation",
             value: '2.7',
-            colorText:monitor.min_sep_dist_monitor.enable == true ? 'green': null,
+            colorText:monitor.min_sep_dist_monitor.enable == true ? 'var(--dw-color-success)': null,
             description: "Test whether the drones breach the minimum separation distance with other drones",
             btns:
             <React.Fragment>{monitor.min_sep_dist_monitor.enable == true ? <React.Fragment>
@@ -393,7 +393,7 @@ export default function MonitorControl (monJson) {
             name: "Battery",
             value: '2.8',
             description: "Test whether the drone's battery dropped below the certain percentage",
-            colorText:monitor.battery_monitor.enable == true ? 'green': null,
+            colorText:monitor.battery_monitor.enable == true ? 'var(--dw-color-success)': null,
             btns:
                 <React.Fragment>{monitor.battery_monitor.enable == true ? 
                 <Grid item xs={12}>
@@ -551,7 +551,7 @@ export default function MonitorControl (monJson) {
                                                                             return <div key={i}>
                                                                                 <Typography style={{border:'1px solid', padding: '12px', marginBottom: '10px'}}> <strong>Zone {i+1}</strong>
                                                                                 <ButtonGroup size="small" color="secondary" aria-label="small outlined button group" style={{float:'right', paddingBottom:'20px'}}>
-                                                                                    <Button  style={{color:'red'}}>Delete Zone</Button>
+                                                                                    <Button  style={{color:'var(--dw-color-error)'}}>Delete Zone</Button>
                                                                                 </ButtonGroup>
                                                                                 <div style={{paddingTop: '10px'}}>
                                                                                 <MonitorTabels hideAltitude="false" errorMessage="true" jsonVal={(e) => setNoFlyParameters(e, i)}/>

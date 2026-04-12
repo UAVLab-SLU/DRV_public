@@ -1,5 +1,7 @@
 # DroneWorld
 
+> Meet the team → [Contributors](CONTRIBUTORS.md)
+
 ## Overview
 
 **Drone World**, a key component of DRV, is an advanced simulation platform for testing small unmanned aerial systems (sUAS). It enables users to configure detailed test scenarios by specifying:
@@ -44,6 +46,10 @@ DroneReqValidator has 3 main components:
 ### API Error Handling
 
 All backend endpoints return a standardized error envelope with `code`, `message`, `details`, `timestamp`, and `request_id` (also echoed in the `X-Request-ID` header). Standard codes are documented in `backend/ERRORS.md` alongside example responses for common endpoints.
+
+### API Documentation (Swagger)
+
+Interactive API documentation is available at `/api/docs` when the backend is running (e.g. `http://localhost:5000/api/docs`). The OpenAPI 3.x spec can also be exported as JSON from `/apispec.json` for use in client code generation tools.
 
 ## Quick Start (Docker)
 

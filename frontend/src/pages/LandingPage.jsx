@@ -18,11 +18,12 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
 import { BASE_URL } from '../utils/const';
+import { getErrorMessage } from '../utils/apiError';
 
 const useStyles = makeStyles(() => ({
   landingPage: {
     fontFamily: 'Roboto, sans-serif',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -37,7 +38,7 @@ const useStyles = makeStyles(() => ({
     width: '100%',
   },
   siteTitle: {
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     textDecoration: 'none',
     fontSize: '1.5rem',
     fontWeight: 'bold',
@@ -64,14 +65,14 @@ const useStyles = makeStyles(() => ({
   },
   aboutLink: {
     textDecoration: 'none',
-    color: '#fff',
+    color: 'var(--dw-color-text-inverse)',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
     cursor: 'pointer',
   },
   acceptanceReportLink: {
     textDecoration: 'underline',
-    color: '#800080',
+    color: 'var(--dw-color-text-link-accent)',
     cursor: 'pointer',
     fontWeight: 'bold',
     display: 'block',
@@ -79,7 +80,7 @@ const useStyles = makeStyles(() => ({
   },
   reportDashboardTitle: {
     textDecoration: 'underline',
-    color: '#800080',
+    color: 'var(--dw-color-text-link-accent)',
     fontWeight: 'bold',
     fontSize: '1.5rem',
     marginBottom: '1rem',
@@ -103,6 +104,11 @@ export default function LandingPage() {
       setIsloading(true);
       try {
         const response = await fetch(`${BASE_URL}/list-reports`, { method: 'GET' });
+        if (!response.ok) {
+          const msg = await getErrorMessage(response);
+          console.error('Error fetching report data:', msg);
+          return;
+        }
         const data = await response.json();
         const batchFiles = data.reports.filter((file) => file.filename.includes('Batch'));
         setFilesPresent(batchFiles.length > 0);
@@ -123,19 +129,18 @@ export default function LandingPage() {
   return (
     <div className={classes.landingPage}>
       <Box
-        component="section"
+        component='section'
         sx={{
           width: '100%',
           bgcolor: 'transparent',
-          background:
-            'linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%)',
-          color: '#fff',
+          background: 'var(--dw-gradient-hero)',
+          color: 'var(--dw-color-text-inverse)',
           py: { xs: 8, md: 12 },
         }}
       >
-        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+        <Container maxWidth='lg' sx={{ textAlign: 'center' }}>
           <Typography
-            component="h1"
+            component='h1'
             sx={{
               fontWeight: 800,
               fontSize: { xs: 28, sm: 36, md: 44 },
@@ -149,34 +154,34 @@ export default function LandingPage() {
           </Typography>
 
           <Typography
-            variant="h6"
+            variant='h6'
             sx={{
               maxWidth: 760,
               mx: 'auto',
-              color: 'rgba(255,255,255,0.85)',
+              color: 'var(--dw-color-text-inverse-muted)',
               fontWeight: 400,
               mb: 4,
             }}
           >
-            Create realistic 3D environments, test multi-drone scenarios, and analyze
-            performance with our comprehensive drone simulation platform.
+            Create realistic 3D environments, test multi-drone scenarios, and analyze performance
+            with our comprehensive drone simulation platform.
           </Typography>
 
           <Stack
-            direction="row"
-            justifyContent="center"
+            direction='row'
+            justifyContent='center'
             spacing={2}
             sx={{ flexWrap: 'wrap', rowGap: 2 }}
           >
             <Button
               component={Link}
-              to="/home"
-              variant="contained"
-              size="large"
+              to='/home'
+              variant='contained'
+              size='large'
               startIcon={<PlayCircleOutlineIcon />}
               sx={{
-                bgcolor: '#1e3a8a',
-                '&:hover': { bgcolor: '#172554' },
+                backgroundColor: 'var(--dw-color-primary)',
+                '&:hover': { backgroundColor: 'var(--dw-color-primary-hover)' },
                 textTransform: 'none',
                 fontWeight: 700,
                 px: 3,
@@ -188,16 +193,16 @@ export default function LandingPage() {
 
             <Button
               component={Link}
-              to=""
-              variant="outlined"
-              size="large"
+              to=''
+              variant='outlined'
+              size='large'
               endIcon={<ArrowForwardIcon />}
               sx={{
-                color: '#fff',
-                borderColor: 'rgba(255,255,255,0.7)',
+                color: 'var(--dw-color-text-inverse)',
+                borderColor: 'var(--dw-color-surface-glass-border)',
                 '&:hover': {
-                  borderColor: '#fff',
-                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  borderColor: 'var(--dw-color-text-inverse)',
+                  backgroundColor: 'var(--dw-color-surface-glass)',
                 },
                 textTransform: 'none',
                 fontWeight: 700,
@@ -212,249 +217,266 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      
-      
-      <Box component="section" sx={{ bgcolor: '#fff', py: { xs: 8, md: 10 } }}>
-          <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-            <Typography
-              component="h2"
-              sx={{
-                fontWeight: 800,
-                color: '#0f172a',
-                fontSize: { xs: 26, md: 34 },
-                mb: 1.5,
-              }}
-            >
-              Powerful Simulation Features
-            </Typography>
+      <Box component='section' sx={{ bgcolor: 'var(--dw-color-surface)', py: { xs: 8, md: 10 } }}>
+        <Container maxWidth='lg' sx={{ textAlign: 'center' }}>
+          <Typography
+            component='h2'
+            sx={{
+              fontWeight: 800,
+              color: 'var(--dw-color-text-primary)',
+              fontSize: { xs: 26, md: 34 },
+              mb: 1.5,
+            }}
+          >
+            Powerful Simulation Features
+          </Typography>
 
-            <Typography
-              variant="body1"
-              sx={{
-                color: '#475569',
-                maxWidth: 820,
-                mx: 'auto',
-                mb: 6,
-              }}
-            >
-              Everything you need to develop, test, and optimize drone operations in a
-              safe, virtual environment.
-            </Typography>
+          <Typography
+            variant='body1'
+            sx={{
+              color: 'var(--dw-color-text-secondary)',
+              maxWidth: 820,
+              mx: 'auto',
+              mb: 6,
+            }}
+          >
+            Everything you need to develop, test, and optimize drone operations in a safe, virtual
+            environment.
+          </Typography>
 
-            <Grid container spacing={3}>
-              {/* Card 1 */}
-              <Grid item xs={12} md={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    border: '1px solid #e5e7eb',
-                  }}
-                >
-                  <Stack direction="row" spacing={2}>
-                    <Box
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: '#ede9fe',
-                      }}
-                    >
-                      <LandscapeIcon sx={{ color: '#7c3aed' }} />
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-                        3D Environment Generation
-                      </Typography>
-                      <Typography sx={{ color: '#475569' }}>
-                        Create realistic terrains, cities, and landscapes for
-                        comprehensive drone testing scenarios.
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-
-              {/* Card 2 */}
-              <Grid item xs={12} md={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    border: '1px solid #e5e7eb',
-                  }}
-                >
-                  <Stack direction="row" spacing={2}>
-                    <Box
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: '#dcfce7',
-                      }}
-                    >
-                      <ShowChartIcon sx={{ color: '#16a34a' }} />
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-                        Real-time Simulation
-                      </Typography>
-                      <Typography sx={{ color: '#475569' }}>
-                        Monitor and control multiple drones simultaneously with live
-                        data streaming and analytics.
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-
-              {/* Card 3 */}
-              <Grid item xs={12} md={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    border: '1px solid #e5e7eb',
-                  }}
-                >
-                  <Stack direction="row" spacing={2}>
-                    <Box
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: '#f3e8ff',
-                      }}
-                    >
-                      <GroupWorkIcon sx={{ color: '#8b5cf6' }} />
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-                        Multi-drone Coordination
-                      </Typography>
-                      <Typography sx={{ color: '#475569' }}>
-                        Test swarm intelligence and formation flight patterns with
-                        advanced coordination algorithms.
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-
-              {/* Card 4 */}
-              <Grid item xs={12} md={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    border: '1px solid #e5e7eb',
-                  }}
-                >
-                  <Stack direction="row" spacing={2}>
-                    <Box
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: '#ffedd5',
-                      }}
-                    >
-                      <InsertChartOutlinedIcon sx={{ color: '#f97316' }} />
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, color: '#0f172a', mb: 0.5 }}>
-                        Data Analytics
-                      </Typography>
-                      <Typography sx={{ color: '#475569' }}>
-                        Comprehensive reporting and analysis tools to evaluate drone
-                        performance and mission success.
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Container>
-        </Box>
-                    
-        <Box
-          component="section"
-          sx={{ width: '80%', bgcolor: '#f8fafc', py: { xs: 6, md: 8 }, borderTop: '1px solid #e5e7eb' }}
-        >
-          <Container maxWidth="lg">
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={8}>
-                <Typography
-                  sx={{
-                    fontWeight: 800,
-                    color: '#0f172a',
-                    fontSize: { xs: 22, md: 28 },
-                    mb: 0.5,
-                  }}
-                >
-                  Ready to start simulating?
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 800,
-                    color: '#1d4ed8',
-                    fontSize: { xs: 22, md: 28 },
-                  }}
-                >
-                  Create your first test scenario today.
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Stack direction="row" spacing={2} justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
-                  <Button
-                    component={Link}
-                    to="/home"
-                    variant="contained"
+          <Grid container spacing={3}>
+            {/* Card 1 */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid var(--dw-color-border-muted)',
+                }}
+              >
+                <Stack direction='row' spacing={2}>
+                  <Box
                     sx={{
-                      bgcolor: '#1e3a8a',
-                      '&:hover': { bgcolor: '#172554' },
-                      textTransform: 'none',
-                      fontWeight: 700,
+                      width: 44,
+                      height: 44,
                       borderRadius: 2,
+                      display: 'grid',
+                      placeItems: 'center',
+                      bgcolor: 'var(--dw-color-feature-purple-soft)',
                     }}
                   >
-                    Get Started
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="https://oss-slu.github.io/projects/droneworld/about"
-                    variant="outlined"
-                    sx={{
-                      borderColor: '#cbd5e1',
-                      color: '#172554',
-                      '&:hover': { borderColor: '#94a3b8', backgroundColor: '#ffffff' },
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      borderRadius: 2,
-                      bgcolor: '#fff',
-                    }}
-                  >
-                    View Documentation
-                  </Button>
+                    <LandscapeIcon sx={{ color: 'var(--dw-color-feature-purple)' }} />
+                  </Box>
+                  <Box>
+                    <Typography
+                      sx={{ fontWeight: 700, color: 'var(--dw-color-text-primary)', mb: 0.5 }}
+                    >
+                      3D Environment Generation
+                    </Typography>
+                    <Typography sx={{ color: 'var(--dw-color-text-secondary)' }}>
+                      Create realistic terrains, cities, and landscapes for comprehensive drone
+                      testing scenarios.
+                    </Typography>
+                  </Box>
                 </Stack>
-              </Grid>
+              </Paper>
             </Grid>
-          </Container>
-        </Box>
-      
+
+            {/* Card 2 */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid var(--dw-color-border-muted)',
+                }}
+              >
+                <Stack direction='row' spacing={2}>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      display: 'grid',
+                      placeItems: 'center',
+                      bgcolor: 'var(--dw-color-feature-green-soft)',
+                    }}
+                  >
+                    <ShowChartIcon sx={{ color: 'var(--dw-color-feature-green)' }} />
+                  </Box>
+                  <Box>
+                    <Typography
+                      sx={{ fontWeight: 700, color: 'var(--dw-color-text-primary)', mb: 0.5 }}
+                    >
+                      Real-time Simulation
+                    </Typography>
+                    <Typography sx={{ color: 'var(--dw-color-text-secondary)' }}>
+                      Monitor and control multiple drones simultaneously with live data streaming
+                      and analytics.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+
+            {/* Card 3 */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid var(--dw-color-border-muted)',
+                }}
+              >
+                <Stack direction='row' spacing={2}>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      display: 'grid',
+                      placeItems: 'center',
+                      bgcolor: 'var(--dw-color-feature-violet-soft)',
+                    }}
+                  >
+                    <GroupWorkIcon sx={{ color: 'var(--dw-color-feature-violet)' }} />
+                  </Box>
+                  <Box>
+                    <Typography
+                      sx={{ fontWeight: 700, color: 'var(--dw-color-text-primary)', mb: 0.5 }}
+                    >
+                      Multi-drone Coordination
+                    </Typography>
+                    <Typography sx={{ color: 'var(--dw-color-text-secondary)' }}>
+                      Test swarm intelligence and formation flight patterns with advanced
+                      coordination algorithms.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+
+            {/* Card 4 */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid var(--dw-color-border-muted)',
+                }}
+              >
+                <Stack direction='row' spacing={2}>
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      display: 'grid',
+                      placeItems: 'center',
+                      bgcolor: 'var(--dw-color-feature-orange-soft)',
+                    }}
+                  >
+                    <InsertChartOutlinedIcon sx={{ color: 'var(--dw-color-feature-orange)' }} />
+                  </Box>
+                  <Box>
+                    <Typography
+                      sx={{ fontWeight: 700, color: 'var(--dw-color-text-primary)', mb: 0.5 }}
+                    >
+                      Data Analytics
+                    </Typography>
+                    <Typography sx={{ color: 'var(--dw-color-text-secondary)' }}>
+                      Comprehensive reporting and analysis tools to evaluate drone performance and
+                      mission success.
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      <Box
+        component='section'
+        sx={{
+          width: '80%',
+          bgcolor: 'var(--dw-color-body-bg)',
+          py: { xs: 6, md: 8 },
+          borderTop: '1px solid var(--dw-color-border-muted)',
+        }}
+      >
+        <Container maxWidth='lg'>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item xs={12} md={8}>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  color: 'var(--dw-color-text-primary)',
+                  fontSize: { xs: 22, md: 28 },
+                  mb: 0.5,
+                }}
+              >
+                Ready to start simulating?
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  color: 'var(--dw-color-info-strong)',
+                  fontSize: { xs: 22, md: 28 },
+                }}
+              >
+                Create your first test scenario today.
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Stack
+                direction='row'
+                spacing={2}
+                justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
+              >
+                <Button
+                  component={Link}
+                  to='/home'
+                  variant='contained'
+                  sx={{
+                    backgroundColor: 'var(--dw-color-primary)',
+                    '&:hover': { backgroundColor: 'var(--dw-color-primary-hover)' },
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                  }}
+                >
+                  Get Started
+                </Button>
+                <Button
+                  component={Link}
+                  to='https://oss-slu.github.io/projects/droneworld/about'
+                  variant='outlined'
+                  sx={{
+                    borderColor: 'var(--dw-color-border)',
+                    color: 'var(--dw-color-primary-hover)',
+                    '&:hover': {
+                      borderColor: 'var(--dw-color-border-muted)',
+                      backgroundColor: 'var(--dw-color-surface)',
+                    },
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    bgcolor: 'var(--dw-color-surface)',
+                  }}
+                >
+                  View Documentation
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
       {isLoading ? (
         <Loading />

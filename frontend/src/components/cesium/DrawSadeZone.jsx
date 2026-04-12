@@ -37,7 +37,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
 
         setCameraByPosition();
         setMouseDown(true);
-        viewer.canvas.style.border = '2px dashed red';
+        viewer.canvas.style.border = '2px dashed var(--dw-color-drag-outline)';
         // Disable camera rotation while the user is drawing a Sade-zone
         viewer.scene.screenSpaceCameraController.enableRotate = false;
 

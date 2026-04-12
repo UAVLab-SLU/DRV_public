@@ -83,7 +83,6 @@ function NotFound() {
             <Button
               variant='contained'
               sx={{
-                color: 'white',
                 padding: '15px 30px',
                 borderRadius: '10px',
                 marginTop: '1rem',

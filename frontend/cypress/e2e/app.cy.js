@@ -1,4 +1,5 @@
-// Cypress Test for E2E Frontend Flow
+/* eslint-env cypress */
+
 describe('DroneWorld Application Flow', () => {
   const installMockOpfs = (win) => {
     const files = new Map();
@@ -74,11 +75,146 @@ describe('DroneWorld Application Flow', () => {
     // Leave URL.createObjectURL untouched. Cesium and browser worker setup rely on the real API.
   };
 
+  const visitWizard = () => {
+    cy.visit('/simulation', {
+      onBeforeLoad(win) {
+        installMockOpfs(win);
+      },
+    });
+    cy.contains('Load Existing Configuration').should('be.visible');
+  };
+
+  const openPresetSelect = () => {
+    cy.get('[data-testid="import-preset-select"]').click();
+    cy.get('[role="listbox"]').should('be.visible');
+  };
+
+  const assertEnvironmentInputs = ({ latitude, longitude, altitude }) => {
+    cy.get('[data-testid="environment-latitude-input"]', { timeout: 15000 }).should(
+      'have.value',
+      String(latitude),
+    );
+    cy.get('[data-testid="environment-longitude-input"]', { timeout: 15000 }).should(
+      'have.value',
+      String(longitude),
+    );
+    cy.get('[data-testid="environment-altitude-input"]', { timeout: 15000 }).should(
+      'have.value',
+      String(altitude),
+    );
+  };
+
+  const assertDroneCoordinates = (droneIndex, { latitude, longitude, height }) => {
+    cy.get(`[data-testid="drone-latitude-input-${droneIndex}"]`, { timeout: 15000 }).should(
+      'have.value',
+      String(latitude),
+    );
+    cy.get(`[data-testid="drone-longitude-input-${droneIndex}"]`, { timeout: 15000 }).should(
+      'have.value',
+      String(longitude),
+    );
+    cy.get(`[data-testid="drone-height-input-${droneIndex}"]`, { timeout: 15000 }).should(
+      'have.value',
+      String(height),
+    );
+  };
+
+  const openDroneConfiguration = (droneName) => {
+    cy.contains(droneName, { timeout: 15000 }).should('be.visible').click();
+  };
+
   it('should handle direct /dashboard access without route state', () => {
     cy.visit('/dashboard');
     cy.contains('No Report Selected').should('be.visible');
     cy.contains('button', 'Go to Reports').click();
     cy.url().should('include', '/reports');
+  });
+
+  it('loads a bundled preset into the wizard, keeps imported values editable, and advances through the flow', () => {
+    visitWizard();
+
+    openPresetSelect();
+    cy.contains('[role="option"]', 'Circular and Square Flight Mission in Windy Weather').click();
+    cy.get('[data-testid="load-preset-button"]').click();
+
+    cy.get('[data-testid="import-status"]').should(
+      'contain.text',
+      'Loaded preset "Circular and Square Flight Mission in Windy Weather" into the wizard.',
+    );
+    assertEnvironmentInputs({
+      latitude: 42.1142,
+      longitude: -87.9011,
+      altitude: 208,
+    });
+
+    cy.contains('button', 'Next').click();
+    openDroneConfiguration('Circle Drone');
+    cy.get('[data-testid="drone-mission-select-0"]').should('contain.text', 'Circle');
+    assertDroneCoordinates(0, {
+      latitude: 42.1142,
+      longitude: -87.9011,
+      height: 30,
+    });
+
+    cy.get('[data-testid="drone-latitude-input-0"]').clear().type('42.1148');
+    cy.get('[data-testid="drone-latitude-input-0"]').should('have.value', '42.1148');
+
+    cy.contains('button', 'Next').click();
+    cy.contains('button', 'Finish').should('be.visible');
+    cy.contains('button', 'Back').click();
+    cy.contains('button', 'Next').should('be.visible');
+    openDroneConfiguration('Circle Drone');
+    cy.get('[data-testid="drone-latitude-input-0"]').should('have.value', '42.1148');
+  });
+
+  it('loads a JSON file into the wizard and maps missions, environment fields, and drone coordinates', () => {
+    visitWizard();
+
+    cy.get('[data-testid="import-config-file-input"]').selectFile(
+      'cypress/fixtures/import-task-payload.json',
+      { force: true },
+    );
+    cy.get('[data-testid="selected-import-file"]').should(
+      'contain.text',
+      'import-task-payload.json',
+    );
+    cy.get('[data-testid="load-file-button"]').click();
+
+    cy.get('[data-testid="import-status"]').should(
+      'contain.text',
+      'Loaded "import-task-payload.json" into the wizard.',
+    );
+    assertEnvironmentInputs({
+      latitude: 36.2451,
+      longitude: -115.2586,
+      altitude: 215,
+    });
+
+    cy.contains('button', 'Next').click();
+
+    openDroneConfiguration('Imported Survey Drone');
+    cy.get('[data-testid="drone-mission-select-0"]').should('contain.text', 'Square');
+    assertDroneCoordinates(0, {
+      latitude: 36.2451,
+      longitude: -115.2586,
+      height: 28,
+    });
+
+    openDroneConfiguration('Imported Orbit Drone');
+    cy.get('[data-testid="drone-mission-select-1"]').should('contain.text', 'Circle');
+    assertDroneCoordinates(1, {
+      latitude: 36.2453,
+      longitude: -115.2584,
+      height: 32,
+    });
+
+    cy.get('[data-testid="environment-altitude-input"]').should('not.exist');
+    cy.contains('button', 'Back').click();
+    cy.get('[data-testid="environment-altitude-input"]').clear().type('220');
+    cy.get('[data-testid="environment-altitude-input"]').should('have.value', '220');
+    cy.contains('button', 'Next').click();
+    cy.contains('button', 'Next').click();
+    cy.contains('button', 'Finish').should('be.visible');
   });
 
   it('should complete the full scenario configuration flow', () => {

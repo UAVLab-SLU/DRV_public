@@ -335,6 +335,46 @@ docker-compose logs -f frontend backend
 
 For detailed development workflows and contribution guidelines, see our [Contributing Guide](https://github.com/oss-slu/DroneWorld/wiki/Contributing-Guide).
 
+## Importing Existing Configurations
+
+The simulation wizard can load an existing configuration back into editable frontend state before you submit a run.
+
+### Supported Sources
+
+- Bundled dev-team presets from the wizard import panel
+- Uploaded JSON files from disk
+- Browser-saved entries listed on `/saved-settings`
+
+The import pipeline accepts these JSON shapes:
+
+- a saved snapshot bundle containing both `settings.json` and `task.json`
+- a raw simulation task payload
+- a finalized AirSim `settings.json`
+
+Importing updates the wizard only. It does not submit a run or overwrite saved browser snapshots.
+
+### Preset Structure
+
+Bundled presets live under `frontend/src/data/configPresets/`.
+
+- `registry.js`
+  - registers each preset with:
+    - `id`
+    - `displayName`
+    - `description`
+    - `sourceJson`
+- one file per preset payload such as `uav301Preset.js`
+- `presetBuilders.js` for shared preset helpers
+
+See `frontend/src/data/configPresets/README.md` for the preset authoring workflow.
+
+### Known Limitations
+
+- `settings.json` imports can restore environment settings and drone positions, but wizard-only metadata may need to be reconstructed if the file does not include the original `task.json`.
+- Saved entries without `task.json` can still be loaded into the wizard, but they cannot be replayed with `Simulate`.
+- Replay (`Simulate`) and import (`Load Into Wizard`) are intentionally separate actions on `/saved-settings`.
+- Import validation is schema-based. Unsupported files are rejected with an error describing which configuration formats are accepted.
+
 ## Traditional Usage (Non-Docker)
 
 To begin using DroneReqValidator with traditional installation, refer to our [Getting Started](https://github.com/oss-slu/DroneWorld/wiki/Getting-Started) guide.
@@ -421,6 +461,7 @@ The contents of `./frontend/.env` should include the following variables:
 ```sh
 REACT_APP_DEMO_USER_EMAIL='name@domain.tld'
 REACT_APP_CESIUM_ION_ACCESS_TOKEN='yaddayaddayadda'
+REACT_APP_GOOGLE_MAPS_API_KEY='your_google_maps_browser_key'  # optional; required only for the region map picker
 # Optional (default true): set false to disable auto lockfile sync during rebuild commands
 AUTO_SYNC_FRONTEND_LOCKFILE=true
 ```

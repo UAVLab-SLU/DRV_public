@@ -13,15 +13,17 @@ jest.mock('@react-google-maps/api', () => {
     mapClickMock.handler = onClick;
     return <div data-testid='google-map'>{children}</div>;
   };
-  const LoadScriptMock = ({ children }) => <div>{children}</div>;
 
   const MarkerMock = () => <div data-testid='marker' />;
 
   return {
     __esModule: true,
     GoogleMap: GoogleMapMock,
-    LoadScript: LoadScriptMock,
     Marker: MarkerMock,
+    useJsApiLoader: jest.fn(() => ({
+      isLoaded: true,
+      loadError: undefined,
+    })),
     __triggerMapClick: (event) => {
       if (mapClickMock.handler) {
         mapClickMock.handler(event);
@@ -30,7 +32,7 @@ jest.mock('@react-google-maps/api', () => {
   };
 });
 
-import { __triggerMapClick } from '@react-google-maps/api';
+import { __triggerMapClick, useJsApiLoader } from '@react-google-maps/api';
 
 const buildProps = () => ({
   id: 'environment',
@@ -98,5 +100,20 @@ describe('EnvironmentConfiguration interactions', () => {
       const lastCall = props.environmentJson.mock.calls.at(-1);
       expect(lastCall?.[0].Wind.Force).toBe(0);
     });
+  });
+
+  it('shows a warning instead of crashing when Google Maps fails to load', () => {
+    const props = buildProps();
+    useJsApiLoader.mockReturnValueOnce({
+      isLoaded: false,
+      loadError: new Error('quota exceeded'),
+    });
+
+    render(<EnvironmentConfiguration {...props} />);
+
+    expect(
+      screen.getByText(/Google Maps preview is temporarily unavailable/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
   });
 });

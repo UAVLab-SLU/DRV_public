@@ -1,6 +1,18 @@
 import { EnvironmentModel } from './EnvironmentModel';
 import dayjs from 'dayjs';
 
+function cloneValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => cloneValue(entry));
+  }
+
+  if (value != null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+  }
+
+  return value;
+}
+
 export class SimulationConfigurationModel {
   constructor() {
     const currentDate = new Date();
@@ -59,6 +71,18 @@ export class SimulationConfigurationModel {
     for (let i = 0; i < drones.length; i++) {
       model.addNewDrone(drones[i]);
     }
+    return model;
+  }
+
+  static fromConfiguration(configuration) {
+    const model = new SimulationConfigurationModel();
+    model.environment =
+      configuration?.environment instanceof EnvironmentModel
+        ? EnvironmentModel.getReactStateBasedUpdate(configuration.environment)
+        : EnvironmentModel.fromConfiguration(configuration?.environment);
+    model.drones = Array.isArray(configuration?.Drones)
+      ? configuration.Drones.map((drone) => cloneValue(drone))
+      : [];
     return model;
   }
 

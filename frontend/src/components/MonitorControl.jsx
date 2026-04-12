@@ -19,55 +19,94 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import dayjs from 'dayjs';
 
+const DEFAULT_MONITORS = {
+    circular_deviation_monitor: {
+        enable:false,
+        param:[15]
+    },
+    collision_monitor: {
+        enable:false,
+        param:[]
+    },
+    unordered_waypoint_monitor: {
+        enable:false,
+        param:[1]
+    },
+    ordered_waypoint_monitor: {
+        enable:false,
+        param:[1]
+    },
+    point_deviation_monitor: {
+        enable:false,
+        param:[15]
+    },
+    min_sep_dist_monitor: {
+        enable:false,
+        param:[1,1]
+    },
+    landspace_monitor: {
+        enable:false,
+        param:[]
+    },
+    no_fly_zone_monitor: {
+        enable:false,
+        param:[
+            []
+        ]
+    },
+    drift_monitor:{
+        enable:false,
+        param:[1]
+    },
+    battery_monitor:{
+        enable:false,
+        param:[1,1]
+    }
+};
+
+function cloneValue(value) {
+    if (Array.isArray(value)) {
+        return value.map((entry) => cloneValue(entry));
+    }
+
+    if (value != null && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+    }
+
+    return value;
+}
+
+function buildMonitorState(monitors) {
+    const nextMonitorState = cloneValue(DEFAULT_MONITORS);
+
+    if (monitors == null || typeof monitors !== 'object') {
+        return nextMonitorState;
+    }
+
+    Object.entries(monitors).forEach(([monitorId, monitorConfig]) => {
+        if (nextMonitorState[monitorId] == null || monitorConfig == null || typeof monitorConfig !== 'object') {
+            return;
+        }
+
+        nextMonitorState[monitorId] = {
+            ...nextMonitorState[monitorId],
+            ...cloneValue(monitorConfig),
+            param: Array.isArray(monitorConfig.param)
+                ? cloneValue(monitorConfig.param)
+                : nextMonitorState[monitorId].param,
+        };
+    });
+
+    return nextMonitorState;
+}
+
 export default function MonitorControl (monJson) {
+    const isHydratingMonitorRef = React.useRef(false);
     const [value, setValue] = React.useState('2');
     const [verticalValue, setVerticalValue] = React.useState('1.1');
     const [zoneCount] = React.useState(1);
     
-    const [monitor, setMonitor] = React.useState(monJson.mainJsonValue.monitors != null ? monJson.mainJsonValue.monitors : {
-        circular_deviation_monitor: {
-            enable:false,
-            param:[15]
-        },
-        collision_monitor: {
-            enable:false,
-            param:[]
-        },
-        unordered_waypoint_monitor: {
-            enable:false,
-            param:[1]
-        },
-        ordered_waypoint_monitor: {
-            enable:false,
-            param:[1]
-        },
-        point_deviation_monitor: {
-            enable:false,
-            param:[15]
-        },
-        min_sep_dist_monitor: {
-            enable:false,
-            param:[1,1]
-        },
-        landspace_monitor: {
-            enable:false,
-            param:[]
-        },
-        no_fly_zone_monitor: {
-            enable:false,
-            param:[
-                []
-            ]
-        },
-        drift_monitor:{
-            enable:false,
-            param:[1]
-        },
-        battery_monitor:{
-            enable:false,
-            param:[1,1]
-        }
-    })
+    const [monitor, setMonitor] = React.useState(() => buildMonitorState(monJson.mainJsonValue.monitors));
 
     const [envConf, setEnvConf] = React.useState(monJson.mainJsonValue.environment != null ? monJson.mainJsonValue.environment : {
         enableFuzzy: false,
@@ -93,6 +132,15 @@ export default function MonitorControl (monJson) {
     React.useEffect(() => {
         environmentJson(envConf)
     }, [envConf])
+
+    React.useEffect(() => {
+        if (monJson.mainJsonValue.monitors == null) {
+            return;
+        }
+
+        isHydratingMonitorRef.current = true;
+        setMonitor(buildMonitorState(monJson.mainJsonValue.monitors));
+    }, [monJson.mainJsonValue.monitors]);
     const handleBatteryMonitor = (val, index) => {
         setMonitor(prevState => ({
             ...prevState,
@@ -153,8 +201,13 @@ export default function MonitorControl (monJson) {
     };
 
     React.useEffect(() => {
+        if (isHydratingMonitorRef.current) {
+            isHydratingMonitorRef.current = false;
+            return;
+        }
+
         monJson.monitorJson(monitor, monJson.id);
-    }, [monitor])
+    }, [monitor, monJson])
     const handleChangeSwitch = (val, id) => {
         setMonitor(prevState => ({
             ...prevState,

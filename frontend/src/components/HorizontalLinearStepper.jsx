@@ -9,6 +9,7 @@ import styled from '@emotion/styled';
 import MissionConfiguration from './Configuration/MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 import MonitorControl from './MonitorControl';
+import ImportConfigurationPanel from './Configuration/ImportConfigurationPanel';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
@@ -18,6 +19,8 @@ import ControlsDisplay from './Configuration/ControlsDisplay';
 import { BASE_URL } from '../utils/const';
 import { buildTaskPayload } from '../utils/taskPayload';
 import { isSupported as isSavedSettingsSupported, saveSnapshot } from '../services/savedSettingsStorage';
+import { useMainJson } from '../contexts/MainJsonContext';
+import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
 
 const StyledButton = styled(Button)`
   border-radius: 25px;
@@ -27,8 +30,17 @@ const StyledButton = styled(Button)`
 
 const steps = ['Environment Configuration', 'Mission Configuration', 'Test Configuration'];
 
+function formatFetchError(error, endpointUrl) {
+  if (error?.name === 'TypeError' && error?.message === 'Failed to fetch') {
+    return `Unable to reach backend at ${endpointUrl}. Start the backend service and try again.`;
+  }
+
+  return error?.message ?? 'Unexpected request failure.';
+}
+
 export default function HorizontalLinearStepper(data) {
   const navigate = useNavigate();
+  const { replaceSimulationConfiguration } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,16 +64,6 @@ export default function HorizontalLinearStepper(data) {
   };
 
   const setMainJson = (envJson, id) => {
-    if (
-      id == 'environment' &&
-      mainJson.Drones != null &&
-      mainJson.Drones[0].X != envJson.Origin.Latitude
-    ) {
-      setJson((prevState) => ({
-        ...prevState,
-        Drones: null,
-      }));
-    }
     setJson((prevState) => ({
       ...prevState,
       [id]: envJson,
@@ -97,21 +99,43 @@ export default function HorizontalLinearStepper(data) {
     ) {
       setJson((prevState) => ({
         ...prevState,
-        FuzzyTest: {
+        FuzzyTest: prevState.FuzzyTest ?? {
           target: 'Wind',
           precision: 5,
         },
+        environment: {
+          ...prevState.environment,
+          enableFuzzy: undefined,
+        },
       }));
-      delete mainJson.environment['enableFuzzy'];
     }
     if (
       mainJson.environment != null &&
       mainJson.environment.enableFuzzy == false &&
       mainJson.FuzzyTest != null
     ) {
-      delete mainJson.FuzzyTest;
+      setJson((prevState) => {
+        const nextState = { ...prevState };
+        delete nextState.FuzzyTest;
+        return nextState;
+      });
     }
   }, [mainJson]);
+
+  const applyConfigToWizard = React.useCallback((config) => {
+    if (!config) {
+      return;
+    }
+
+    applyImportedConfig(config, {
+      setWizardState: setJson,
+      replaceSimulationConfiguration,
+    });
+  }, [replaceSimulationConfiguration]);
+
+  React.useEffect(() => {
+    applyConfigToWizard(data.importedConfig ?? null);
+  }, [applyConfigToWizard, data.importedConfig]);
 
   function getValidatedPayload() {
     const payload = buildTaskPayload(mainJson);
@@ -139,9 +163,10 @@ export default function HorizontalLinearStepper(data) {
   }
 
   async function queueTask(payload) {
+    const endpointUrl = `${BASE_URL}/addTask`;
     try {
       console.log('POST /addTask payload:', payload);
-      const res = await fetch(`${BASE_URL}/addTask`, {
+      const res = await fetch(endpointUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -161,29 +186,35 @@ export default function HorizontalLinearStepper(data) {
 
     } catch (err) {
       console.error('Submit failed:', err);
-      setSubmitError(`Submit failed: ${err.message}`);
+      setSubmitError(`Submit failed: ${formatFetchError(err, endpointUrl)}`);
       return false;
     }
   }
 
   async function fetchSettingsPreview(payload) {
-    const res = await fetch(`${BASE_URL}/api/simulation/settings/preview`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const endpointUrl = `${BASE_URL}/api/simulation/settings/preview`;
 
-    const bodyText = await res.text();
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${bodyText}`);
+    try {
+      const res = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const bodyText = await res.text();
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${bodyText}`);
+      }
+
+      const responseBody = JSON.parse(bodyText);
+      if (!responseBody?.settings) {
+        throw new Error('Preview response did not include settings.');
+      }
+
+      return responseBody.settings;
+    } catch (error) {
+      throw new Error(formatFetchError(error, endpointUrl));
     }
-
-    const responseBody = JSON.parse(bodyText);
-    if (!responseBody?.settings) {
-      throw new Error('Preview response did not include settings.');
-    }
-
-    return responseBody.settings;
   }
 
   async function handleFinishDecision(shouldSave) {
@@ -312,8 +343,16 @@ export default function HorizontalLinearStepper(data) {
             }}
           >
             <Box sx={{ width: '45%' }}>
+              <ImportConfigurationPanel
+                onImportConfig={(config) => {
+                  setSubmitError('');
+                  applyConfigToWizard(config);
+                }}
+              />
               {stepsComponent.map((compo) => {
-                return compo.id === activeStep + 1 ? compo.comp : '';
+                return compo.id === activeStep + 1
+                  ? <React.Fragment key={compo.id}>{compo.comp}</React.Fragment>
+                  : null;
               })}
               <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                   <StyledButton

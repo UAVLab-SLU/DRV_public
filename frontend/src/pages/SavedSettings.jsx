@@ -9,10 +9,19 @@ import {
   listSnapshots,
   readSnapshot,
 } from '../services/savedSettingsStorage';
+import { loadImportedConfigFromSnapshot } from '../services/configImport/importConfigurationSources';
 import { BASE_URL } from '../utils/const';
 
 function formatSavedAt(lastModified) {
   return new Date(lastModified).toLocaleString();
+}
+
+function buildLoadMessage(snapshotName, warnings) {
+  if (warnings.length > 0) {
+    return `Loaded "${snapshotName}" into the wizard with recovered fields. Review the notes below before submitting.`;
+  }
+
+  return `Loaded "${snapshotName}" into the wizard. You can keep editing before submission.`;
 }
 
 export default function SavedSettings() {
@@ -30,11 +39,21 @@ export default function SavedSettings() {
       return;
     }
 
-    setLoading(true);
-    setError('');
+      setLoading(true);
+      setError('');
     try {
       const savedSnapshots = await listSnapshots();
-      setSnapshots(savedSnapshots);
+      const importableSnapshots = savedSnapshots.map((snapshot) => {
+        // Saved entries reuse the same normalization rules as presets and uploaded files.
+        const importResult = loadImportedConfigFromSnapshot(snapshot);
+        return {
+          ...snapshot,
+          canLoad: importResult.ok,
+          loadWarnings: importResult.warnings ?? [],
+          loadErrors: importResult.errors ?? [],
+        };
+      });
+      setSnapshots(importableSnapshots);
     } catch (loadError) {
       setError(loadError.message || 'Failed to load saved settings.');
     } finally {
@@ -113,6 +132,35 @@ export default function SavedSettings() {
     }
   };
 
+  const handleLoadIntoWizard = async (name) => {
+    setBusySnapshotName(name);
+    try {
+      const snapshot = await readSnapshot(name);
+      const importResult = loadImportedConfigFromSnapshot(snapshot);
+      if (!importResult.ok) {
+        throw new Error(importResult.errors?.join(' ') || 'Failed to load saved settings into the wizard.');
+      }
+
+      // Router state keeps the wizard on the same shared import/apply path.
+      navigate('/simulation', {
+        state: {
+          descs: 'Load or edit an existing simulation configuration.',
+          title: 'Loaded Configuration',
+          importedConfig: importResult.config,
+          importStatus: {
+            severity: importResult.warnings?.length ? 'warning' : 'success',
+            message: buildLoadMessage(name, importResult.warnings ?? []),
+            details: importResult.warnings ?? [],
+          },
+        },
+      });
+    } catch (loadError) {
+      setError(loadError.message || 'Failed to load saved settings into the wizard.');
+    } finally {
+      setBusySnapshotName('');
+    }
+  };
+
   return (
     <Box sx={{ minHeight: '70vh', px: 4, py: 5 }}>
       <Typography variant='h4' sx={{ mb: 1 }}>
@@ -154,10 +202,30 @@ export default function SavedSettings() {
                 {(snapshot.size / 1024).toFixed(1)} KB
               </Typography>
               <Typography color='text.secondary'>
-                {snapshot.hasTask ? 'Includes task.json replay data' : 'Legacy settings-only snapshot'}
+                {snapshot.hasTask
+                  ? 'Includes task.json replay data and full wizard load support'
+                  : 'Legacy settings-only snapshot. Wizard load is available, but some fields may be reconstructed from settings.json.'}
               </Typography>
+              {!snapshot.canLoad && snapshot.loadErrors.length > 0 && (
+                <Typography color='error.main'>{snapshot.loadErrors.join(' ')}</Typography>
+              )}
+              {snapshot.canLoad && snapshot.loadWarnings.length > 0 && (
+                <Typography color='warning.main'>
+                  Loading will recover some wizard fields from the saved settings file.
+                </Typography>
+              )}
             </CardContent>
             <CardActions>
+              {snapshot.canLoad && (
+                <Button
+                  color='primary'
+                  variant='outlined'
+                  onClick={() => handleLoadIntoWizard(snapshot.name)}
+                  disabled={busySnapshotName === snapshot.name}
+                >
+                  {busySnapshotName === snapshot.name ? 'Loading...' : 'Load Into Wizard'}
+                </Button>
+              )}
               {snapshot.canSimulate && (
                 <Button
                   color='success'

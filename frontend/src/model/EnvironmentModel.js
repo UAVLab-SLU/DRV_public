@@ -2,6 +2,23 @@ import { imageUrls } from '../utils/const';
 
 import { origin } from '../constants/env';
 
+function cloneValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => cloneValue(entry));
+  }
+
+  if (value != null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+  }
+
+  return value;
+}
+
+function toFiniteNumber(value, fallback = 0) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+}
+
 export class EnvironmentModel {
   constructor() {
     this._name = '';
@@ -227,6 +244,7 @@ export class EnvironmentModel {
     model.enableFuzzy = instance.enableFuzzy;
     model.timeOfDayFuzzy = instance.timeOfDayFuzzy;
     model.positionFuzzy = instance.positionFuzzy;
+    model.windFuzzy = instance.windFuzzy;
     model.setOriginLatitude(instance._Origin.latitude);
     model.setOriginLongitude(instance._Origin.longitude);
     model.setOriginHeight(instance._Origin.height);
@@ -242,6 +260,54 @@ export class EnvironmentModel {
     for (let i = 0; i < sades.length; i++) {
       model.addNewSade(sades[i]);
     }
+    return model;
+  }
+
+  static fromConfiguration(configuration, baseModel = new EnvironmentModel()) {
+    const model = EnvironmentModel.getReactStateBasedUpdate(baseModel);
+    const originSource = configuration?.Origin ?? configuration?._Origin ?? {};
+    const windSource = configuration?.Wind ?? configuration?._Wind ?? model.Wind;
+
+    model.Origin = {
+      latitude: toFiniteNumber(
+        originSource.Latitude ?? originSource.latitude,
+        model.getOriginLatitude()
+      ),
+      longitude: toFiniteNumber(
+        originSource.Longitude ?? originSource.longitude,
+        model.getOriginLongitude()
+      ),
+      height: toFiniteNumber(
+        originSource.Height ?? originSource.height ?? originSource.Altitude ?? originSource.altitude,
+        model.getOriginHeight()
+      ),
+      name: originSource.Name ?? originSource.name ?? model.getOriginName(),
+      radius: toFiniteNumber(originSource.Radius ?? originSource.radius, model.getOriginRadius()),
+      image: originSource.image ?? model.getOriginImage() ?? imageUrls.location,
+    };
+
+    model.TimeOfDay = configuration?.TimeOfDay ?? configuration?._TimeOfDay ?? model.TimeOfDay;
+    model.time = configuration?.time ?? configuration?._time ?? model.time;
+    model.enableFuzzy = Boolean(
+      configuration?.enableFuzzy ?? configuration?._enableFuzzy ?? model.enableFuzzy
+    );
+    model.timeOfDayFuzzy = Boolean(
+      configuration?.timeOfDayFuzzy ?? configuration?._timeOfDayFuzzy ?? model.timeOfDayFuzzy
+    );
+    model.positionFuzzy = Boolean(
+      configuration?.positionFuzzy ?? configuration?._positionFuzzy ?? model.positionFuzzy
+    );
+    model.windFuzzy = Boolean(
+      configuration?.windFuzzy ?? configuration?._windFuzzy ?? model.windFuzzy
+    );
+    model.UseGeo = configuration?.UseGeo ?? configuration?._UseGeo ?? model.UseGeo;
+    model.Wind = cloneValue(windSource);
+    model._sades = Array.isArray(configuration?.Sades)
+      ? cloneValue(configuration.Sades)
+      : Array.isArray(configuration?._sades)
+        ? cloneValue(configuration._sades)
+        : [];
+
     return model;
   }
 

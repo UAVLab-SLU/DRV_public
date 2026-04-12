@@ -27,12 +27,11 @@ const useStyles = makeStyles(() => ({
 export default function MissionConfiguration (mission) {
     const { mainJson, setMainJson } = useMainJson();
     const classes = useStyles();
-    const [droneCount, setDroneCount] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones.length : 1);
-    const [droneArray, setDroneArray] = React.useState(mission.mainJsonValue.Drones != null ? mission.mainJsonValue.Drones : [{
-        id: droneCount-1, 
-        droneName:"Drone " + droneCount,
+    const buildDefaultDrone = React.useCallback((index) => ({
+        id: index,
+        droneName:"Drone " + (index + 1),
         FlightController: "SimpleFlight",
-        droneType:"Multi Rotor", 
+        droneType:"MultiRotor",
         droneModel:"DJI",
         VehicleType: "SimpleFlight",
         DefaultVehicleState: "Armed",
@@ -40,12 +39,14 @@ export default function MissionConfiguration (mission) {
         EnableCollisions: true,
         AllowAPIAlways: true,
         EnableTrace: false,
-        Name:"Drone " + (droneCount),
-        X:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Latitude : 0,
+        Name:"Drone " + (index + 1),
+        X:mission.mainJsonValue.environment != null
+          ? (mission.mainJsonValue.environment.Origin.Latitude ?? 0) + (0.0001 * index)
+          : 0,
         Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
         Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
         Pitch: 0,
-        Roll: 0, 
+        Roll: 0,
         Yaw: 0,
         Sensors: null,
         MissionValue: "fly_to_points",
@@ -53,43 +54,43 @@ export default function MissionConfiguration (mission) {
             name:"fly_to_points",
             param : []
         },
-    }]);
+    }), [mission.mainJsonValue.environment]);
+
+    const getMissionDrones = React.useCallback(() => {
+        return mission.mainJsonValue.Drones != null && mission.mainJsonValue.Drones.length > 0
+            ? mission.mainJsonValue.Drones
+            : [buildDefaultDrone(0)];
+    }, [buildDefaultDrone, mission.mainJsonValue.Drones]);
+
+    const [droneArray, setDroneArray] = React.useState(getMissionDrones);
+    const [droneCount, setDroneCount] = React.useState(getMissionDrones().length);
 
     React.useEffect(() => {
-        if(droneArray.length===1){
-            mainJson.addNewDrone(droneArray[droneCount-1]);
-            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        const nextDroneArray = getMissionDrones();
+        setDroneArray(nextDroneArray);
+        setDroneCount(nextDroneArray.length);
+    }, [getMissionDrones]);
+
+    React.useEffect(() => {
+        if (mainJson.getAllDrones().length === 0 && droneArray.length > 0) {
+            const nextMainJson = SimulationConfigurationModel.getReactStateBasedUpdate(mainJson);
+            nextMainJson.drones = droneArray.map((drone) => ({
+                ...drone,
+                Mission: drone.Mission
+                    ? {
+                        ...drone.Mission,
+                        param: Array.isArray(drone.Mission.param) ? [...drone.Mission.param] : [],
+                    }
+                    : drone.Mission,
+            }));
+            setMainJson(nextMainJson);
         }
-    }, []);
+    }, [droneArray, mainJson, setMainJson]);
 
     const setDrone = () => {
-        droneArray.push({
-            id: (droneCount), 
-            droneName:"Drone " + (droneCount+1),
-            FlightController: "SimpleFlight",
-            droneType:"Multi Rotor", 
-            droneModel:"DJI", 
-            VehicleType: "SimpleFlight",
-            DefaultVehicleState: "Armed",
-            EnableCollisionPassthrogh: false,
-            EnableCollisions: true,
-            AllowAPIAlways: true,
-            EnableTrace: false,
-            Name:"Drone " + (droneCount+1),
-            X:mission.mainJsonValue.environment != null ? droneCount > 0 ? (mission.mainJsonValue.environment.Origin.Latitude) + (0.0001 * droneCount): mission.mainJsonValue.environment.Origin.Latitude : 0,
-            Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
-            Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
-            Pitch: 0,
-            Roll: 0, 
-            Yaw: 0,
-            Sensors: null,
-            MissionValue: "fly_to_points",
-            Mission : {
-                name:"fly_to_points",
-                param : []
-            },
-        })
-        mainJson.addNewDrone(droneArray[droneCount]);
+        const nextDrone = buildDefaultDrone(droneCount);
+        setDroneArray((prevDrones) => [...prevDrones, nextDrone]);
+        mainJson.addNewDrone(nextDrone);
         setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
 
@@ -143,7 +144,7 @@ export default function MissionConfiguration (mission) {
         setDroneArray(objs => {
             return objs.map((obj) => {
                 if(index === obj.id) {
-                    obj = {
+                    return {
                         ...obj,
                         droneName: e
                     }
@@ -162,13 +163,21 @@ export default function MissionConfiguration (mission) {
 
     React.useEffect(() => {
         mission.droneArrayJson(droneArray, mission.id)
-    }, [droneArray])
+    }, [droneArray, mission.droneArrayJson, mission.id])
 
     const setDroneJson = (json, index) => {
-        console.log('set drone json---', json, index)
-        const target = droneArray.find(obj => obj.id == index);
-        Object.assign(target, json)
-        console.log('droneArray----Missin Config', droneArray)
+        setDroneArray((currentDrones) =>
+            currentDrones.map((drone) =>
+                drone.id == index
+                    ? {
+                        ...drone,
+                        ...json,
+                        MissionValue: json.MissionValue ?? json.Mission?.name ?? drone.MissionValue,
+                        Mission: json.Mission ?? drone.Mission,
+                    }
+                    : drone
+            )
+        );
     }
 
     return (

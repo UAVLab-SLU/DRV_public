@@ -41,8 +41,10 @@ export default function DroneConfiguration(droneData) {
   const { name = "", id = "", droneObject = {}, resetName = () => {}, droneJson = () => {} } = droneData || {};
   
   const [selectedLoc] = React.useState('GeoLocation');
-  const [selectedModel, setSelectedModel] = React.useState('');
-  const [selectedDroneType, setselectedDroneType] = React.useState(droneTypes[1].value);
+  const [selectedModel, setSelectedModel] = React.useState(droneObject?.droneModel ?? '');
+  const [selectedDroneType, setselectedDroneType] = React.useState(
+    droneObject?.droneType ?? droneTypes[1].value
+  );
   const [snackBarState, setSnackBarState] = React.useState({ open: false });
   
   const [drone, setDrone] = React.useState(() => {
@@ -75,6 +77,19 @@ export default function DroneConfiguration(droneData) {
     return mergedDrone;
   });
 
+  const pushDroneUpdate = React.useCallback((updatedDrone) => {
+    setDrone(updatedDrone);
+    droneJson(updatedDrone, id);
+
+    const currentDrone = mainJson.getDroneBasedOnIndex(id);
+    if (!currentDrone) {
+      return;
+    }
+
+    mainJson.updateDroneBasedOnIndex(id, updatedDrone);
+    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  }, [droneJson, id, mainJson, setMainJson]);
+
   const syncDroneLocation = React.useCallback((x, y, z) => {
     const updatedDrone = {
       ...(droneData?.getDroneBasedOnIndex?.(id) || drone),
@@ -86,10 +101,9 @@ export default function DroneConfiguration(droneData) {
     if (droneData?.updateDroneBasedOnIndex) {
       droneData.updateDroneBasedOnIndex(id, updatedDrone);
     }
-  
-    setDrone(updatedDrone);
-    droneJson(updatedDrone, id);
-  }, [droneData, id, droneJson, drone]);
+
+    pushDroneUpdate(updatedDrone);
+  }, [droneData, id, drone, pushDroneUpdate]);
   
   const dropHandler = React.useCallback((e) => {
     e.preventDefault();
@@ -118,94 +132,87 @@ export default function DroneConfiguration(droneData) {
     }
   }, [dropHandler]);
 
-  // Sync position changes from external updates
+  // Keep local form state aligned with external wizard updates.
   React.useEffect(() => {
     if (!droneData?.droneObject) return;
     
     setDrone(prev => ({
       ...prev,
-      X: droneData.droneObject.X ?? prev.X,
-      Y: droneData.droneObject.Y ?? prev.Y,
-      Z: droneData.droneObject.Z ?? prev.Z
+      ...droneData.droneObject,
+      MissionValue:
+        droneData.droneObject.MissionValue ??
+        droneData.droneObject.Mission?.name ??
+        prev.MissionValue,
+      Mission: {
+        name:
+          droneData.droneObject.Mission?.name ??
+          droneData.droneObject.MissionValue ??
+          prev.Mission?.name ??
+          'fly_to_points',
+        param: Array.isArray(droneData.droneObject.Mission?.param)
+          ? droneData.droneObject.Mission.param
+          : prev.Mission?.param ?? [],
+      },
     }));
-  }, [droneData?.droneObject?.X, droneData?.droneObject?.Y, droneData?.droneObject?.Z]);
+    setselectedDroneType(droneData.droneObject.droneType ?? droneTypes[1].value);
+    setSelectedModel(droneData.droneObject.droneModel ?? '');
+  }, [droneData?.droneObject]);
 
 
   const handleMissionChange = (event) => {
     const missionName = event.target.value;
-    setDrone(prevState => {
-      const updatedDrone = {
-        ...prevState,
-        MissionValue: missionName,
-        Mission: {
-          ...(prevState.Mission || {}),
-          name: missionName,
-          param: Array.isArray(prevState?.Mission?.param) ? prevState.Mission.param : []
-        }
-      };
-      droneJson(updatedDrone, id);
-      return updatedDrone;
-    });
-
-    const currentDrone = mainJson.getDroneBasedOnIndex(id);
-    if (!currentDrone) return;
-
-    const updatedMainDrone = {
-      ...currentDrone,
+    const updatedDrone = {
+      ...drone,
       MissionValue: missionName,
       Mission: {
-        ...(currentDrone.Mission || {}),
+        ...(drone.Mission || {}),
         name: missionName,
-        param: Array.isArray(currentDrone?.Mission?.param) ? currentDrone.Mission.param : []
+        param: Array.isArray(drone?.Mission?.param) ? drone.Mission.param : []
       }
     };
 
-    mainJson.updateDroneBasedOnIndex(id, updatedMainDrone);
-    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+    pushDroneUpdate(updatedDrone);
   };
 
   const handleDroneTypeChange = (event) => {
     handleSnackBarVisibility(true);
     setselectedDroneType(event.target.value);
-    setDrone(prevState => ({
-      ...prevState,
+    pushDroneUpdate({
+      ...drone,
       droneType: event.target.value
-    }));
+    });
   };
 
   const handleDroneModelChange = (event) => {
     handleSnackBarVisibility(true);
     setSelectedModel(event.target.value);
-    setDrone(prevState => ({
-      ...prevState,
+    pushDroneUpdate({
+      ...drone,
       droneModel: event.target.value
-    }));
+    });
   };
 
   const handleChange = (val) => {
-    let drone = mainJson.getDroneBasedOnIndex(id)
+    let updatedDrone = {
+      ...(mainJson.getDroneBasedOnIndex(id) || drone)
+    };
     if (val.target.id === "Name") {
-      drone.droneName = val.target.value;
+      updatedDrone.droneName = val.target.value;
       resetName(val.target.value, id);
-      setDrone(prevState => ({
-        ...prevState,
-        droneName: val.target.value
-      }));
     }
-    setDrone(prevState => ({
-      ...prevState,
+    updatedDrone = {
+      ...updatedDrone,
       [val.target.id]: val.target.type === "number" ? parseFloat(val.target.value) : val.target.value
-    }));
-    drone[val.target.id] = val.target.type === "number" ? parseFloat(val.target.value) : val.target.value;
-    mainJson.updateDroneBasedOnIndex(id, drone);
-    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+    };
+
+    pushDroneUpdate(updatedDrone);
   };
 
   const setSensorConfig = (sensor) => {
-    setDrone(prevState => ({
-      ...prevState,
+    pushDroneUpdate({
+      ...drone,
       Sensors: sensor
-    }));
+    });
   };
 
   const handleSnackBarVisibility = (val) => {
@@ -248,7 +255,12 @@ export default function DroneConfiguration(droneData) {
             <Grid item xs={12} sm={6} md={3}>
               <FormControl variant="standard" sx={{ m: 1, minWidth: 150 }}>
                 <InputLabel id="flight-path">Mission</InputLabel>
-                <Select label="Flight Path" value={drone.Mission.name} onChange={handleMissionChange}>
+                <Select
+                  label="Flight Path"
+                  value={drone.Mission?.name ?? drone.MissionValue}
+                  SelectDisplayProps={{ 'data-testid': `drone-mission-select-${id}` }}
+                  onChange={handleMissionChange}
+                >
                   {flightPaths.map((val) => (
                     <MenuItem value={val.value} key={val.id}>
                       <em>{val.label}</em>
@@ -294,19 +306,19 @@ export default function DroneConfiguration(droneData) {
                   <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
                     <Grid item xs={3}>
                       <TextField id="X" label="Latitude" variant="standard" type="number" 
-                        inputProps={{ step: ".0001" }} value={drone.X} onChange={handleChange}/>
+                        inputProps={{ step: ".0001", 'data-testid': `drone-latitude-input-${id}` }} value={drone.X} onChange={handleChange}/>
                     </Grid>
                   </Tooltip>
                   <Tooltip title="Stepping distance of 0.0001, equivalent to 1m" placement='bottom'>
                     <Grid item xs={3}>
                       <TextField id="Y" label="Longitude" variant="standard" type="number" 
-                        inputProps={{ step: ".0001" }} value={drone.Y} onChange={handleChange}/>
+                        inputProps={{ step: ".0001", 'data-testid': `drone-longitude-input-${id}` }} value={drone.Y} onChange={handleChange}/>
                     </Grid>
                   </Tooltip>
                   <Tooltip title="Drone Spawning Height above ground (meters)" placement='bottom'>
                     <Grid item xs={3}>
                       <TextField id="Z" label="Height" variant="standard" type="number" 
-                        inputProps={{ step: "1" }} value={drone.Z} onChange={handleChange}/>
+                        inputProps={{ step: "1", 'data-testid': `drone-height-input-${id}` }} value={drone.Z} onChange={handleChange}/>
                     </Grid>
                   </Tooltip>
                 </> : 

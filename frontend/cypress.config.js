@@ -1,3 +1,5 @@
+/* eslint-env node */
+
 const { defineConfig } = require('cypress');
 const fs = require('fs');
 const path = require('path');

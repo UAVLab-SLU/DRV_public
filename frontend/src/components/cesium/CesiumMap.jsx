@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Viewer, CameraFlyTo, Cesium3DTileset } from 'resium';
+import { Viewer, CameraFlyTo } from 'resium';
 import {
   Cartesian3,
-  IonResource,
   Math as CesiumMath,
   createWorldTerrainAsync,
   sampleTerrainMostDetailed,
@@ -17,15 +16,22 @@ import { useMainJson } from '../../contexts/MainJsonContext';
 import { originTypes } from '../../constants/env';
 import { EnvironmentModel } from '../../model/EnvironmentModel';
 
+function normalizeConfigValue(value) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim().replace(/^['"]|['"]$/g, '');
+}
+
 const CesiumMap = ({ activeConfigStep }) => {
   const DEFAULT_CAMERA_HEIGHT = 5000;
   const { envJson, setEnvJson, registerSetCameraByPosition } = useMainJson();
-  console.log('envJson:', envJson);
-  console.log('Origin:', envJson.Origin);
   const viewerRef = useRef(null);
   const flyPending = useRef(false);
 
   const [viewerReady, setViewerReady] = useState(false);
+  const [terrainProvider, setTerrainProvider] = useState(undefined);
   const [cameraPosition, setCameraPosition] = useState({
     destination: Cartesian3.fromDegrees(
       envJson.Origin.longitude,
@@ -37,13 +43,14 @@ const CesiumMap = ({ activeConfigStep }) => {
       pitch: -Math.PI / 2,
     },
   });
-  const google3DTilesAssetId = 2275207;
 
-  Ion.defaultAccessToken = process.env.REACT_APP_CESIUM_ION_ACCESS_TOKEN;
+  Ion.defaultAccessToken = normalizeConfigValue(process.env.REACT_APP_CESIUM_ION_ACCESS_TOKEN);
 
   const setCameraByPosition = (position = null, pitch = null) => {
     if (!viewerReady) return;
-    const viewer = viewerRef.current.cesiumElement;
+    const viewer = viewerRef.current?.cesiumElement;
+    if (!viewer) return;
+
     const { camera } = viewer;
     setCameraPosition({
       destination: position ?? camera.position,
@@ -56,7 +63,9 @@ const CesiumMap = ({ activeConfigStep }) => {
 
   const setCameraByLongLat = (long, lat, altitude, pitch) => {
     if (!viewerReady) return;
-    const viewer = viewerRef.current.cesiumElement;
+    const viewer = viewerRef.current?.cesiumElement;
+    if (!viewer) return;
+
     const { camera } = viewer;
     const minAltitude =
       altitude ?? Math.min(DEFAULT_CAMERA_HEIGHT, camera.positionCartographic.height);
@@ -74,7 +83,7 @@ const CesiumMap = ({ activeConfigStep }) => {
   useEffect(() => {
     registerSetCameraByPosition(setCameraByLongLat);
     return () => registerSetCameraByPosition(null);
-  }, [cameraPosition]);
+  }, [registerSetCameraByPosition]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,39 +97,58 @@ const CesiumMap = ({ activeConfigStep }) => {
   }, []);
 
   useEffect(() => {
-    if (!viewerReady) return;
-    const viewer = viewerRef.current.cesiumElement;
-    const { longitude, latitude, name } = envJson.Origin;
+    let cancelled = false;
 
-    flyPending.current = true
-    if (!name || longitude === 0 || latitude === 0) {
-      flyPending.current = false
+    async function loadTerrainProvider() {
+      try {
+        const nextTerrainProvider = await createWorldTerrainAsync();
+        if (!cancelled) {
+          setTerrainProvider(nextTerrainProvider);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setTerrainProvider(undefined);
+        }
+        console.warn('Failed to load Cesium terrain provider. Falling back to the base globe.', error);
+      }
     }
 
-    // If the user is currently on the sUAS screen, Set the camera
-    // at the origin coordinates with -90 degrees pitch
+    loadTerrainProvider();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!viewerReady) return;
+    const viewer = viewerRef.current?.cesiumElement;
+    if (!viewer) return;
+
+    const { longitude, latitude, name } = envJson.Origin;
+    flyPending.current = true;
+
+    if (!name || longitude === 0 || latitude === 0) {
+      flyPending.current = false;
+    }
+
     if (activeConfigStep === 1) {
-      const pitch = -Math.PI / 2;
       setCameraByLongLat(
         envJson.Origin.longitude,
         envJson.Origin.latitude,
         DEFAULT_CAMERA_HEIGHT,
-        pitch,
+        -Math.PI / 2,
       );
 
-      // Disable camera tilt to lock the pitch angle
       viewer.scene.screenSpaceCameraController.enableTilt = false;
     } else {
-      // Enable camera tilt to allow user control over pitch
       viewer.scene.screenSpaceCameraController.enableTilt = true;
     }
-  }, [activeConfigStep]);
+  }, [activeConfigStep, envJson.Origin.latitude, envJson.Origin.longitude, viewerReady]);
 
-  // Move camera to the origin whenever the origin's changed
   useEffect(() => {
-
     const { longitude, latitude, name } = envJson.Origin;
-    flyPending.current = true
+    flyPending.current = true;
     if (!name || longitude === 0 || latitude === 0) {
       return;
     }
@@ -136,13 +164,11 @@ const CesiumMap = ({ activeConfigStep }) => {
   useEffect(() => {
     if (envJson.Origin.name === originTypes.SpecifyRegion) {
       findHeight()
-        .then((h) => {
-          // Handle the case where findHeight returns null because mainJson initializes
-          // before the Cesium viewer when reusing the config
-          if (h == null) {
+        .then((height) => {
+          if (height == null) {
             return;
           }
-          envJson.setOriginHeight(h);
+          envJson.setOriginHeight(height);
           setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
         })
         .catch((error) => {
@@ -151,38 +177,23 @@ const CesiumMap = ({ activeConfigStep }) => {
     }
   }, [envJson.Origin.name, viewerReady]);
 
-  useEffect(() => {
-    const { destination, orientation } = cameraPosition;
-    const carto = Cartographic.fromCartesian(destination);
-    console.log('CameraFlyTo triggered:');
-    console.log(`Longitude: ${CesiumMath.toDegrees(carto.longitude)}`);
-    console.log(`Latitude: ${CesiumMath.toDegrees(carto.latitude)}`);
-    console.log(`Height: ${carto.height}`);
-    console.log(`Heading (deg): ${CesiumMath.toDegrees(orientation.heading)}`);
-    console.log(`Pitch (deg): ${CesiumMath.toDegrees(orientation.pitch)}`);
-  }, [cameraPosition]);
-
   const findHeight = async () => {
     const viewer = viewerRef.current?.cesiumElement;
     if (!viewer || !viewer.terrainProvider) {
-      console.log('Viewer or terrain provider is not initialized');
       return null;
     }
+
     const position = Cartographic.fromDegrees(envJson.Origin.longitude, envJson.Origin.latitude);
 
-    // Sample the terrain at the most detailed level available
     try {
       const positions = [position];
       await sampleTerrainMostDetailed(viewer.terrainProvider, positions);
-      const height = positions[0].height;
-      return height;
+      return positions[0].height;
     } catch (error) {
       console.error('Failed to get terrain height:', error);
       return null;
     }
   };
-
-  const terrainProvider = createWorldTerrainAsync();
 
   return (
     <Viewer
@@ -190,15 +201,14 @@ const CesiumMap = ({ activeConfigStep }) => {
       terrainProvider={terrainProvider}
       style={{ cursor: envJson.activeSadeZoneIndex == null ? 'default' : 'crosshair' }}
     >
-      <Cesium3DTileset url={IonResource.fromAssetId(google3DTilesAssetId)} />
       {flyPending.current && (
         <CameraFlyTo
-        destination={cameraPosition.destination}
-        orientation={cameraPosition.orientation}
-        duration={2}
-        onComplete={() => {
-          flyPending.current = false
-        }}
+          destination={cameraPosition.destination}
+          orientation={cameraPosition.orientation}
+          duration={2}
+          onComplete={() => {
+            flyPending.current = false;
+          }}
         />
       )}
 

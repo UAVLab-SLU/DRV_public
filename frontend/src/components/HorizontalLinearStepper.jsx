@@ -39,6 +39,19 @@ function formatFetchError(error, endpointUrl) {
   return error?.message ?? 'Unexpected request failure.';
 }
 
+async function readJsonBody(response) {
+  if (typeof response?.json === 'function') {
+    return response.json();
+  }
+
+  if (typeof response?.text === 'function') {
+    const bodyText = await response.text();
+    return bodyText ? JSON.parse(bodyText) : {};
+  }
+
+  return {};
+}
+
 export default function HorizontalLinearStepper(data) {
   const navigate = useNavigate();
   const { replaceSimulationConfiguration } = useMainJson();
@@ -180,7 +193,7 @@ export default function HorizontalLinearStepper(data) {
         return false;
       }
 
-      const data = await res.json();
+      const data = await readJsonBody(res);
       console.log('Task queued:', data);
       return true;
 

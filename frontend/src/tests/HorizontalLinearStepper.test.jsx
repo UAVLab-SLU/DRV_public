@@ -186,6 +186,7 @@ function mockFetchResponse(body) {
   return {
     ok: true,
     status: 200,
+    json: async () => body,
     text: async () => JSON.stringify(body),
   };
 }

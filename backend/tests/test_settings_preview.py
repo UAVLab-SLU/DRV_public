@@ -5,7 +5,6 @@ import tempfile
 import unittest
 from unittest import mock
 
-
 BACKEND_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BACKEND_ROOT not in sys.path:
     sys.path.insert(0, BACKEND_ROOT)
@@ -59,23 +58,35 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_home:
             with mock.patch.dict(os.environ, {"JSON_DEBUG_MODE": "false"}, clear=False):
-                with mock.patch.object(stm.os.path, "expanduser", return_value=temp_home):
-                    with mock.patch.object(stm.GeoUtil, "get_elevation", return_value=211.0):
+                with mock.patch.object(
+                    stm.os.path, "expanduser", return_value=temp_home
+                ):
+                    with mock.patch.object(
+                        stm.GeoUtil, "get_elevation", return_value=211.0
+                    ):
                         with mock.patch.object(
                             stm.GeoUtil,
                             "geo_to_cartesian_coordinates_spawn",
                             return_value=(1.0, 2.0, 3.0),
                         ):
-                            settings = stm.SimulationTaskManager.generate_settings_preview(payload)
+                            settings = (
+                                stm.SimulationTaskManager.generate_settings_preview(
+                                    payload
+                                )
+                            )
 
         self.assertEqual(settings["OriginGeopoint"]["Altitude"], 211.0)
         self.assertEqual(settings["Vehicles"]["Drone1"]["X"], 1.0)
         self.assertNotIn("MissionValue", settings["Vehicles"]["Drone1"])
         self.assertFalse(
-            os.path.exists(os.path.join(temp_home, "Documents", "AirSim", "settings.json"))
+            os.path.exists(
+                os.path.join(temp_home, "Documents", "AirSim", "settings.json")
+            )
         )
         self.assertFalse(
-            os.path.exists(os.path.join(temp_home, "Documents", "AirSim", "cesium.json"))
+            os.path.exists(
+                os.path.join(temp_home, "Documents", "AirSim", "cesium.json")
+            )
         )
 
     def test_debug_mode_preview_matches_written_settings(self):
@@ -84,7 +95,9 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_project_root:
             with tempfile.TemporaryDirectory() as temp_backend_root:
                 with tempfile.TemporaryDirectory() as temp_home:
-                    debug_settings_path = os.path.join(temp_backend_root, "settings.json")
+                    debug_settings_path = os.path.join(
+                        temp_backend_root, "settings.json"
+                    )
                     debug_settings = {
                         "SimMode": "Multirotor",
                         "DebugOverride": True,
@@ -100,10 +113,16 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
                     with open(debug_settings_path, "w") as debug_file:
                         json.dump(debug_settings, debug_file)
 
-                    with mock.patch.dict(os.environ, {"JSON_DEBUG_MODE": "true"}, clear=False):
+                    with mock.patch.dict(
+                        os.environ, {"JSON_DEBUG_MODE": "true"}, clear=False
+                    ):
                         with mock.patch.object(stm, "PROJECT_ROOT", temp_project_root):
-                            with mock.patch.object(stm, "BACKEND_ROOT", temp_backend_root):
-                                with mock.patch.object(stm.GeoUtil, "get_elevation", return_value=211.0):
+                            with mock.patch.object(
+                                stm, "BACKEND_ROOT", temp_backend_root
+                            ):
+                                with mock.patch.object(
+                                    stm.GeoUtil, "get_elevation", return_value=211.0
+                                ):
                                     with mock.patch.object(
                                         stm.GeoUtil,
                                         "geo_to_cartesian_coordinates_spawn",
@@ -121,7 +140,9 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
                                         preview
                                     )
 
-                    written_path = os.path.join(temp_home, "Documents", "AirSim", "settings.json")
+                    written_path = os.path.join(
+                        temp_home, "Documents", "AirSim", "settings.json"
+                    )
                     with open(written_path, "r") as written_file:
                         written_settings = json.load(written_file)
 
@@ -129,7 +150,9 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
         self.assertEqual(preview["SettingsVersion"], 2.0)
         self.assertEqual(written_settings, preview)
 
-    def test_generate_settings_preview_handles_missing_monitors_and_altitude_fallback(self):
+    def test_generate_settings_preview_handles_missing_monitors_and_altitude_fallback(
+        self,
+    ):
         payload = build_geo_payload(altitude=203)
 
         with mock.patch.dict(os.environ, {"JSON_DEBUG_MODE": "false"}, clear=False):
@@ -139,7 +162,9 @@ class SimulationSettingsPreviewTests(unittest.TestCase):
                     "geo_to_cartesian_coordinates_spawn",
                     return_value=(10.0, 20.0, 30.0),
                 ):
-                    settings = stm.SimulationTaskManager.generate_settings_preview(payload)
+                    settings = stm.SimulationTaskManager.generate_settings_preview(
+                        payload
+                    )
 
         self.assertEqual(settings["OriginGeopoint"]["Altitude"], 203)
         self.assertEqual(settings["Wind"], {"X": 5, "Y": 0, "Z": 0})

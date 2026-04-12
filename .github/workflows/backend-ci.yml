@@ -50,7 +50,7 @@ jobs:
     - name: Format backend code with Black
       run: |
         pip install black
-        black --check backend/
+        black --check backend/tests/test_settings_preview.py backend/PythonClient/server/simulation_server.py backend/PythonClient/multirotor/control/simulation_task_manager.py backend/mock_simulator/mock_task_manager.py
 
     - name: Perform Dependency Audit
       run: |

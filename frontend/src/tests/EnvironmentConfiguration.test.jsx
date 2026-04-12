@@ -7,6 +7,8 @@ import dayjs from 'dayjs';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import EnvironmentConfiguration from '../components/EnvironmentConfiguration';
 
+const mockUseJsApiLoader = jest.fn();
+
 jest.mock('@react-google-maps/api', () => {
   const mapClickMock = { handler: null };
   const GoogleMapMock = ({ onClick, children }) => {
@@ -20,10 +22,7 @@ jest.mock('@react-google-maps/api', () => {
     __esModule: true,
     GoogleMap: GoogleMapMock,
     Marker: MarkerMock,
-    useJsApiLoader: jest.fn(() => ({
-      isLoaded: true,
-      loadError: undefined,
-    })),
+    useJsApiLoader: (...args) => mockUseJsApiLoader(...args),
     __triggerMapClick: (event) => {
       if (mapClickMock.handler) {
         mapClickMock.handler(event);
@@ -32,7 +31,7 @@ jest.mock('@react-google-maps/api', () => {
   };
 });
 
-import { __triggerMapClick, useJsApiLoader } from '@react-google-maps/api';
+import { __triggerMapClick } from '@react-google-maps/api';
 
 const buildProps = () => ({
   id: 'environment',
@@ -63,6 +62,26 @@ const buildProps = () => ({
 });
 
 describe('EnvironmentConfiguration interactions', () => {
+  const originalGoogleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
+  beforeEach(() => {
+    process.env.REACT_APP_GOOGLE_MAPS_API_KEY = 'test-google-maps-key';
+    mockUseJsApiLoader.mockReset();
+    mockUseJsApiLoader.mockReturnValue({
+      isLoaded: true,
+      loadError: undefined,
+    });
+  });
+
+  afterEach(() => {
+    if (originalGoogleMapsApiKey == null) {
+      delete process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+    } else {
+      process.env.REACT_APP_GOOGLE_MAPS_API_KEY = originalGoogleMapsApiKey;
+    }
+    jest.clearAllMocks();
+  });
+
   it('propagates updated origin coordinates after a map click', async () => {
     const props = buildProps();
     render(<EnvironmentConfiguration {...props} />);
@@ -104,7 +123,7 @@ describe('EnvironmentConfiguration interactions', () => {
 
   it('shows a warning instead of crashing when Google Maps fails to load', () => {
     const props = buildProps();
-    useJsApiLoader.mockReturnValueOnce({
+    mockUseJsApiLoader.mockReturnValue({
       isLoaded: false,
       loadError: new Error('quota exceeded'),
     });

@@ -5,6 +5,7 @@ import os
 
 from PythonClient.multirotor.storage.storage_config import get_storage_service
 
+
 class MockTaskManager:
     def __init__(self):
         self.storage_service = get_storage_service()
@@ -12,7 +13,9 @@ class MockTaskManager:
         self.currentTaskBatch = "None"
         self.state = True
         self.unreal_state = {"state": "idle (mock)"}
-        self.__user_directory = os.path.join(os.path.expanduser('~'), "Documents", "AirSim")
+        self.__user_directory = os.path.join(
+            os.path.expanduser("~"), "Documents", "AirSim"
+        )
         self.__ensure_airsim_files()
 
     def __ensure_airsim_files(self):
@@ -23,23 +26,25 @@ class MockTaskManager:
                 f.write("")
 
     def createFakeReport(self, uuid):
-            print("uploading report")
-            content = "\n".join([
+        print("uploading report")
+        content = "\n".join(
+            [
                 "INFO;MockMonitor;Generated",
                 "PASS;MockMonitor;Everything ok",
-            ])
-            self.storage_service.upload_to_service(
-                f"{uuid}/MockMonitor/mock_report.txt",
-                content,
-                "text/plain",
-            ) 
+            ]
+        )
+        self.storage_service.upload_to_service(
+            f"{uuid}/MockMonitor/mock_report.txt",
+            content,
+            "text/plain",
+        )
 
     def runMockTest(self, json, uuid):
         print("running mock test")
-        time.sleep(.1) #simulate running sim
-        self.createFakeReport(uuid)   
+        time.sleep(0.1)  # simulate running sim
+        self.createFakeReport(uuid)
         return 1
- 
+
     def start(self):
         print("Mock Simulator started")
         while self.state:
@@ -62,15 +67,15 @@ class MockTaskManager:
                 json.dump(prebuilt_settings, outfile, indent=4)
         self.mission_queue.put((raw_request_json, uuid))
 
-    def get_current_task_batch(self): 
+    def get_current_task_batch(self):
         return self.currentTaskBatch
-    
+
     def get_stream(self, drone_name, camera_name):
         return "Mock Simulator, no stream"
-    
+
     def load_cesium_setting(self):
         try:
-            with open(self.__user_directory + os.sep + 'cesium.json', 'r') as f:
+            with open(self.__user_directory + os.sep + "cesium.json", "r") as f:
                 cesium_setting = json.load(f)
         except FileNotFoundError:
             print("Cesium file not found")

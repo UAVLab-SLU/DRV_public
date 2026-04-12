@@ -30,12 +30,13 @@ const normalizeConfigValue = (value) => {
     return value.trim().replace(/^['"]|['"]$/g, '');
 };
 
-const GOOGLE_MAPS_API_KEY = normalizeConfigValue(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
+const getGoogleMapsApiKey = () => normalizeConfigValue(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
 
 function RegionMapPreview({ currentPosition, onMapClick }) {
+    const googleMapsApiKey = getGoogleMapsApiKey();
     const { isLoaded, loadError } = useJsApiLoader({
         id: 'droneworld-google-maps',
-        googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey,
     });
 
     if (loadError) {
@@ -111,8 +112,7 @@ const getWindShearsFromConfig = (windConfig) => {
 
 
 export default function EnvironmentConfiguration (env) {  
-    console.log('EnvironmentConfiguration props', env);
-    const isHydratingFromWizardRef = React.useRef(false);
+    const lastHydratedEnvironmentRef = React.useRef(null);
     const [backendInfo] = useState({ 
         numQueuedTasks: 0,
         backendStatus: 'idle'
@@ -136,8 +136,7 @@ export default function EnvironmentConfiguration (env) {
     const [envConf, setEnvConf] = React.useState(env.mainJsonValue.environment != null ? env.mainJsonValue.environment : getDefaultEnvironmentConfig()); 
     
     React.useEffect(() => {
-        if (isHydratingFromWizardRef.current) {
-            isHydratingFromWizardRef.current = false;
+        if (lastHydratedEnvironmentRef.current != null && envConf === lastHydratedEnvironmentRef.current) {
             return;
         }
 
@@ -156,10 +155,11 @@ export default function EnvironmentConfiguration (env) {
     React.useEffect(() => {
         const nextEnvironment = env.mainJsonValue.environment;
         if (nextEnvironment == null) {
+            lastHydratedEnvironmentRef.current = null;
             return;
         }
 
-        isHydratingFromWizardRef.current = true;
+        lastHydratedEnvironmentRef.current = nextEnvironment;
         setEnvConf(nextEnvironment);
         setCurrentPosition({
             lat: nextEnvironment?.Origin?.Latitude ?? 41.980381,
@@ -438,7 +438,7 @@ const handleSnackBarVisibility = (val) => {
     }))
 }
   const shouldShowRegionMap = envConf.Origin.Name == "Specify Region";
-  const canAttemptRegionMap = shouldShowRegionMap && GOOGLE_MAPS_API_KEY !== '';
+  const canAttemptRegionMap = shouldShowRegionMap && getGoogleMapsApiKey() !== '';
 
   return (
     <div>
@@ -453,7 +453,7 @@ const handleSnackBarVisibility = (val) => {
         </Alert>
     </Snackbar>
     <Box sx={{ width: '100%', border: '1px solid grey', paddingBottom: 5, paddingTop: 4, paddingLeft:5 }}>
-            <Typography>
+            <Box component="section">
                 <Grid container spacing={5} direction="column" alignItems="center" >
                     <Grid item xs={12}> 
                         <FormControl variant="standard" sx={{ minWidth: 150 }}>
@@ -513,7 +513,7 @@ const handleSnackBarVisibility = (val) => {
                             </Grid>
                     )}
                 </Grid>
-                {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((<Typography key={index}><Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
+                {selectedWindType === "Wind Shear" &&  windShears.map((shear, index) => ((<Box key={index}><Grid container spacing={5} direction="row" sx={{ marginTop: '20px' }}>
                     <Grid item xs={12}></Grid>
                             <Grid item xs={12}>
                                 <FormControl variant="standard" sx = {{ minWidth: 150 }}>
@@ -555,7 +555,7 @@ const handleSnackBarVisibility = (val) => {
                                 </IconButton>
                             </Grid>
                         </Grid>
-                            </Typography>
+                            </Box>
                 )))}
 
 
@@ -623,16 +623,8 @@ const handleSnackBarVisibility = (val) => {
                         <RegionMapPreview currentPosition={currentPosition} onMapClick={onMapClick} />
                     ) : null}
 
-                    </Typography>
                     </Box>
-                    <Typography 
-                        animate 
-                        variants={{ 
-                            hidden: { opacity: 0 }, 
-                            visible: { opacity: 1 } 
-                            }} 
-                            > 
-                    </Typography> 
+                    </Box>
                     <Box mb={2}> </Box>
                     <Typography 
                         variant="h6" 

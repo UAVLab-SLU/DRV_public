@@ -1,7 +1,7 @@
 const SAVED_SETTINGS_DIR = 'saved-settings';
 
 export function isSupported() {
-  return (
+  return Boolean(
     typeof navigator !== 'undefined' &&
     navigator.storage &&
     typeof navigator.storage.getDirectory === 'function'

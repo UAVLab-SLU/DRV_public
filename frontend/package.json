@@ -28,7 +28,7 @@
     "start": "craco start",
     "build": "craco build",
     "test": "react-scripts test",
-    "test:ci": "CI=true react-scripts test --coverage --watchAll=false",
+    "test:ci": "cross-env CI=true react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx,json}\" \"cypress/**/*.{js,jsx,ts,tsx}\" cypress.config.js",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx,json}\" \"cypress/**/*.{js,jsx,ts,tsx}\" cypress.config.js",
@@ -66,6 +66,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^16.1.0",
+    "cross-env": "^7.0.3",
     "cypress": "^15.5.0",
     "dotenv": "^10.0.0",
     "eslint": "^8.32.0",

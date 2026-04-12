@@ -86,23 +86,31 @@ describe('savedSettingsStorage', () => {
   const realCreateObjectURL = window.URL.createObjectURL;
   const realRevokeObjectURL = window.URL.revokeObjectURL;
 
+  const setNavigator = (value) => {
+    Object.defineProperty(global, 'navigator', {
+      configurable: true,
+      writable: true,
+      value,
+    });
+  };
+
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-03-27T12:00:00.000Z'));
     const mockOpfs = createMockOpfsRoot();
-    global.navigator = {
+    setNavigator({
       ...realNavigator,
       storage: {
         getDirectory: jest.fn().mockResolvedValue(mockOpfs.root),
       },
-    };
+    });
     window.URL.createObjectURL = jest.fn(() => 'blob:mock-settings');
     window.URL.revokeObjectURL = jest.fn();
   });
 
   afterEach(() => {
     jest.useRealTimers();
-    global.navigator = realNavigator;
+    setNavigator(realNavigator);
     window.URL.createObjectURL = realCreateObjectURL;
     window.URL.revokeObjectURL = realRevokeObjectURL;
     jest.restoreAllMocks();
@@ -151,7 +159,7 @@ describe('savedSettingsStorage', () => {
   });
 
   test('returns false when OPFS is unavailable', () => {
-    global.navigator = {};
+    setNavigator({});
     expect(isSupported()).toBe(false);
   });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "../styles.css"
+import '../styles.css';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import BackendHealthTitle from '../components/BackendHealthTitle'
+import BackendHealthTitle from '../components/BackendHealthTitle';
 
 const useStyles = makeStyles(() => ({
   nav: {
@@ -38,7 +38,7 @@ const useStyles = makeStyles(() => ({
     color: 'black',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
-    transition: 'background-color 0.3s ease'
+    transition: 'background-color 0.3s ease',
   },
   aboutLink: {
     textDecoration: 'none',
@@ -48,18 +48,17 @@ const useStyles = makeStyles(() => ({
     transition: 'background-color 0.3s ease',
   },
   navLink: {
-    textDecoration : 'none',
-    color : 'black',
-    display : 'inline-block',
+    textDecoration: 'none',
+    color: 'black',
+    display: 'inline-block',
     '&:hover': {
       color: 'white',
-      transform : 'scale(1.2)'
-    }
-
+      transform: 'scale(1.2)',
+    },
   },
   active: {
-    textDecoration: "underline",
-    fontWeight: "bold",
+    textDecoration: 'underline',
+    fontWeight: 'bold',
   },
 }));
 const modalStyle = {
@@ -87,44 +86,70 @@ function NavigationBar() {
 
         <ul className={classes.navList}>
           <li className={classes.navListItem}>
-              <Link to="/" className = {classes.navLink} style={{ textDecoration: location.pathname === "/" ? "underline" : "none" }}>
-                Home
-              </Link>
+            <Link
+              to='/'
+              className={classes.navLink}
+              style={{ textDecoration: location.pathname === '/' ? 'underline' : 'none' }}
+            >
+              Home
+            </Link>
           </li>
           <li className={classes.navListItem}>
-              <Link to="/reports" className = {classes.navLink} style={{ textDecoration: location.pathname === "/reports" ? "underline" : "none" }} >
-                Reports
-              </Link>
+            <Link
+              to='/reports'
+              className={classes.navLink}
+              style={{ textDecoration: location.pathname === '/reports' ? 'underline' : 'none' }}
+            >
+              Reports
+            </Link>
           </li>
           <li className={classes.navListItem}>
-              <Link to="/saved-settings" className = {classes.navLink} style={{ textDecoration: location.pathname === "/saved-settings" ? "underline" : "none" }} >
-                Saved Settings
-              </Link>
+            <Link
+              to='/saved-settings'
+              className={classes.navLink}
+              style={{
+                textDecoration: location.pathname === '/saved-settings' ? 'underline' : 'none',
+              }}
+            >
+              Saved Settings
+            </Link>
           </li>
           <li className={classes.navListItem}>
-              <Link to="/simulation" className = {classes.navLink} style={{ textDecoration: location.pathname === "/simulation" ? "underline" : "none" }}>
-                Simulation
-              </Link>
+            <Link
+              to='/simulation'
+              className={classes.navLink}
+              style={{ textDecoration: location.pathname === '/simulation' ? 'underline' : 'none' }}
+            >
+              Simulation
+            </Link>
           </li>
           <li className={classes.navListItem}>
-              <Link to="/stream" className = {classes.navLink} style={{ textDecoration: location.pathname === "/stream" ? "underline" : "none" }}>
-                Stream
-              </Link>
+            <Link
+              to='/stream'
+              className={classes.navLink}
+              style={{ textDecoration: location.pathname === '/stream' ? 'underline' : 'none' }}
+            >
+              Stream
+            </Link>
           </li>
           <li className={classes.navListItem}>
-              <Link to="/aboutus" className = {classes.navLink} style={{ textDecoration: location.pathname === "/aboutus" ? "underline" : "none" }}>
-                About Us
-              </Link>
+            <Link
+              to='/aboutus'
+              className={classes.navLink}
+              style={{ textDecoration: location.pathname === '/aboutus' ? 'underline' : 'none' }}
+            >
+              About Us
+            </Link>
           </li>
         </ul>
       </nav>
 
-    {/* About Us Modal */}
-    <Modal
+      {/* About Us Modal */}
+      <Modal
         open={open}
         onClose={() => setOpen(false)}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        aria-labelledby='modal-modal-title'
+        aria-describedby='modal-modal-description'
       >
         <Box sx={modalStyle}>
           {/* Close Button */}
@@ -134,21 +159,29 @@ function NavigationBar() {
           >
             Close
           </Button>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          <Typography id='modal-modal-title' variant='h6' component='h2'>
             {/* Title Content */}
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+          <Typography id='modal-modal-description' sx={{ mt: 2 }}>
             <p>
               <strong>About Drone World</strong>
             </p>
             <p>
-              Drone World is revolutionizing sUAS (small Uncrewed Aerial Systems) testing. In the dynamic world of sUAS, safety and reliability are paramount. Traditional field testing across diverse environments is costly and challenging.
+              Drone World is revolutionizing sUAS (small Uncrewed Aerial Systems) testing. In the
+              dynamic world of sUAS, safety and reliability are paramount. Traditional field testing
+              across diverse environments is costly and challenging.
             </p>
             <p>
-              Drone World offers an innovative sUAV simulation ecosystem that generates high-fidelity, realistic environments mimicking real-world complexities like adverse weather and wireless interference. Our automated solution allows developers to specify constraints and generate tailored test environments.
+              Drone World offers an innovative sUAV simulation ecosystem that generates
+              high-fidelity, realistic environments mimicking real-world complexities like adverse
+              weather and wireless interference. Our automated solution allows developers to specify
+              constraints and generate tailored test environments.
             </p>
             <p>
-              The program monitors sUAV activities against predefined safety parameters and generates detailed acceptance test reports. This approach provides actionable insights for effective debugging and analysis, enhancing the safety, reliability, and efficiency of sUAS applications.
+              The program monitors sUAV activities against predefined safety parameters and
+              generates detailed acceptance test reports. This approach provides actionable insights
+              for effective debugging and analysis, enhancing the safety, reliability, and
+              efficiency of sUAS applications.
             </p>
           </Typography>
         </Box>

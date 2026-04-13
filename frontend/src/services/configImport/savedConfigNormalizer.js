@@ -19,7 +19,7 @@ function cloneIfObject(value) {
   }
   if (isPlainObject(value)) {
     return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, cloneIfObject(entry)])
+      Object.entries(value).map(([key, entry]) => [key, cloneIfObject(entry)]),
     );
   }
   return value;
@@ -109,7 +109,9 @@ function extractTimeOfDay(timeOfDayValue) {
 }
 
 function inferDroneType(vehicleLike) {
-  const vehicleType = String(vehicleLike?.VehicleType ?? vehicleLike?.vehicleType ?? '').toLowerCase();
+  const vehicleType = String(
+    vehicleLike?.VehicleType ?? vehicleLike?.vehicleType ?? '',
+  ).toLowerCase();
   if (vehicleType.includes('fixed')) {
     return 'FixedWing';
   }
@@ -179,7 +181,9 @@ function normalizeWindValue(rawWind, warnings) {
     };
   }
 
-  warnings.push('Wind settings were partially missing and were normalized to default wizard values.');
+  warnings.push(
+    'Wind settings were partially missing and were normalized to default wizard values.',
+  );
   return {
     ...normalizedWind,
     ...cloneIfObject(rawWind),
@@ -191,13 +195,15 @@ function normalizeEnvironmentFromTaskPayload(environment, fuzzyTest, warnings) {
   const origin = isPlainObject(environment?.Origin) ? environment.Origin : {};
 
   normalizedEnvironment.UseGeo =
-    environment?.UseGeo ??
-    (origin.Latitude != null && origin.Longitude != null);
+    environment?.UseGeo ?? (origin.Latitude != null && origin.Longitude != null);
 
   normalizedEnvironment.Origin = {
     Latitude: toFiniteNumber(origin.Latitude ?? origin.latitude, null),
     Longitude: toFiniteNumber(origin.Longitude ?? origin.longitude, null),
-    Height: toFiniteNumber(origin.Height ?? origin.height ?? origin.Altitude ?? origin.altitude, null),
+    Height: toFiniteNumber(
+      origin.Height ?? origin.height ?? origin.Altitude ?? origin.altitude,
+      null,
+    ),
     Name: origin.Name ?? origin.name ?? normalizedEnvironment.Origin.Name,
     Radius: toFiniteNumber(origin.Radius ?? origin.radius, null),
     image: origin.image ?? normalizedEnvironment.Origin.image,
@@ -244,7 +250,7 @@ export function normalizeTaskPayloadConfig(taskPayload) {
     environment: normalizeEnvironmentFromTaskPayload(
       taskPayload?.environment,
       taskPayload?.FuzzyTest,
-      warnings
+      warnings,
     ),
     Drones: drones,
     monitors: isPlainObject(taskPayload?.monitors) ? cloneIfObject(taskPayload.monitors) : null,
@@ -261,7 +267,7 @@ function normalizeAirSimVehicle(vehicleName, vehicleSettings, index, warnings) {
   }
 
   warnings.push(
-    `Vehicle "${vehicleName}" came from AirSim settings only; mission metadata was defaulted to "${DEFAULT_MISSION_NAME}".`
+    `Vehicle "${vehicleName}" came from AirSim settings only; mission metadata was defaulted to "${DEFAULT_MISSION_NAME}".`,
   );
 
   return buildDefaultDrone(index, {
@@ -283,7 +289,9 @@ function normalizeAirSimVehicle(vehicleName, vehicleSettings, index, warnings) {
 export function normalizeAirSimSettingsConfig(settingsJson) {
   const warnings = [];
   const normalizedEnvironment = buildDefaultEnvironment();
-  const originGeopoint = isPlainObject(settingsJson?.OriginGeopoint) ? settingsJson.OriginGeopoint : {};
+  const originGeopoint = isPlainObject(settingsJson?.OriginGeopoint)
+    ? settingsJson.OriginGeopoint
+    : {};
 
   normalizedEnvironment.UseGeo =
     originGeopoint.Latitude != null && originGeopoint.Longitude != null;
@@ -301,7 +309,7 @@ export function normalizeAirSimSettingsConfig(settingsJson) {
   const vehicles = isPlainObject(settingsJson?.Vehicles) ? settingsJson.Vehicles : {};
   const drones = Object.entries(vehicles)
     .map(([vehicleName, vehicleSettings], index) =>
-      normalizeAirSimVehicle(vehicleName, vehicleSettings, index, warnings)
+      normalizeAirSimVehicle(vehicleName, vehicleSettings, index, warnings),
     )
     .filter(Boolean);
 
@@ -333,7 +341,7 @@ export function normalizeSnapshotBundleConfig(snapshotBundle) {
 
     if (settingsJson != null) {
       warnings.push(
-        'Snapshot bundle includes both settings.json and task.json; task.json was treated as the primary editable source.'
+        'Snapshot bundle includes both settings.json and task.json; task.json was treated as the primary editable source.',
       );
     }
 

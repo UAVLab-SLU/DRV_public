@@ -34,7 +34,9 @@ export function validateImportedConfig(config) {
     });
 
     if (!drone?.MissionValue && !drone?.Mission?.name) {
-      warnings.push(`${label} is missing mission metadata and will fall back to the default mission.`);
+      warnings.push(
+        `${label} is missing mission metadata and will fall back to the default mission.`,
+      );
     }
   });
 

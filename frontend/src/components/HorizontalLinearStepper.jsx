@@ -19,7 +19,10 @@ import ControlsDisplay from './Configuration/ControlsDisplay';
 import { BASE_URL } from '../utils/const';
 import { parseApiError } from '../utils/apiError';
 import { buildTaskPayload } from '../utils/taskPayload';
-import { isSupported as isSavedSettingsSupported, saveSnapshot } from '../services/savedSettingsStorage';
+import {
+  isSupported as isSavedSettingsSupported,
+  saveSnapshot,
+} from '../services/savedSettingsStorage';
 import { useMainJson } from '../contexts/MainJsonContext';
 import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
 
@@ -136,16 +139,19 @@ export default function HorizontalLinearStepper(data) {
     }
   }, [mainJson]);
 
-  const applyConfigToWizard = React.useCallback((config) => {
-    if (!config) {
-      return;
-    }
+  const applyConfigToWizard = React.useCallback(
+    (config) => {
+      if (!config) {
+        return;
+      }
 
-    applyImportedConfig(config, {
-      setWizardState: setJson,
-      replaceSimulationConfiguration,
-    });
-  }, [replaceSimulationConfiguration]);
+      applyImportedConfig(config, {
+        setWizardState: setJson,
+        replaceSimulationConfiguration,
+      });
+    },
+    [replaceSimulationConfiguration],
+  );
 
   React.useEffect(() => {
     applyConfigToWizard(data.importedConfig ?? null);
@@ -196,7 +202,6 @@ export default function HorizontalLinearStepper(data) {
       const data = await readJsonBody(res);
       console.log('Task queued:', data);
       return true;
-
     } catch (err) {
       console.error('Submit failed:', err);
       setSubmitError(`Submit failed: ${formatFetchError(err, endpointUrl)}`);
@@ -246,7 +251,7 @@ export default function HorizontalLinearStepper(data) {
       if (shouldSave) {
         if (!isSavedSettingsSupported()) {
           throw new Error(
-            'Browser private file storage is not supported in this browser. Choose No to submit without saving.'
+            'Browser private file storage is not supported in this browser. Choose No to submit without saving.',
           );
         }
 
@@ -262,7 +267,7 @@ export default function HorizontalLinearStepper(data) {
         setSaveDialogError('Task submission failed. Review the error below and try again.');
       } else {
         setSaveDialogError(
-          'Settings were saved, but task submission failed. Review the error below and try again.'
+          'Settings were saved, but task submission failed. Review the error below and try again.',
         );
       }
     } catch (error) {
@@ -363,24 +368,26 @@ export default function HorizontalLinearStepper(data) {
                 }}
               />
               {stepsComponent.map((compo) => {
-                return compo.id === activeStep + 1
-                  ? <React.Fragment key={compo.id}>{compo.comp}</React.Fragment>
-                  : null;
+                return compo.id === activeStep + 1 ? (
+                  <React.Fragment key={compo.id}>{compo.comp}</React.Fragment>
+                ) : null;
               })}
               <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <StyledButton
-                    color='inherit'
-                    disabled={activeStep === 0 || isSubmitting}
-                    onClick={handleBack}
-                    sx={{ mr: 1 }}
-                    variant='outlined'
-                  >
-                    Back
+                <StyledButton
+                  color='inherit'
+                  disabled={activeStep === 0 || isSubmitting}
+                  onClick={handleBack}
+                  sx={{ mr: 1 }}
+                  variant='outlined'
+                >
+                  Back
                 </StyledButton>
                 <Box sx={{ flex: '1 1 auto' }} />
                 <StyledButton variant='outlined' onClick={handleNext} disabled={isSubmitting}>
                   {activeStep === steps.length - 1
-                    ? (isSubmitting ? 'Submitting...' : 'Finish')
+                    ? isSubmitting
+                      ? 'Submitting...'
+                      : 'Finish'
                     : 'Next'}
                 </StyledButton>
               </Box>
@@ -400,7 +407,11 @@ export default function HorizontalLinearStepper(data) {
               </Grid>
             </Box>
           </Box>
-          <Dialog open={saveDialogOpen} onClose={() => !isSubmitting && setSaveDialogOpen(false)} fullWidth>
+          <Dialog
+            open={saveDialogOpen}
+            onClose={() => !isSubmitting && setSaveDialogOpen(false)}
+            fullWidth
+          >
             <DialogTitle>Save settings.json and task.json before submission?</DialogTitle>
             <DialogContent>
               <Typography sx={{ mb: 1 }}>

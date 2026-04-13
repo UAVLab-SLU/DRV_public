@@ -5,7 +5,14 @@ function buildMission(missionName) {
   };
 }
 
-export function buildPresetEnvironment(latitude, longitude, height, timeOfDay, windDirection, windForce) {
+export function buildPresetEnvironment(
+  latitude,
+  longitude,
+  height,
+  timeOfDay,
+  windDirection,
+  windForce,
+) {
   return {
     UseGeo: true,
     Origin: {

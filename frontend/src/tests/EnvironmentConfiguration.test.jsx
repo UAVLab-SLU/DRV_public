@@ -130,9 +130,7 @@ describe('EnvironmentConfiguration interactions', () => {
 
     render(<EnvironmentConfiguration {...props} />);
 
-    expect(
-      screen.getByText(/Google Maps preview is temporarily unavailable/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Google Maps preview is temporarily unavailable/i)).toBeInTheDocument();
     expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
   });
 });

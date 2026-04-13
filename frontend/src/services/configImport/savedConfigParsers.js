@@ -41,11 +41,7 @@ export function unwrapPresetSource(rawValue) {
   }
 
   const wrappedConfig =
-    rawValue.config ??
-    rawValue.preset ??
-    rawValue.presetConfig ??
-    rawValue.configuration ??
-    null;
+    rawValue.config ?? rawValue.preset ?? rawValue.presetConfig ?? rawValue.configuration ?? null;
 
   if (!isPlainObject(wrappedConfig)) {
     return {

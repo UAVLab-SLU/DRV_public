@@ -48,12 +48,12 @@ export default function ImportConfigurationPanel({
 
   const selectedPreset = React.useMemo(
     () => presets.find((preset) => preset.id === selectedPresetId) ?? null,
-    [presets, selectedPresetId]
+    [presets, selectedPresetId],
   );
 
   const getPresetLabel = React.useCallback(
     (preset) => preset?.displayName ?? preset?.name ?? preset?.id ?? 'Unnamed preset',
-    []
+    [],
   );
 
   const commitImportResult = React.useCallback(
@@ -67,7 +67,7 @@ export default function ImportConfigurationPanel({
 
       onImportConfig(result.config);
     },
-    [onImportConfig]
+    [onImportConfig],
   );
 
   const handlePresetImport = () => {
@@ -81,7 +81,10 @@ export default function ImportConfigurationPanel({
     }
 
     const result = loadImportedConfigFromPreset(selectedPreset);
-    commitImportResult(result, `Loaded preset "${getPresetLabel(selectedPreset)}" into the wizard.`);
+    commitImportResult(
+      result,
+      `Loaded preset "${getPresetLabel(selectedPreset)}" into the wizard.`,
+    );
   };
 
   const handleFileSelection = (event) => {
@@ -166,7 +169,11 @@ export default function ImportConfigurationPanel({
             </Typography>
           )}
           <Box>
-            <Button variant='outlined' onClick={handlePresetImport} data-testid='load-preset-button'>
+            <Button
+              variant='outlined'
+              onClick={handlePresetImport}
+              data-testid='load-preset-button'
+            >
               Load preset
             </Button>
           </Box>

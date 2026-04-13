@@ -39,8 +39,8 @@ export default function SavedSettings() {
       return;
     }
 
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
     try {
       const savedSnapshots = await listSnapshots();
       const importableSnapshots = savedSnapshots.map((snapshot) => {
@@ -87,7 +87,7 @@ export default function SavedSettings() {
     try {
       await deleteSnapshot(name);
       setSnapshots((currentSnapshots) =>
-        currentSnapshots.filter((snapshot) => snapshot.name !== name)
+        currentSnapshots.filter((snapshot) => snapshot.name !== name),
       );
       setError('');
     } catch (deleteError) {
@@ -104,7 +104,7 @@ export default function SavedSettings() {
       }
       if (!snapshot.canSimulate) {
         throw new Error(
-          'Saved fuzzy-test entries cannot be simulated from a single settings.json snapshot.'
+          'Saved fuzzy-test entries cannot be simulated from a single settings.json snapshot.',
         );
       }
 
@@ -138,7 +138,9 @@ export default function SavedSettings() {
       const snapshot = await readSnapshot(name);
       const importResult = loadImportedConfigFromSnapshot(snapshot);
       if (!importResult.ok) {
-        throw new Error(importResult.errors?.join(' ') || 'Failed to load saved settings into the wizard.');
+        throw new Error(
+          importResult.errors?.join(' ') || 'Failed to load saved settings into the wizard.',
+        );
       }
 
       // Router state keeps the wizard on the same shared import/apply path.
@@ -198,9 +200,7 @@ export default function SavedSettings() {
               <Typography color='text.secondary'>
                 Saved {formatSavedAt(snapshot.lastModified)}
               </Typography>
-              <Typography color='text.secondary'>
-                {(snapshot.size / 1024).toFixed(1)} KB
-              </Typography>
+              <Typography color='text.secondary'>{(snapshot.size / 1024).toFixed(1)} KB</Typography>
               <Typography color='text.secondary'>
                 {snapshot.hasTask
                   ? 'Includes task.json replay data and full wizard load support'

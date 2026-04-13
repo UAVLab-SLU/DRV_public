@@ -7,7 +7,9 @@ function cloneValue(value) {
   }
 
   if (value != null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]),
+    );
   }
 
   return value;
@@ -63,7 +65,7 @@ export class SimulationConfigurationModel {
   popLastDrone() {
     this._drones.pop();
   }
-  
+
   static getReactStateBasedUpdate(instance) {
     let model = new SimulationConfigurationModel();
     model.environment = instance.environment;

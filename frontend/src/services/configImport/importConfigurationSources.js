@@ -29,7 +29,7 @@ export function loadImportedConfigFromPreset(presetDefinition) {
       sourceHint: 'preset',
       sourceName:
         presetDefinition.displayName ?? presetDefinition.name ?? presetDefinition.id ?? null,
-    }
+    },
   );
 }
 

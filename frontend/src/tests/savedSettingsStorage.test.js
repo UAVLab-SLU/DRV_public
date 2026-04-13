@@ -166,7 +166,7 @@ describe('savedSettingsStorage', () => {
   test('stores task payload together with settings payload when provided', async () => {
     const snapshot = await saveSnapshot(
       { SettingsVersion: 2.0, label: 'bundle-settings' },
-      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } }
+      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } },
     );
 
     const bundledSnapshot = await readSnapshot(snapshot.name);
@@ -181,7 +181,7 @@ describe('savedSettingsStorage', () => {
   test('downloads task payload with the snapshot stem when present', async () => {
     const snapshot = await saveSnapshot(
       { SettingsVersion: 2.0, label: 'bundle-settings' },
-      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } }
+      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } },
     );
 
     const originalCreateElement = document.createElement.bind(document);

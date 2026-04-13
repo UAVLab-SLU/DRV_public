@@ -8,7 +8,9 @@ function cloneValue(value) {
   }
 
   if (value != null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]));
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, cloneValue(entry)]),
+    );
   }
 
   return value;
@@ -164,7 +166,7 @@ export class EnvironmentModel {
   getOriginImage() {
     return this._Origin.image;
   }
-  
+
   setOriginLatitude(value) {
     this._Origin.latitude = value;
   }
@@ -271,15 +273,18 @@ export class EnvironmentModel {
     model.Origin = {
       latitude: toFiniteNumber(
         originSource.Latitude ?? originSource.latitude,
-        model.getOriginLatitude()
+        model.getOriginLatitude(),
       ),
       longitude: toFiniteNumber(
         originSource.Longitude ?? originSource.longitude,
-        model.getOriginLongitude()
+        model.getOriginLongitude(),
       ),
       height: toFiniteNumber(
-        originSource.Height ?? originSource.height ?? originSource.Altitude ?? originSource.altitude,
-        model.getOriginHeight()
+        originSource.Height ??
+          originSource.height ??
+          originSource.Altitude ??
+          originSource.altitude,
+        model.getOriginHeight(),
       ),
       name: originSource.Name ?? originSource.name ?? model.getOriginName(),
       radius: toFiniteNumber(originSource.Radius ?? originSource.radius, model.getOriginRadius()),
@@ -289,24 +294,24 @@ export class EnvironmentModel {
     model.TimeOfDay = configuration?.TimeOfDay ?? configuration?._TimeOfDay ?? model.TimeOfDay;
     model.time = configuration?.time ?? configuration?._time ?? model.time;
     model.enableFuzzy = Boolean(
-      configuration?.enableFuzzy ?? configuration?._enableFuzzy ?? model.enableFuzzy
+      configuration?.enableFuzzy ?? configuration?._enableFuzzy ?? model.enableFuzzy,
     );
     model.timeOfDayFuzzy = Boolean(
-      configuration?.timeOfDayFuzzy ?? configuration?._timeOfDayFuzzy ?? model.timeOfDayFuzzy
+      configuration?.timeOfDayFuzzy ?? configuration?._timeOfDayFuzzy ?? model.timeOfDayFuzzy,
     );
     model.positionFuzzy = Boolean(
-      configuration?.positionFuzzy ?? configuration?._positionFuzzy ?? model.positionFuzzy
+      configuration?.positionFuzzy ?? configuration?._positionFuzzy ?? model.positionFuzzy,
     );
     model.windFuzzy = Boolean(
-      configuration?.windFuzzy ?? configuration?._windFuzzy ?? model.windFuzzy
+      configuration?.windFuzzy ?? configuration?._windFuzzy ?? model.windFuzzy,
     );
     model.UseGeo = configuration?.UseGeo ?? configuration?._UseGeo ?? model.UseGeo;
     model.Wind = cloneValue(windSource);
     model._sades = Array.isArray(configuration?.Sades)
       ? cloneValue(configuration.Sades)
       : Array.isArray(configuration?._sades)
-        ? cloneValue(configuration._sades)
-        : [];
+      ? cloneValue(configuration._sades)
+      : [];
 
     return model;
   }

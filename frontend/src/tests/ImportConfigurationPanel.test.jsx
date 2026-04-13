@@ -58,7 +58,9 @@ function ImportHarness({ presets }) {
   return (
     <div>
       <ImportConfigurationPanel presets={presets} onImportConfig={setImportedConfig} />
-      <div data-testid='loaded-origin-lat'>{importedConfig?.environment?.Origin?.Latitude ?? ''}</div>
+      <div data-testid='loaded-origin-lat'>
+        {importedConfig?.environment?.Origin?.Latitude ?? ''}
+      </div>
       <div data-testid='loaded-mission'>{importedConfig?.Drones?.[0]?.MissionValue ?? ''}</div>
     </div>
   );
@@ -75,7 +77,7 @@ describe('ImportConfigurationPanel', () => {
     render(<ImportHarness presets={[]} />);
 
     expect(screen.getByText(/supported sources:/i)).toHaveTextContent(
-      'Supported sources: dev-team presets, saved snapshot bundles, raw task payloads, and AirSim `settings.json` files.'
+      'Supported sources: dev-team presets, saved snapshot bundles, raw task payloads, and AirSim `settings.json` files.',
     );
   });
 
@@ -96,7 +98,7 @@ describe('ImportConfigurationPanel', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        'Loaded preset "Preset Alpha" into the wizard.'
+        'Loaded preset "Preset Alpha" into the wizard.',
       );
       expect(screen.getByTestId('loaded-origin-lat')).toHaveTextContent('12.34');
       expect(screen.getByTestId('loaded-mission')).toHaveTextContent('fly_to_points');
@@ -116,7 +118,7 @@ describe('ImportConfigurationPanel', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        'Loaded "saved-config.json" into the wizard.'
+        'Loaded "saved-config.json" into the wizard.',
       );
       expect(screen.getByTestId('loaded-origin-lat')).toHaveTextContent('12.34');
     });
@@ -153,7 +155,7 @@ describe('ImportConfigurationPanel', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        'Unsupported configuration format.'
+        'Unsupported configuration format.',
       );
     });
   });

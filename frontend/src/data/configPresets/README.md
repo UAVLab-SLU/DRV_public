@@ -19,10 +19,12 @@ This directory stores bundled wizard presets used by the import panel.
 ## Adding a new preset
 
 1. Create a new preset content file in this directory.
+
    - Export the preset payload as the default export.
    - Keep the file focused on the source JSON only.
 
 2. Register the preset in `registry.js`.
+
    - Add:
      - a stable `id`
      - a user-facing `displayName`
@@ -30,6 +32,7 @@ This directory stores bundled wizard presets used by the import panel.
      - the imported `sourceJson`
 
 3. Do not add schema-specific import logic.
+
    - Presets must continue to flow through the same shared import pipeline used by:
      - uploaded JSON files
      - browser-saved snapshots

@@ -116,7 +116,7 @@ describe('savedConfigImport normalization layer', () => {
     expect(result.config.Drones[0].X).toBe(41.98);
     expect(result.config.environment.Origin.Height).toBe(203);
     expect(result.warnings).toContain(
-      'Snapshot bundle includes both settings.json and task.json; task.json was treated as the primary editable source.'
+      'Snapshot bundle includes both settings.json and task.json; task.json was treated as the primary editable source.',
     );
   });
 
@@ -147,7 +147,7 @@ describe('savedConfigImport normalization layer', () => {
     expect(result.config.environment.Origin.Height).toBe(245);
     expect(result.config.Drones[0].Name).toBe('LegacyDrone');
     expect(result.warnings.join(' ')).toContain(
-      'wizard-only metadata was reconstructed from settings.json where possible'
+      'wizard-only metadata was reconstructed from settings.json where possible',
     );
   });
 
@@ -199,7 +199,7 @@ describe('savedConfigImport normalization layer', () => {
         displayName: 'Circle Mission Preset',
         config: buildTaskPayload(),
       },
-      { sourceHint: 'preset' }
+      { sourceHint: 'preset' },
     );
 
     expect(result.ok).toBe(true);
@@ -267,10 +267,10 @@ describe('savedConfigImport normalization layer', () => {
 
     expect(result.ok).toBe(false);
     expect(result.errors).toContain(
-      'Environment origin latitude is required for geo-based configurations.'
+      'Environment origin latitude is required for geo-based configurations.',
     );
     expect(result.errors).toContain(
-      'Environment origin longitude is required for geo-based configurations.'
+      'Environment origin longitude is required for geo-based configurations.',
     );
   });
 

@@ -95,7 +95,8 @@ function ContextProbe({ importedConfig }) {
 describe('applyImportedConfig helpers', () => {
   test('builds wizard submission state for a one-drone import', () => {
     const importedConfig = buildImportedConfig();
-    const { wizardState, simulationModel, environmentModel } = buildImportedStateBundle(importedConfig);
+    const { wizardState, simulationModel, environmentModel } =
+      buildImportedStateBundle(importedConfig);
     const payload = buildTaskPayload(wizardState);
 
     expect(payload.Drones).toHaveLength(1);
@@ -143,7 +144,7 @@ describe('applyImportedConfig helpers', () => {
     render(
       <MainJsonProvider>
         <ContextProbe importedConfig={buildImportedConfig()} />
-      </MainJsonProvider>
+      </MainJsonProvider>,
     );
 
     await waitFor(() => {

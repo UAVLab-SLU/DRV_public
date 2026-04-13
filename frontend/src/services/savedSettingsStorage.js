@@ -3,15 +3,15 @@ const SAVED_SETTINGS_DIR = 'saved-settings';
 export function isSupported() {
   return Boolean(
     typeof navigator !== 'undefined' &&
-    navigator.storage &&
-    typeof navigator.storage.getDirectory === 'function'
+      navigator.storage &&
+      typeof navigator.storage.getDirectory === 'function',
   );
 }
 
 function buildSnapshotName(date = new Date()) {
   const pad = (value, size = 2) => String(value).padStart(size, '0');
   return `settings-${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(
-    date.getHours()
+    date.getHours(),
   )}${pad(date.getMinutes())}${pad(date.getSeconds())}${pad(date.getMilliseconds(), 3)}.json`;
 }
 

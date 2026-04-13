@@ -237,19 +237,21 @@ describe('DroneWorld Application Flow', () => {
     cy.intercept('GET', `${finalBackendUrl}/list-reports`).as('listReports');
     cy.intercept('GET', `${finalBackendUrl}/currentRunning`).as('getBackendStatus');
     cy.intercept('POST', `${finalBackendUrl}/addTask`).as('addTask');
-    cy.intercept('POST', `${finalBackendUrl}/api/simulation/settings/preview`).as('previewSettings');
+    cy.intercept('POST', `${finalBackendUrl}/api/simulation/settings/preview`).as(
+      'previewSettings',
+    );
     cy.intercept('POST', `${finalBackendUrl}/list-folder-contents/*`).as('listFolderContents');
-    
+
     // Step 1: Visit the landing page
     cy.visit('/', {
       onBeforeLoad(win) {
         installMockOpfs(win);
       },
     });
-    
+
     // Wait for the initial backend reports call to complete
     cy.wait('@listReports');
-    
+
     // Step 2: Wait for the "Get Started" button to be visible and click it
     // Material-UI Button with component={Link} renders as an <a> tag, not <button>
     // Using a flexible selector that works for both buttons and links
@@ -257,29 +259,29 @@ describe('DroneWorld Application Flow', () => {
     cy.contains('Get Started').click();
     cy.url().should('include', '/home');
     cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/home`);
-    
+
     // Ensure Home page backend polling starts
     cy.wait('@getBackendStatus');
-    
+
     // Step 3: Find and select "UAV-301: Circular Flight Mission in Windy Weather" from dropdown
     // Material-UI Select requires clicking the input field first
     cy.get('#req-id-select').click(); // Click to open the dropdown
     // Wait for dropdown menu to appear and select the option
     cy.get('[role="listbox"]').should('be.visible');
     cy.contains('[role="option"]', 'UAV-301: Circular Flight Mission in Windy Weather').click();
-    
+
     // Step 4: Click "Start Scenario Configuration" button and verify navigation to /simulation
     cy.contains('button', 'Start Scenario Configuration').should('not.be.disabled');
     cy.contains('button', 'Start Scenario Configuration').click();
     cy.url().should('include', '/simulation');
     cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/simulation`);
-    
+
     // Step 5: Click the first "NEXT" button (moves from Environment Configuration to Mission Configuration)
     cy.contains('button', 'Next').click();
-    
+
     // Step 6: Click the second "NEXT" button (moves from Mission Configuration to Test Configuration)
     cy.contains('button', 'Next').click();
-    
+
     // Step 7: Verify that the "FINISH" button exists (should appear on the final step)
     cy.contains('button', 'Finish').should('exist');
     cy.contains('button', 'Finish').should('be.visible');
@@ -314,7 +316,9 @@ describe('DroneWorld Application Flow', () => {
     cy.get('nav').contains('a', 'Reports').should('be.visible').click();
     cy.url().should('include', '/reports');
     cy.url().should('eq', `${Cypress.config().baseUrl || 'http://localhost:3000'}/reports`);
-    cy.contains('h6', /^Batch\b/, { timeout: 10000 }).should('be.visible').as('latestBatchTitle');
+    cy.contains('h6', /^Batch\b/, { timeout: 10000 })
+      .should('be.visible')
+      .as('latestBatchTitle');
 
     // Step 11: Use the newest Batch tile to verify timestamp, local write, and download behavior
     cy.window().then((win) => {

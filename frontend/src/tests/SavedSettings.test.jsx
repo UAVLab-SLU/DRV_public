@@ -37,7 +37,7 @@ jest.mock('../components/EnvironmentConfiguration', () => {
             },
             TimeOfDay: '10:00:00',
           },
-          props.id
+          props.id,
         );
       }
     }, [props]);
@@ -90,7 +90,7 @@ jest.mock('../components/Configuration/MissionConfiguration', () => {
               },
             },
           ],
-          props.id
+          props.id,
         );
       }
     }, [props]);
@@ -143,7 +143,7 @@ jest.mock('../components/MonitorControl', () => {
               param: [],
             },
           },
-          props.id
+          props.id,
         );
       }
     }, [props]);
@@ -173,11 +173,7 @@ jest.mock('../components/cesium/CesiumMap', () => {
 
 jest.mock('../components/Configuration/ControlsDisplay', () => () => <div />);
 
-const {
-  isSupported,
-  listSnapshots,
-  readSnapshot,
-} = require('../services/savedSettingsStorage');
+const { isSupported, listSnapshots, readSnapshot } = require('../services/savedSettingsStorage');
 
 function buildSnapshotRecord(overrides = {}) {
   return {
@@ -274,7 +270,7 @@ function renderSavedSettingsFlow() {
           <Route path='/simulation' element={<Wizard />} />
         </Routes>
       </MemoryRouter>
-    </MainJsonProvider>
+    </MainJsonProvider>,
   );
 }
 
@@ -298,7 +294,9 @@ describe('Saved settings wizard loading', () => {
     fireEvent.click(screen.getByRole('button', { name: /load into wizard/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/loaded "settings-20260401T120000000\.json" into the wizard/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/loaded "settings-20260401T120000000\.json" into the wizard/i),
+      ).toBeInTheDocument();
       expect(screen.getByTestId('env-origin-lat')).toHaveTextContent('35.1234');
       expect(screen.getByTestId('env-origin-height')).toHaveTextContent('125');
       expect(screen.getByTestId('cesium-map')).toHaveAttribute('data-origin-lat', '35.1234');
@@ -308,7 +306,7 @@ describe('Saved settings wizard loading', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'Imported Drone:fly_in_circle:35.1235,-80.9875,42'
+        'Imported Drone:fly_in_circle:35.1235,-80.9875,42',
       );
     });
 
@@ -316,7 +314,7 @@ describe('Saved settings wizard loading', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'Imported Drone:fly_in_circle:44.44,-80.9875,42'
+        'Imported Drone:fly_in_circle:44.44,-80.9875,42',
       );
       expect(screen.getByTestId('cesium-map')).toHaveAttribute('data-first-drone-x', '44.44');
     });
@@ -338,13 +336,15 @@ describe('Saved settings wizard loading', () => {
     expect(screen.getByRole('button', { name: /load into wizard/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /simulate/i })).not.toBeInTheDocument();
     expect(
-      screen.getByText(/legacy settings-only snapshot\. wizard load is available/i)
+      screen.getByText(/legacy settings-only snapshot\. wizard load is available/i),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /load into wizard/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/loaded "settings-legacy\.json" into the wizard with recovered fields/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/loaded "settings-legacy\.json" into the wizard with recovered fields/i),
+      ).toBeInTheDocument();
     });
   });
 });

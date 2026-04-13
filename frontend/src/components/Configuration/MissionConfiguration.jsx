@@ -1,14 +1,14 @@
 import * as React from 'react';
-import Box from '@mui/material/Box'
+import Box from '@mui/material/Box';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary'
-import AccordionDetails from '@mui/material/AccordionDetails'
-import Typography from '@mui/material/Typography'
-import {ExpandMore} from '@mui/icons-material';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import { ExpandMore } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
-import DroneConfiguration from './DroneConfiguration'
+import DroneConfiguration from './DroneConfiguration';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
@@ -18,233 +18,274 @@ import { useMainJson } from '../../contexts/MainJsonContext';
 import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
 
 const useStyles = makeStyles(() => ({
-    root: {
-      width: '100%',
-      padding: '5px'
-    }
-  }));
+  root: {
+    width: '100%',
+    padding: '5px',
+  },
+}));
 
-export default function MissionConfiguration (mission) {
-    const { mainJson, setMainJson } = useMainJson();
-    const classes = useStyles();
-    const buildDefaultDrone = React.useCallback((index) => ({
-        id: index,
-        droneName:"Drone " + (index + 1),
-        FlightController: "SimpleFlight",
-        droneType:"MultiRotor",
-        droneModel:"DJI",
-        VehicleType: "SimpleFlight",
-        DefaultVehicleState: "Armed",
-        EnableCollisionPassthrogh: false,
-        EnableCollisions: true,
-        AllowAPIAlways: true,
-        EnableTrace: false,
-        Name:"Drone " + (index + 1),
-        X:mission.mainJsonValue.environment != null
-          ? (mission.mainJsonValue.environment.Origin.Latitude ?? 0) + (0.0001 * index)
+export default function MissionConfiguration(mission) {
+  const { mainJson, setMainJson } = useMainJson();
+  const classes = useStyles();
+  const buildDefaultDrone = React.useCallback(
+    (index) => ({
+      id: index,
+      droneName: 'Drone ' + (index + 1),
+      FlightController: 'SimpleFlight',
+      droneType: 'MultiRotor',
+      droneModel: 'DJI',
+      VehicleType: 'SimpleFlight',
+      DefaultVehicleState: 'Armed',
+      EnableCollisionPassthrogh: false,
+      EnableCollisions: true,
+      AllowAPIAlways: true,
+      EnableTrace: false,
+      Name: 'Drone ' + (index + 1),
+      X:
+        mission.mainJsonValue.environment != null
+          ? (mission.mainJsonValue.environment.Origin.Latitude ?? 0) + 0.0001 * index
           : 0,
-        Y:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Longitude : 0,
-        Z:mission.mainJsonValue.environment != null ? mission.mainJsonValue.environment.Origin.Height : 0,
-        Pitch: 0,
-        Roll: 0,
-        Yaw: 0,
-        Sensors: null,
-        MissionValue: "fly_to_points",
-        Mission : {
-            name:"fly_to_points",
-            param : []
-        },
-    }), [mission.mainJsonValue.environment]);
+      Y:
+        mission.mainJsonValue.environment != null
+          ? mission.mainJsonValue.environment.Origin.Longitude
+          : 0,
+      Z:
+        mission.mainJsonValue.environment != null
+          ? mission.mainJsonValue.environment.Origin.Height
+          : 0,
+      Pitch: 0,
+      Roll: 0,
+      Yaw: 0,
+      Sensors: null,
+      MissionValue: 'fly_to_points',
+      Mission: {
+        name: 'fly_to_points',
+        param: [],
+      },
+    }),
+    [mission.mainJsonValue.environment],
+  );
 
-    const getMissionDrones = React.useCallback(() => {
-        return mission.mainJsonValue.Drones != null && mission.mainJsonValue.Drones.length > 0
-            ? mission.mainJsonValue.Drones
-            : [buildDefaultDrone(0)];
-    }, [buildDefaultDrone, mission.mainJsonValue.Drones]);
+  const getMissionDrones = React.useCallback(() => {
+    return mission.mainJsonValue.Drones != null && mission.mainJsonValue.Drones.length > 0
+      ? mission.mainJsonValue.Drones
+      : [buildDefaultDrone(0)];
+  }, [buildDefaultDrone, mission.mainJsonValue.Drones]);
 
-    const [droneArray, setDroneArray] = React.useState(getMissionDrones);
-    const [droneCount, setDroneCount] = React.useState(getMissionDrones().length);
+  const [droneArray, setDroneArray] = React.useState(getMissionDrones);
+  const [droneCount, setDroneCount] = React.useState(getMissionDrones().length);
 
-    React.useEffect(() => {
-        const nextDroneArray = getMissionDrones();
-        setDroneArray(nextDroneArray);
-        setDroneCount(nextDroneArray.length);
-    }, [getMissionDrones]);
+  React.useEffect(() => {
+    const nextDroneArray = getMissionDrones();
+    setDroneArray(nextDroneArray);
+    setDroneCount(nextDroneArray.length);
+  }, [getMissionDrones]);
 
-    React.useEffect(() => {
-        if (mainJson.getAllDrones().length === 0 && droneArray.length > 0) {
-            const nextMainJson = SimulationConfigurationModel.getReactStateBasedUpdate(mainJson);
-            nextMainJson.drones = droneArray.map((drone) => ({
-                ...drone,
-                Mission: drone.Mission
-                    ? {
-                        ...drone.Mission,
-                        param: Array.isArray(drone.Mission.param) ? [...drone.Mission.param] : [],
-                    }
-                    : drone.Mission,
-            }));
-            setMainJson(nextMainJson);
-        }
-    }, [droneArray, mainJson, setMainJson]);
-
-    const setDrone = () => {
-        const nextDrone = buildDefaultDrone(droneCount);
-        setDroneArray((prevDrones) => [...prevDrones, nextDrone]);
-        mainJson.addNewDrone(nextDrone);
-        setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-    }
-
-    const handleDragStart = (event, index) => {
-        const imgSrc = event.target.src;
-        const dragData = {
-          type: 'drone',
-          src: imgSrc,
-          index: index,
-        };
-
-        event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
-      };
-
-    const handleIncrement = () => {
-        setDroneCount(droneCount +1)
-        setDrone()
-    }
-
-    const handleDecrement = () => {
-        // Ensure droneCount is greater than 0 to prevent negative counts
-        if (droneCount > 0) {
-          setDroneCount(prevCount => prevCount - 1);
-      
-          // Update the drone array by removing the last element
-          setDroneArray(prevArray => {
-            const updatedArray = prevArray.slice(0, -1); // Creates a new array without the last element
-      
-            // Call mainJson.popLastDrone() if it exists
-            if (mainJson && typeof mainJson.popLastDrone === 'function') {
-              mainJson.popLastDrone();
-            } else {
-              console.warn('mainJson.popLastDrone is not a function');
+  React.useEffect(() => {
+    if (mainJson.getAllDrones().length === 0 && droneArray.length > 0) {
+      const nextMainJson = SimulationConfigurationModel.getReactStateBasedUpdate(mainJson);
+      nextMainJson.drones = droneArray.map((drone) => ({
+        ...drone,
+        Mission: drone.Mission
+          ? {
+              ...drone.Mission,
+              param: Array.isArray(drone.Mission.param) ? [...drone.Mission.param] : [],
             }
-      
-            // Safely update mainJson state
-            if (typeof SimulationConfigurationModel?.getReactStateBasedUpdate === 'function') {
-              setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-            } else {
-              console.warn('SimulationConfigurationModel.getReactStateBasedUpdate is not a function');
-            }
-      
-            return updatedArray;
-          });
+          : drone.Mission,
+      }));
+      setMainJson(nextMainJson);
+    }
+  }, [droneArray, mainJson, setMainJson]);
+
+  const setDrone = () => {
+    const nextDrone = buildDefaultDrone(droneCount);
+    setDroneArray((prevDrones) => [...prevDrones, nextDrone]);
+    mainJson.addNewDrone(nextDrone);
+    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  };
+
+  const handleDragStart = (event, index) => {
+    const imgSrc = event.target.src;
+    const dragData = {
+      type: 'drone',
+      src: imgSrc,
+      index: index,
+    };
+
+    event.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+  };
+
+  const handleIncrement = () => {
+    setDroneCount(droneCount + 1);
+    setDrone();
+  };
+
+  const handleDecrement = () => {
+    // Ensure droneCount is greater than 0 to prevent negative counts
+    if (droneCount > 0) {
+      setDroneCount((prevCount) => prevCount - 1);
+
+      // Update the drone array by removing the last element
+      setDroneArray((prevArray) => {
+        const updatedArray = prevArray.slice(0, -1); // Creates a new array without the last element
+
+        // Call mainJson.popLastDrone() if it exists
+        if (mainJson && typeof mainJson.popLastDrone === 'function') {
+          mainJson.popLastDrone();
         } else {
-          console.warn('Drone count is already at zero.');
+          console.warn('mainJson.popLastDrone is not a function');
         }
-      };
-    
-    const setDroneName = (e, index) => {
-        setDroneArray(objs => {
-            return objs.map((obj) => {
-                if(index === obj.id) {
-                    return {
-                        ...obj,
-                        droneName: e
-                    }
-                }
-                return obj
-            })
-        })
 
-        const updatedDrone = mainJson.getDroneBasedOnIndex(index);
-        if (updatedDrone) {
-            updatedDrone.droneName = e;
-            mainJson.updateDroneBasedOnIndex(index, updatedDrone);
-            setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        // Safely update mainJson state
+        if (typeof SimulationConfigurationModel?.getReactStateBasedUpdate === 'function') {
+          setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+        } else {
+          console.warn('SimulationConfigurationModel.getReactStateBasedUpdate is not a function');
         }
+
+        return updatedArray;
+      });
+    } else {
+      console.warn('Drone count is already at zero.');
     }
+  };
 
-    React.useEffect(() => {
-        mission.droneArrayJson(droneArray, mission.id)
-    }, [droneArray, mission.droneArrayJson, mission.id])
+  const setDroneName = (e, index) => {
+    setDroneArray((objs) => {
+      return objs.map((obj) => {
+        if (index === obj.id) {
+          return {
+            ...obj,
+            droneName: e,
+          };
+        }
+        return obj;
+      });
+    });
 
-    const setDroneJson = (json, index) => {
-        setDroneArray((currentDrones) =>
-            currentDrones.map((drone) =>
-                drone.id == index
-                    ? {
-                        ...drone,
-                        ...json,
-                        MissionValue: json.MissionValue ?? json.Mission?.name ?? drone.MissionValue,
-                        Mission: json.Mission ?? drone.Mission,
-                    }
-                    : drone
-            )
-        );
+    const updatedDrone = mainJson.getDroneBasedOnIndex(index);
+    if (updatedDrone) {
+      updatedDrone.droneName = e;
+      mainJson.updateDroneBasedOnIndex(index, updatedDrone);
+      setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
+  };
 
-    return (
-        <Box sx={{width: '100%', border:1, borderRadius: 3, overflow:'scroll', padding: 3}} >
-            <Grid container  direction="row" style={{padding: '12px'}} ><strong>Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario</strong></Grid>
-                    <Alert severity="info">
-                        <AlertTitle>Info</AlertTitle>
-                        Please make sure that no two sUAS (small unmanned aircraft system) have the same Home Geolocation
-                    </Alert>
-                    <Grid container  direction="row" alignItems="center" justifyContent="right" style={{padding: '12px', fontSize:'18px'}}>
-                        Number of sUAS &nbsp;&nbsp;
-                        <ButtonGroup size="small" aria-label="small outlined button group" >
-                        {droneCount >1 && <Button style={{fontSize:'15px'}} onClick={handleDecrement}>-</Button>}
-                            
-                            {droneCount && <Button style={{fontSize:'15px'}} variant="contained" color="primary">{droneCount}</Button>}
-                            <Button style={{fontSize:'15px'}} onClick={handleIncrement} disabled={droneCount===10}>+</Button>
-                        </ButtonGroup>
-                    </Grid>
-                    <div>
-                        {droneArray.map((drone, index) => 
-                        (<div key={index}>
-                            <div>
-                            <div className={classes.root}>
-                                <Accordion>
-                                    <AccordionSummary
-                                    expandIcon={<ExpandMore />}
-                                    aria-controls="panel1a-content"
-                                    id="panel1a-header"
-                                    >
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            width: '100%',
-                                        }}
-                                    >
-                                        <Typography className={classes.heading}>{drone.droneName}</Typography>
-                                        <Grid container alignItems="center" columnSpacing={2} sx={{ width: 'auto' }}>
-                                            <Grid item>
-                                                <Tooltip title="Click to fly this drone on the map."></Tooltip>
-                                            </Grid>
-                                            <Grid item>
-                                                <Tooltip title="Drag and Drop this drone to set or update its home location on the map.">
-                                                    <img
-                                                        src={imageUrls.drone_icon}
-                                                        alt="Draggable Icon"
-                                                        draggable="true"
-                                                        onDragStart={(e) => handleDragStart(e, index)}
-                                                        style={{ width: 40, cursor: 'grab', marginRight: 20 }}
-                                                    />
-                                                </Tooltip>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                    <Typography>
-                                        <DroneConfiguration name={drone.droneName} id={drone.id} resetName={setDroneName} droneJson={setDroneJson} droneObject={droneArray[(drone.id)]}/>
-                                    </Typography>
-                                    </AccordionDetails>
-                                </Accordion>
-                            </div>
-                            </div>
-                        </div>)
-                        )}
-                    </div>
-        </Box>
-    )
+  React.useEffect(() => {
+    mission.droneArrayJson(droneArray, mission.id);
+  }, [droneArray, mission.droneArrayJson, mission.id]);
+
+  const setDroneJson = (json, index) => {
+    setDroneArray((currentDrones) =>
+      currentDrones.map((drone) =>
+        drone.id == index
+          ? {
+              ...drone,
+              ...json,
+              MissionValue: json.MissionValue ?? json.Mission?.name ?? drone.MissionValue,
+              Mission: json.Mission ?? drone.Mission,
+            }
+          : drone,
+      ),
+    );
+  };
+
+  return (
+    <Box sx={{ width: '100%', border: 1, borderRadius: 3, overflow: 'scroll', padding: 3 }}>
+      <Grid container direction='row' style={{ padding: '12px' }}>
+        <strong>
+          Configure sUAS (small unmanned aircraft system) or drone characteristics in your scenario
+        </strong>
+      </Grid>
+      <Alert severity='info'>
+        <AlertTitle>Info</AlertTitle>
+        Please make sure that no two sUAS (small unmanned aircraft system) have the same Home
+        Geolocation
+      </Alert>
+      <Grid
+        container
+        direction='row'
+        alignItems='center'
+        justifyContent='right'
+        style={{ padding: '12px', fontSize: '18px' }}
+      >
+        Number of sUAS &nbsp;&nbsp;
+        <ButtonGroup size='small' aria-label='small outlined button group'>
+          {droneCount > 1 && (
+            <Button style={{ fontSize: '15px' }} onClick={handleDecrement}>
+              -
+            </Button>
+          )}
+
+          {droneCount && (
+            <Button style={{ fontSize: '15px' }} variant='contained' color='primary'>
+              {droneCount}
+            </Button>
+          )}
+          <Button
+            style={{ fontSize: '15px' }}
+            onClick={handleIncrement}
+            disabled={droneCount === 10}
+          >
+            +
+          </Button>
+        </ButtonGroup>
+      </Grid>
+      <div>
+        {droneArray.map((drone, index) => (
+          <div key={index}>
+            <div>
+              <div className={classes.root}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    aria-controls='panel1a-content'
+                    id='panel1a-header'
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}
+                    >
+                      <Typography className={classes.heading}>{drone.droneName}</Typography>
+                      <Grid container alignItems='center' columnSpacing={2} sx={{ width: 'auto' }}>
+                        <Grid item>
+                          <Tooltip title='Click to fly this drone on the map.'></Tooltip>
+                        </Grid>
+                        <Grid item>
+                          <Tooltip title='Drag and Drop this drone to set or update its home location on the map.'>
+                            <img
+                              src={imageUrls.drone_icon}
+                              alt='Draggable Icon'
+                              draggable='true'
+                              onDragStart={(e) => handleDragStart(e, index)}
+                              style={{ width: 40, cursor: 'grab', marginRight: 20 }}
+                            />
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography>
+                      <DroneConfiguration
+                        name={drone.droneName}
+                        id={drone.id}
+                        resetName={setDroneName}
+                        droneJson={setDroneJson}
+                        droneObject={droneArray[drone.id]}
+                      />
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Box>
+  );
 }

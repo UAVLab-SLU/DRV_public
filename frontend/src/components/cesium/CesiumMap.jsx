@@ -109,7 +109,10 @@ const CesiumMap = ({ activeConfigStep }) => {
         if (!cancelled) {
           setTerrainProvider(undefined);
         }
-        console.warn('Failed to load Cesium terrain provider. Falling back to the base globe.', error);
+        console.warn(
+          'Failed to load Cesium terrain provider. Falling back to the base globe.',
+          error,
+        );
       }
     }
 

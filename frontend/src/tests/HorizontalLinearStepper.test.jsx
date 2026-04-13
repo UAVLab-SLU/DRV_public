@@ -35,7 +35,7 @@ jest.mock('../components/EnvironmentConfiguration', () => {
             },
             TimeOfDay: '10:00:00',
           },
-          props.id
+          props.id,
         );
         return;
       }
@@ -94,7 +94,7 @@ jest.mock('../components/Configuration/MissionConfiguration', () => {
               },
             },
           ],
-          props.id
+          props.id,
         );
       }
     }, [props]);
@@ -148,7 +148,7 @@ jest.mock('../components/MonitorControl', () => {
               param: [],
             },
           },
-          props.id
+          props.id,
         );
       }
     }, [props]);
@@ -195,7 +195,7 @@ async function renderAtFinalStep() {
   render(
     <MainJsonProvider>
       <HorizontalLinearStepper desc='Scenario description' />
-    </MainJsonProvider>
+    </MainJsonProvider>,
   );
   fireEvent.click(screen.getByRole('button', { name: /next/i }));
   fireEvent.click(screen.getByRole('button', { name: /next/i }));
@@ -206,7 +206,7 @@ function renderStepper(props = {}) {
   return render(
     <MainJsonProvider>
       <HorizontalLinearStepper desc='Scenario description' {...props} />
-    </MainJsonProvider>
+    </MainJsonProvider>,
   );
 }
 
@@ -234,7 +234,9 @@ describe('HorizontalLinearStepper finish flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /finish/i }));
 
     expect(
-      screen.getByRole('heading', { name: /save settings\.json and task\.json before submission\?/i })
+      screen.getByRole('heading', {
+        name: /save settings\.json and task\.json before submission\?/i,
+      }),
     ).toBeInTheDocument();
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -274,7 +276,7 @@ describe('HorizontalLinearStepper finish flow', () => {
               },
             },
           },
-        })
+        }),
       )
       .mockResolvedValueOnce(mockFetchResponse({ task_id: 'task-2' }));
 
@@ -290,7 +292,7 @@ describe('HorizontalLinearStepper finish flow', () => {
         expect.objectContaining({
           Drones: expect.any(Array),
           environment: expect.any(Object),
-        })
+        }),
       );
       expect(global.fetch).toHaveBeenCalledTimes(2);
     });
@@ -306,7 +308,7 @@ describe('HorizontalLinearStepper finish flow', () => {
         settings: {
           SettingsVersion: 2.0,
         },
-      })
+      }),
     );
     saveSnapshot.mockRejectedValueOnce(new Error('disk full'));
 
@@ -331,7 +333,7 @@ describe('HorizontalLinearStepper finish flow', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        'Loaded preset "Circular and Square Flight Mission in Windy Weather" into the wizard.'
+        'Loaded preset "Circular and Square Flight Mission in Windy Weather" into the wizard.',
       );
       expect(screen.getByTestId('env-origin-lat')).toHaveTextContent('42.1142');
       expect(screen.getByTestId('env-origin-height')).toHaveTextContent('208');
@@ -345,10 +347,10 @@ describe('HorizontalLinearStepper finish flow', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'Circle Drone:fly_in_circle:42.1142,-87.9011,30'
+        'Circle Drone:fly_in_circle:42.1142,-87.9011,30',
       );
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'Square Drone:fly_to_points:42.1144,-87.9009,32'
+        'Square Drone:fly_to_points:42.1144,-87.9009,32',
       );
     });
   });
@@ -427,13 +429,13 @@ describe('HorizontalLinearStepper finish flow', () => {
     fireEvent.click(screen.getByRole('button', { name: /next/i }));
     await waitFor(() => {
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'Imported Drone:fly_in_circle:35.1235,-80.9875,42'
+        'Imported Drone:fly_in_circle:35.1235,-80.9875,42',
       );
     });
 
     fireEvent.click(screen.getByRole('button', { name: /update imported drone latitude/i }));
     expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-      'Imported Drone:fly_in_circle:44.44,-80.9875,42'
+      'Imported Drone:fly_in_circle:44.44,-80.9875,42',
     );
 
     await waitFor(() => {
@@ -519,7 +521,7 @@ describe('HorizontalLinearStepper finish flow', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('mission-summary')).toHaveTextContent(
-        'AirSim Drone:fly_to_points:5,10,-3'
+        'AirSim Drone:fly_to_points:5,10,-3',
       );
     });
   });

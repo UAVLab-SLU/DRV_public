@@ -20,9 +20,7 @@ describe('FuzzyDashboard routing behavior', () => {
     renderDashboard(['/dashboard']);
 
     expect(screen.getByText(/No Report Selected/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Open a report from the Reports page/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Open a report from the Reports page/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Go to Reports/i }));
     expect(screen.getByText('Reports Page')).toBeInTheDocument();
@@ -58,9 +56,7 @@ describe('FuzzyDashboard routing behavior', () => {
 
     renderDashboard([{ pathname: '/dashboard', state: routeState }]);
 
-    expect(
-      screen.getByText(/2026-03-08-10-57-11_Batch_2 Detailed Report/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/2026-03-08-10-57-11_Batch_2 Detailed Report/i)).toBeInTheDocument();
     expect(
       screen.getByText(
         /Acceptance Test: Drones shall avoid collisions with other drones and the environment/i,

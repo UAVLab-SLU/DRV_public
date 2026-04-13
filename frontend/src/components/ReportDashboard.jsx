@@ -236,10 +236,13 @@ export default function ReportDashboard() {
   const handlePreview = async (report) => {
     setPreviewing(report.filename);
     try {
-      const res = await fetch(`${BASE_URL}/list-folder-contents/${encodeURIComponent(report.filename)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const res = await fetch(
+        `${BASE_URL}/list-folder-contents/${encodeURIComponent(report.filename)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
       if (!res.ok) {
         const msg = await getErrorMessage(res);
         throw new Error(msg);

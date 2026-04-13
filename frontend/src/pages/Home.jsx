@@ -80,21 +80,28 @@ const Home = () => {
   useEffect(() => {
     const fetchStatus = () => {
       Promise.all([
-      fetch(`${BASE_URL}/currentRunning`).then(async (res) => {
-        if (!res.ok) { const msg = await getErrorMessage(res); throw new Error(msg); }
-        return res.json();
-      }),
-      fetch(`${BASE_URL}/state`).then(async (res) => {
-        if (!res.ok) { const msg = await getErrorMessage(res); throw new Error(msg); }
-        return res.json();
-      }),
-    ])
-      .then(([queueInfo, simState]) => {
-        const queueSize = parseInt(queueInfo.queue_size, 10) || 0;
-        const status = simState.state || (queueInfo.current_task === 'Running' ? 'running' : 'idle');
-        setBackendInfo({ numQueuedTasks: queueSize, backendStatus: status });
-      })
-      .catch(() => setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' }));
+        fetch(`${BASE_URL}/currentRunning`).then(async (res) => {
+          if (!res.ok) {
+            const msg = await getErrorMessage(res);
+            throw new Error(msg);
+          }
+          return res.json();
+        }),
+        fetch(`${BASE_URL}/state`).then(async (res) => {
+          if (!res.ok) {
+            const msg = await getErrorMessage(res);
+            throw new Error(msg);
+          }
+          return res.json();
+        }),
+      ])
+        .then(([queueInfo, simState]) => {
+          const queueSize = parseInt(queueInfo.queue_size, 10) || 0;
+          const status =
+            simState.state || (queueInfo.current_task === 'Running' ? 'running' : 'idle');
+          setBackendInfo({ numQueuedTasks: queueSize, backendStatus: status });
+        })
+        .catch(() => setBackendInfo({ numQueuedTasks: -1, backendStatus: 'error' }));
     };
 
     fetchStatus();

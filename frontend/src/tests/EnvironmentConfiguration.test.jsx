@@ -1,7 +1,6 @@
 /* eslint-env jest */
 /* eslint-disable react/prop-types */
 
-import React from 'react';
 import '@testing-library/jest-dom';
 import dayjs from 'dayjs';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -33,33 +32,41 @@ jest.mock('@react-google-maps/api', () => {
 
 import { __triggerMapClick } from '@react-google-maps/api';
 
-const buildProps = () => ({
-  id: 'environment',
-  environmentJson: jest.fn(),
-  mainJsonValue: {
-    environment: {
-      enableFuzzy: false,
-      timeOfDayFuzzy: false,
-      positionFuzzy: false,
-      windFuzzy: false,
-      Wind: {
-        Direction: 'NE',
-        Force: 5,
-        Type: 'Constant Wind',
-        Fluctuation: 0,
+const buildProps = (environmentOverrides = {}) => {
+  const { Wind: windOverrides = {}, Origin: originOverrides = {}, ...restOverrides } =
+    environmentOverrides;
+
+  return {
+    id: 'environment',
+    environmentJson: jest.fn(),
+    mainJsonValue: {
+      environment: {
+        enableFuzzy: false,
+        timeOfDayFuzzy: false,
+        positionFuzzy: false,
+        windFuzzy: false,
+        TimeOfDay: '10:00:00',
+        UseGeo: true,
+        time: dayjs('2020-01-01T10:00:00'),
+        ...restOverrides,
+        Wind: {
+          Direction: 'NE',
+          Force: 5,
+          Type: 'Constant Wind',
+          Fluctuation: 0,
+          ...windOverrides,
+        },
+        Origin: {
+          Name: 'Specify Region',
+          Latitude: 41.98,
+          Longitude: -87.93,
+          Height: 2,
+          ...originOverrides,
+        },
       },
-      Origin: {
-        Name: 'Specify Region',
-        Latitude: 41.98,
-        Longitude: -87.93,
-        Height: 2,
-      },
-      TimeOfDay: '10:00:00',
-      UseGeo: true,
-      time: dayjs('2020-01-01T10:00:00'),
     },
-  },
-});
+  };
+};
 
 describe('EnvironmentConfiguration interactions', () => {
   const originalGoogleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -132,5 +139,56 @@ describe('EnvironmentConfiguration interactions', () => {
 
     expect(screen.getByText(/Google Maps preview is temporarily unavailable/i)).toBeInTheDocument();
     expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
+  });
+
+  it('updates time of day from direct typed input', async () => {
+    const props = buildProps();
+    render(<EnvironmentConfiguration {...props} />);
+
+    const timeInput = screen.getByTestId('time-of-day-input');
+
+    fireEvent.change(timeInput, { target: { value: '14:35:42' } });
+
+    await waitFor(() => {
+      const lastCall = props.environmentJson.mock.calls.at(-1);
+      expect(lastCall?.[0].TimeOfDay).toBe('14:35:42');
+      expect(dayjs(lastCall?.[0].time).format('HH:mm:ss')).toBe('14:35:42');
+    });
+  });
+
+  it('fills missing environment values with sensible defaults', async () => {
+    const props = buildProps({
+      Wind: {
+        Force: undefined,
+        Direction: undefined,
+        Type: undefined,
+        Fluctuation: undefined,
+      },
+      Origin: {
+        Name: undefined,
+        Latitude: undefined,
+        Longitude: undefined,
+        Height: undefined,
+      },
+      TimeOfDay: undefined,
+      time: undefined,
+    });
+
+    render(<EnvironmentConfiguration {...props} />);
+
+    await waitFor(() => {
+      const lastCall = props.environmentJson.mock.calls.at(-1)?.[0];
+      expect(lastCall?.Wind.Force).toBe(5);
+      expect(lastCall?.Wind.Direction).toBe('NE');
+      expect(lastCall?.Wind.Type).toBe('Constant Wind');
+      expect(lastCall?.Origin.Name).toBe('Chicago O\u2019Hare Airport');
+      expect(lastCall?.Origin.Latitude).toBeCloseTo(41.980381);
+      expect(lastCall?.Origin.Longitude).toBeCloseTo(-87.934524);
+      expect(lastCall?.Origin.Height).toBe(200);
+      expect(lastCall?.TimeOfDay).toBe('10:00:00');
+    });
+
+    expect(screen.getByTestId('wind-force-input')).toHaveValue(5);
+    expect(screen.getByTestId('time-of-day-input')).toHaveValue('10:00:00');
   });
 });

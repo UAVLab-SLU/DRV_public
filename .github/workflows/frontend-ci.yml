@@ -47,51 +47,7 @@ jobs:
       - name: Format frontend code with Prettier
         run: |
           cd frontend
-          $prettierFiles = @(
-            'src/App.js'
-            'src/components/Configuration/DroneConfiguration.jsx'
-            'src/components/Configuration/ImportConfigurationPanel.jsx'
-            'src/components/Configuration/MissionConfiguration.jsx'
-            'src/components/EnvironmentConfiguration.jsx'
-            'src/components/HorizontalLinearStepper.jsx'
-            'src/components/MonitorControl.jsx'
-            'src/components/cesium/CesiumMap.jsx'
-            'src/contexts/MainJsonContext.js'
-            'src/data/configPresets/README.md'
-            'src/data/configPresets/presetBuilders.js'
-            'src/data/configPresets/registry.js'
-            'src/data/configPresets/uav301Preset.js'
-            'src/data/configPresets/uav302Preset.js'
-            'src/data/configPresets/uav303Preset.js'
-            'src/model/EnvironmentModel.js'
-            'src/model/SimulationConfigurationModel.js'
-            'src/pages/NavigationBar.jsx'
-            'src/pages/SavedSettings.jsx'
-            'src/pages/Wizard.jsx'
-            'src/services/configImport/applyImportedConfig.js'
-            'src/services/configImport/importConfigurationSources.js'
-            'src/services/configImport/savedConfigImport.js'
-            'src/services/configImport/savedConfigNormalizer.js'
-            'src/services/configImport/savedConfigParsers.js'
-            'src/services/configImport/savedConfigValidation.js'
-            'src/services/savedSettingsStorage.js'
-            'src/tests/App.test.js'
-            'src/tests/CesiumMap.test.jsx'
-            'src/tests/EnvironmentConfiguration.test.jsx'
-            'src/tests/HorizontalLinearStepper.test.jsx'
-            'src/tests/ImportConfigurationPanel.test.jsx'
-            'src/tests/SavedSettings.test.jsx'
-            'src/tests/configImport/applyImportedConfig.test.jsx'
-            'src/tests/configImport/savedConfigImport.test.js'
-            'src/tests/savedSettingsStorage.test.js'
-            'src/utils/taskPayload.js'
-            'cypress/e2e/app.cy.js'
-            'cypress/fixtures/import-task-payload.json'
-            'cypress/support/commands.js'
-            'cypress/support/e2e.js'
-            'cypress.config.js'
-          )
-          npx prettier --check $prettierFiles --config ./.prettierrc
+          npm run format:check
 
       - name: Build frontend
         run: |

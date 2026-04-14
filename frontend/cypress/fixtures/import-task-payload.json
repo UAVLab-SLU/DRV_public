@@ -1,0 +1,74 @@
+{
+  "environment": {
+    "UseGeo": true,
+    "Origin": {
+      "Latitude": 36.2451,
+      "Longitude": -115.2586,
+      "Height": 215,
+      "Name": "Specify Region"
+    },
+    "Wind": {
+      "Direction": "SE",
+      "Force": 6,
+      "Velocity": 6,
+      "Type": "Constant Wind"
+    },
+    "TimeOfDay": "14:20:30"
+  },
+  "Drones": [
+    {
+      "Name": "Imported Survey Drone",
+      "droneName": "Imported Survey Drone",
+      "FlightController": "SimpleFlight",
+      "VehicleType": "SimpleFlight",
+      "DefaultVehicleState": "Armed",
+      "EnableCollisionPassthrogh": false,
+      "EnableCollisions": true,
+      "AllowAPIAlways": true,
+      "EnableTrace": false,
+      "droneType": "MultiRotor",
+      "droneModel": "DJI",
+      "X": 36.2451,
+      "Y": -115.2586,
+      "Z": 28,
+      "Pitch": 0,
+      "Roll": 0,
+      "Yaw": 0,
+      "MissionValue": "fly_to_points",
+      "Mission": {
+        "name": "fly_to_points",
+        "param": []
+      }
+    },
+    {
+      "Name": "Imported Orbit Drone",
+      "droneName": "Imported Orbit Drone",
+      "FlightController": "SimpleFlight",
+      "VehicleType": "SimpleFlight",
+      "DefaultVehicleState": "Armed",
+      "EnableCollisionPassthrogh": false,
+      "EnableCollisions": true,
+      "AllowAPIAlways": true,
+      "EnableTrace": false,
+      "droneType": "FixedWing",
+      "droneModel": "TrinityF90",
+      "X": 36.2453,
+      "Y": -115.2584,
+      "Z": 32,
+      "Pitch": 0,
+      "Roll": 0,
+      "Yaw": 0,
+      "MissionValue": "fly_in_circle",
+      "Mission": {
+        "name": "fly_in_circle",
+        "param": []
+      }
+    }
+  ],
+  "monitors": {
+    "battery_monitor": {
+      "enable": true,
+      "param": []
+    }
+  }
+}

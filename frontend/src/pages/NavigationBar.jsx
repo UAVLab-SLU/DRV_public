@@ -15,11 +15,11 @@ const useStyles = makeStyles(() => ({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '1.5rem',
-    backgroundColor: 'var(--dw-color-nav-bg)',
+    backgroundColor: '#6ddaed',
     fontFamily: 'Arial, sans-serif',
   },
   siteTitle: {
-    color: 'var(--dw-color-nav-text)',
+    color: 'black',
     textDecoration: 'none',
     fontSize: '1.5rem',
     fontWeight: 'bold',
@@ -35,24 +35,24 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     marginLeft: '1rem',
     textDecoration: 'none',
-    color: 'var(--dw-color-nav-text)',
+    color: 'black',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
     transition: 'background-color 0.3s ease',
   },
   aboutLink: {
     textDecoration: 'none',
-    color: 'var(--dw-color-text-inverse)',
+    color: '#fff',
     padding: '0.5rem 1rem',
     borderRadius: '30px',
     transition: 'background-color 0.3s ease',
   },
   navLink: {
     textDecoration: 'none',
-    color: 'var(--dw-color-nav-text)',
+    color: 'black',
     display: 'inline-block',
     '&:hover': {
-      color: 'var(--dw-color-nav-hover-text)',
+      color: 'white',
       transform: 'scale(1.2)',
     },
   },
@@ -69,7 +69,7 @@ const modalStyle = {
   width: 800,
   height: 400,
   bgcolor: 'background.paper',
-  border: '2px solid var(--dw-color-border-strong)',
+  border: '2px solid #000',
   boxShadow: 24,
   p: 4,
 };
@@ -101,6 +101,17 @@ function NavigationBar() {
               style={{ textDecoration: location.pathname === '/reports' ? 'underline' : 'none' }}
             >
               Reports
+            </Link>
+          </li>
+          <li className={classes.navListItem}>
+            <Link
+              to='/saved-settings'
+              className={classes.navLink}
+              style={{
+                textDecoration: location.pathname === '/saved-settings' ? 'underline' : 'none',
+              }}
+            >
+              Saved Settings
             </Link>
           </li>
           <li className={classes.navListItem}>

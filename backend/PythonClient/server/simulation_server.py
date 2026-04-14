@@ -8,7 +8,7 @@ from flask_cors import CORS
 from flasgger import Swagger
 
 # Add parent directories to the Python path for module imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from PythonClient.server.error_handling import (
     ResourceNotFoundError,
@@ -17,9 +17,12 @@ from PythonClient.server.error_handling import (
     ValidationError,
     register_error_handlers,
 )
+
 # Import the SimulationTaskManager
 # Import the SimulationTaskManager and MockTaskManager
-from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
+from PythonClient.multirotor.control.simulation_task_manager import (
+    SimulationTaskManager,
+)
 from mock_simulator.mock_task_manager import MockTaskManager
 
 # Import the storage service from the configuration module
@@ -28,7 +31,7 @@ from PythonClient.multirotor.storage.storage_config import get_storage_service
 app = Flask(__name__, template_folder="./templates")
 
 # Configure logging to suppress Werkzeug logs except for errors
-log = logging.getLogger('werkzeug')
+log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 CORS(app)
 register_error_handlers(app)
@@ -60,7 +63,10 @@ swagger_template = {
             "running tasks, and retrieving reports."
         ),
         "version": "1.0.0",
-        "contact": {"name": "OSS @ SLU", "url": "https://github.com/oss-slu/DroneWorld"},
+        "contact": {
+            "name": "OSS @ SLU",
+            "url": "https://github.com/oss-slu/DroneWorld",
+        },
         "license": {"name": "MIT"},
     },
     "components": {
@@ -72,7 +78,10 @@ swagger_template = {
                         "type": "object",
                         "properties": {
                             "code": {"type": "string", "example": "VALIDATION_ERROR"},
-                            "message": {"type": "string", "example": "Invalid input data"},
+                            "message": {
+                                "type": "string",
+                                "example": "Invalid input data",
+                            },
                             "details": {"type": "object"},
                             "timestamp": {"type": "string", "format": "date-time"},
                             "request_id": {"type": "string", "format": "uuid"},
@@ -87,8 +96,8 @@ swagger_template = {
 Swagger(app, config=swagger_config, template=swagger_template)
 
 # Initialize the SimulationTaskManager or the fake, depending on .env variables
-simulator_type = os.getenv('SIMULATOR_TYPE', 'real')
-if simulator_type == 'mock':
+simulator_type = os.getenv("SIMULATOR_TYPE", "real")
+if simulator_type == "mock":
     print("Using mock task manager")
     task_dispatcher = MockTaskManager()
 else:
@@ -103,15 +112,42 @@ storage_service = get_storage_service()
 print(f"Using {storage_service.__class__.__name__} as the storage service.")
 
 # === Simulation Configuration State ===
-simulation_state = {
-    "environment": {},
-    "monitors": {},
-    "drones": []
-}
+simulation_state = {"environment": {}, "monitors": {}, "drones": []}
+
+
+def _validate_task_payload(task_data):
+    if not task_data:
+        raise ValidationError(
+            "No task data provided", details={"missing_fields": ["task payload"]}
+        )
+
+    missing_fields = [
+        field for field in ["Drones", "environment"] if field not in task_data
+    ]
+    if missing_fields:
+        raise ValidationError(
+            "Task payload missing required sections",
+            details={"missing_fields": missing_fields},
+        )
+
+    prebuilt_settings = task_data.get("_prebuilt_settings")
+    if prebuilt_settings is not None and not isinstance(prebuilt_settings, dict):
+        raise ValidationError(
+            "Prebuilt settings must be an object",
+            details={"invalid_fields": ["_prebuilt_settings"]},
+        )
+
+    if prebuilt_settings is not None and "FuzzyTest" in task_data:
+        raise ValidationError(
+            "Saved settings replay is not supported for fuzzy tests",
+            details={"invalid_fields": ["FuzzyTest", "_prebuilt_settings"]},
+        )
+
 
 # === New API Routes ===
 
-@app.route('/api/simulation', methods=['GET'])
+
+@app.route("/api/simulation", methods=["GET"])
 def get_simulation_state():
     """Retrieve the current simulation state.
     ---
@@ -136,7 +172,8 @@ def get_simulation_state():
     """
     return jsonify(simulation_state), 200
 
-@app.route('/api/simulation/drones', methods=['POST'])
+
+@app.route("/api/simulation/drones", methods=["POST"])
 def add_drone():
     """Add a new drone to the simulation.
     ---
@@ -180,7 +217,8 @@ def add_drone():
     simulation_state["drones"].append(new_drone)
     return jsonify(new_drone), 201
 
-@app.route('/api/simulation/drones/<drone_id>', methods=['PUT'])
+
+@app.route("/api/simulation/drones/<drone_id>", methods=["PUT"])
 def update_drone(drone_id):
     """Update an existing drone's configuration.
     ---
@@ -217,14 +255,17 @@ def update_drone(drone_id):
     """
     updated_drone = request.get_json(silent=True)
     if not updated_drone:
-        raise ValidationError("Invalid drone data", details={"missing_fields": ["drone payload"]})
+        raise ValidationError(
+            "Invalid drone data", details={"missing_fields": ["drone payload"]}
+        )
     for i, drone in enumerate(simulation_state["drones"]):
         if str(drone["id"]) == drone_id:
             simulation_state["drones"][i] = updated_drone
             return jsonify(updated_drone), 200
     raise ResourceNotFoundError("Drone not found", details={"drone_id": drone_id})
 
-@app.route('/api/simulation/drones/<drone_id>', methods=['DELETE'])
+
+@app.route("/api/simulation/drones/<drone_id>", methods=["DELETE"])
 def delete_drone(drone_id):
     """Remove a drone from the simulation.
     ---
@@ -253,7 +294,8 @@ def delete_drone(drone_id):
             return jsonify({"message": "Drone deleted"}), 200
     raise ResourceNotFoundError("Drone not found", details={"drone_id": drone_id})
 
-@app.route('/api/simulation/environment', methods=['PUT'])
+
+@app.route("/api/simulation/environment", methods=["PUT"])
 def update_environment():
     """Update the simulation environment settings.
     ---
@@ -293,11 +335,15 @@ def update_environment():
     """
     new_environment = request.get_json(silent=True)
     if new_environment is None:
-        raise ValidationError("Environment configuration is required", details={"missing_fields": ["environment"]})
+        raise ValidationError(
+            "Environment configuration is required",
+            details={"missing_fields": ["environment"]},
+        )
     simulation_state["environment"] = new_environment
     return jsonify({"message": "Environment updated"}), 200
 
-@app.route('/api/simulation/monitors', methods=['PUT'])
+
+@app.route("/api/simulation/monitors", methods=["PUT"])
 def update_monitors():
     """Update the simulation monitor settings.
     ---
@@ -321,13 +367,18 @@ def update_monitors():
     """
     new_monitors = request.get_json(silent=True)
     if new_monitors is None:
-        raise ValidationError("Monitor configuration is required", details={"missing_fields": ["monitors"]})
+        raise ValidationError(
+            "Monitor configuration is required",
+            details={"missing_fields": ["monitors"]},
+        )
     simulation_state["monitors"] = new_monitors
     return jsonify({"message": "Monitors updated"}), 200
 
+
 # === Flask Routes ===
 
-@app.route('/list-reports', methods=['GET'])
+
+@app.route("/list-reports", methods=["GET"])
 def list_reports():
     """Lists all report batches from the storage service.
     ---
@@ -367,14 +418,18 @@ def list_reports():
     """
     try:
         reports = storage_service.list_reports()
-        if isinstance(reports, dict) and 'error' in reports:
-            raise StorageError("Failed to list reports", details={"storage_error": reports.get('error')})
+        if isinstance(reports, dict) and "error" in reports:
+            raise StorageError(
+                "Failed to list reports",
+                details={"storage_error": reports.get("error")},
+            )
         return jsonify(reports)
     except Exception as e:
         print(f"Error fetching reports: {e}")
         raise StorageError("Failed to list reports", details={"exception": str(e)})
 
-@app.route('/list-folder-contents/<folder_name>', methods=['POST'])
+
+@app.route("/list-folder-contents/<folder_name>", methods=["POST"])
 def list_folder_contents(folder_name):
     """Lists the contents of a specific report folder from the storage service.
     ---
@@ -399,14 +454,24 @@ def list_folder_contents(folder_name):
     """
     try:
         folder_contents = storage_service.list_folder_contents(folder_name)
-        if isinstance(folder_contents, dict) and 'error' in folder_contents:
-            raise StorageError("Failed to list folder contents", details={"storage_error": folder_contents.get('error'), "folder": folder_name})
+        if isinstance(folder_contents, dict) and "error" in folder_contents:
+            raise StorageError(
+                "Failed to list folder contents",
+                details={
+                    "storage_error": folder_contents.get("error"),
+                    "folder": folder_name,
+                },
+            )
         return jsonify(folder_contents)
     except Exception as e:
         print(f"Error fetching folder contents: {e}")
-        raise StorageError("Failed to list folder contents", details={"exception": str(e), "folder": folder_name})
+        raise StorageError(
+            "Failed to list folder contents",
+            details={"exception": str(e), "folder": folder_name},
+        )
 
-@app.route('/serve-html/<folder_name>/<path:relative_path>', methods=['GET'])
+
+@app.route("/serve-html/<folder_name>/<path:relative_path>", methods=["GET"])
 def serve_html(folder_name, relative_path):
     """Serves HTML files using the storage service.
     ---
@@ -445,18 +510,30 @@ def serve_html(folder_name, relative_path):
               $ref: '#/components/schemas/ErrorResponse'
     """
     try:
-        file_contents, status_code = storage_service.serve_html(folder_name, relative_path)
+        file_contents, status_code = storage_service.serve_html(
+            folder_name, relative_path
+        )
         if status_code == 200:
-            return Response(file_contents, mimetype='text/html')
+            return Response(file_contents, mimetype="text/html")
         elif status_code == 404:
-            raise ResourceNotFoundError("HTML file not found", details={"folder": folder_name, "path": relative_path})
+            raise ResourceNotFoundError(
+                "HTML file not found",
+                details={"folder": folder_name, "path": relative_path},
+            )
         else:
-            raise StorageError("Failed to serve HTML file", details={"folder": folder_name, "path": relative_path})
+            raise StorageError(
+                "Failed to serve HTML file",
+                details={"folder": folder_name, "path": relative_path},
+            )
     except Exception as e:
         print(f"Error serving HTML file: {e}")
-        raise StorageError("Failed to serve HTML file", details={"exception": str(e), "folder": folder_name, "path": relative_path})
+        raise StorageError(
+            "Failed to serve HTML file",
+            details={"exception": str(e), "folder": folder_name, "path": relative_path},
+        )
 
-@app.route('/download-report/<folder_name>', methods=['GET'])
+
+@app.route("/download-report/<folder_name>", methods=["GET"])
 def download_report(folder_name):
     """Download a report folder as a zip archive.
     ---
@@ -492,18 +569,28 @@ def download_report(folder_name):
     """
     try:
         if not hasattr(storage_service, "get_report_archive"):
-            raise StorageError("Download not supported for this storage backend", details={"folder": folder_name}, status_code=501)
+            raise StorageError(
+                "Download not supported for this storage backend",
+                details={"folder": folder_name},
+                status_code=501,
+            )
 
         archive_path, archive_name = storage_service.get_report_archive(folder_name)
         if not archive_path:
-            raise ResourceNotFoundError("Report archive not found", details={"folder": folder_name})
+            raise ResourceNotFoundError(
+                "Report archive not found", details={"folder": folder_name}
+            )
 
         return send_file(archive_path, as_attachment=True, download_name=archive_name)
     except Exception as e:
         print(f"Error downloading report archive: {e}")
-        raise StorageError("Failed to download report", details={"exception": str(e), "folder": folder_name})
+        raise StorageError(
+            "Failed to download report",
+            details={"exception": str(e), "folder": folder_name},
+        )
 
-@app.route('/addTask', methods=['POST'])
+
+@app.route("/addTask", methods=["POST"])
 def add_task():
     """Add a new simulation task to the queue.
     ---
@@ -577,24 +664,46 @@ def add_task():
     global task_number
     try:
         task_data = request.get_json(silent=True)
-        if not task_data:
-            raise ValidationError("No task data provided", details={"missing_fields": ["task payload"]})
-
-        missing_fields = [field for field in ["Drones", "environment"] if field not in task_data]
-        if missing_fields:
-            raise ValidationError("Task payload missing required sections", details={"missing_fields": missing_fields})
+        _validate_task_payload(task_data)
 
         # Generate a unique UUID string for the task
-        uuid_string = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + "_Batch_" + str(task_number)
+        uuid_string = (
+            time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+            + "_Batch_"
+            + str(task_number)
+        )
         task_dispatcher.add_task(task_data, uuid_string)
         task_number += 1
-        print(f"New task added to queue, currently {task_dispatcher.mission_queue.qsize()} in queue")
-        return jsonify({'task_id': uuid_string}), 200
+        print(
+            f"New task added to queue, currently {task_dispatcher.mission_queue.qsize()} in queue"
+        )
+        return jsonify({"task_id": uuid_string}), 200
     except Exception as e:
         print(f"Error adding task: {e}")
         raise SimulationFailedError("Failed to add task", details={"exception": str(e)})
 
-@app.route('/currentRunning', methods=['GET'])
+
+@app.route("/api/simulation/settings/preview", methods=["POST"])
+def preview_settings():
+    """
+    Generates the exact AirSim settings.json payload for the provided task without writing files.
+    """
+    try:
+        task_data = request.get_json(silent=True)
+        _validate_task_payload(task_data)
+        settings = SimulationTaskManager.generate_settings_preview(task_data)
+        return jsonify({"settings": settings}), 200
+    except ValidationError:
+        raise
+    except Exception as e:
+        print(f"Error previewing settings: {e}")
+        raise SimulationFailedError(
+            "Failed to preview settings",
+            details={"exception": str(e)},
+        )
+
+
+@app.route("/currentRunning", methods=["GET"])
 def get_current_running():
     """Retrieve the current running task and queue size.
     ---
@@ -616,13 +725,30 @@ def get_current_running():
     """
     current_task_batch = task_dispatcher.get_current_task_batch()
     if current_task_batch == "None":
-        return jsonify({'current_task': 'None', 'queue_size': task_dispatcher.mission_queue.qsize()}), 200
+        return (
+            jsonify(
+                {
+                    "current_task": "None",
+                    "queue_size": task_dispatcher.mission_queue.qsize(),
+                }
+            ),
+            200,
+        )
     else:
-        return jsonify({'current_task': 'Running', 'queue_size': task_dispatcher.mission_queue.qsize()}), 200
+        return (
+            jsonify(
+                {
+                    "current_task": "Running",
+                    "queue_size": task_dispatcher.mission_queue.qsize(),
+                }
+            ),
+            200,
+        )
 
-@app.route('/report')
-@app.route('/report/<path:dir_name>')
-def get_report(dir_name=''):
+
+@app.route("/report")
+@app.route("/report/<path:dir_name>")
+def get_report(dir_name=""):
     """Browse report files from the storage service.
     ---
     tags:
@@ -656,27 +782,35 @@ def get_report(dir_name=''):
     """
     try:
         if dir_name:
-            prefix = f'reports/{dir_name}/'
+            prefix = f"reports/{dir_name}/"
         else:
-            prefix = 'reports/'
+            prefix = "reports/"
 
         # Assuming the storage service has a method to list files in a prefix
-        if hasattr(storage_service, 'list_files'):
+        if hasattr(storage_service, "list_files"):
             files = storage_service.list_files(prefix)
         else:
             # If not implemented, return a 501 Not Implemented
-            raise StorageError("Listing files is not supported for this storage backend", details={"prefix": prefix}, status_code=501)
-        
+            raise StorageError(
+                "Listing files is not supported for this storage backend",
+                details={"prefix": prefix},
+                status_code=501,
+            )
+
         if not files:
             raise ResourceNotFoundError("No reports found", details={"prefix": prefix})
 
-        return render_template('files.html', files=files)
+        return render_template("files.html", files=files)
 
     except Exception as e:
         print(f"Error fetching report for directory {dir_name}: {e}")
-        raise StorageError("Failed to fetch report directory", details={"directory": dir_name, "exception": str(e)})
+        raise StorageError(
+            "Failed to fetch report directory",
+            details={"directory": dir_name, "exception": str(e)},
+        )
 
-@app.route('/stream/<drone_name>/<camera_name>')
+
+@app.route("/stream/<drone_name>/<camera_name>")
 def stream(drone_name, camera_name):
     """Stream live camera feed from a drone.
     ---
@@ -710,19 +844,27 @@ def stream(drone_name, camera_name):
             schema:
               $ref: '#/components/schemas/ErrorResponse'
     """
-    if task_dispatcher.unreal_state.get('state') == 'idle':
+    if task_dispatcher.unreal_state.get("state") == "idle":
         return "No task running", 200
     else:
         try:
             return Response(
                 task_dispatcher.get_stream(drone_name, camera_name),
-                mimetype='multipart/x-mixed-replace; boundary=frame'
+                mimetype="multipart/x-mixed-replace; boundary=frame",
             )
         except Exception as e:
             print(e)
-            raise SimulationFailedError("Failed to start stream", details={"drone": drone_name, "camera": camera_name, "exception": str(e)})
+            raise SimulationFailedError(
+                "Failed to start stream",
+                details={
+                    "drone": drone_name,
+                    "camera": camera_name,
+                    "exception": str(e),
+                },
+            )
 
-@app.route('/state', methods=['GET'])
+
+@app.route("/state", methods=["GET"])
 def get_state():
     """Get the current simulation engine state.
     ---
@@ -742,7 +884,8 @@ def get_state():
     """
     return jsonify(task_dispatcher.unreal_state), 200
 
-@app.route('/cesiumCoordinate', methods=['GET'])
+
+@app.route("/cesiumCoordinate", methods=["GET"])
 def get_map():
     """Load Cesium map coordinate settings.
     ---
@@ -758,7 +901,8 @@ def get_map():
     """
     return task_dispatcher.load_cesium_setting(), 200
 
-@app.route('/api/health', methods=['GET'])
+
+@app.route("/api/health", methods=["GET"])
 def health_check():
     """Health check endpoint.
     ---
@@ -781,8 +925,11 @@ def health_check():
     """
     return jsonify({"status": "ok", "message": "Backend is reachable!"})
 
+
 # === Run the Flask App ===
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Starting DroneWorld API Server...")
     backend_port = os.getenv("BACKEND_PORT") or os.getenv("FLASK_RUN_PORT") or "5000"
-    app.run(host='0.0.0.0', port=int(backend_port))  # Makes it discoverable by other devices in the networkecho 
+    app.run(
+        host="0.0.0.0", port=int(backend_port)
+    )  # Makes it discoverable by other devices in the networkecho

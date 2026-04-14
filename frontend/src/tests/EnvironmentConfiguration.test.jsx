@@ -7,21 +7,22 @@ import dayjs from 'dayjs';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import EnvironmentConfiguration from '../components/EnvironmentConfiguration';
 
+const mockUseJsApiLoader = jest.fn();
+
 jest.mock('@react-google-maps/api', () => {
   const mapClickMock = { handler: null };
   const GoogleMapMock = ({ onClick, children }) => {
     mapClickMock.handler = onClick;
     return <div data-testid='google-map'>{children}</div>;
   };
-  const LoadScriptMock = ({ children }) => <div>{children}</div>;
 
   const MarkerMock = () => <div data-testid='marker' />;
 
   return {
     __esModule: true,
     GoogleMap: GoogleMapMock,
-    LoadScript: LoadScriptMock,
     Marker: MarkerMock,
+    useJsApiLoader: (...args) => mockUseJsApiLoader(...args),
     __triggerMapClick: (event) => {
       if (mapClickMock.handler) {
         mapClickMock.handler(event);
@@ -61,6 +62,26 @@ const buildProps = () => ({
 });
 
 describe('EnvironmentConfiguration interactions', () => {
+  const originalGoogleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
+  beforeEach(() => {
+    process.env.REACT_APP_GOOGLE_MAPS_API_KEY = 'test-google-maps-key';
+    mockUseJsApiLoader.mockReset();
+    mockUseJsApiLoader.mockReturnValue({
+      isLoaded: true,
+      loadError: undefined,
+    });
+  });
+
+  afterEach(() => {
+    if (originalGoogleMapsApiKey == null) {
+      delete process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+    } else {
+      process.env.REACT_APP_GOOGLE_MAPS_API_KEY = originalGoogleMapsApiKey;
+    }
+    jest.clearAllMocks();
+  });
+
   it('propagates updated origin coordinates after a map click', async () => {
     const props = buildProps();
     render(<EnvironmentConfiguration {...props} />);
@@ -98,5 +119,18 @@ describe('EnvironmentConfiguration interactions', () => {
       const lastCall = props.environmentJson.mock.calls.at(-1);
       expect(lastCall?.[0].Wind.Force).toBe(0);
     });
+  });
+
+  it('shows a warning instead of crashing when Google Maps fails to load', () => {
+    const props = buildProps();
+    mockUseJsApiLoader.mockReturnValue({
+      isLoaded: false,
+      loadError: new Error('quota exceeded'),
+    });
+
+    render(<EnvironmentConfiguration {...props} />);
+
+    expect(screen.getByText(/Google Maps preview is temporarily unavailable/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('google-map')).not.toBeInTheDocument();
   });
 });

@@ -10,6 +10,9 @@ on:
       - main
       - docker-main
 
+permissions:
+  contents: read
+
 jobs:
   backend-setup:
     runs-on: windows-latest
@@ -50,9 +53,41 @@ jobs:
     - name: Format backend code with Black
       run: |
         pip install black
-        black backend/
+        black --check backend/tests/test_settings_preview.py backend/PythonClient/server/simulation_server.py backend/PythonClient/multirotor/control/simulation_task_manager.py backend/mock_simulator/mock_task_manager.py
 
     - name: Perform Dependency Audit
       run: |
         pip install safety
         safety check -r backend/requirements.txt
+
+  backend-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-tests-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-tests-
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Upgrade pip, setuptools, wheel
+      run: |
+        python -m ensurepip --upgrade
+        python -m pip install --upgrade pip setuptools wheel
+
+    - name: Install backend dependencies
+      run: pip install -r backend/requirements.txt
+
+    - name: Run backend unit tests
+      run: python -m unittest discover -s backend/tests -p "test_*.py"

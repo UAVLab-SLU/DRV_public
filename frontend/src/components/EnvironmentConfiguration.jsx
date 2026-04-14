@@ -13,53 +13,106 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import dayjs from 'dayjs';
 import Tooltip from '@mui/material/Tooltip';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import { DeleteOutline } from '@mui/icons-material';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import PropTypes from 'prop-types';
 import { EnvironmentModel } from '../model/EnvironmentModel';
 
-const buildEnvironmentModel = (conf, baseModel) => {
-  const model = EnvironmentModel.getReactStateBasedUpdate(baseModel ?? new EnvironmentModel());
+const normalizeConfigValue = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
 
-  const originSource = conf?.Origin ?? conf?._Origin ?? {};
-  const windSource = conf?.Wind ?? conf?._Wind ?? model.Wind;
+  return value.trim().replace(/^['"]|['"]$/g, '');
+};
 
-  const latitude = originSource.Latitude ?? originSource.latitude ?? model.getOriginLatitude() ?? 0;
-  const longitude =
-    originSource.Longitude ?? originSource.longitude ?? model.getOriginLongitude() ?? 0;
-  const height = originSource.Height ?? originSource.height ?? model.getOriginHeight() ?? 0;
-  const name = originSource.Name ?? originSource.name ?? model.getOriginName() ?? '';
-  const radius = originSource.Radius ?? originSource.radius ?? model.getOriginRadius();
+const getGoogleMapsApiKey = () => normalizeConfigValue(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
 
-  const originImage = originSource.image ?? model.getOriginImage();
-  model.Origin = {
-    latitude: Number(latitude),
-    longitude: Number(longitude),
-    height: Number(height),
-    name,
-    radius: Number(radius),
-    image: originImage,
-  };
+function RegionMapPreview({ currentPosition, onMapClick }) {
+  const googleMapsApiKey = getGoogleMapsApiKey();
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'droneworld-google-maps',
+    googleMapsApiKey,
+  });
 
-  model.TimeOfDay = conf?.TimeOfDay ?? conf?._TimeOfDay ?? model.TimeOfDay;
-  model.time = conf?.time ?? conf?._time ?? model.time;
-  model.enableFuzzy = Boolean(conf?.enableFuzzy ?? conf?._enableFuzzy ?? model.enableFuzzy);
-  model.timeOfDayFuzzy = Boolean(
-    conf?.timeOfDayFuzzy ?? conf?._timeOfDayFuzzy ?? model.timeOfDayFuzzy,
+  if (loadError) {
+    return (
+      <Alert severity='warning' sx={{ mt: 3 }}>
+        Google Maps preview is temporarily unavailable. You can still edit latitude, longitude, and
+        altitude manually.
+      </Alert>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <Alert severity='info' sx={{ mt: 3 }}>
+        Loading Google Maps preview...
+      </Alert>
+    );
+  }
+
+  return (
+    <div style={{ width: '100%', height: '450px' }}>
+      <GoogleMap
+        id='map'
+        mapContainerStyle={{ height: '100%', width: '100%' }}
+        zoom={15}
+        center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
+        onClick={onMapClick}
+      >
+        {currentPosition.lat && currentPosition.lng && (
+          <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
+        )}
+      </GoogleMap>
+    </div>
   );
-  model.positionFuzzy = Boolean(conf?.positionFuzzy ?? conf?._positionFuzzy ?? model.positionFuzzy);
-  model.windFuzzy = Boolean(conf?.windFuzzy ?? conf?._windFuzzy ?? model.windFuzzy);
-  model.UseGeo = conf?.UseGeo ?? conf?._UseGeo ?? model.UseGeo;
-  model.Wind = windSource;
+}
 
-  return model;
+RegionMapPreview.propTypes = {
+  currentPosition: PropTypes.shape({
+    lat: PropTypes.number,
+    lng: PropTypes.number,
+  }).isRequired,
+  onMapClick: PropTypes.func.isRequired,
+};
+
+const getDefaultEnvironmentConfig = () => ({
+  enableFuzzy: false,
+  timeOfDayFuzzy: false,
+  positionFuzzy: false,
+  windFuzzy: false,
+  Wind: {
+    Direction: 'NE',
+    Velocity: 1,
+  },
+  Origin: {
+    Latitude: 41.980381,
+    Longitude: -87.934524,
+    Height: 2,
+  },
+  TimeOfDay: '10:00:00',
+  UseGeo: true,
+  time: dayjs('2020-01-01 10:00'),
+});
+
+const getWindShearsFromConfig = (windConfig) => {
+  return Object.entries(windConfig ?? {})
+    .filter(([key, value]) => key.startsWith('Wind') && value && typeof value === 'object')
+    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+    .map(([, value]) => ({
+      windDirection: value.Direction ?? '',
+      windVelocity: value.Force ?? 0,
+      fluctuationPercentage: value.Fluctuation ?? 0,
+    }));
 };
 
 export default function EnvironmentConfiguration(env) {
-  console.log('EnvironmentConfiguration props', env);
+  const lastHydratedEnvironmentRef = React.useRef(null);
   const [backendInfo] = useState({
     numQueuedTasks: 0,
     backendStatus: 'idle',
@@ -68,7 +121,6 @@ export default function EnvironmentConfiguration(env) {
     lat: 41.980381,
     lng: -87.934524,
   });
-  const YOUR_API_KEY = 'AIzaSyAh_7ie16ikloOrjqURycdAan3INZ1qgiQ';
   const onMapClick = (e) => {
     setCurrentPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
     setEnvConf((prevState) => ({
@@ -83,28 +135,18 @@ export default function EnvironmentConfiguration(env) {
   const [envConf, setEnvConf] = React.useState(
     env.mainJsonValue.environment != null
       ? env.mainJsonValue.environment
-      : {
-          enableFuzzy: false,
-          timeOfDayFuzzy: false,
-          positionFuzzy: false,
-          windFuzzy: false,
-          Wind: {
-            Direction: 'NE',
-            Velocity: 1,
-          },
-          Origin: {
-            Latitude: 41.980381,
-            Longitude: -87.934524,
-            Height: 2,
-          },
-          TimeOfDay: '10:00:00',
-          UseGeo: true,
-          time: dayjs('2020-01-01 10:00'),
-        },
+      : getDefaultEnvironmentConfig(),
   );
 
   React.useEffect(() => {
-    const model = buildEnvironmentModel(envConf, env.environmentJSON);
+    if (
+      lastHydratedEnvironmentRef.current != null &&
+      envConf === lastHydratedEnvironmentRef.current
+    ) {
+      return;
+    }
+
+    const model = EnvironmentModel.fromConfiguration(envConf, env.environmentJSON);
 
     if (env.environmentJSONSetState) {
       env.environmentJSONSetState(model, env.id);
@@ -113,7 +155,25 @@ export default function EnvironmentConfiguration(env) {
     if (env.environmentJson) {
       env.environmentJson(envConf, env.id);
     }
-  }, [envConf, env.environmentJSON]);
+  }, [envConf, env.environmentJSON, env.environmentJSONSetState, env.environmentJson, env.id]);
+
+  React.useEffect(() => {
+    const nextEnvironment = env.mainJsonValue.environment;
+    if (nextEnvironment == null) {
+      lastHydratedEnvironmentRef.current = null;
+      return;
+    }
+
+    lastHydratedEnvironmentRef.current = nextEnvironment;
+    setEnvConf(nextEnvironment);
+    setCurrentPosition({
+      lat: nextEnvironment?.Origin?.Latitude ?? 41.980381,
+      lng: nextEnvironment?.Origin?.Longitude ?? -87.934524,
+    });
+    setSelectedWindType(nextEnvironment?.Wind?.Type ?? 'Constant Wind');
+    setSelectedFluctuationValue(nextEnvironment?.Wind?.Fluctuation ?? 0.0);
+    setwindShears(getWindShearsFromConfig(nextEnvironment?.Wind));
+  }, [env.mainJsonValue.environment]);
 
   const Direction = [
     { value: 'N', id: 5 },
@@ -133,10 +193,14 @@ export default function EnvironmentConfiguration(env) {
     { value: 'Wind Shear', id: 3 },
   ];
 
-  const [selectedWindType, setSelectedWindType] = React.useState('Constant Wind');
+  const [selectedWindType, setSelectedWindType] = React.useState(
+    env.mainJsonValue.environment?.Wind?.Type ?? 'Constant Wind',
+  );
 
   // Fluctuation Percentage
-  const [fluctuationPercentage, setSelectedFluctuationValue] = React.useState(0.0);
+  const [fluctuationPercentage, setSelectedFluctuationValue] = React.useState(
+    env.mainJsonValue.environment?.Wind?.Fluctuation ?? 0.0,
+  );
 
   const [fuzzyAlert, setFuzzyAlert] = React.useState(false);
 
@@ -260,7 +324,9 @@ export default function EnvironmentConfiguration(env) {
     }
   };
   //WIND SHEAR WINDOW FUNCTIONS
-  const [windShears, setwindShears] = React.useState([]);
+  const [windShears, setwindShears] = React.useState(
+    getWindShearsFromConfig(env.mainJsonValue.environment?.Wind),
+  );
   const deleteWindShear = (index) => {
     const updatedWindShears = [...windShears];
     updatedWindShears.splice(index, 1);
@@ -370,6 +436,9 @@ export default function EnvironmentConfiguration(env) {
       open: val,
     }));
   };
+  const shouldShowRegionMap = envConf.Origin.Name == 'Specify Region';
+  const canAttemptRegionMap = shouldShowRegionMap && getGoogleMapsApiKey() !== '';
+
   return (
     <div>
       <Snackbar
@@ -394,13 +463,13 @@ export default function EnvironmentConfiguration(env) {
       <Box
         sx={{
           width: '100%',
-          border: '1px solid var(--dw-color-border-muted)',
+          border: '1px solid grey',
           paddingBottom: 5,
           paddingTop: 4,
           paddingLeft: 5,
         }}
       >
-        <Typography>
+        <Box component='section'>
           <Grid container spacing={5} direction='column' alignItems='center'>
             <Grid item xs={12}>
               <FormControl variant='standard' sx={{ minWidth: 150 }}>
@@ -469,7 +538,7 @@ export default function EnvironmentConfiguration(env) {
           </Grid>
           {selectedWindType === 'Wind Shear' &&
             windShears.map((shear, index) => (
-              <Typography key={index}>
+              <Box key={index}>
                 <Grid container spacing={5} direction='row' sx={{ marginTop: '20px' }}>
                   <Grid item xs={12}></Grid>
                   <Grid item xs={12}>
@@ -524,7 +593,7 @@ export default function EnvironmentConfiguration(env) {
                     </IconButton>
                   </Grid>
                 </Grid>
-              </Typography>
+              </Box>
             ))}
 
           <Grid
@@ -554,7 +623,7 @@ export default function EnvironmentConfiguration(env) {
                 label='Latitude'
                 variant='standard'
                 type='number'
-                inputProps={{ step: '.0001' }}
+                inputProps={{ step: '.0001', 'data-testid': 'environment-latitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Latitude}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
@@ -567,7 +636,7 @@ export default function EnvironmentConfiguration(env) {
                 label='Longitude'
                 variant='standard'
                 type='number'
-                inputProps={{ step: '.0001' }}
+                inputProps={{ step: '.0001', 'data-testid': 'environment-longitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Longitude}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
@@ -580,7 +649,7 @@ export default function EnvironmentConfiguration(env) {
                 label='Altitude'
                 variant='standard'
                 type='number'
-                inputProps={{ step: '1' }}
+                inputProps={{ step: '1', 'data-testid': 'environment-altitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Height}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
@@ -623,32 +692,18 @@ export default function EnvironmentConfiguration(env) {
             </Tooltip>
           </Grid>
 
-          {envConf.Origin.Name == 'Specify Region' ? (
-            <div style={{ width: '100%', height: '450px' }}>
-              <LoadScript googlMapsApiKey={YOUR_API_KEY}>
-                <GoogleMap
-                  id='map'
-                  mapContainerStyle={{ height: '100%', width: '100%' }}
-                  zoom={15}
-                  center={{ lat: currentPosition.lat, lng: currentPosition.lng }}
-                  onClick={onMapClick}
-                >
-                  {currentPosition.lat && currentPosition.lng && (
-                    <Marker position={{ lat: currentPosition.lat, lng: currentPosition.lng }} />
-                  )}
-                </GoogleMap>
-              </LoadScript>
-            </div>
+          {shouldShowRegionMap && !canAttemptRegionMap ? (
+            <Alert severity='info' sx={{ mt: 3 }}>
+              Google Maps preview is unavailable because `REACT_APP_GOOGLE_MAPS_API_KEY` is not
+              configured. You can still edit latitude, longitude, and altitude manually.
+            </Alert>
           ) : null}
-        </Typography>
+
+          {canAttemptRegionMap ? (
+            <RegionMapPreview currentPosition={currentPosition} onMapClick={onMapClick} />
+          ) : null}
+        </Box>
       </Box>
-      <Typography
-        animate
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1 },
-        }}
-      ></Typography>
       <Box mb={2}> </Box>
       <Typography
         variant='h6'

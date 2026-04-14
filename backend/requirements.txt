@@ -1,7 +1,7 @@
 msgpack-rpc-python
 numpy==1.25.0
 numpy_stl==3.0.1
-pyaudio
+pyaudio; platform_system == "Windows"
 opencv-contrib-python
 matplotlib==3.7.1
 flask==3.1.3

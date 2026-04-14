@@ -15,3 +15,10 @@ test('About Us link exists and routes to /aboutus', () => {
   expect(aboutUsLink).toBeInTheDocument();
   expect(aboutUsLink).toHaveAttribute('href', '/aboutus');
 });
+
+test('Saved Settings link exists and routes to /saved-settings', () => {
+  render(<App />);
+  const savedSettingsLink = screen.getByRole('link', { name: /saved settings/i });
+  expect(savedSettingsLink).toBeInTheDocument();
+  expect(savedSettingsLink).toHaveAttribute('href', '/saved-settings');
+});

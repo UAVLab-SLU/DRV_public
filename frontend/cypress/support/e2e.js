@@ -1,3 +1,5 @@
+/* eslint-env cypress */
+
 // ***********************************************************
 // This example support/e2e.js is processed and
 // loaded automatically before your test files.
@@ -14,7 +16,7 @@
 // ***********************************************************
 
 // Import commands.js using CommonJS syntax:
-require('./commands')
+require('./commands');
 
 // Cesium can throw this during component teardown while route changes are in progress.
 // Ignore only this known non-functional error so E2E assertions can complete.
@@ -27,4 +29,3 @@ Cypress.on('uncaught:exception', (err) => {
     return false;
   }
 });
-

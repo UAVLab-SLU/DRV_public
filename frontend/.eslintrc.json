@@ -1,32 +1,51 @@
 {
-    "env": {
-        "browser": true,
-        "node": true,
-        "es2021": true
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
+  "overrides": [
+    {
+      "files": ["cypress/**/*.{js,jsx,ts,tsx}", "cypress.config.js"],
+      "globals": {
+        "cy": "readonly",
+        "Cypress": "readonly",
+        "expect": "readonly",
+        "describe": "readonly",
+        "it": "readonly",
+        "before": "readonly",
+        "beforeEach": "readonly",
+        "after": "readonly",
+        "afterEach": "readonly"
+      }
     },
-    "extends": [
-        "eslint:recommended",
-        "plugin:react/recommended",
-        "prettier"
-    ],
-    "overrides": [],
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "sourceType": "module",
-        "ecmaFeatures": {
-            "jsx": true
-        }
-    },
-    "plugins": [
-        "react"
-    ],
-    "rules": {
-        "no-unused-vars": "off",
-        "react/react-in-jsx-scope": "off"
-    },
-    "settings": {
-        "react": {
-            "version": "detect"
-        }
+    {
+      "files": ["src/tests/**/*.{js,jsx,ts,tsx}"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "react/prop-types": "off",
+        "react/display-name": "off"
+      }
     }
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": ["react"],
+  "rules": {
+    "no-unused-vars": "off",
+    "react/react-in-jsx-scope": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
 }

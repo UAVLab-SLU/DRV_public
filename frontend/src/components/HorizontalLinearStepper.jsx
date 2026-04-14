@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -9,6 +9,7 @@ import styled from '@emotion/styled';
 import MissionConfiguration from './Configuration/MissionConfiguration';
 import EnvironmentConfiguration from './EnvironmentConfiguration';
 import MonitorControl from './MonitorControl';
+import ImportConfigurationPanel from './Configuration/ImportConfigurationPanel';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import Tooltip from '@mui/material/Tooltip';
@@ -17,6 +18,13 @@ import { mapControls } from '../constants/map';
 import ControlsDisplay from './Configuration/ControlsDisplay';
 import { BASE_URL } from '../utils/const';
 import { parseApiError } from '../utils/apiError';
+import { buildTaskPayload } from '../utils/taskPayload';
+import {
+  isSupported as isSavedSettingsSupported,
+  saveSnapshot,
+} from '../services/savedSettingsStorage';
+import { useMainJson } from '../contexts/MainJsonContext';
+import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
 
 const StyledButton = styled(Button)`
   border-radius: 25px;
@@ -26,12 +34,36 @@ const StyledButton = styled(Button)`
 
 const steps = ['Environment Configuration', 'Mission Configuration', 'Test Configuration'];
 
+function formatFetchError(error, endpointUrl) {
+  if (error?.name === 'TypeError' && error?.message === 'Failed to fetch') {
+    return `Unable to reach backend at ${endpointUrl}. Start the backend service and try again.`;
+  }
+
+  return error?.message ?? 'Unexpected request failure.';
+}
+
+async function readJsonBody(response) {
+  if (typeof response?.json === 'function') {
+    return response.json();
+  }
+
+  if (typeof response?.text === 'function') {
+    const bodyText = await response.text();
+    return bodyText ? JSON.parse(bodyText) : {};
+  }
+
+  return {};
+}
+
 export default function HorizontalLinearStepper(data) {
   const navigate = useNavigate();
+  const { replaceSimulationConfiguration } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState('');
+  const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
+  const [saveDialogError, setSaveDialogError] = React.useState('');
   const [mainJson, setJson, activeScreen] = React.useState({
     Drones: null,
     environment: null,
@@ -49,16 +81,6 @@ export default function HorizontalLinearStepper(data) {
   };
 
   const setMainJson = (envJson, id) => {
-    if (
-      id == 'environment' &&
-      mainJson.Drones != null &&
-      mainJson.Drones[0].X != envJson.Origin.Latitude
-    ) {
-      setJson((prevState) => ({
-        ...prevState,
-        Drones: null,
-      }));
-    }
     setJson((prevState) => ({
       ...prevState,
       [id]: envJson,
@@ -68,12 +90,8 @@ export default function HorizontalLinearStepper(data) {
   const handleNext = async () => {
     if (activeStep === steps.length - 1) {
       setSubmitError('');
-      setIsSubmitting(true);
-      const submitted = await addTask();
-      setIsSubmitting(false);
-      if (submitted) {
-        navigate('/reports');
-      }
+      setSaveDialogError('');
+      setSaveDialogOpen(true);
       return;
     }
 
@@ -98,123 +116,77 @@ export default function HorizontalLinearStepper(data) {
     ) {
       setJson((prevState) => ({
         ...prevState,
-        FuzzyTest: {
+        FuzzyTest: prevState.FuzzyTest ?? {
           target: 'Wind',
           precision: 5,
         },
+        environment: {
+          ...prevState.environment,
+          enableFuzzy: undefined,
+        },
       }));
-      delete mainJson.environment['enableFuzzy'];
     }
     if (
       mainJson.environment != null &&
       mainJson.environment.enableFuzzy == false &&
       mainJson.FuzzyTest != null
     ) {
-      delete mainJson.FuzzyTest;
+      setJson((prevState) => {
+        const nextState = { ...prevState };
+        delete nextState.FuzzyTest;
+        return nextState;
+      });
     }
   }, [mainJson]);
 
-  const stripSensorKey = (sensor) => {
-    if (!sensor) return undefined;
-    const sanitizedSensor = { ...sensor };
-    delete sanitizedSensor.Key;
-    return sanitizedSensor;
-  };
+  const applyConfigToWizard = React.useCallback(
+    (config) => {
+      if (!config) {
+        return;
+      }
 
-  //Start Logic For Calling POST
+      applyImportedConfig(config, {
+        setWizardState: setJson,
+        replaceSimulationConfiguration,
+      });
+    },
+    [replaceSimulationConfiguration],
+  );
 
-  //This function goes in and gets the drone data from main JSON and formats it all pretty for the POST Call
-  function getDronesForPayload(mainJson) {
-    return Array.isArray(mainJson?.Drones)
-      ? mainJson.Drones.map((d) => {
-          const { Sensors, Mission, MissionValue, ...rest } = d || {};
-          const sanitizedSensors = Sensors
-            ? {
-                ...Sensors,
-                Barometer: stripSensorKey(Sensors.Barometer),
-                Magnetometer: stripSensorKey(Sensors.Magnetometer),
-                IMU: stripSensorKey(Sensors.IMU),
-                GPS: stripSensorKey(Sensors.GPS),
-              }
-            : undefined;
-          const missionName = Mission?.name ?? MissionValue ?? 'fly_to_points';
-          const missionParam = Array.isArray(Mission?.param) ? Mission.param : [];
-          const sanitizedMissionValue = MissionValue ?? missionName;
+  React.useEffect(() => {
+    applyConfigToWizard(data.importedConfig ?? null);
+  }, [applyConfigToWizard, data.importedConfig]);
 
-          return {
-            ...rest,
-            MissionValue: sanitizedMissionValue,
-            Mission: {
-              name: missionName,
-              param: missionParam,
-            },
-            Sensors: sanitizedSensors,
-          };
-        })
-      : [];
-  }
+  function getValidatedPayload() {
+    const payload = buildTaskPayload(mainJson);
 
-  //this function goes in and gets the data for the environment from mainJSON
-  function getEnvironmentForPayload(env) {
-    if (!env) return null;
-
-    const useGeo = !!env.UseGeo;
-
-    const origin = env.Origin || {};
-    const lat = origin.Latitude ?? origin.latitude;
-    const lon = origin.Longitude ?? origin.longitude;
-    const height = origin.Height ?? origin.height ?? 203;
-
-    const environmentToSend = {
-      UseGeo: useGeo,
-      Origin: {
-        Latitude: lat,
-        Longitude: lon,
-        Altitude: height,
-      },
-    };
-
-    if (env.Wind) environmentToSend.Wind = env.Wind;
-    if (env.TimeOfDay) environmentToSend.TimeOfDay = env.TimeOfDay;
-    if (env.Sades) environmentToSend.Sades = env.Sades;
-
-    return environmentToSend;
-  }
-
-  //meat and potatoes, this function actually makes the call
-  //the other end is simulation_server.py line 139
-  async function addTask() {
-    const dronesToSend = getDronesForPayload(mainJson);
-    if (dronesToSend.length === 0) {
+    if (payload.Drones.length === 0) {
       const message = 'No drones configured. Please complete Mission Configuration.';
       console.warn(message);
       setSubmitError(message);
-      return false;
+      return null;
     }
 
-    const environmentToSend = getEnvironmentForPayload(mainJson.environment);
     if (
-      !environmentToSend ||
-      (environmentToSend.UseGeo &&
-        (environmentToSend.Origin.Latitude == null ||
-        environmentToSend.Origin.Longitude == null))
+      !payload.environment ||
+      (payload.environment.UseGeo &&
+        (payload.environment.Origin.Latitude == null ||
+          payload.environment.Origin.Longitude == null))
     ) {
       const message = 'Environment is incomplete. Please review Environment Configuration.';
       console.warn(message);
       setSubmitError(message);
-      return false;
+      return null;
     }
 
-    const payload = {
-      Drones: dronesToSend,
-      environment: environmentToSend,
-      ...(mainJson.monitors ? { monitors: mainJson.monitors } : {}),
-      ...(mainJson.FuzzyTest ? { FuzzyTest: mainJson.FuzzyTest } : {}),
-    };
+    return payload;
+  }
 
+  async function queueTask(payload) {
+    const endpointUrl = `${BASE_URL}/addTask`;
     try {
       console.log('POST /addTask payload:', payload);
-      const res = await fetch(`${BASE_URL}/addTask`, {
+      const res = await fetch(endpointUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -227,14 +199,85 @@ export default function HorizontalLinearStepper(data) {
         return false;
       }
 
-      const data = await res.json();
+      const data = await readJsonBody(res);
       console.log('Task queued:', data);
       return true;
-
     } catch (err) {
       console.error('Submit failed:', err);
-      setSubmitError('Unable to reach the server. Please try again.');
+      setSubmitError(`Submit failed: ${formatFetchError(err, endpointUrl)}`);
       return false;
+    }
+  }
+
+  async function fetchSettingsPreview(payload) {
+    const endpointUrl = `${BASE_URL}/api/simulation/settings/preview`;
+
+    try {
+      const res = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const bodyText = await res.text();
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${bodyText}`);
+      }
+
+      const responseBody = JSON.parse(bodyText);
+      if (!responseBody?.settings) {
+        throw new Error('Preview response did not include settings.');
+      }
+
+      return responseBody.settings;
+    } catch (error) {
+      throw new Error(formatFetchError(error, endpointUrl));
+    }
+  }
+
+  async function handleFinishDecision(shouldSave) {
+    setSubmitError('');
+    setSaveDialogError('');
+
+    const payload = getValidatedPayload();
+    if (!payload) {
+      setSaveDialogOpen(false);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (shouldSave) {
+        if (!isSavedSettingsSupported()) {
+          throw new Error(
+            'Browser private file storage is not supported in this browser. Choose No to submit without saving.',
+          );
+        }
+
+        const previewSettings = await fetchSettingsPreview(payload);
+        await saveSnapshot(previewSettings, payload);
+      }
+
+      const submitted = await queueTask(payload);
+      if (submitted) {
+        setSaveDialogOpen(false);
+        navigate('/reports');
+      } else if (!shouldSave) {
+        setSaveDialogError('Task submission failed. Review the error below and try again.');
+      } else {
+        setSaveDialogError(
+          'Settings were saved, but task submission failed. Review the error below and try again.',
+        );
+      }
+    } catch (error) {
+      const message = shouldSave
+        ? `Save failed: ${error.message}`
+        : `Submit failed: ${error.message}`;
+      setSaveDialogError(message);
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -318,23 +361,33 @@ export default function HorizontalLinearStepper(data) {
             }}
           >
             <Box sx={{ width: '45%' }}>
+              <ImportConfigurationPanel
+                onImportConfig={(config) => {
+                  setSubmitError('');
+                  applyConfigToWizard(config);
+                }}
+              />
               {stepsComponent.map((compo) => {
-                return compo.id === activeStep + 1 ? compo.comp : '';
+                return compo.id === activeStep + 1 ? (
+                  <React.Fragment key={compo.id}>{compo.comp}</React.Fragment>
+                ) : null;
               })}
               <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                  <StyledButton
-                    color='inherit'
-                    disabled={activeStep === 0 || isSubmitting}
-                    onClick={handleBack}
-                    sx={{ mr: 1 }}
-                    variant='outlined'
-                  >
-                    Back
+                <StyledButton
+                  color='inherit'
+                  disabled={activeStep === 0 || isSubmitting}
+                  onClick={handleBack}
+                  sx={{ mr: 1 }}
+                  variant='outlined'
+                >
+                  Back
                 </StyledButton>
                 <Box sx={{ flex: '1 1 auto' }} />
                 <StyledButton variant='outlined' onClick={handleNext} disabled={isSubmitting}>
                   {activeStep === steps.length - 1
-                    ? (isSubmitting ? 'Submitting...' : 'Finish')
+                    ? isSubmitting
+                      ? 'Submitting...'
+                      : 'Finish'
                     : 'Next'}
                 </StyledButton>
               </Box>
@@ -354,6 +407,51 @@ export default function HorizontalLinearStepper(data) {
               </Grid>
             </Box>
           </Box>
+          <Dialog
+            open={saveDialogOpen}
+            onClose={() => !isSubmitting && setSaveDialogOpen(false)}
+            fullWidth
+          >
+            <DialogTitle>Save settings.json and task.json before submission?</DialogTitle>
+            <DialogContent>
+              <Typography sx={{ mb: 1 }}>
+                Do you want to save both the exact generated `settings.json` and the raw `task.json`
+                payload to browser-private storage before submitting this simulation task?
+              </Typography>
+              {!isSavedSettingsSupported() && (
+                <Typography color='error.main'>
+                  Browser private file storage is not supported here. Choose No to submit without
+                  saving.
+                </Typography>
+              )}
+              {saveDialogError && (
+                <Typography sx={{ mt: 2, color: 'error.main' }}>{saveDialogError}</Typography>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <StyledButton
+                variant='outlined'
+                onClick={() => setSaveDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </StyledButton>
+              <StyledButton
+                variant='outlined'
+                onClick={() => handleFinishDecision(false)}
+                disabled={isSubmitting}
+              >
+                No, just submit
+              </StyledButton>
+              <StyledButton
+                variant='outlined'
+                onClick={() => handleFinishDecision(true)}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Working...' : 'Yes, save both and submit'}
+              </StyledButton>
+            </DialogActions>
+          </Dialog>
         </React.Fragment>
       )}
     </Box>

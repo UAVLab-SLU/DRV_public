@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useRef } from 'react';
+import React, { createContext, useState, useContext, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { SimulationConfigurationModel } from '../model/SimulationConfigurationModel';
 import { EnvironmentModel } from '../model/EnvironmentModel';
@@ -17,18 +17,36 @@ export const MainJsonProvider = ({ children }) => {
   const setCameraPositionRef = useRef(null);
   const [activeScreen, setActiveScreen] = useState('');
 
+  const replaceSimulationConfiguration = useCallback((input, options = {}) => {
+    const { adoptEnvironmentTime = false } = options;
+    const nextMainJson = SimulationConfigurationModel.getReactStateBasedUpdate(input);
+    const nextEnvJson = EnvironmentModel.getReactStateBasedUpdate(nextMainJson.environment);
+
+    if (adoptEnvironmentTime) {
+      if (nextEnvJson.time != null) {
+        timeRef.current = nextEnvJson.time;
+      }
+      if (nextEnvJson.TimeOfDay != null) {
+        timeOfDayRef.current = nextEnvJson.TimeOfDay;
+      }
+    }
+
+    nextEnvJson.time = timeRef.current;
+    nextEnvJson.TimeOfDay = timeOfDayRef.current;
+    nextMainJson.environment = nextEnvJson;
+
+    setEnvJsonSetter(nextEnvJson);
+    setMainJsonSetter(nextMainJson);
+  }, []);
+
   const setMainJson = (input) => {
-    envJson.time = timeRef.current;
-    envJson.TimeOfDay = timeOfDayRef.current;
-    setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(input));
+    replaceSimulationConfiguration(input);
   };
 
   const setEnvJson = (input) => {
-    input.time = timeRef.current;
-    input.TimeOfDay = timeOfDayRef.current;
-    mainJson.environment = input;
-    setEnvJsonSetter(EnvironmentModel.getReactStateBasedUpdate(input));
-    setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+    const nextMainJson = SimulationConfigurationModel.getReactStateBasedUpdate(mainJson);
+    nextMainJson.environment = EnvironmentModel.getReactStateBasedUpdate(input);
+    replaceSimulationConfiguration(nextMainJson);
   };
 
   function clearAllDrones() {
@@ -72,6 +90,7 @@ export const MainJsonProvider = ({ children }) => {
         timeRef,
         registerSetCameraByPosition,
         setCameraPositionRef,
+        replaceSimulationConfiguration,
         activeScreen,
         setActiveScreen,
         clearAllDrones,

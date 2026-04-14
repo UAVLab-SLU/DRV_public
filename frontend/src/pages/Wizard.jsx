@@ -20,7 +20,9 @@ const Wizard = () => {
   const { clearAllDrones } = useMainJson();
 
   useEffect(() => {
-    clearAllDrones();
+    if (!routeState.importedConfig) {
+      clearAllDrones();
+    }
   }, []);
 
   return (

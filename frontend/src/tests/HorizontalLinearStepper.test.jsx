@@ -328,12 +328,12 @@ describe('HorizontalLinearStepper finish flow', () => {
   test('loads a preset into visible wizard state through the import panel', async () => {
     renderStepper();
 
-    await choosePreset('Circular and Square Flight Mission in Windy Weather');
+    await choosePreset("Circle & Square — O'Hare, Chicago");
     fireEvent.click(screen.getByRole('button', { name: /load preset/i }));
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        'Loaded preset "Circular and Square Flight Mission in Windy Weather" into the wizard.',
+        "Loaded preset \"Circle & Square — O'Hare, Chicago\" into the wizard.",
       );
       expect(screen.getByTestId('env-origin-lat')).toHaveTextContent('42.1142');
       expect(screen.getByTestId('env-origin-height')).toHaveTextContent('208');

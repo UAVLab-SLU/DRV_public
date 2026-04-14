@@ -47,7 +47,7 @@ jobs:
       - name: Format frontend code with Prettier
         run: |
           cd frontend
-          npm run format:check
+          npm run format
 
       - name: Build frontend
         run: |

@@ -134,12 +134,12 @@ describe('DroneWorld Application Flow', () => {
     visitWizard();
 
     openPresetSelect();
-    cy.contains('[role="option"]', 'Circular and Square Flight Mission in Windy Weather').click();
+    cy.contains('[role="option"]', "Circle & Square — O'Hare, Chicago").click();
     cy.get('[data-testid="load-preset-button"]').click();
 
     cy.get('[data-testid="import-status"]').should(
       'contain.text',
-      'Loaded preset "Circular and Square Flight Mission in Windy Weather" into the wizard.',
+      'Loaded preset "Circle & Square — O\'Hare, Chicago" into the wizard.',
     );
     assertEnvironmentInputs({
       latitude: 42.1142,

@@ -1,6 +1,8 @@
 import { Alert, Box } from '@mui/material';
 import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import HorizontalLinearStepper from '../components/HorizontalLinearStepper';
+import { useMainJson } from '../contexts/MainJsonContext';
 
 const style = {
   display: 'flex',
@@ -15,6 +17,11 @@ const style = {
 const Wizard = () => {
   const location = useLocation();
   const routeState = location.state ?? {};
+  const { clearAllDrones } = useMainJson();
+
+  useEffect(() => {
+    clearAllDrones();
+  }, []);
 
   return (
     <>

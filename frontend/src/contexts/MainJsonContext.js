@@ -49,6 +49,11 @@ export const MainJsonProvider = ({ children }) => {
     replaceSimulationConfiguration(nextMainJson);
   };
 
+  function clearAllDrones() {
+    mainJson.drones = [];
+    setMainJsonSetter(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  }
+
   function syncDroneLocation(latitude, longitude, height, droneIndex) {
     let drone = mainJson.getDroneBasedOnIndex(droneIndex);
     drone.X = latitude;
@@ -88,6 +93,7 @@ export const MainJsonProvider = ({ children }) => {
         replaceSimulationConfiguration,
         activeScreen,
         setActiveScreen,
+        clearAllDrones,
       }}
     >
       {children}

@@ -1,6 +1,9 @@
 # Ignore .env files
 .env
 
+# Ignore Claude Code local settings
+.claude/
+
 # Ignore Visual Studio files
 .vs/
 

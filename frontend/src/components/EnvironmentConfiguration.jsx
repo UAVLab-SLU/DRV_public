@@ -3,10 +3,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
-import Stack from '@mui/material/Stack';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -31,6 +27,61 @@ const normalizeConfigValue = (value) => {
 };
 
 const getGoogleMapsApiKey = () => normalizeConfigValue(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
+
+const DEFAULT_ORIGIN = {
+  Name: 'Chicago O\u2019Hare Airport',
+  Latitude: 41.980381,
+  Longitude: -87.934524,
+  Height: 200,
+};
+
+const DEFAULT_ENVIRONMENT_CONFIG = {
+  enableFuzzy: false,
+  timeOfDayFuzzy: false,
+  positionFuzzy: false,
+  windFuzzy: false,
+  Wind: {
+    Direction: 'NE',
+    Force: 5,
+    Type: 'Constant Wind',
+    Fluctuation: 10,
+  },
+  Origin: DEFAULT_ORIGIN,
+  TimeOfDay: '10:00:00',
+  UseGeo: true,
+  time: dayjs('2020-01-01 10:00:00'),
+};
+
+const getNormalizedEnvironmentConfig = (environment) => {
+  const nextOrigin = environment?.Origin ?? {};
+  const nextWind = environment?.Wind ?? {};
+  const timeOfDay =
+    environment?.TimeOfDay ||
+    (environment?.time ? dayjs(environment.time).format('HH:mm:ss') : DEFAULT_ENVIRONMENT_CONFIG.TimeOfDay);
+
+  return {
+    ...DEFAULT_ENVIRONMENT_CONFIG,
+    ...environment,
+    Wind: {
+      ...DEFAULT_ENVIRONMENT_CONFIG.Wind,
+      ...nextWind,
+      Direction: nextWind.Direction ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Direction,
+      Force: nextWind.Force ?? nextWind.Velocity ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Force,
+      Type: nextWind.Type ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Type,
+      Fluctuation: nextWind.Fluctuation ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Fluctuation,
+    },
+    Origin: {
+      ...DEFAULT_ENVIRONMENT_CONFIG.Origin,
+      ...nextOrigin,
+      Name: nextOrigin.Name ?? DEFAULT_ENVIRONMENT_CONFIG.Origin.Name,
+      Latitude: nextOrigin.Latitude ?? DEFAULT_ENVIRONMENT_CONFIG.Origin.Latitude,
+      Longitude: nextOrigin.Longitude ?? DEFAULT_ENVIRONMENT_CONFIG.Origin.Longitude,
+      Height: nextOrigin.Height ?? DEFAULT_ENVIRONMENT_CONFIG.Origin.Height,
+    },
+    TimeOfDay: timeOfDay,
+    time: environment?.time ?? dayjs(`2020-01-01 ${timeOfDay}`),
+  };
+};
 
 function RegionMapPreview({ currentPosition, onMapClick }) {
   const googleMapsApiKey = getGoogleMapsApiKey();
@@ -81,25 +132,6 @@ RegionMapPreview.propTypes = {
   onMapClick: PropTypes.func.isRequired,
 };
 
-const getDefaultEnvironmentConfig = () => ({
-  enableFuzzy: false,
-  timeOfDayFuzzy: false,
-  positionFuzzy: false,
-  windFuzzy: false,
-  Wind: {
-    Direction: 'NE',
-    Velocity: 1,
-  },
-  Origin: {
-    Latitude: 41.980381,
-    Longitude: -87.934524,
-    Height: 2,
-  },
-  TimeOfDay: '10:00:00',
-  UseGeo: true,
-  time: dayjs('2020-01-01 10:00'),
-});
-
 const getWindShearsFromConfig = (windConfig) => {
   return Object.entries(windConfig ?? {})
     .filter(([key, value]) => key.startsWith('Wind') && value && typeof value === 'object')
@@ -113,13 +145,14 @@ const getWindShearsFromConfig = (windConfig) => {
 
 export default function EnvironmentConfiguration(env) {
   const lastHydratedEnvironmentRef = React.useRef(null);
+  const initialEnvConf = getNormalizedEnvironmentConfig(env.mainJsonValue.environment);
   const [backendInfo] = useState({
     numQueuedTasks: 0,
     backendStatus: 'idle',
   });
   const [currentPosition, setCurrentPosition] = React.useState({
-    lat: 41.980381,
-    lng: -87.934524,
+    lat: initialEnvConf.Origin.Latitude,
+    lng: initialEnvConf.Origin.Longitude,
   });
   const onMapClick = (e) => {
     setCurrentPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
@@ -132,11 +165,7 @@ export default function EnvironmentConfiguration(env) {
       },
     }));
   };
-  const [envConf, setEnvConf] = React.useState(
-    env.mainJsonValue.environment != null
-      ? env.mainJsonValue.environment
-      : getDefaultEnvironmentConfig(),
-  );
+  const [envConf, setEnvConf] = React.useState(initialEnvConf);
 
   React.useEffect(() => {
     if (
@@ -164,15 +193,16 @@ export default function EnvironmentConfiguration(env) {
       return;
     }
 
-    lastHydratedEnvironmentRef.current = nextEnvironment;
-    setEnvConf(nextEnvironment);
+    const normalizedEnvironment = getNormalizedEnvironmentConfig(nextEnvironment);
+    lastHydratedEnvironmentRef.current = normalizedEnvironment;
+    setEnvConf(normalizedEnvironment);
     setCurrentPosition({
-      lat: nextEnvironment?.Origin?.Latitude ?? 41.980381,
-      lng: nextEnvironment?.Origin?.Longitude ?? -87.934524,
+      lat: normalizedEnvironment.Origin.Latitude,
+      lng: normalizedEnvironment.Origin.Longitude,
     });
-    setSelectedWindType(nextEnvironment?.Wind?.Type ?? 'Constant Wind');
-    setSelectedFluctuationValue(nextEnvironment?.Wind?.Fluctuation ?? 0.0);
-    setwindShears(getWindShearsFromConfig(nextEnvironment?.Wind));
+    setSelectedWindType(normalizedEnvironment.Wind.Type);
+    setSelectedFluctuationValue(normalizedEnvironment.Wind.Fluctuation);
+    setwindShears(getWindShearsFromConfig(normalizedEnvironment.Wind));
   }, [env.mainJsonValue.environment]);
 
   const Direction = [
@@ -193,32 +223,76 @@ export default function EnvironmentConfiguration(env) {
     { value: 'Wind Shear', id: 3 },
   ];
 
-  const [selectedWindType, setSelectedWindType] = React.useState(
-    env.mainJsonValue.environment?.Wind?.Type ?? 'Constant Wind',
-  );
+  const [selectedWindType, setSelectedWindType] = React.useState(initialEnvConf.Wind.Type);
 
   // Fluctuation Percentage
   const [fluctuationPercentage, setSelectedFluctuationValue] = React.useState(
-    env.mainJsonValue.environment?.Wind?.Fluctuation ?? 0.0,
+    initialEnvConf.Wind.Fluctuation,
   );
 
   const [fuzzyAlert, setFuzzyAlert] = React.useState(false);
 
   const Origin = [
-    { value: 'Chicago O’Hare Airport', id: 20 },
+    { value: 'Chicago O\u2019Hare Airport', id: 20 },
+    { value: 'Chicago Midway International Airport', id: 21 },
+    { value: 'Dallas/Fort Worth International Airport', id: 22 },
+    { value: 'Denver International Airport', id: 23 },
+    { value: 'Los Angeles International Airport', id: 24 },
+    { value: 'Phoenix Sky Harbor International Airport', id: 25 },
     { value: 'Specify Region', id: 30 },
   ];
 
   const OriginValues = [
     { value: 'Michigan Lake Beach', Latitude: 42.211223, Longitude: -86.390394, Height: 170 },
-    { value: 'Chicago O’Hare Airport', Latitude: 41.980381, Longitude: -87.934524, Height: 200 },
+    { value: 'Chicago O\u2019Hare Airport', Latitude: 41.980381, Longitude: -87.934524, Height: 200 },
+    {
+      value: 'Chicago Midway International Airport',
+      Latitude: 41.78611,
+      Longitude: -87.7525,
+      Height: 189,
+    },
+    {
+      value: 'Dallas/Fort Worth International Airport',
+      Latitude: 32.89694,
+      Longitude: -97.03806,
+      Height: 185,
+    },
+    {
+      value: 'Denver International Airport',
+      Latitude: 39.86167,
+      Longitude: -104.67306,
+      Height: 1656,
+    },
+    {
+      value: 'Los Angeles International Airport',
+      Latitude: 33.9425,
+      Longitude: -118.40806,
+      Height: 39,
+    },
+    {
+      value: 'Phoenix Sky Harbor International Airport',
+      Latitude: 33.43417,
+      Longitude: -112.01167,
+      Height: 348,
+    },
   ];
 
-  const handleTimeChange = (val) => {
+  const handleTimeChange = (event) => {
+    const nextTime = event.target.value;
+
+    if (!nextTime) {
+      setEnvConf((prevState) => ({
+        ...prevState,
+        time: null,
+        TimeOfDay: '',
+      }));
+      return;
+    }
+
     setEnvConf((prevState) => ({
       ...prevState,
-      time: val,
-      TimeOfDay: dayjs(val).format('HH:mm:ss'),
+      time: dayjs(`2020-01-01 ${nextTime}`),
+      TimeOfDay: nextTime,
     }));
   };
   const handleWindChange = (e) => {
@@ -310,17 +384,25 @@ export default function EnvironmentConfiguration(env) {
           Height: originValue.Height,
         },
       }));
+      setCurrentPosition({
+        lat: originValue.Latitude,
+        lng: originValue.Longitude,
+      });
     } else {
       setEnvConf((prevState) => ({
         ...prevState,
         Origin: {
           ...prevState.Origin,
           Name: val.target.value,
-          Latitude: 0,
-          Longitude: 0,
-          Height: 0,
+          Latitude: DEFAULT_ORIGIN.Latitude,
+          Longitude: DEFAULT_ORIGIN.Longitude,
+          Height: DEFAULT_ORIGIN.Height,
         },
       }));
+      setCurrentPosition({
+        lat: DEFAULT_ORIGIN.Latitude,
+        lng: DEFAULT_ORIGIN.Longitude,
+      });
     }
   };
   //WIND SHEAR WINDOW FUNCTIONS
@@ -410,9 +492,10 @@ export default function EnvironmentConfiguration(env) {
 
   const addNewWindShear = () => {
     const newWindShearEntry = {
-      windDirection: '',
-      windVelocity: 0,
-      fluctuationPercentage: 0,
+      windDirection: envConf.Wind.Direction || DEFAULT_ENVIRONMENT_CONFIG.Wind.Direction,
+      windVelocity: envConf.Wind.Force ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Force,
+      fluctuationPercentage:
+        fluctuationPercentage ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Fluctuation,
     };
     setwindShears([...windShears, newWindShearEntry]);
 
@@ -422,9 +505,9 @@ export default function EnvironmentConfiguration(env) {
         ...prevState.Wind,
         [`Wind${windShears.length + 1}`]: {
           Type: 'Wind Shear',
-          Direction: '',
-          Force: 0,
-          Fluctuation: 0,
+          Direction: envConf.Wind.Direction || DEFAULT_ENVIRONMENT_CONFIG.Wind.Direction,
+          Force: envConf.Wind.Force ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Force,
+          Fluctuation: fluctuationPercentage ?? DEFAULT_ENVIRONMENT_CONFIG.Wind.Fluctuation,
         },
       },
     }));
@@ -436,8 +519,20 @@ export default function EnvironmentConfiguration(env) {
       open: val,
     }));
   };
+
   const shouldShowRegionMap = envConf.Origin.Name == 'Specify Region';
   const canAttemptRegionMap = shouldShowRegionMap && getGoogleMapsApiKey() !== '';
+
+  const fieldGrid = {
+    xs: 12,
+    sm: 6,
+    md: 4,
+  };
+
+  const compactFieldSx = {
+    width: '100%',
+    maxWidth: { xs: '100%', md: 220 },
+  };
 
   return (
     <div>
@@ -463,16 +558,15 @@ export default function EnvironmentConfiguration(env) {
       <Box
         sx={{
           width: '100%',
-          border: '1px solid grey',
-          paddingBottom: 5,
-          paddingTop: 4,
-          paddingLeft: 5,
+          border: '1px solid var(--dw-color-border-muted)',
+          px: { xs: 2, sm: 3 },
+          py: { xs: 2.5, sm: 3 },
         }}
       >
-        <Box component='section'>
-          <Grid container spacing={5} direction='column' alignItems='center'>
-            <Grid item xs={12}>
-              <FormControl variant='standard' sx={{ minWidth: 150 }}>
+        <Box>
+          <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems='end'>
+            <Grid item {...fieldGrid}>
+              <FormControl variant='standard' sx={compactFieldSx}>
                 <InputLabel id='WindType'>Wind Type</InputLabel>
                 <Select label='Wind Type' value={selectedWindType} onChange={handleWindTypeChange}>
                   {WindType.map(function (val) {
@@ -485,8 +579,8 @@ export default function EnvironmentConfiguration(env) {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
-              <FormControl variant='standard' sx={{ minWidth: 150 }}>
+            <Grid item {...fieldGrid}>
+              <FormControl variant='standard' sx={compactFieldSx}>
                 <InputLabel id='Direction'>Wind Direction</InputLabel>
                 <Select label='Direction' value={envConf.Wind.Direction} onChange={handleDirection}>
                   {Direction.map(function (val) {
@@ -500,49 +594,61 @@ export default function EnvironmentConfiguration(env) {
               </FormControl>
             </Grid>
             <Tooltip title='Enter Wind Velocity in Meters per second' placement='bottom'>
-              <Grid item xs={12}>
+              <Grid item {...fieldGrid}>
                 <TextField
                   id='Force'
                   label='Wind Velocity (m/s)'
                   variant='standard'
+                  size='small'
+                  fullWidth
                   type='number'
                   onChange={handleWindChange}
                   value={envConf.Wind.Force}
                   inputProps={{ min: 0, max: 50, 'data-testid': 'wind-force-input' }}
                   helperText={`Allowed range: 0-50 m/s`}
+                  sx={compactFieldSx}
                 />
               </Grid>
             </Tooltip>
 
             {(selectedWindType === 'Turbulent Wind' || selectedWindType === 'Wind Shear') && (
-              <Grid item xs={12}>
-                <Tooltip title='Enter Fluctuation %' placement='bottom'>
-                  <TextField
-                    id='Fluctuation %'
-                    label='Fluctuation %'
-                    variant='standard'
-                    type='number'
-                    onChange={handleFLuctuationChange}
-                    value={fluctuationPercentage}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    sx={{ width: '150px' }}
-                  />
-                </Tooltip>
-                {windShears.length < 2 && selectedWindType === 'Wind Shear' ? (
-                  <IconButton onClick={addNewWindShear} color='primary'>
-                    <AddIcon />
-                  </IconButton>
-                ) : null}
+              <Grid item xs={12} sm={6} md={selectedWindType === 'Wind Shear' ? 8 : 4}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  <Tooltip title='Enter Fluctuation %' placement='bottom'>
+                    <TextField
+                      id='Fluctuation %'
+                      label='Fluctuation %'
+                      variant='standard'
+                      size='small'
+                      type='number'
+                      onChange={handleFLuctuationChange}
+                      value={fluctuationPercentage}
+                      inputProps={{ min: 0, max: 100, step: 0.1 }}
+                      sx={compactFieldSx}
+                    />
+                  </Tooltip>
+                  {windShears.length < 2 && selectedWindType === 'Wind Shear' ? (
+                    <IconButton onClick={addNewWindShear} color='primary' sx={{ mt: 1 }}>
+                      <AddIcon />
+                    </IconButton>
+                  ) : null}
+                </Box>
               </Grid>
             )}
           </Grid>
           {selectedWindType === 'Wind Shear' &&
             windShears.map((shear, index) => (
-              <Box key={index}>
-                <Grid container spacing={5} direction='row' sx={{ marginTop: '20px' }}>
-                  <Grid item xs={12}></Grid>
-                  <Grid item xs={12}>
-                    <FormControl variant='standard' sx={{ minWidth: 150 }}>
+              <Box
+                key={index}
+                sx={{
+                  mt: 2.5,
+                  pt: 2,
+                  borderTop: '1px solid var(--dw-color-border-muted)',
+                }}
+              >
+                <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems='end'>
+                  <Grid item {...fieldGrid}>
+                    <FormControl variant='standard' sx={compactFieldSx}>
                       <InputLabel id='Direction'>Wind Direction</InputLabel>
                       <Select
                         label='Direction'
@@ -561,50 +667,50 @@ export default function EnvironmentConfiguration(env) {
                   </Grid>
 
                   <Tooltip title='Enter Wind Velocity in Meters per second' placement='bottom'>
-                    <Grid item xs={12}>
+                    <Grid item {...fieldGrid}>
                       <TextField
                         id='Velocity'
                         label='Wind Velocity (m/s)'
                         variant='standard'
+                        size='small'
+                        fullWidth
                         type='number'
                         onChange={(e) => handleShearWindChange(e.target.value, index)}
                         value={shear.windVelocity}
                         inputProps={{ min: 0 }}
+                        sx={compactFieldSx}
                       />
                     </Grid>
                   </Tooltip>
-                  <Grid item xs={12}>
-                    <Tooltip title='Enter Fluctuation %' placement='bottom'>
-                      <TextField
-                        id='Fluctuation%'
-                        label='Fluctuation %'
-                        variant='standard'
-                        type='number'
-                        onChange={(e) =>
-                          handleShearfluctuationPercentageChange(e.target.value, index)
-                        }
-                        value={shear.fluctuationPercentage}
-                        inputProps={{ min: 5, max: 100, step: 0.1 }}
-                        sx={{ width: '150px' }}
-                      />
-                    </Tooltip>
-                    <IconButton onClick={() => deleteWindShear(index)}>
-                      <DeleteOutline color='primary' />
-                    </IconButton>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Tooltip title='Enter Fluctuation %' placement='bottom'>
+                        <TextField
+                          id='Fluctuation%'
+                          label='Fluctuation %'
+                          variant='standard'
+                          size='small'
+                          type='number'
+                          onChange={(e) =>
+                            handleShearfluctuationPercentageChange(e.target.value, index)
+                          }
+                          value={shear.fluctuationPercentage}
+                          inputProps={{ min: 5, max: 100, step: 0.1 }}
+                          sx={compactFieldSx}
+                        />
+                      </Tooltip>
+                      <IconButton onClick={() => deleteWindShear(index)} sx={{ mt: 1 }}>
+                        <DeleteOutline color='primary' />
+                      </IconButton>
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>
             ))}
 
-          <Grid
-            container
-            spacing={5}
-            direction='column'
-            alignItems='center'
-            sx={{ marginTop: '10px' }}
-          >
-            <Grid item xs={12}>
-              <FormControl variant='standard' sx={{ minWidth: 150 }}>
+          <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems='end' sx={{ mt: 2 }}>
+            <Grid item {...fieldGrid}>
+              <FormControl variant='standard' sx={compactFieldSx}>
                 <InputLabel id='Origin'>Region</InputLabel>
                 <Select label='Region' value={envConf.Origin.Name} onChange={handleOrigin}>
                   {Origin.map(function (val) {
@@ -617,77 +723,92 @@ export default function EnvironmentConfiguration(env) {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item {...fieldGrid}>
               <TextField
                 id='Latitude'
                 label='Latitude'
                 variant='standard'
+                size='small'
+                fullWidth
                 type='number'
                 inputProps={{ step: '.0001', 'data-testid': 'environment-latitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Latitude}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
+                sx={compactFieldSx}
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item {...fieldGrid}>
               <TextField
                 id='Longitude'
                 label='Longitude'
                 variant='standard'
+                size='small'
+                fullWidth
                 type='number'
                 inputProps={{ step: '.0001', 'data-testid': 'environment-longitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Longitude}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
+                sx={compactFieldSx}
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item {...fieldGrid}>
               <TextField
                 id='Height'
                 label='Altitude'
                 variant='standard'
+                size='small'
+                fullWidth
                 type='number'
                 inputProps={{ step: '1', 'data-testid': 'environment-altitude-input' }}
                 onChange={handleOriginChange}
                 value={envConf.Origin.Height}
                 disabled={envConf.Origin.Name == 'Specify Region' ? false : true}
-                helperText={
-                  envConf.Origin.Name == 'Specify Region'
-                    ? "Please enter the Altitude above mean sea level. If you're unsure of the exact altitude, please enter 200 as a default value."
-                    : null
-                }
+                sx={compactFieldSx}
               />
             </Grid>
+            {envConf.Origin.Name == 'Specify Region' ? (
+              <Grid item xs={12}>
+                <Typography
+                  variant='caption'
+                  sx={{
+                    display: 'block',
+                    color: 'text.secondary',
+                    maxWidth: 520,
+                  }}
+                >
+                  Enter altitude above mean sea level. If you do not know it, use `200` as a
+                  reasonable default.
+                </Typography>
+              </Grid>
+            ) : null}
           </Grid>
 
-          <Grid
-            container
-            spacing={5}
-            direction='column'
-            alignItems='center'
-            sx={{ marginTop: '20px' }}
-          >
+          <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems='end' sx={{ mt: 2 }}>
             <Tooltip title='Enter time of day (24 Hours Format)' placement='bottom'>
-              <Grid item xs={12}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <Stack spacing={3}>
-                    <TimePicker
-                      ampm={false}
-                      openTo='hours'
-                      views={['hours', 'minutes', 'seconds']}
-                      inputFormat='HH:mm:ss'
-                      mask='__:__:__'
-                      label='Time of Day'
-                      value={envConf.time}
-                      onChange={handleTimeChange}
-                      renderInput={(params) => (
-                        <TextField {...params} helperText='Enter Time of Day (24 Hour Format)' />
-                      )}
-                    />
-                  </Stack>
-                </LocalizationProvider>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id='time-of-day'
+                  label='Time of Day'
+                  variant='standard'
+                  size='small'
+                  fullWidth
+                  type='time'
+                  value={
+                    envConf.TimeOfDay ||
+                    (envConf.time ? dayjs(envConf.time).format('HH:mm:ss') : '')
+                  }
+                  onChange={handleTimeChange}
+                  helperText='24-hour format, type directly as HH:MM:SS'
+                  inputProps={{
+                    step: 1,
+                    'data-testid': 'time-of-day-input',
+                  }}
+                  sx={compactFieldSx}
+                />
               </Grid>
             </Tooltip>
           </Grid>

@@ -194,7 +194,7 @@ export default function EnvironmentConfiguration(env) {
     }
 
     const normalizedEnvironment = getNormalizedEnvironmentConfig(nextEnvironment);
-    lastHydratedEnvironmentRef.current = nextEnvironment;
+    lastHydratedEnvironmentRef.current = normalizedEnvironment;
     setEnvConf(normalizedEnvironment);
     setCurrentPosition({
       lat: normalizedEnvironment.Origin.Latitude,

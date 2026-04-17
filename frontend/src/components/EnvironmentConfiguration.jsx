@@ -193,15 +193,16 @@ export default function EnvironmentConfiguration(env) {
       return;
     }
 
+    const normalizedEnvironment = getNormalizedEnvironmentConfig(nextEnvironment);
     lastHydratedEnvironmentRef.current = nextEnvironment;
-    setEnvConf(nextEnvironment);
+    setEnvConf(normalizedEnvironment);
     setCurrentPosition({
-      lat: nextEnvironment?.Origin?.Latitude ?? 41.980381,
-      lng: nextEnvironment?.Origin?.Longitude ?? -87.934524,
+      lat: normalizedEnvironment.Origin.Latitude,
+      lng: normalizedEnvironment.Origin.Longitude,
     });
-    setSelectedWindType(nextEnvironment?.Wind?.Type ?? 'Constant Wind');
-    setSelectedFluctuationValue(nextEnvironment?.Wind?.Fluctuation ?? 0.0);
-    setwindShears(getWindShearsFromConfig(nextEnvironment?.Wind));
+    setSelectedWindType(normalizedEnvironment.Wind.Type);
+    setSelectedFluctuationValue(normalizedEnvironment.Wind.Fluctuation);
+    setwindShears(getWindShearsFromConfig(normalizedEnvironment.Wind));
   }, [env.mainJsonValue.environment]);
 
   const Direction = [

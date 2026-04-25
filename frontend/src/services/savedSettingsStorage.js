@@ -1,4 +1,13 @@
+/**
+ * Browser-private saved configuration storage.
+ *
+ * OPFS filenames stay machine-oriented for uniqueness while bundle metadata carries the
+ * user-facing saved-config name, geographic description, and drone summaries rendered by
+ * the Saved Settings page. Legacy raw settings.json snapshots are normalized into the same
+ * shape at read time so older entries remain loadable.
+ */
 const SAVED_SETTINGS_DIR = 'saved-settings';
+const GENERIC_LOCATION_NAMES = new Set(['', 'specify region', 'custom location']);
 
 export function isSupported() {
   return Boolean(
@@ -43,6 +52,290 @@ async function getSnapshotHandle(name) {
   return savedSettingsDirectory.getFileHandle(name);
 }
 
+function normalizeText(value) {
+  return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+}
+
+function truncateText(value, maxLength = 120) {
+  const normalized = normalizeText(value);
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}...` : normalized;
+}
+
+function toFiniteNumber(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function getObjectValue(source, keys) {
+  if (!source || typeof source !== 'object') {
+    return undefined;
+  }
+
+  return keys.map((key) => source[key]).find((value) => value !== undefined && value !== null);
+}
+
+function isUsefulLocationName(value) {
+  const normalized = normalizeText(value);
+  return normalized && !GENERIC_LOCATION_NAMES.has(normalized.toLowerCase());
+}
+
+function formatCoordinate(value) {
+  const numberValue = toFiniteNumber(value);
+  return numberValue == null ? null : numberValue.toFixed(6);
+}
+
+function formatCompactCoordinate(value) {
+  const numberValue = toFiniteNumber(value);
+  return numberValue == null ? null : numberValue.toFixed(4);
+}
+
+export function formatLocationCoordinates(location) {
+  const latitude = formatCoordinate(location?.latitude);
+  const longitude = formatCoordinate(location?.longitude);
+
+  if (!latitude || !longitude) {
+    return '';
+  }
+
+  const altitude = toFiniteNumber(location?.altitude);
+  return altitude == null
+    ? `${latitude}, ${longitude}`
+    : `${latitude}, ${longitude}, ${altitude} m`;
+}
+
+function getTaskLocation(taskJson) {
+  const origin = taskJson?.environment?.Origin ?? taskJson?.environment?._Origin ?? {};
+
+  return {
+    label: getObjectValue(origin, ['Name', 'name', 'Label', 'label']),
+    latitude: toFiniteNumber(getObjectValue(origin, ['Latitude', 'latitude'])),
+    longitude: toFiniteNumber(getObjectValue(origin, ['Longitude', 'longitude'])),
+    altitude: toFiniteNumber(getObjectValue(origin, ['Altitude', 'altitude', 'Height', 'height'])),
+  };
+}
+
+function getSettingsLocation(settingsJson) {
+  const origin = settingsJson?.OriginGeopoint ?? settingsJson?.Origin ?? {};
+
+  return {
+    label: getObjectValue(origin, ['Name', 'name', 'Label', 'label']),
+    latitude: toFiniteNumber(getObjectValue(origin, ['Latitude', 'latitude'])),
+    longitude: toFiniteNumber(getObjectValue(origin, ['Longitude', 'longitude'])),
+    altitude: toFiniteNumber(getObjectValue(origin, ['Altitude', 'altitude', 'Height', 'height'])),
+  };
+}
+
+export function buildSnapshotLocation(settingsJson, taskJson, options = {}) {
+  const taskLocation = getTaskLocation(taskJson);
+  const settingsLocation = getSettingsLocation(settingsJson);
+  const labelCandidate =
+    options.locationLabel ?? taskLocation.label ?? settingsLocation.label ?? options.fallbackLabel;
+  const latitude = taskLocation.latitude ?? settingsLocation.latitude;
+  const longitude = taskLocation.longitude ?? settingsLocation.longitude;
+  const altitude = taskLocation.altitude ?? settingsLocation.altitude;
+  const label = isUsefulLocationName(labelCandidate) ? truncateText(labelCandidate, 100) : '';
+  const location = {
+    label,
+    latitude,
+    longitude,
+    altitude,
+  };
+
+  return {
+    ...location,
+    coordinates: formatLocationCoordinates(location),
+  };
+}
+
+function prettifyMissionType(value) {
+  const normalized = normalizeText(value);
+  if (!normalized) {
+    return 'unspecified mission';
+  }
+
+  const readable = normalized.replace(/[_-]+/g, ' ').toLowerCase();
+  return `${readable.charAt(0).toUpperCase()}${readable.slice(1)}`;
+}
+
+function buildDroneQuip(drone, index) {
+  const name =
+    normalizeText(drone?.Name) ||
+    normalizeText(drone?.droneName) ||
+    normalizeText(drone?.name) ||
+    `Drone ${index + 1}`;
+  const missionType = prettifyMissionType(
+    drone?.Mission?.name ?? drone?.MissionValue ?? drone?.missionType ?? drone?.mission,
+  );
+
+  return {
+    name,
+    missionType,
+    quip: `${name}: ${missionType}`,
+  };
+}
+
+function buildDroneQuipsFromSettings(settingsJson) {
+  const vehicles = settingsJson?.Vehicles;
+  if (!vehicles || typeof vehicles !== 'object' || Array.isArray(vehicles)) {
+    return [];
+  }
+
+  return Object.entries(vehicles).map(([vehicleName, vehicle], index) =>
+    buildDroneQuip({ ...vehicle, Name: vehicle?.Name ?? vehicleName }, index),
+  );
+}
+
+export function buildSnapshotDroneQuips(settingsJson, taskJson) {
+  if (Array.isArray(taskJson?.Drones)) {
+    return taskJson.Drones.map((drone, index) => buildDroneQuip(drone, index));
+  }
+
+  return buildDroneQuipsFromSettings(settingsJson);
+}
+
+function getLocationDisplayName(location) {
+  if (isUsefulLocationName(location?.label)) {
+    return location.label;
+  }
+
+  return location?.coordinates || 'Unknown location';
+}
+
+function buildCondensedContextSuffix(location, drones) {
+  const latitude = formatCompactCoordinate(location?.latitude);
+  const longitude = formatCompactCoordinate(location?.longitude);
+  const altitude = toFiniteNumber(location?.altitude);
+  const droneCount = Array.isArray(drones) ? drones.length : 0;
+  const suffixParts = [];
+
+  if (latitude && longitude) {
+    suffixParts.push(`${latitude},${longitude}`);
+  }
+
+  if (altitude != null) {
+    suffixParts.push(`${Math.round(altitude)}m`);
+  }
+
+  if (droneCount > 0) {
+    suffixParts.push(`${droneCount}dr`);
+  }
+
+  return suffixParts.join('_');
+}
+
+function buildSnapshotDisplayName(userInput, snapshotName, metadata = {}) {
+  const snapshotId = getSnapshotStem(snapshotName || '');
+  const displayStem = snapshotId || 'unsaved-snapshot';
+  const contextSuffix = buildCondensedContextSuffix(metadata.location, metadata.drones);
+  const displayStemWithContext = contextSuffix ? `${displayStem}_${contextSuffix}` : displayStem;
+  const userPrefix = truncateText(userInput, 80);
+
+  return userPrefix ? `${userPrefix}_${displayStemWithContext}` : displayStemWithContext;
+}
+
+function buildLegacyGeneratedDisplayNameSuffix(location, drones) {
+  if (!location?.coordinates) {
+    return '';
+  }
+
+  const droneCount = Array.isArray(drones) ? drones.length : 0;
+  const droneText =
+    droneCount === 1 ? '1 drone' : droneCount > 1 ? `${droneCount} drones` : 'configuration';
+  return `${location.coordinates} - ${droneText}`;
+}
+
+function buildSnapshotDescription(metadata) {
+  const locationName = getLocationDisplayName(metadata?.location);
+  const coordinates = metadata?.location?.coordinates;
+  const locationDescription =
+    coordinates && isUsefulLocationName(metadata?.location?.label)
+      ? `${locationName} (${coordinates})`
+      : coordinates || locationName;
+  const droneDescription =
+    metadata?.drones?.length > 0
+      ? metadata.drones.map((drone) => drone.quip).join('; ')
+      : 'No drone details available';
+
+  return `Config name: ${metadata.displayName}. Location: ${locationDescription}. Drones: ${droneDescription}.`;
+}
+
+function normalizeSavedDisplayName(value, snapshotName, metadata) {
+  const normalizedValue = normalizeText(value);
+  if (!normalizedValue) {
+    return buildSnapshotDisplayName('', snapshotName, metadata);
+  }
+
+  const legacyGeneratedSuffix = buildLegacyGeneratedDisplayNameSuffix(
+    metadata?.location,
+    metadata?.drones,
+  );
+
+  if (legacyGeneratedSuffix && normalizedValue.endsWith(legacyGeneratedSuffix)) {
+    const userPrefix = normalizeText(
+      normalizedValue.slice(0, normalizedValue.length - legacyGeneratedSuffix.length),
+    );
+    return buildSnapshotDisplayName(userPrefix, snapshotName, metadata);
+  }
+
+  return truncateText(normalizedValue, 140);
+}
+
+function buildSnapshotMetadata(settingsJson, taskJson, options = {}) {
+  const location = buildSnapshotLocation(settingsJson, taskJson, options);
+  const drones = buildSnapshotDroneQuips(settingsJson, taskJson);
+  const displayName = buildSnapshotDisplayName(options.displayName, options.snapshotName, {
+    location,
+    drones,
+  });
+  const metadata = {
+    displayName,
+    location,
+    drones,
+  };
+
+  return {
+    ...metadata,
+    description: buildSnapshotDescription(metadata),
+  };
+}
+
+function normalizeMetadata(settingsJson, taskJson, parsedMetadata, options = {}) {
+  const derivedMetadata = buildSnapshotMetadata(settingsJson, taskJson, options);
+  const location = {
+    ...derivedMetadata.location,
+    ...(parsedMetadata?.location ?? {}),
+  };
+  const normalizedLocation = {
+    ...location,
+    latitude: toFiniteNumber(location.latitude),
+    longitude: toFiniteNumber(location.longitude),
+    altitude: toFiniteNumber(location.altitude),
+  };
+  normalizedLocation.coordinates =
+    normalizeText(location.coordinates) || formatLocationCoordinates(normalizedLocation);
+  const drones = Array.isArray(parsedMetadata?.drones)
+    ? parsedMetadata.drones.map((drone, index) => buildDroneQuip(drone, index))
+    : derivedMetadata.drones;
+  const displayName = normalizeSavedDisplayName(
+    parsedMetadata?.displayName ?? options.displayName,
+    options.snapshotName,
+    {
+      location: normalizedLocation,
+      drones,
+    },
+  );
+  const metadata = {
+    displayName,
+    location: normalizedLocation,
+    drones,
+  };
+
+  return {
+    ...metadata,
+    description: buildSnapshotDescription(metadata),
+  };
+}
+
 function normalizeSnapshotRecord(name, rawText, lastModified, size) {
   const parsed = JSON.parse(rawText);
   const isBundleRecord =
@@ -53,9 +346,24 @@ function normalizeSnapshotRecord(name, rawText, lastModified, size) {
   const settingsJson = isBundleRecord ? parsed.settings : parsed;
   const taskJson = isBundleRecord ? parsed.task ?? null : null;
   const savedAt = isBundleRecord ? parsed.savedAt ?? null : null;
+  const metadata = normalizeMetadata(
+    settingsJson,
+    taskJson,
+    isBundleRecord ? parsed.metadata : null,
+    {
+      displayName: isBundleRecord ? parsed.displayName : null,
+      snapshotName: name,
+      savedAt,
+    },
+  );
 
   return {
     name,
+    displayName: metadata.displayName,
+    description: metadata.description,
+    metadata,
+    location: metadata.location,
+    droneQuips: metadata.drones,
     text: rawText,
     json: settingsJson,
     settingsJson,
@@ -69,14 +377,23 @@ function normalizeSnapshotRecord(name, rawText, lastModified, size) {
   };
 }
 
-export async function saveSnapshot(settingsJson, taskJson = null) {
+export async function saveSnapshot(settingsJson, taskJson = null, options = {}) {
   const savedSettingsDirectory = await getSavedSettingsDirectory(true);
-  const name = buildSnapshotName();
+  const savedDate = new Date();
+  const savedAt = savedDate.toISOString();
+  const name = buildSnapshotName(savedDate);
   const snapshotHandle = await savedSettingsDirectory.getFileHandle(name, { create: true });
   const writable = await snapshotHandle.createWritable();
+  const metadata = buildSnapshotMetadata(settingsJson, taskJson, {
+    ...options,
+    snapshotName: name,
+    savedAt,
+  });
   const snapshotRecord = {
-    version: 2,
-    savedAt: new Date().toISOString(),
+    version: 3,
+    savedAt,
+    displayName: metadata.displayName,
+    metadata,
     settings: settingsJson,
     task: taskJson,
   };
@@ -87,6 +404,9 @@ export async function saveSnapshot(settingsJson, taskJson = null) {
   const savedFile = await snapshotHandle.getFile();
   return {
     name,
+    displayName: metadata.displayName,
+    description: metadata.description,
+    metadata,
     lastModified: savedFile.lastModified,
     size: savedFile.size,
     hasTask: taskJson != null,

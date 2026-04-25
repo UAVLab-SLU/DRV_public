@@ -177,10 +177,15 @@ jest.mock('../components/cesium/CesiumMap', () => {
   };
 });
 jest.mock('../components/Configuration/ControlsDisplay', () => () => <div />);
-jest.mock('../services/savedSettingsStorage', () => ({
-  isSupported: jest.fn(),
-  saveSnapshot: jest.fn(),
-}));
+jest.mock('../services/savedSettingsStorage', () => {
+  const actual = jest.requireActual('../services/savedSettingsStorage');
+
+  return {
+    ...actual,
+    isSupported: jest.fn(),
+    saveSnapshot: jest.fn(),
+  };
+});
 
 function mockFetchResponse(body) {
   return {
@@ -238,7 +243,37 @@ describe('HorizontalLinearStepper finish flow', () => {
         name: /save settings\.json and task\.json before submission\?/i,
       }),
     ).toBeInTheDocument();
+    expect(screen.getByTestId('saved-config-name-input')).toHaveValue('');
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test('allows saving with a blank optional config name', async () => {
+    global.fetch
+      .mockResolvedValueOnce(
+        mockFetchResponse({
+          settings: {
+            SettingsVersion: 2.0,
+          },
+        }),
+      )
+      .mockResolvedValueOnce(mockFetchResponse({ task_id: 'task-blank-name' }));
+
+    await renderAtFinalStep();
+    fireEvent.click(screen.getByRole('button', { name: /finish/i }));
+    fireEvent.click(screen.getByRole('button', { name: /yes, save both and submit/i }));
+
+    await waitFor(() => {
+      expect(saveSnapshot).toHaveBeenCalledWith(
+        expect.objectContaining({
+          SettingsVersion: 2.0,
+        }),
+        expect.any(Object),
+        expect.objectContaining({
+          displayName: '',
+        }),
+      );
+      expect(mockNavigate).toHaveBeenCalledWith('/reports');
+    });
   });
 
   test('submits without preview when user chooses no', async () => {
@@ -282,6 +317,9 @@ describe('HorizontalLinearStepper finish flow', () => {
 
     await renderAtFinalStep();
     fireEvent.click(screen.getByRole('button', { name: /finish/i }));
+    fireEvent.change(screen.getByTestId('saved-config-name-input'), {
+      target: { value: "O'Hare saved rehearsal" },
+    });
     fireEvent.click(screen.getByRole('button', { name: /yes, save both and submit/i }));
 
     await waitFor(() => {
@@ -292,6 +330,9 @@ describe('HorizontalLinearStepper finish flow', () => {
         expect.objectContaining({
           Drones: expect.any(Array),
           environment: expect.any(Object),
+        }),
+        expect.objectContaining({
+          displayName: "O'Hare saved rehearsal",
         }),
       );
       expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -333,7 +374,7 @@ describe('HorizontalLinearStepper finish flow', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('import-status')).toHaveTextContent(
-        "Loaded preset \"Circle & Square — O'Hare, Chicago\" into the wizard.",
+        'Loaded preset "Circle & Square — O\'Hare, Chicago" into the wizard.',
       );
       expect(screen.getByTestId('env-origin-lat')).toHaveTextContent('42.1142');
       expect(screen.getByTestId('env-origin-height')).toHaveTextContent('208');

@@ -169,8 +169,8 @@ export default function SavedSettings() {
         Saved Settings
       </Typography>
       <Typography sx={{ mb: 3 }}>
-        Browser-private snapshots of `settings.json` and, when available, the matching `task.json`
-        payload saved before simulation submission.
+        Browser-private simulation configs saved before submission. Each entry keeps the generated
+        `settings.json`, the matching `task.json` payload when available, and a short run summary.
       </Typography>
 
       {!opfsSupported && (
@@ -196,7 +196,31 @@ export default function SavedSettings() {
         {snapshots.map((snapshot) => (
           <Card key={snapshot.name} variant='outlined'>
             <CardContent>
-              <Typography variant='h6'>{snapshot.name}</Typography>
+              <Typography variant='h6'>{snapshot.displayName ?? snapshot.name}</Typography>
+              <Typography color='text.secondary' sx={{ mt: 0.5 }}>
+                {snapshot.description}
+              </Typography>
+              {snapshot.location?.coordinates && (
+                <Typography color='text.secondary'>
+                  Coordinates: {snapshot.location.coordinates}
+                </Typography>
+              )}
+              {snapshot.droneQuips?.length > 0 && (
+                <Box component='ul' sx={{ color: 'text.secondary', m: 0, mt: 1, pl: 2.5 }}>
+                  {snapshot.droneQuips.map((drone, index) => (
+                    <Typography
+                      component='li'
+                      key={`${snapshot.name}-${drone.name}-${index}`}
+                      variant='body2'
+                    >
+                      {drone.quip}
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+              <Typography color='text.secondary' sx={{ mt: 1 }}>
+                File: {snapshot.name}
+              </Typography>
               <Typography color='text.secondary'>
                 Saved {formatSavedAt(snapshot.lastModified)}
               </Typography>

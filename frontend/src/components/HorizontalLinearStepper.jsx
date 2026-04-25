@@ -1,5 +1,13 @@
 ﻿import * as React from 'react';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import {
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -23,6 +31,7 @@ import {
   isSupported as isSavedSettingsSupported,
   saveSnapshot,
 } from '../services/savedSettingsStorage';
+import { resolveLocationName } from '../services/locationNameResolver';
 import { useMainJson } from '../contexts/MainJsonContext';
 import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
 
@@ -64,6 +73,8 @@ export default function HorizontalLinearStepper(data) {
   const [submitError, setSubmitError] = React.useState('');
   const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
   const [saveDialogError, setSaveDialogError] = React.useState('');
+  const [saveConfigName, setSaveConfigName] = React.useState('');
+  const [pendingSubmissionPayload, setPendingSubmissionPayload] = React.useState(null);
   const [mainJson, setJson, activeScreen] = React.useState({
     Drones: null,
     environment: null,
@@ -75,6 +86,11 @@ export default function HorizontalLinearStepper(data) {
   const redirectToHome = () => {
     navigate('/');
   };
+
+  const getCurrentLocationName = React.useCallback(() => {
+    const origin = mainJson.environment?.Origin ?? {};
+    return origin.Name ?? origin.name ?? '';
+  }, [mainJson.environment]);
 
   const isStepSkipped = (step) => {
     return skipped.has(step);
@@ -91,6 +107,13 @@ export default function HorizontalLinearStepper(data) {
     if (activeStep === steps.length - 1) {
       setSubmitError('');
       setSaveDialogError('');
+      const payload = getValidatedPayload();
+      if (!payload) {
+        return;
+      }
+
+      setPendingSubmissionPayload(payload);
+      setSaveConfigName('');
       setSaveDialogOpen(true);
       return;
     }
@@ -239,7 +262,7 @@ export default function HorizontalLinearStepper(data) {
     setSubmitError('');
     setSaveDialogError('');
 
-    const payload = getValidatedPayload();
+    const payload = pendingSubmissionPayload ?? getValidatedPayload();
     if (!payload) {
       setSaveDialogOpen(false);
       return;
@@ -255,13 +278,18 @@ export default function HorizontalLinearStepper(data) {
           );
         }
 
+        const locationName = await resolveLocationName(payload, getCurrentLocationName());
         const previewSettings = await fetchSettingsPreview(payload);
-        await saveSnapshot(previewSettings, payload);
+        await saveSnapshot(previewSettings, payload, {
+          displayName: saveConfigName,
+          locationLabel: locationName,
+        });
       }
 
       const submitted = await queueTask(payload);
       if (submitted) {
         setSaveDialogOpen(false);
+        setPendingSubmissionPayload(null);
         navigate('/reports');
       } else if (!shouldSave) {
         setSaveDialogError('Task submission failed. Review the error below and try again.');
@@ -409,15 +437,31 @@ export default function HorizontalLinearStepper(data) {
           </Box>
           <Dialog
             open={saveDialogOpen}
-            onClose={() => !isSubmitting && setSaveDialogOpen(false)}
+            onClose={() => {
+              if (!isSubmitting) {
+                setSaveDialogOpen(false);
+                setPendingSubmissionPayload(null);
+              }
+            }}
             fullWidth
           >
             <DialogTitle>Save settings.json and task.json before submission?</DialogTitle>
             <DialogContent>
               <Typography sx={{ mb: 1 }}>
-                Do you want to save both the exact generated `settings.json` and the raw `task.json`
-                payload to browser-private storage before submitting this simulation task?
+                Save both the exact generated `settings.json` and the raw `task.json` payload to
+                browser-private storage before submitting this simulation task.
               </Typography>
+              <TextField
+                autoFocus
+                fullWidth
+                label='Saved config name'
+                value={saveConfigName}
+                onChange={(event) => setSaveConfigName(event.target.value)}
+                disabled={isSubmitting}
+                inputProps={{ 'data-testid': 'saved-config-name-input', maxLength: 80 }}
+                helperText='Optional. Leave blank to use the snapshot id; entered text is prefixed to that id.'
+                sx={{ mt: 2 }}
+              />
               {!isSavedSettingsSupported() && (
                 <Typography color='error.main'>
                   Browser private file storage is not supported here. Choose No to submit without
@@ -431,7 +475,10 @@ export default function HorizontalLinearStepper(data) {
             <DialogActions>
               <StyledButton
                 variant='outlined'
-                onClick={() => setSaveDialogOpen(false)}
+                onClick={() => {
+                  setSaveDialogOpen(false);
+                  setPendingSubmissionPayload(null);
+                }}
                 disabled={isSubmitting}
               >
                 Cancel

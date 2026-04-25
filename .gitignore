@@ -1,6 +1,10 @@
 # Ignore .env files
 .env
 
+# Ignore local agent instructions
+AGENTS.md
+tasks/
+
 # Ignore Claude Code local settings
 .claude/
 

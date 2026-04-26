@@ -187,6 +187,8 @@ function buildSnapshotRecord(overrides = {}) {
       longitude: -80.9876,
       altitude: 125,
       coordinates: '35.123400, -80.987600, 125 m',
+      attribution: 'Nominatim, location data by OpenStreetMap contributors',
+      source: 'nominatim',
     },
     droneQuips: [
       {
@@ -291,16 +293,6 @@ function renderSavedSettingsFlow() {
   );
 }
 
-function textIncludes(value) {
-  return (_, element) => {
-    const hasText = element?.textContent?.includes(value);
-    const childHasText = Array.from(element?.children ?? []).some((child) =>
-      child.textContent?.includes(value),
-    );
-    return hasText && !childHasText;
-  };
-}
-
 describe('Saved settings wizard loading', () => {
   beforeEach(() => {
     isSupported.mockReturnValue(true);
@@ -317,16 +309,23 @@ describe('Saved settings wizard loading', () => {
 
     renderSavedSettingsFlow();
 
-    await screen.findByText(textIncludes(snapshot.name));
+    await screen.findByText('Charlotte inspection run');
     expect(screen.getByText('Charlotte inspection run')).toBeInTheDocument();
     expect(screen.getByText(/config name: charlotte inspection run/i)).toBeInTheDocument();
     expect(screen.getByText(/coordinates: 35\.123400, -80\.987600, 125 m/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        /location source: nominatim, location data by openstreetmap contributors/i,
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(snapshot.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(/file:/i)).not.toBeInTheDocument();
     expect(screen.getByText('Imported Drone: Fly in circle')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /load into wizard/i }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(/loaded "settings-20260401T120000000\.json" into the wizard/i),
+        screen.getByText(/loaded "charlotte inspection run" into the wizard/i),
       ).toBeInTheDocument();
       expect(screen.getByTestId('env-origin-lat')).toHaveTextContent('35.1234');
       expect(screen.getByTestId('env-origin-height')).toHaveTextContent('125');
@@ -363,8 +362,9 @@ describe('Saved settings wizard loading', () => {
 
     renderSavedSettingsFlow();
 
-    await screen.findByText(textIncludes('settings-legacy.json'));
+    await screen.findByText('Charlotte inspection run');
     expect(screen.getByText('Charlotte inspection run')).toBeInTheDocument();
+    expect(screen.queryByText('settings-legacy.json')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /load into wizard/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /simulate/i })).not.toBeInTheDocument();
     expect(
@@ -375,7 +375,9 @@ describe('Saved settings wizard loading', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/loaded "settings-legacy\.json" into the wizard with recovered fields/i),
+        screen.getByText(
+          /loaded "charlotte inspection run" into the wizard with recovered fields/i,
+        ),
       ).toBeInTheDocument();
     });
   });

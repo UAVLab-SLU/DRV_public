@@ -31,7 +31,7 @@ import {
   isSupported as isSavedSettingsSupported,
   saveSnapshot,
 } from '../services/savedSettingsStorage';
-import { resolveLocationName } from '../services/locationNameResolver';
+import { resolveLocationDetails } from '../services/locationNameResolver';
 import { useMainJson } from '../contexts/MainJsonContext';
 import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
 
@@ -278,11 +278,13 @@ export default function HorizontalLinearStepper(data) {
           );
         }
 
-        const locationName = await resolveLocationName(payload, getCurrentLocationName());
+        const locationDetails = await resolveLocationDetails(payload, getCurrentLocationName());
         const previewSettings = await fetchSettingsPreview(payload);
         await saveSnapshot(previewSettings, payload, {
           displayName: saveConfigName,
-          locationLabel: locationName,
+          locationLabel: locationDetails.label,
+          locationAttribution: locationDetails.attribution,
+          locationSource: locationDetails.source,
         });
       }
 

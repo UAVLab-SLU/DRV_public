@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import HorizontalLinearStepper from '../components/HorizontalLinearStepper';
 import { saveSnapshot, isSupported } from '../services/savedSettingsStorage';
+import { resolveLocationDetails } from '../services/locationNameResolver';
 import { MainJsonProvider } from '../contexts/MainJsonContext';
 
 const mockNavigate = jest.fn();
@@ -186,6 +187,9 @@ jest.mock('../services/savedSettingsStorage', () => {
     saveSnapshot: jest.fn(),
   };
 });
+jest.mock('../services/locationNameResolver', () => ({
+  resolveLocationDetails: jest.fn(),
+}));
 
 function mockFetchResponse(body) {
   return {
@@ -226,6 +230,11 @@ describe('HorizontalLinearStepper finish flow', () => {
     global.fetch = jest.fn();
     isSupported.mockReturnValue(true);
     saveSnapshot.mockResolvedValue({ name: 'settings-1.json' });
+    resolveLocationDetails.mockResolvedValue({
+      label: 'Chicago, Illinois, United States',
+      attribution: 'Nominatim, location data by OpenStreetMap contributors',
+      source: 'nominatim',
+    });
     mockNavigate.mockReset();
   });
 
@@ -270,6 +279,9 @@ describe('HorizontalLinearStepper finish flow', () => {
         expect.any(Object),
         expect.objectContaining({
           displayName: '',
+          locationLabel: 'Chicago, Illinois, United States',
+          locationAttribution: 'Nominatim, location data by OpenStreetMap contributors',
+          locationSource: 'nominatim',
         }),
       );
       expect(mockNavigate).toHaveBeenCalledWith('/reports');
@@ -333,6 +345,9 @@ describe('HorizontalLinearStepper finish flow', () => {
         }),
         expect.objectContaining({
           displayName: "O'Hare saved rehearsal",
+          locationLabel: 'Chicago, Illinois, United States',
+          locationAttribution: 'Nominatim, location data by OpenStreetMap contributors',
+          locationSource: 'nominatim',
         }),
       );
       expect(global.fetch).toHaveBeenCalledTimes(2);

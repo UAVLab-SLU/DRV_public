@@ -8,6 +8,58 @@
  */
 const SAVED_SETTINGS_DIR = 'saved-settings';
 const GENERIC_LOCATION_NAMES = new Set(['', 'specify region', 'custom location']);
+const US_STATE_ABBREVIATIONS = {
+  alabama: 'al',
+  alaska: 'ak',
+  arizona: 'az',
+  arkansas: 'ar',
+  california: 'ca',
+  colorado: 'co',
+  connecticut: 'ct',
+  delaware: 'de',
+  florida: 'fl',
+  georgia: 'ga',
+  hawaii: 'hi',
+  idaho: 'id',
+  illinois: 'il',
+  indiana: 'in',
+  iowa: 'ia',
+  kansas: 'ks',
+  kentucky: 'ky',
+  louisiana: 'la',
+  maine: 'me',
+  maryland: 'md',
+  massachusetts: 'ma',
+  michigan: 'mi',
+  minnesota: 'mn',
+  mississippi: 'ms',
+  missouri: 'mo',
+  montana: 'mt',
+  nebraska: 'ne',
+  nevada: 'nv',
+  'new hampshire': 'nh',
+  'new jersey': 'nj',
+  'new mexico': 'nm',
+  'new york': 'ny',
+  'north carolina': 'nc',
+  'north dakota': 'nd',
+  ohio: 'oh',
+  oklahoma: 'ok',
+  oregon: 'or',
+  pennsylvania: 'pa',
+  'rhode island': 'ri',
+  'south carolina': 'sc',
+  'south dakota': 'sd',
+  tennessee: 'tn',
+  texas: 'tx',
+  utah: 'ut',
+  vermont: 'vt',
+  virginia: 'va',
+  washington: 'wa',
+  'west virginia': 'wv',
+  wisconsin: 'wi',
+  wyoming: 'wy',
+};
 
 export function isSupported() {
   return Boolean(
@@ -36,6 +88,27 @@ function triggerJsonDownload(filename, jsonText) {
   anchor.download = filename;
   anchor.click();
   window.URL.revokeObjectURL(url);
+}
+
+function sanitizeDownloadFilenameStem(value) {
+  const invalidFilenameCharacters = '<>:"/\\|?*';
+  return (
+    normalizeText(value)
+      .split('')
+      .map((character) =>
+        character.charCodeAt(0) < 32 || invalidFilenameCharacters.includes(character)
+          ? '_'
+          : character,
+      )
+      .join('')
+      .replace(/[. ]+$/g, '')
+      .slice(0, 180) || 'saved-settings'
+  );
+}
+
+function buildDownloadFilename(snapshot, suffix = '') {
+  const displayStem = snapshot?.displayName || getSnapshotStem(snapshot?.name || '');
+  return `${sanitizeDownloadFilenameStem(displayStem)}${suffix}.json`;
 }
 
 async function getSavedSettingsDirectory(create = true) {
@@ -89,6 +162,36 @@ function formatCompactCoordinate(value) {
   return numberValue == null ? null : numberValue.toFixed(4);
 }
 
+function slugifyLocationText(value) {
+  return normalizeText(value)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getCompactLocationLabel(location) {
+  const label = normalizeText(location?.label);
+  if (!isUsefulLocationName(label)) {
+    return '';
+  }
+
+  const parts = label.split(',').map(normalizeText).filter(Boolean);
+  const country = parts[parts.length - 1]?.toLowerCase();
+  if (parts.length >= 3 && ['united states', 'usa', 'us'].includes(country)) {
+    const city = slugifyLocationText(parts[0]);
+    const state = US_STATE_ABBREVIATIONS[parts[parts.length - 2].toLowerCase()];
+    if (city && state) {
+      return `${city}-${state}`;
+    }
+  }
+
+  const compactParts = parts.length > 1 ? parts.slice(0, 2) : parts.slice(0, 1);
+  const compactLabel = slugifyLocationText(compactParts.join(' '));
+  return compactLabel.length > 36 ? compactLabel.slice(0, 36).replace(/-+$/g, '') : compactLabel;
+}
+
 export function formatLocationCoordinates(location) {
   const latitude = formatCoordinate(location?.latitude);
   const longitude = formatCoordinate(location?.longitude);
@@ -139,6 +242,8 @@ export function buildSnapshotLocation(settingsJson, taskJson, options = {}) {
     latitude,
     longitude,
     altitude,
+    attribution: truncateText(options.locationAttribution, 140),
+    source: truncateText(options.locationSource, 40),
   };
 
   return {
@@ -202,6 +307,31 @@ function getLocationDisplayName(location) {
 }
 
 function buildCondensedContextSuffix(location, drones) {
+  const latitude = formatCompactCoordinate(location?.latitude);
+  const longitude = formatCompactCoordinate(location?.longitude);
+  const altitude = toFiniteNumber(location?.altitude);
+  const droneCount = Array.isArray(drones) ? drones.length : 0;
+  const suffixParts = [];
+  const locationLabel = getCompactLocationLabel(location);
+
+  if (locationLabel) {
+    suffixParts.push(locationLabel);
+  } else if (latitude && longitude) {
+    suffixParts.push(`${latitude},${longitude}`);
+  }
+
+  if (altitude != null) {
+    suffixParts.push(`${Math.round(altitude)}m`);
+  }
+
+  if (droneCount > 0) {
+    suffixParts.push(`${droneCount}dr`);
+  }
+
+  return suffixParts.join('_');
+}
+
+function buildCoordinateContextSuffix(location, drones) {
   const latitude = formatCompactCoordinate(location?.latitude);
   const longitude = formatCompactCoordinate(location?.longitude);
   const altitude = toFiniteNumber(location?.altitude);
@@ -277,6 +407,22 @@ function normalizeSavedDisplayName(value, snapshotName, metadata) {
     return buildSnapshotDisplayName(userPrefix, snapshotName, metadata);
   }
 
+  const snapshotId = getSnapshotStem(snapshotName || '');
+  const legacyCoordinateSuffix = buildCoordinateContextSuffix(metadata?.location, metadata?.drones);
+  const legacyCoordinateStem =
+    snapshotId && legacyCoordinateSuffix ? `${snapshotId}_${legacyCoordinateSuffix}` : '';
+
+  if (legacyCoordinateStem && normalizedValue === legacyCoordinateStem) {
+    return buildSnapshotDisplayName('', snapshotName, metadata);
+  }
+
+  if (legacyCoordinateStem && normalizedValue.endsWith(`_${legacyCoordinateStem}`)) {
+    const userPrefix = normalizeText(
+      normalizedValue.slice(0, normalizedValue.length - legacyCoordinateStem.length - 1),
+    );
+    return buildSnapshotDisplayName(userPrefix, snapshotName, metadata);
+  }
+
   return truncateText(normalizedValue, 140);
 }
 
@@ -310,6 +456,8 @@ function normalizeMetadata(settingsJson, taskJson, parsedMetadata, options = {})
     latitude: toFiniteNumber(location.latitude),
     longitude: toFiniteNumber(location.longitude),
     altitude: toFiniteNumber(location.altitude),
+    attribution: truncateText(location.attribution, 140),
+    source: truncateText(location.source, 40),
   };
   normalizedLocation.coordinates =
     normalizeText(location.coordinates) || formatLocationCoordinates(normalizedLocation);
@@ -459,7 +607,7 @@ export async function deleteSnapshot(name) {
 
 export async function downloadSettingsSnapshot(name) {
   const snapshot = await readSnapshot(name);
-  triggerJsonDownload(snapshot.name, snapshot.settingsText);
+  triggerJsonDownload(buildDownloadFilename(snapshot), snapshot.settingsText);
   return snapshot;
 }
 
@@ -469,7 +617,9 @@ export async function downloadTaskSnapshot(name) {
     throw new Error('This saved entry does not include task.json.');
   }
 
-  const snapshotStem = getSnapshotStem(snapshot.name);
-  triggerJsonDownload(`${snapshotStem}-task.json`, JSON.stringify(snapshot.taskJson, null, 2));
+  triggerJsonDownload(
+    buildDownloadFilename(snapshot, '-task'),
+    JSON.stringify(snapshot.taskJson, null, 2),
+  );
   return snapshot;
 }

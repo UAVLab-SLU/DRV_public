@@ -151,7 +151,7 @@ export default function SavedSettings() {
           importedConfig: importResult.config,
           importStatus: {
             severity: importResult.warnings?.length ? 'warning' : 'success',
-            message: buildLoadMessage(name, importResult.warnings ?? []),
+            message: buildLoadMessage(snapshot.displayName ?? name, importResult.warnings ?? []),
             details: importResult.warnings ?? [],
           },
         },
@@ -205,6 +205,11 @@ export default function SavedSettings() {
                   Coordinates: {snapshot.location.coordinates}
                 </Typography>
               )}
+              {snapshot.location?.attribution && (
+                <Typography color='text.secondary'>
+                  Location source: {snapshot.location.attribution}
+                </Typography>
+              )}
               {snapshot.droneQuips?.length > 0 && (
                 <Box component='ul' sx={{ color: 'text.secondary', m: 0, mt: 1, pl: 2.5 }}>
                   {snapshot.droneQuips.map((drone, index) => (
@@ -218,9 +223,6 @@ export default function SavedSettings() {
                   ))}
                 </Box>
               )}
-              <Typography color='text.secondary' sx={{ mt: 1 }}>
-                File: {snapshot.name}
-              </Typography>
               <Typography color='text.secondary'>
                 Saved {formatSavedAt(snapshot.lastModified)}
               </Typography>

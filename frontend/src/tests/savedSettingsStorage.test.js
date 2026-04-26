@@ -192,7 +192,9 @@ describe('savedSettingsStorage', () => {
       },
       {
         displayName: "O'Hare wind rehearsal",
-        locationLabel: "Chicago O'Hare Airport",
+        locationLabel: 'Chicago, Illinois, United States',
+        locationAttribution: 'Nominatim, location data by OpenStreetMap contributors',
+        locationSource: 'nominatim',
       },
     );
 
@@ -201,18 +203,21 @@ describe('savedSettingsStorage', () => {
     expect(bundledSnapshot.hasTask).toBe(true);
     expect(bundledSnapshot.canSimulate).toBe(true);
     expect(bundledSnapshot.displayName).toBe(
-      `O'Hare wind rehearsal_${snapshotId}_41.9804,-87.9345_200m_1dr`,
+      `O'Hare wind rehearsal_${snapshotId}_chicago-il_200m_1dr`,
     );
     expect(bundledSnapshot.description).toContain(
-      `Config name: O'Hare wind rehearsal_${snapshotId}_41.9804,-87.9345_200m_1dr`,
+      `Config name: O'Hare wind rehearsal_${snapshotId}_chicago-il_200m_1dr`,
     );
     expect(bundledSnapshot.location).toEqual({
-      label: "Chicago O'Hare Airport",
+      label: 'Chicago, Illinois, United States',
       latitude: 41.980381,
       longitude: -87.934524,
       altitude: 200,
+      attribution: 'Nominatim, location data by OpenStreetMap contributors',
+      source: 'nominatim',
       coordinates: '41.980381, -87.934524, 200 m',
     });
+    expect(bundledSnapshot.description).not.toContain('Location source:');
     expect(bundledSnapshot.droneQuips).toEqual([
       {
         name: 'Survey Drone',
@@ -340,14 +345,127 @@ describe('savedSettingsStorage', () => {
     expect(savedSnapshot.description).toContain('Location: 35.123400, -80.987600, 125 m.');
   });
 
-  test('downloads task payload with the snapshot stem when present', async () => {
+  test('normalizes saved coordinate suffixes to resolved place suffixes when metadata has a useful label', async () => {
+    const legacyName = 'settings-20260425T210655555.json';
+    const legacyDisplayName = 'dsfcv_settings-20260425T210655555_41.7619,-88.1535_195m_2dr';
+    const rootDirectory = await navigator.storage.getDirectory();
+    const savedSettingsDirectory = await rootDirectory.getDirectoryHandle('saved-settings', {
+      create: true,
+    });
+    const snapshotHandle = await savedSettingsDirectory.getFileHandle(legacyName, {
+      create: true,
+    });
+    const writable = await snapshotHandle.createWritable();
+
+    await writable.write(
+      JSON.stringify({
+        version: 3,
+        savedAt: new Date().toISOString(),
+        displayName: legacyDisplayName,
+        metadata: {
+          displayName: legacyDisplayName,
+          location: {
+            label: 'Naperville, Illinois, United States',
+            latitude: 41.7619,
+            longitude: -88.1535,
+            altitude: 195,
+            attribution: 'Nominatim, location data by OpenStreetMap contributors',
+            source: 'nominatim',
+            coordinates: '41.761900, -88.153500, 195 m',
+          },
+          drones: [
+            {
+              name: 'Lead Drone',
+              missionType: 'Fly to points',
+              quip: 'Lead Drone: Fly to points',
+            },
+            {
+              name: 'Wing Drone',
+              missionType: 'Fly in circle',
+              quip: 'Wing Drone: Fly in circle',
+            },
+          ],
+          description: `Config name: ${legacyDisplayName}.`,
+        },
+        settings: {
+          SettingsVersion: 2.0,
+          OriginGeopoint: {
+            Latitude: 41.7619,
+            Longitude: -88.1535,
+            Altitude: 195,
+          },
+        },
+        task: {
+          Drones: [
+            { Name: 'Lead Drone', MissionValue: 'fly_to_points' },
+            { Name: 'Wing Drone', MissionValue: 'fly_in_circle' },
+          ],
+          environment: {
+            UseGeo: true,
+            Origin: {
+              Latitude: 41.7619,
+              Longitude: -88.1535,
+              Height: 195,
+            },
+          },
+        },
+      }),
+    );
+    await writable.close();
+
+    const savedSnapshot = await readSnapshot(legacyName);
+    expect(savedSnapshot.displayName).toBe(
+      'dsfcv_settings-20260425T210655555_naperville-il_195m_2dr',
+    );
+    expect(savedSnapshot.description).toContain(
+      'Config name: dsfcv_settings-20260425T210655555_naperville-il_195m_2dr',
+    );
+    expect(savedSnapshot.description).toContain(
+      'Location: Naperville, Illinois, United States (41.761900, -88.153500, 195 m).',
+    );
+    expect(savedSnapshot.description).not.toContain('Location source:');
+  });
+
+  test('downloads settings and task payloads with the saved display name', async () => {
     const snapshot = await saveSnapshot(
-      { SettingsVersion: 2.0, label: 'bundle-settings' },
-      { Drones: [{ Name: 'Drone1' }], environment: { UseGeo: false } },
+      {
+        SettingsVersion: 2.0,
+        label: 'bundle-settings',
+        OriginGeopoint: {
+          Latitude: 41.7619,
+          Longitude: -88.1535,
+          Altitude: 208,
+        },
+      },
+      {
+        Drones: [
+          { Name: 'Lead Drone', MissionValue: 'fly_to_points' },
+          { Name: 'Wing Drone', MissionValue: 'fly_in_circle' },
+        ],
+        environment: {
+          UseGeo: true,
+          Origin: {
+            Latitude: 41.7619,
+            Longitude: -88.1535,
+            Height: 208,
+          },
+        },
+      },
+      {
+        displayName: 'bgfb',
+        locationLabel: 'Prospect Heights, Illinois, United States',
+      },
     );
 
     const originalCreateElement = document.createElement.bind(document);
+    const downloads = [];
     const anchor = { click: jest.fn() };
+    Object.defineProperty(anchor, 'download', {
+      get: () => downloads[downloads.length - 1],
+      set: (value) => {
+        downloads.push(value);
+      },
+    });
     jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
       if (tagName === 'a') {
         return anchor;
@@ -355,11 +473,17 @@ describe('savedSettingsStorage', () => {
       return originalCreateElement(tagName);
     });
 
+    await downloadSettingsSnapshot(snapshot.name);
     await downloadTaskSnapshot(snapshot.name);
 
     expect(window.URL.createObjectURL).toHaveBeenCalled();
-    expect(anchor.download).toBe(snapshot.name.replace(/\.json$/, '-task.json'));
-    expect(anchor.click).toHaveBeenCalled();
-    expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-settings');
+    expect(anchor.click).toHaveBeenCalledTimes(2);
+    expect(snapshot.displayName).toContain('prospect-heights-il_208m_2dr');
+    expect(downloads).toEqual([
+      `${snapshot.displayName}.json`,
+      `${snapshot.displayName}-task.json`,
+    ]);
+    expect(window.URL.createObjectURL).toHaveBeenCalledTimes(2);
+    expect(window.URL.revokeObjectURL).toHaveBeenCalledTimes(2);
   });
 });

@@ -5,6 +5,55 @@ const stripSensorKey = (sensor) => {
   return sanitizedSensor;
 };
 
+function toFiniteNumberOrOriginal(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : value;
+}
+
+function normalizeWindForPayload(wind) {
+  if (!wind || typeof wind !== 'object') {
+    return wind;
+  }
+
+  const normalizedWind = { ...wind };
+  if (normalizedWind.Force != null) {
+    normalizedWind.Force = toFiniteNumberOrOriginal(normalizedWind.Force);
+  }
+  if (normalizedWind.Velocity != null) {
+    normalizedWind.Velocity = toFiniteNumberOrOriginal(normalizedWind.Velocity);
+  }
+
+  if (normalizedWind.Velocity == null && normalizedWind.Force != null) {
+    normalizedWind.Velocity = normalizedWind.Force;
+  }
+
+  Object.entries(normalizedWind).forEach(([key, value]) => {
+    if (
+      key.startsWith('Wind') &&
+      value &&
+      typeof value === 'object' &&
+      value.Velocity == null &&
+      value.Force != null
+    ) {
+      normalizedWind[key] = {
+        ...value,
+        Force: toFiniteNumberOrOriginal(value.Force),
+        Velocity: toFiniteNumberOrOriginal(value.Force),
+      };
+    } else if (key.startsWith('Wind') && value && typeof value === 'object') {
+      normalizedWind[key] = {
+        ...value,
+        Force:
+          value.Force != null ? toFiniteNumberOrOriginal(value.Force) : value.Force,
+        Velocity:
+          value.Velocity != null ? toFiniteNumberOrOriginal(value.Velocity) : value.Velocity,
+      };
+    }
+  });
+
+  return normalizedWind;
+}
+
 export function getDronesForPayload(mainJson) {
   return Array.isArray(mainJson?.Drones)
     ? mainJson.Drones.map((droneConfig) => {
@@ -53,7 +102,7 @@ export function getEnvironmentForPayload(environment) {
     },
   };
 
-  if (environment.Wind) environmentToSend.Wind = environment.Wind;
+  if (environment.Wind) environmentToSend.Wind = normalizeWindForPayload(environment.Wind);
   if (environment.TimeOfDay) environmentToSend.TimeOfDay = environment.TimeOfDay;
   if (environment.Sades) environmentToSend.Sades = environment.Sades;
 

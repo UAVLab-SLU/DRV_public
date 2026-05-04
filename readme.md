@@ -51,6 +51,12 @@ All backend endpoints return a standardized error envelope with `code`, `message
 
 Interactive API documentation is available at `/api/docs` when the backend is running (e.g. `http://localhost:5000/api/docs`). The OpenAPI 3.x spec can also be exported as JSON from `/apispec.json` for use in client code generation tools.
 
+### Contributor Reference Docs
+
+- [Environment variable catalog](docs/reference/environment-variables.md)
+- [OpenAPI / Swagger usage guide](docs/api/swagger.md)
+- [Project glossary](docs/reference/glossary.md)
+
 ## Quick Start (Docker)
 
 ### Prerequisites

@@ -37,6 +37,10 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 
 ## Architecture
 
+For implementation-focused runtime diagrams, see
+[Frontend Data Flow](docs/architecture/frontend-data-flow.md) and
+[Backend Data Flow](docs/architecture/backend-data-flow.md).
+
 DroneReqValidator has 3 main components:
 
 1. **DRV-Unreal** - Unreal-based simulation engine (headless mode)

@@ -43,7 +43,7 @@ DroneReqValidator has 3 main components:
 2. **Flask Backend** - Python-based simulation controller and monitoring service
 3. **React Frontend** - JavaScript-based user interface for configuration and visualization
 
-![DroneWorld Architecture](image.png)
+![DroneWorld Architecture](docs/team/Architecture_Diagram.png)
 
 ### API Error Handling
 

@@ -126,6 +126,10 @@ By default, rebuild commands also verify frontend lockfile consistency and regen
 
 Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
 
+For a contributor-focused writeup on using mock mode and verification checkpoints
+to reduce setup friction, see
+[Case Study: Reducing Onboarding Friction in DroneWorld](docs/case-studies/onboarding-friction-case-study.md).
+
 ### Option 1: Full Stack (Recommended for Testing)
 
 Run all services including the simulation engine:

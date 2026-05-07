@@ -37,11 +37,17 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 
 ## Architecture
 
+For implementation-focused runtime diagrams, see
+[Frontend Data Flow](docs/architecture/frontend-data-flow.md) and
+[Backend Data Flow](docs/architecture/backend-data-flow.md).
+
 DroneReqValidator has 3 main components:
 
 1. **DRV-Unreal** - Unreal-based simulation engine (headless mode)
 2. **Flask Backend** - Python-based simulation controller and monitoring service
 3. **React Frontend** - JavaScript-based user interface for configuration and visualization
+
+![DroneWorld Architecture](docs/team/Architecture_Diagram.png)
 
 ### API Error Handling
 
@@ -126,6 +132,10 @@ By default, rebuild commands also verify frontend lockfile consistency and regen
 
 Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
 
+For a contributor-focused writeup on using mock mode and verification checkpoints
+to reduce setup friction, see
+[Case Study: Reducing Onboarding Friction in DroneWorld](docs/case-studies/onboarding-friction-case-study.md).
+
 ### Option 1: Full Stack (Recommended for Testing)
 
 Run all services including the simulation engine:
@@ -147,9 +157,8 @@ docker-compose up
 
 **Using Mock Simulator**
 
-In backend .env, set 
+In backend .env, set
 SIMULATOR_TYPE=mock
-
 
 ### Option 2: Frontend/Backend Only (Recommended for Development)
 
@@ -230,16 +239,16 @@ Example `settings.json`:
 
 ```json
 {
-    "SettingsVersion": 1.2,
-    "SimMode": "Multirotor",
-    "Vehicles": {
-        "Drone1": {
-            "FlightController": "SimpleFlight",
-            "X": 0,
-            "Y": 0,
-            "Z": 0
-        }
+  "SettingsVersion": 1.2,
+  "SimMode": "Multirotor",
+  "Vehicles": {
+    "Drone1": {
+      "FlightController": "SimpleFlight",
+      "X": 0,
+      "Y": 0,
+      "Z": 0
     }
+  }
 }
 ```
 
@@ -247,9 +256,9 @@ Example `cesium.json`:
 
 ```json
 {
-    "latitude": 38.63657,
-    "longitude": -90.236895,
-    "height": 163.622131
+  "latitude": 38.63657,
+  "longitude": -90.236895,
+  "height": 163.622131
 }
 ```
 
@@ -336,6 +345,7 @@ docker-compose down
 # Stop and remove volumes
 docker-compose down -v
 ```
+
 ### Hot Reload
 
 Both frontend and backend support automatic hot reload during development:
@@ -344,6 +354,7 @@ Both frontend and backend support automatic hot reload during development:
 - **Backend**: Changes to Python files automatically restart the Flask server
 
 Verify hot reload is working:
+
 ```bash
 # Watch logs for recompilation/restart messages
 docker-compose logs -f frontend backend
@@ -460,6 +471,7 @@ Use this when you want to bypass generated task settings and quickly test with a
 3. Submit a task from the frontend as usual.
 
 Behavior:
+
 - If `JSON_DEBUG_MODE=true` and a debug `settings.json` is found, backend uses that file as the settings payload.
 - If `JSON_DEBUG_MODE=true` but no debug `settings.json` exists, backend falls back to normal generated settings.
 - Default is `false`, so normal settings generation is unchanged unless you opt in.
@@ -501,6 +513,7 @@ AUTO_SYNC_FRONTEND_LOCKFILE=true
 ### Set Up GitHub Token
 
 **Linux/macOS:**
+
 ```bash
 ./dev.sh token
 # Enter your token when prompted
@@ -508,6 +521,7 @@ AUTO_SYNC_FRONTEND_LOCKFILE=true
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
 .\dev.ps1 token
 # Enter your token when prompted
@@ -515,6 +529,7 @@ AUTO_SYNC_FRONTEND_LOCKFILE=true
 ```
 
 **Creating a GitHub Personal Access Token:**
+
 1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
 2. Click "Generate new token (classic)"
 3. Give it a descriptive name (e.g., "DroneWorld Simulator")
@@ -525,7 +540,9 @@ AUTO_SYNC_FRONTEND_LOCKFILE=true
 **Note:** Once saved, the token is automatically loaded from `.env` when you run `./dev.sh full` or `./dev.sh simulator`.
 
 ### Port Already in Use
+
 All service ports are defined once in root `.env`. If you see port-in-use errors:
+
 ```bash
 # Stop conflicting services or change the ports in .env, then rebuild (compose picks them up automatically)
 docker-compose down
@@ -556,4 +573,5 @@ If the simulation engine container crashes with memory errors, increase Docker's
 Contributions to this project are welcome! For details on how to contribute, please follow our [Contributing Guide](https://github.com/oss-slu/DroneWorld/wiki/Contributing-Guide).
 
 ## License
+
 This project is licensed under the MIT license. See the LICENSE file for more information.

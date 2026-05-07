@@ -57,6 +57,10 @@ All backend endpoints return a standardized error envelope with `code`, `message
 
 Interactive API documentation is available at `/api/docs` when the backend is running (e.g. `http://localhost:5000/api/docs`). The OpenAPI 3.x spec can also be exported as JSON from `/apispec.json` for use in client code generation tools.
 
+### Architecture Decision Records
+
+DroneWorld records durable architecture decisions in [docs/adr/README.md](docs/adr/README.md). Add or update an ADR when a change affects long-lived architecture, contracts, runtime behavior, contributor workflow, or data formats.
+
 ## Quick Start (Docker)
 
 ### Prerequisites

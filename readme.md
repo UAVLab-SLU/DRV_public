@@ -57,6 +57,10 @@ Interactive API documentation is available at `/api/docs` when the backend is ru
 - [OpenAPI / Swagger usage guide](docs/api/swagger.md)
 - [Project glossary](docs/reference/glossary.md)
 
+### Architecture Decision Records
+
+DroneWorld records durable architecture decisions in [docs/adr/README.md](docs/adr/README.md). Add or update an ADR when a change affects long-lived architecture, contracts, runtime behavior, contributor workflow, or data formats.
+
 ## Quick Start (Docker)
 
 ### Prerequisites

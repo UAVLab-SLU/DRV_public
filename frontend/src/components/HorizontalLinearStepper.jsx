@@ -33,7 +33,10 @@ import {
 } from '../services/savedSettingsStorage';
 import { resolveLocationDetails } from '../services/locationNameResolver';
 import { useMainJson } from '../contexts/MainJsonContext';
-import { applyImportedConfig } from '../services/configImport/applyImportedConfig';
+import {
+  applyImportedConfig,
+  buildWizardStateFromImportedConfig,
+} from '../services/configImport/applyImportedConfig';
 
 const StyledButton = styled(Button)`
   border-radius: 25px;
@@ -66,7 +69,7 @@ async function readJsonBody(response) {
 
 export default function HorizontalLinearStepper(data) {
   const navigate = useNavigate();
-  const { replaceSimulationConfiguration } = useMainJson();
+  const { replaceSimulationConfiguration, activeScreen } = useMainJson();
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -75,11 +78,11 @@ export default function HorizontalLinearStepper(data) {
   const [saveDialogError, setSaveDialogError] = React.useState('');
   const [saveConfigName, setSaveConfigName] = React.useState('');
   const [pendingSubmissionPayload, setPendingSubmissionPayload] = React.useState(null);
-  const [mainJson, setJson, activeScreen] = React.useState({
-    Drones: null,
-    environment: null,
-    monitors: null,
-  });
+  const [mainJson, setJson] = React.useState(() =>
+    data.importedConfig
+      ? buildWizardStateFromImportedConfig(data.importedConfig)
+      : { Drones: null, environment: null, monitors: null },
+  );
 
   const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
 

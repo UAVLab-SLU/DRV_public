@@ -394,15 +394,8 @@ export default function EnvironmentConfiguration(env) {
         Origin: {
           ...prevState.Origin,
           Name: val.target.value,
-          Latitude: DEFAULT_ORIGIN.Latitude,
-          Longitude: DEFAULT_ORIGIN.Longitude,
-          Height: DEFAULT_ORIGIN.Height,
         },
       }));
-      setCurrentPosition({
-        lat: DEFAULT_ORIGIN.Latitude,
-        lng: DEFAULT_ORIGIN.Longitude,
-      });
     }
   };
   //WIND SHEAR WINDOW FUNCTIONS

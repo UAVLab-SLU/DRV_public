@@ -11,7 +11,7 @@ services:
     volumes:
       - ./backend:/app
       - ./credentials:/app/credentials
-      - ./config/airsim:/root/Documents/AirSim
+      - ${AIRSIM_SETTINGS_DIR:-./config/airsim}:/root/Documents/AirSim
     depends_on:
       fake-gcs:
         condition: service_healthy
@@ -21,6 +21,10 @@ services:
       - DRV_UNREAL_HOST=drv-unreal
       - DRV_UNREAL_API_PORT=3001
       - DRV_PIXELSTREAM_PORT=8888
+      - AIRSIM_HOST=host.docker.internal
+      - AIRSIM_PORT=41451
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - droneworld-network
 
@@ -31,9 +35,11 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+      - ./credentials:/credentials:ro
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - CESIUM_TOKEN_FILE=/credentials/frontend-cesium-token.json
       - PIXELSTREAM_URL=ws://localhost:8888
       - REACT_APP_BACKEND_URL=http://localhost:5000
     depends_on:

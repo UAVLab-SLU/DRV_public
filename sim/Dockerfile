@@ -120,8 +120,9 @@ USER ue4
 
 # Expose ports
 # Port 3000 for the UI (from DRV docs)
+# Port 41451 for AirSim RPC
 # Port 8888 for PixelStreaming (if using that feature)
-EXPOSE 3000 8888
+EXPOSE 3000 41451 8888
 
 # Default command - run with graphicsadapter flag as shown in docs
 CMD ["./Blocks.sh", "-RenderOffscreen", "-graphicsadapter=0"]

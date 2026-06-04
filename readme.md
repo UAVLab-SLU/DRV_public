@@ -124,6 +124,35 @@ Run without the simulation engine for faster development:
 docker-compose -f docker-compose.dev.yml up
 ```
 
+For the local Windows Docker setup used while debugging frontend, backend, AirSim RPC, Cesium token, and fake GCS, run this from the repo root:
+
+```powershell
+cd G:\DRV_public
+$env:AIRSIM_SETTINGS_DIR = Join-Path $HOME 'Documents\AirSim'
+docker compose -p drvwtest -f docker-compose.dev.yaml up backend frontend fake-gcs
+```
+
+This starts:
+
+- Frontend at `http://localhost:3000`
+- Backend at `http://localhost:5000`
+- Fake GCS at `http://localhost:4443`
+
+The dev compose file mounts `$env:AIRSIM_SETTINGS_DIR` into the backend container as `/root/Documents/AirSim`, so Unreal and the backend can share `settings.json` when `$env:AIRSIM_SETTINGS_DIR` points to `C:\Users\<you>\Documents\AirSim`.
+
+For a clean restart after code changes:
+
+```powershell
+$env:AIRSIM_SETTINGS_DIR = Join-Path $HOME 'Documents\AirSim'
+docker compose -p drvwtest -f docker-compose.dev.yaml restart backend frontend
+```
+
+To stop this local dev stack:
+
+```powershell
+docker compose -p drvwtest -f docker-compose.dev.yaml down
+```
+
 **Services started:**
 
 - Frontend UI (http://localhost:3000)

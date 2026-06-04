@@ -1,69 +1,63 @@
-import { Link } from 'react-router-dom';
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import Link from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
+import { useThemeTokens } from "../theme/palette";
 
-const commonButtonStyle = {
-  textDecoration: 'none',
-  padding: '8px 16px',
-  borderRadius: '6px',
-  backgroundColor: 'white',
-  color: '#8c8c8c',
-  fontWeight: 300,
-  fontSize: '14px',
-};
+export default function Footer() {
+  const tokens = useThemeTokens();
 
-const disabledButtonStyle = {
-  ...commonButtonStyle,
-  border: 'none',
-  cursor: 'not-allowed',
-};
-
-const containerStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: '16px',
-  fontFamily: 'Arial, sans-serif',
-  backgroundColor: 'white',
-  color: '#8c8c8c',
-  fontWeight: 300,
-  fontSize: '14px',
-};
-
-function Footer() {
   return (
-    <>
-      <div
-        style={{
-          ...containerStyle,
-          gap: '12px',
-          borderTop: '1px solid #e5e7eb',
+    <Box
+      component="footer"
+      sx={{
+        backgroundColor: tokens.brand.primary,
+        borderTop: `1px solid ${tokens.brand.secondary}`,
+        py: 2,
+        px: 3,
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: 1280,
+          mx: "auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          flexWrap: "wrap",
         }}
       >
-        <a
-          href='https://oss-slu.github.io/projects/droneworld/about/'
-          target='_blank'
-          rel='noopener noreferrer'
-          style={commonButtonStyle}
+        <Link
+          href="https://oss-slu.github.io/projects/droneworld/about/"
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+          sx={{ color: tokens.text.secondary, fontSize: "0.875rem" }}
         >
           Documentation
-        </a>
+        </Link>
 
-        <a
-          href='https://github.com/oss-slu/DroneWorld/'
-          target='_blank'
-          rel='noopener noreferrer'
-          style={commonButtonStyle}
+        <Divider orientation="vertical" flexItem sx={{ borderColor: tokens.brand.secondary }} />
+
+        <Link
+          href="https://github.com/oss-slu/DroneWorld/"
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+          sx={{ color: tokens.text.secondary, fontSize: "0.875rem" }}
         >
           GitHub
-        </a>
+        </Link>
 
-        <button disabled aria-disabled='true' style={disabledButtonStyle}>
-          Support
-        </button>
-      </div>
+        <Divider orientation="vertical" flexItem sx={{ borderColor: tokens.brand.secondary }} />
 
-      <div style={containerStyle}>© 2024 DroneWorld. Built by OSS-SLU. All rights reserved.</div>
-    </>
+        <Typography
+          sx={{ color: tokens.text.muted, fontSize: "0.875rem" }}
+        >
+          &copy; 2024 DroneWorld &mdash; Built by OSS-SLU
+        </Typography>
+      </Box>
+    </Box>
   );
 }
-
-export default Footer;

@@ -1,294 +1,231 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Box, Container, Grid, Paper, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import FlightIcon from "@mui/icons-material/Flight";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { useThemeTokens } from "../theme/palette";
 
-const useStyles = makeStyles((theme) => ({
-  pageContainer: {
-    minHeight: '100vh',
-    backgroundColor: '#1e40af',
-    padding: '2rem 0',
+const FEATURES = [
+  {
+    icon: <ScienceOutlinedIcon />,
+    color: "#a78bfa",
+    bg: "rgba(124,58,237,0.12)",
+    title: "Revolutionary Testing",
+    body: "DroneWorld replaces costly field testing with high-fidelity simulation, letting teams validate sUAS behaviour before any real-world flight.",
   },
-  glassTile: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '32px',
-    padding: '4rem',
-    color: '#fff',
-    textAlign: 'center',
-    height: '400px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    margin: '0 0.5rem',
-    '&:hover': {
-      filter: 'brightness(0.75)',
-    },
+  {
+    icon: <PublicOutlinedIcon />,
+    color: "#2dd4bf",
+    bg: "rgba(13,148,136,0.12)",
+    title: "Simulation Ecosystem",
+    body: "Generate realistic 3D environments — adverse weather, wireless interference, dynamic obstacles — fully configurable from the browser.",
   },
-  fullWidthTile: {
-    width: 'calc(100% - 1rem)',
-    marginBottom: '2rem',
-    marginLeft: '0.5rem',
-    marginRight: '0.5rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '32px',
-    padding: '50px 60px',
-    color: '#fff',
-    textAlign: 'center',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      filter: 'brightness(0.75)',
-    },
+  {
+    icon: <BarChartOutlinedIcon />,
+    color: "#fb923c",
+    bg: "rgba(249,115,22,0.12)",
+    title: "Automated Analysis",
+    body: "Monitor sUAS activity against predefined safety parameters and produce detailed acceptance test reports with actionable debugging insights.",
   },
-  tableTile: {
-    width: 'calc(100% - 1rem)',
-    marginBottom: '2rem',
-    marginLeft: '0.5rem',
-    marginRight: '0.5rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '32px',
-    padding: '50px 60px',
-    color: '#fff',
-    textAlign: 'center',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      filter: 'brightness(0.75)',
-    },
+  {
+    icon: <ShieldOutlinedIcon />,
+    color: "#4ade80",
+    bg: "rgba(34,197,94,0.12)",
+    title: "Safety & Reliability",
+    body: "Ensure your sUAS meets the highest safety standards through rigorous simulation of operational scenarios before real-world deployment.",
   },
-  gradientTile: {
-    width: 'calc(100% - 1rem)',
-    marginBottom: '2rem',
-    marginLeft: '0.5rem',
-    marginRight: '0.5rem',
-    background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3730a3 100%)',
-    backdropFilter: 'none',
-    border: 'none',
-    borderRadius: '32px',
-    padding: '6rem',
-    color: '#fff',
-    textAlign: 'center',
-    minHeight: '120px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      filter: 'brightness(0.75)',
-    },
-  },
-  gridContainer: {
-    marginBottom: '2rem',
-  },
-  title: {
-    color: '#fff',
-    fontWeight: 700,
-    marginBottom: '3rem',
-    textAlign: 'center',
-  },
-}));
+];
 
-const commonStyles = {
-  emoji: {
-    fontSize: '3rem',
-    marginBottom: '1rem',
-  },
-  heading: {
-    color: '#000',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-  },
-  description: {
-    fontSize: '1rem',
-    color: '#374151',
-    lineHeight: 1.6,
-    fontWeight: 'normal',
-  },
-  tableHeader: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    color: '#1e40af',
-  },
-  tableDescription: {
-    fontSize: '1rem',
-    color: '#374151',
-    fontWeight: 'light',
-  },
-};
+const STATS = [
+  { value: "Dr. Ankit Agrawal", label: "Project Client" },
+  { value: "OSS-SLU Team",      label: "Development Team" },
+  { value: "MIT License",       label: "Open Source" },
+  { value: "Since 2023",        label: "Active Development" },
+];
 
-const GridTile = ({ emoji, heading, description }) => (
-  <Box sx={{ textAlign: 'center' }}>
-    <Typography sx={commonStyles.emoji}>{emoji}</Typography>
-    <Typography variant='h5' component='h3' sx={commonStyles.heading}>
-      {heading}
-    </Typography>
-    <Typography component='span' sx={commonStyles.description}>
-      {description}
-    </Typography>
-  </Box>
-);
-
-GridTile.propTypes = {
-  emoji: PropTypes.string.isRequired,
-  heading: PropTypes.string.isRequired,
-  description: PropTypes.string.isRequired,
-};
-
-function AboutUs() {
-  const classes = useStyles();
+export default function AboutUs() {
+  const tokens = useThemeTokens();
 
   return (
-    <Box className={classes.pageContainer}>
-      <Container maxWidth='lg'>
-        <Paper className={classes.fullWidthTile} elevation={0}>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography
-              variant='h3'
-              component='h1'
-              sx={{
-                color: '#1e40af',
-                fontWeight: 'bold',
-                marginBottom: '1rem',
-              }}
-            >
-              About Drone World
-            </Typography>
-            <Typography
-              component='span'
-              sx={{
-                fontSize: '1.1rem',
-                color: '#374151',
-                lineHeight: 1.6,
-              }}
-            >
-              Revolutionizing sUAS testing through innovative simulation ecosystems and automated
-              testing solutions
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 128px)",
+        backgroundColor: tokens.surface.base,
+        py: { xs: 6, md: 10 },
+      }}
+    >
+      <Container maxWidth="lg">
+
+        {/* ── Hero ─────────────────────────────────────── */}
+        <Box sx={{ textAlign: "center", mb: { xs: 6, md: 10 } }}>
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1,
+              mb: 3,
+              px: 2,
+              py: 0.75,
+              borderRadius: 10,
+              border: "1px solid rgba(59,130,246,0.35)",
+              bgcolor: "rgba(59,130,246,0.08)",
+            }}
+          >
+            <FlightIcon
+              sx={{ color: tokens.brand.soft, fontSize: "0.9rem", transform: "rotate(45deg)" }}
+            />
+            <Typography variant="caption" sx={{ color: tokens.brand.soft, fontWeight: 700 }}>
+              About DroneWorld
             </Typography>
           </Box>
-        </Paper>
 
-        <Grid container spacing={3} className={classes.gridContainer}>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.glassTile} elevation={0}>
-              <GridTile
-                emoji='🔬'
-                heading='Revolutionary Testing'
-                description='Drone World is revolutionizing sUAS (small Uncrewed Aerial Systems) testing. In the dynamic world of sUAS, safety and reliability are paramount. Traditional field testing across diverse environments is costly and challenging.'
-              />
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.glassTile} elevation={0}>
-              <GridTile
-                emoji='🌐'
-                heading='Simulation Ecosystem'
-                description='Drone World offers an innovative sUAV simulation ecosystem that generates high-fidelity, realistic environments mimicking real-world complexities like adverse weather and wireless interference. Our automated solution allows developers to specify constraints and generate tailored test environments.'
-              />
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.glassTile} elevation={0}>
-              <GridTile
-                emoji='📊'
-                heading='Automated Analysis'
-                description='The program monitors sUAV activities against predefined safety parameters and generates detailed acceptance test reports. This approach provides actionable insights for effective debugging and analysis, enhancing the safety, reliability, and efficiency of sUAS applications.'
-              />
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper className={classes.glassTile} elevation={0}>
-              <GridTile
-                emoji='🛡️'
-                heading='Safety & Reliability'
-                description='Our comprehensive testing platform ensures your sUAS meets the highest safety standards through rigorous simulation of real-world scenarios, environmental challenges, and operational constraints before deployment in actual field conditions.'
-              />
-            </Paper>
-          </Grid>
+          <Typography
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              fontSize: { xs: "2rem", md: "2.8rem" },
+              color: tokens.text.primary,
+              lineHeight: 1.2,
+              mb: 2.5,
+            }}
+          >
+            Advanced sUAS Testing Platform
+          </Typography>
+
+          <Typography
+            sx={{
+              color: tokens.text.secondary,
+              fontSize: { xs: "1rem", md: "1.1rem" },
+              maxWidth: 680,
+              mx: "auto",
+              lineHeight: 1.8,
+            }}
+          >
+            Developed by Dr.&nbsp;Ankit Agrawal and the OSS-SLU team, DroneWorld enables teams to
+            configure detailed test scenarios, generate realistic 3D simulation environments, and
+            produce comprehensive safety compliance reports — all from the browser.
+          </Typography>
+        </Box>
+
+        {/* ── Feature cards ────────────────────────────── */}
+        <Grid container spacing={3} sx={{ mb: { xs: 6, md: 8 } }}>
+          {FEATURES.map((f) => (
+            <Grid key={f.title} size={{ xs: 12, sm: 6 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backgroundColor: "#161e2e",
+                  transition: "border-color 200ms",
+                  "&:hover": { borderColor: "rgba(255,255,255,0.18)" },
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="flex-start">
+                  <Box
+                    sx={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: f.bg,
+                      color: f.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {f.icon}
+                  </Box>
+                  <Box>
+                    <Typography
+                      sx={{ fontWeight: 700, color: tokens.text.primary, mb: 0.75, fontSize: "1rem" }}
+                    >
+                      {f.title}
+                    </Typography>
+                    <Typography
+                      sx={{ color: tokens.text.secondary, fontSize: "0.9rem", lineHeight: 1.7 }}
+                    >
+                      {f.body}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
 
-        <Paper className={classes.tableTile} elevation={0}>
-          <Box sx={{ textAlign: 'center', width: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableHeader}>Dr. Ankit Agrawal</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableHeader}>OSS-SLU Team</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableHeader}>MIT License</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableHeader}>Since 2023</Typography>
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableDescription}>Project Client</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableDescription}>Development Team</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableDescription}>Open Source</Typography>
-                  </td>
-                  <td style={{ padding: '1rem', textAlign: 'center' }}>
-                    <Typography sx={commonStyles.tableDescription}>Active Development</Typography>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </Box>
+        {/* ── Stats strip ──────────────────────────────── */}
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid rgba(255,255,255,0.08)",
+            backgroundColor: "#161e2e",
+            borderRadius: 2,
+            py: { xs: 4, md: 5 },
+            px: { xs: 2, md: 6 },
+          }}
+        >
+          <Grid container>
+            {STATS.map((s, i) => (
+              <Grid key={s.label} size={{ xs: 6, md: 3 }}>
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 1,
+                    px: { xs: 1, md: 2 },
+                    borderRight:
+                      i < STATS.length - 1
+                        ? { md: "1px solid rgba(255,255,255,0.08)" }
+                        : "none",
+                    borderBottom:
+                      i < 2 ? { xs: "1px solid rgba(255,255,255,0.08)", md: "none" } : "none",
+                    pb: { xs: i < 2 ? 2 : 0, md: 0 },
+                    pt: { xs: i >= 2 ? 2 : 0, md: 0 },
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "0.85rem", md: "1rem" },
+                      color: tokens.brand.soft,
+                      mb: 0.5,
+                    }}
+                  >
+                    {s.value}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: tokens.text.secondary, letterSpacing: "0.04em", display: "block" }}
+                  >
+                    {s.label}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
         </Paper>
 
-        <Paper className={classes.gradientTile} elevation={0}>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography
-              variant='h4'
-              component='h2'
-              sx={{
-                color: '#fff',
-                fontWeight: 'bold',
-                marginBottom: '1.5rem',
-              }}
-            >
-              Advanced sUAS Testing Platform
-            </Typography>
-            <Typography
-              component='span'
-              sx={{
-                fontSize: '1rem',
-                color: '#fff',
-                lineHeight: 1.6,
-                fontWeight: 'normal',
-              }}
-            >
-              DroneWorld, developed by Dr. Ankit Agrawal and the OSS-SLU team, is an advanced
-              simulation platform for testing small unmanned aerial systems (sUAS). Our platform
-              enables users to configure detailed test scenarios by specifying environmental
-              conditions, sUAS capabilities, and mission objective. By generating realistic 3D
-              simulation environments and monitoring data for safety compliance, we produce
-              comprehensive test reports that help developers refine their systems and iterate more
-              rapidly on complex missions.
-            </Typography>
-          </Box>
-        </Paper>
+        {/* ── Open-source note ─────────────────────────── */}
+        <Box sx={{ mt: { xs: 5, md: 7 }, textAlign: "center", maxWidth: 680, mx: "auto" }}>
+          <Divider sx={{ mb: 4, borderColor: "rgba(255,255,255,0.08)" }} />
+          <Typography variant="overline" sx={{ color: tokens.brand.soft, display: "block", mb: 1.5 }}>
+            Open Source
+          </Typography>
+          <Typography sx={{ color: tokens.text.secondary, lineHeight: 1.8, fontSize: "0.9rem" }}>
+            DroneWorld is released under the MIT License and actively maintained by the OSS-SLU
+            community. Contributions, issue reports, and feature requests are welcome on GitHub.
+          </Typography>
+        </Box>
       </Container>
     </Box>
   );
 }
-
-export default AboutUs;

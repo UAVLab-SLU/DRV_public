@@ -1,102 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import styled from '@emotion/styled';
-import { Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import NotFoundImage from '../Assets/Images/NotFound.svg';
+import FlightIcon from "@mui/icons-material/Flight";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import { Link } from "react-router-dom";
+import { useThemeTokens } from "../theme/palette";
 
-const NotFoundContainer = styled.div`
-  height: calc(100vh - 5.3em);
-  width: 100vw;
-  align-items: center;
-  justify-content: space-between;
-  display: block;
+export default function NotFound() {
+  const tokens = useThemeTokens();
 
-  @media (min-width: 768px) {
-    display: flex;
-    flex-direction: row-reverse;
-  }
-`;
-
-const NotFoundImgContainer = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 5px;
-
-  @media (min-width: 768px) {
-    width: 50%;
-    padding: 50px;
-    height: 100%;
-  }
-
-  @media (min-width: 600px) and (max-width: 1024px) {
-    padding: 10px;
-  }
-`;
-
-const NotFoundMessage = styled.div`
-  width: 100%;
-  padding: 0;
-
-  @media (min-width: 768px) {
-    width: 50%;
-    padding: 50px;
-  }
-
-  @media (min-width: 600px) and (max-width: 1024px) {
-    padding: 10px;
-  }
-`;
-
-const NotFoundChild = styled.div`
-  width: 90%;
-  margin: auto;
-
-  @media (min-width: 768px) {
-    width: 70%;
-  }
-
-  @media (min-width: 768px) and (max-width: 1024px) {
-    width: 80%;
-  }
-`;
-
-const RemoveMarginPadding = {
-  margin: '0 0 20px 0',
-  padding: 0,
-};
-
-function NotFound() {
   return (
-    <NotFoundContainer>
-      <NotFoundImgContainer>
-        <img src={NotFoundImage} alt='' />
-      </NotFoundImgContainer>
-      <NotFoundMessage>
-        <NotFoundChild>
-          <h2 style={{ fontSize: '2em', ...RemoveMarginPadding }}>Something is not right...</h2>
-          <p style={{ fontSize: '16px' }}>
-            The page you are trying to open does not exist. You may have mistyped the address, or
-            the page may have been moved to a different URL. If you believe this is an error, please
-            contact support.
-          </p>
-          <Link to='/' style={{ textDecoration: 'none' }}>
-            <Button
-              variant='contained'
-              sx={{
-                color: 'white',
-                padding: '15px 30px',
-                borderRadius: '10px',
-                marginTop: '1rem',
-              }}
-            >
-              Back to Homepage
-            </Button>
-          </Link>
-        </NotFoundChild>
-      </NotFoundMessage>
-    </NotFoundContainer>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 128px)",
+        display: "flex",
+        alignItems: "center",
+        background: tokens.surface.heroOverlay,
+      }}
+    >
+      <Container maxWidth="sm" sx={{ textAlign: "center", py: 8 }}>
+        <FlightIcon
+          sx={{
+            fontSize: "5rem",
+            color: tokens.brand.secondary,
+            transform: "rotate(45deg)",
+            mb: 3,
+            opacity: 0.6,
+          }}
+        />
+        <Typography
+          component="h1"
+          sx={{ fontWeight: 800, fontSize: "5rem", color: tokens.text.primary, lineHeight: 1 }}
+        >
+          404
+        </Typography>
+        <Typography
+          sx={{ fontWeight: 700, fontSize: "1.4rem", color: tokens.text.primary, mt: 1, mb: 1.5 }}
+        >
+          Page Not Found
+        </Typography>
+        <Typography sx={{ color: tokens.text.secondary, mb: 4 }}>
+          The page you are looking for does not exist. You may have mistyped the address or the page
+          may have been moved.
+        </Typography>
+        <Button
+          component={Link}
+          to="/"
+          variant="contained"
+          sx={{
+            bgcolor: tokens.brand.secondary,
+            "&:hover": { bgcolor: tokens.brand.strong },
+            textTransform: "none",
+            fontWeight: 700,
+            borderRadius: 1,
+            px: 4,
+            py: 1.5,
+          }}
+        >
+          Back to Homepage
+        </Button>
+      </Container>
+    </Box>
   );
 }
-
-export default NotFound;

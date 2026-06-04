@@ -1,169 +1,197 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Entity } from 'resium';
 import {
-  ScreenSpaceEventType,
+  Cartesian2,
+  Cartesian3,
   Cartographic,
   Color,
-  Rectangle,
-  KeyboardEventModifier,
-  ScreenSpaceEventHandler,
-  Ellipsoid,
-  Math as CesiumMath,
-  Cartesian3,
-  Cartesian2,
-  HeightReference,
-  VerticalOrigin,
   DistanceDisplayCondition,
-} from 'cesium';
-import PropTypes from 'prop-types';
-import { useMainJson } from '../../contexts/MainJsonContext';
-import { EnvironmentModel } from '../../model/EnvironmentModel';
-import { findRectangleLength, findRectangleWidth } from '../../utils/mapUtils';
-import { imageUrls } from '../../utils/const';
+  HeightReference,
+  KeyboardEventModifier,
+  Math as CesiumMath,
+  Rectangle,
+  ScreenSpaceEventHandler,
+  ScreenSpaceEventType,
+  VerticalOrigin,
+} from "cesium";
+import PropTypes from "prop-types";
+import { useCallback, useEffect, useRef } from "react";
+import { Entity } from "resium";
+import { useMainJson } from "../../contexts/MainJsonContext";
+import { EnvironmentModel } from "../../model/EnvironmentModel";
+import { imageUrls } from "../../utils/const";
+import { findRectangleLength, findRectangleWidth } from "../../utils/mapUtils";
 
-const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
+const ZONE_HEIGHT_INCREASE = 200;
+
+const DrawSadeZone = ({ viewerReady, viewerRef }) => {
   const { envJson, setEnvJson } = useMainJson();
-  const [mouseDown, setMouseDown] = useState(false);
-  const [firstPoint, setFirstPoint] = useState(null);
-  const [lastPoint, setLastPoint] = useState(null);
-  const [zoneHeight, setZoneHeight] = useState(0);
+  const envJsonRef = useRef(envJson);
+  const mouseDownRef = useRef(false);
+  const firstPointRef = useRef(null);
+  const zoneHeightRef = useRef(0);
+  const controlStateRef = useRef(null);
 
+  useEffect(() => {
+    envJsonRef.current = envJson;
+  }, [envJson]);
+
+  const updateSadeZone = useCallback(
+    (rect) => {
+      const env = envJsonRef.current;
+      const idx = env.activeSadeZoneIndex;
+      if (idx == null) return;
+      const sade = env.getSadeBasedOnIndex(idx);
+      sade.rectangle = rect;
+      sade.length = findRectangleLength(rect);
+      sade.width = findRectangleWidth(rect);
+      sade.height = zoneHeightRef.current + ZONE_HEIGHT_INCREASE;
+      sade.centerLat = CesiumMath.toDegrees((rect.north + rect.south) / 2);
+      sade.centerLong = CesiumMath.toDegrees((rect.east + rect.west) / 2);
+      env.updateSadeBasedOnIndex(idx, sade);
+      setEnvJson(EnvironmentModel.getReactStateBasedUpdate(env));
+    },
+    [setEnvJson],
+  );
+
+  const lockMapControls = useCallback((viewer) => {
+    const ctrl = viewer.scene.screenSpaceCameraController;
+    if (controlStateRef.current == null) {
+      controlStateRef.current = {
+        enableRotate: ctrl.enableRotate,
+        enableTranslate: ctrl.enableTranslate,
+        enableZoom: ctrl.enableZoom,
+        enableTilt: ctrl.enableTilt,
+        enableLook: ctrl.enableLook,
+      };
+    }
+    ctrl.enableRotate = false;
+    ctrl.enableTranslate = false;
+    ctrl.enableZoom = false;
+    ctrl.enableTilt = false;
+    ctrl.enableLook = false;
+  }, []);
+
+  const restoreMapControls = useCallback((viewer) => {
+    if (controlStateRef.current == null) return;
+    const ctrl = viewer.scene.screenSpaceCameraController;
+    Object.assign(ctrl, controlStateRef.current);
+    controlStateRef.current = null;
+  }, []);
+
+  // Shift key listeners (keyboard)
+  useEffect(() => {
+    if (!viewerReady) return;
+    const viewer = viewerRef.current.cesiumElement;
+
+    const onKeyDown = (e) => {
+      if (e.key !== "Shift") return;
+      if (envJsonRef.current.activeSadeZoneIndex == null) return;
+      lockMapControls(viewer);
+    };
+    const onKeyUp = (e) => {
+      if (e.key !== "Shift") return;
+      restoreMapControls(viewer);
+    };
+    const onBlur = () => restoreMapControls(viewer);
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+      restoreMapControls(viewer);
+    };
+  }, [lockMapControls, restoreMapControls, viewerReady, viewerRef]);
+
+  // Mouse event handler for drawing
   useEffect(() => {
     if (!viewerReady) return;
     const viewer = viewerRef.current.cesiumElement;
     const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
 
-    handler.setInputAction(
-      (movement) => {
-        if (envJson.activeSadeZoneIndex == null) return;
+    handler.setInputAction((movement) => {
+      if (envJsonRef.current.activeSadeZoneIndex == null) return;
+      mouseDownRef.current = true;
+      viewer.canvas.style.border = "2px dashed #90cdf4";
+      lockMapControls(viewer);
 
-        setCameraByPosition();
-        setMouseDown(true);
-        viewer.canvas.style.border = '2px dashed red';
-        // Disable camera rotation while the user is drawing a Sade-zone
-        viewer.scene.screenSpaceCameraController.enableRotate = false;
+      const cartesian = viewer.scene.pickPosition(movement.position);
+      if (!cartesian) return;
 
-        const cartesian = viewer.scene.pickPosition(movement.position);
-        if (cartesian) {
-          const ray = viewer.camera.getPickRay(movement.position);
-          const intersection = viewer.scene.pickFromRay(ray, []);
-          let height = 100;
+      const ray = viewer.camera.getPickRay(movement.position);
+      const intersection = viewer.scene.pickFromRay(ray, []);
+      zoneHeightRef.current = intersection?.position
+        ? Cartographic.fromCartesian(intersection.position).height
+        : ZONE_HEIGHT_INCREASE;
 
-          if (intersection && intersection.position) {
-            height = Cartographic.fromCartesian(intersection.position).height;
-          }
-          setZoneHeight(height);
-          const cartographic = Cartographic.fromCartesian(cartesian);
-          // Set the starting point of the rectangle
-          setFirstPoint(cartographic);
-        }
-      },
-      ScreenSpaceEventType.LEFT_DOWN,
-      KeyboardEventModifier.SHIFT,
-    );
+      firstPointRef.current = Cartographic.fromCartesian(cartesian);
+    }, ScreenSpaceEventType.LEFT_DOWN, KeyboardEventModifier.SHIFT);
 
-    handler.setInputAction(
-      (movement) => {
-        if (!mouseDown) return;
-        const cartesian = viewer.scene.pickPosition(movement.endPosition);
-        if (cartesian && firstPoint) {
-          const tempCartographic = Cartographic.fromCartesian(cartesian);
-          setLastPoint(tempCartographic);
-          const rect = new Rectangle(
-            Math.min(tempCartographic.longitude, firstPoint.longitude),
-            Math.min(tempCartographic.latitude, firstPoint.latitude),
-            Math.max(tempCartographic.longitude, firstPoint.longitude),
-            Math.max(tempCartographic.latitude, firstPoint.latitude),
-          );
-          updateSadeZone(rect);
-        }
-      },
-      ScreenSpaceEventType.MOUSE_MOVE,
-      KeyboardEventModifier.SHIFT,
-    );
-  }, [viewerReady, firstPoint, envJson.activeSadeZoneIndex]);
+    handler.setInputAction((movement) => {
+      if (!mouseDownRef.current || !firstPointRef.current) return;
+      lockMapControls(viewer);
+      const cartesian = viewer.scene.pickPosition(movement.endPosition);
+      if (!cartesian) return;
+      const temp = Cartographic.fromCartesian(cartesian);
+      const rect = new Rectangle(
+        Math.min(temp.longitude, firstPointRef.current.longitude),
+        Math.min(temp.latitude, firstPointRef.current.latitude),
+        Math.max(temp.longitude, firstPointRef.current.longitude),
+        Math.max(temp.latitude, firstPointRef.current.latitude),
+      );
+      updateSadeZone(rect);
+    }, ScreenSpaceEventType.MOUSE_MOVE, KeyboardEventModifier.SHIFT);
 
-  useEffect(() => {
-    if (!viewerReady) return;
-    const viewer = viewerRef.current.cesiumElement;
-    const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
-    handler.setInputAction(
-      () => {
-        // make sure this event listener executes only when activeSadeZoneIndex is not null
-        if (envJson.activeSadeZoneIndex == null) return;
+    handler.setInputAction(() => {
+      if (!mouseDownRef.current) return;
+      viewer.canvas.style.border = "none";
+      restoreMapControls(viewer);
+      mouseDownRef.current = false;
+      firstPointRef.current = null;
 
-        viewer.canvas.style.border = 'none';
-        viewer.scene.screenSpaceCameraController.enableRotate = true;
+      const env = envJsonRef.current;
+      const idx = env.activeSadeZoneIndex;
+      env.activeSadeZoneIndex = null;
+      const sade = env.getSadeBasedOnIndex(idx);
+      if (sade?.updateVertices) sade.updateVertices();
+      setEnvJson(EnvironmentModel.getReactStateBasedUpdate(env));
+    }, ScreenSpaceEventType.LEFT_UP);
 
-        setMouseDown(false);
-        // Clear the first-point, indicating that the current Sade-zone drawing is finished
-        setFirstPoint(null);
-        setCameraByPosition();
-
-        const currentInx = envJson.activeSadeZoneIndex;
-        envJson.activeSadeZoneIndex = null;
-        let sade = envJson.getSadeBasedOnIndex(currentInx);
-        sade.updateVertices();
-        setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
-      },
-      ScreenSpaceEventType.LEFT_UP,
-      KeyboardEventModifier.SHIFT,
-    );
-  }, [lastPoint, envJson.activeSadeZoneIndex]);
-
-  const updateSadeZone = (rect) => {
-    const currentInx = envJson.activeSadeZoneIndex;
-    if (currentInx == null) return;
-    let sade = envJson.getSadeBasedOnIndex(currentInx);
-    sade.rectangle = rect;
-    const len = findRectangleLength(rect);
-    sade.length = len;
-    const width = findRectangleWidth(rect);
-    sade.width = width;
-    // increase height by 10 meters to ensure sade zone is clearly visible on the map while drawing
-    sade.height = zoneHeight + 10;
-    // Calculate the center of the rectangle
-    const centerLongitude = (rect.east + rect.west) / 2;
-    const centerLatitude = (rect.north + rect.south) / 2;
-    sade.centerLat = CesiumMath.toDegrees(centerLatitude);
-    sade.centerLong = CesiumMath.toDegrees(centerLongitude);
-    envJson.updateSadeBasedOnIndex(currentInx, sade);
-    setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
-  };
+    return () => {
+      handler.destroy();
+      viewer.canvas.style.border = "none";
+      mouseDownRef.current = false;
+      firstPointRef.current = null;
+      restoreMapControls(viewer);
+    };
+  }, [lockMapControls, restoreMapControls, setEnvJson, updateSadeZone, viewerReady, viewerRef]);
 
   return (
     <>
-      {envJson.getAllSades().map((sade, index) => (
-        <React.Fragment key={index}>
-          {/** rectangle entity representing the sade zone */}
+      {envJson.getAllSades().map((sade) => (
+        <Entity key={sade.id ?? `${sade.name}-${sade.centerLong}-${sade.centerLat}`}>
           {sade.rectangle && (
-            <React.Fragment>
+            <>
               <Entity
                 rectangle={{
                   coordinates: sade.rectangle,
-                  material: Color.GREEN.withAlpha(0.5),
+                  extrudedHeight: sade.height,
+                  extrudedHeightReference: HeightReference.RELATIVE_TO_TERRAIN,
+                  material: Color.SEAGREEN.withAlpha(0.2),
                   outline: true,
                   outlineColor: Color.WHITE,
                   outlineWidth: 2,
-                  extrudedHeight: sade.height,
                 }}
               />
-
-              {/** polyline entity representing the length of a sade zone */}
+              {/* Length label (red) */}
               <Entity>
                 <Entity
                   polyline={{
                     positions: [
-                      Cartesian3.fromRadians(
-                        sade.rectangle.west,
-                        sade.rectangle.south,
-                        sade.height,
-                      ),
-                      Cartesian3.fromRadians(
-                        sade.rectangle.west,
-                        sade.rectangle.north,
-                        sade.height,
-                      ),
+                      Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.south, sade.height),
+                      Cartesian3.fromRadians(sade.rectangle.west, sade.rectangle.north, sade.height),
                     ],
                     width: 2,
                     material: Color.RED,
@@ -176,10 +204,10 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
                     sade.height,
                   )}
                   label={{
-                    text: `Length: ${sade.length.toFixed(2)}m`,
-                    font: '10pt Arial',
+                    text: `L: ${sade.length?.toFixed(1)} m`,
+                    font: "11pt monospace",
                     fillColor: Color.WHITE,
-                    backgroundColor: Color.RED,
+                    backgroundColor: Color.CRIMSON.withAlpha(0.8),
                     showBackground: true,
                     backgroundPadding: new Cartesian2(6, 4),
                     pixelOffset: new Cartesian2(0, -10),
@@ -187,8 +215,7 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
                   }}
                 />
               </Entity>
-
-              {/** polyline entity representing the width of a sade zone */}
+              {/* Width label (blue) */}
               <Entity
                 polyline={{
                   positions: [
@@ -206,10 +233,10 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
                     sade.height,
                   )}
                   label={{
-                    text: `Width: ${sade.width.toFixed(2)}m`,
-                    font: '10pt Arial',
+                    text: `W: ${sade.width?.toFixed(1)} m`,
+                    font: "11pt monospace",
                     fillColor: Color.WHITE,
-                    backgroundColor: Color.BLUE,
+                    backgroundColor: Color.BLUEVIOLET.withAlpha(0.8),
                     showBackground: true,
                     backgroundPadding: new Cartesian2(6, 4),
                     pixelOffset: new Cartesian2(0, -10),
@@ -217,30 +244,25 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
                   }}
                 />
               </Entity>
-            </React.Fragment>
+            </>
           )}
-
           {sade.centerLong && sade.centerLat && (
-            // billboard entity representing the center of the sade zone
             <Entity
               position={Cartesian3.fromDegrees(sade.centerLong, sade.centerLat, sade.height)}
-              billboard={{
-                image: imageUrls.pin,
-                scale: 0.4,
-              }}
+              billboard={{ image: imageUrls.pin, scale: 0.4 }}
               label={{
                 text: sade.name,
-                font: '14pt Arial',
-                backgroundColor: Color.BLACK,
+                font: "13pt Poppins, sans-serif",
+                backgroundColor: Color.fromCssColorString("#0d1520").withAlpha(0.8),
                 fillColor: Color.WHITE,
                 showBackground: true,
                 backgroundPadding: new Cartesian2(6, 4),
                 verticalOrigin: VerticalOrigin.BOTTOM,
-                pixelOffset: new Cartesian2(0, -15), // Offset to position the label above the point
+                pixelOffset: new Cartesian2(0, -15),
               }}
             />
           )}
-        </React.Fragment>
+        </Entity>
       ))}
     </>
   );
@@ -249,7 +271,6 @@ const DrawSadeZone = ({ viewerReady, viewerRef, setCameraByPosition }) => {
 DrawSadeZone.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setCameraByPosition: PropTypes.func.isRequired,
 };
 
 export default DrawSadeZone;

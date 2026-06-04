@@ -1,137 +1,156 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Entity } from 'resium';
 import {
-  Cartesian3,
-  Math as CesiumMath,
-  Cartographic,
   Cartesian2,
-  JulianDate,
-  Ellipsoid,
+  Cartesian3,
+  Cartographic,
   Color,
-  HeightReference,
   DistanceDisplayCondition,
-  VerticalOrigin,
+  HeightReference,
+  Math as CesiumMath,
   SceneMode,
-} from 'cesium';
-import PropTypes from 'prop-types';
-import { useMainJson } from '../../contexts/MainJsonContext';
-import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
-import dayjs from 'dayjs';
-import { EnvironmentModel } from '../../model/EnvironmentModel';
-import { imageUrls } from '../../utils/const';
+  VerticalOrigin,
+} from "cesium";
+import PropTypes from "prop-types";
+import { useCallback, useEffect, useState } from "react";
+import { Entity } from "resium";
+import { useMainJson } from "../../contexts/MainJsonContext";
+import { imageUrls } from "../../utils/const";
 
-const DroneDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
-  const { syncDroneLocation, mainJson, setMainJson, envJson, setEnvJson } = useMainJson();
+/** Build a white-outlined drone billboard image for visibility on any background */
+function createDroneImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const pad = 4;
+      const w = img.width + pad * 2;
+      const h = img.height + pad * 2;
+
+      const alphaCanvas = document.createElement("canvas");
+      alphaCanvas.width = img.width;
+      alphaCanvas.height = img.height;
+      const alphaCtx = alphaCanvas.getContext("2d");
+      alphaCtx.drawImage(img, 0, 0);
+
+      const outlineCanvas = document.createElement("canvas");
+      outlineCanvas.width = w;
+      outlineCanvas.height = h;
+      const outCtx = outlineCanvas.getContext("2d");
+      for (let dx = -pad; dx <= pad; dx++) {
+        for (let dy = -pad; dy <= pad; dy++) {
+          if (dx * dx + dy * dy <= pad * pad) outCtx.drawImage(alphaCanvas, pad + dx, pad + dy);
+        }
+      }
+      outCtx.globalCompositeOperation = "source-in";
+      outCtx.fillStyle = "#ffffff";
+      outCtx.fillRect(0, 0, w, h);
+      outCtx.globalCompositeOperation = "source-over";
+      outCtx.drawImage(img, pad, pad);
+
+      resolve(outlineCanvas.toDataURL());
+    };
+    img.src = src;
+  });
+}
+
+const DroneDragAndDrop = ({ viewerReady, viewerRef }) => {
+  const { syncDroneLocation, mainJson } = useMainJson();
   const [labelVisible, setLabelVisible] = useState(false);
+  const [droneImage, setDroneImage] = useState(null);
 
-  const checkCameraHeight = () => {
+  useEffect(() => {
+    createDroneImage(imageUrls.drone_thick_orange).then(setDroneImage);
+  }, []);
+
+  const checkCameraHeight = useCallback(() => {
     if (!viewerRef.current) return;
     const viewer = viewerRef.current.cesiumElement;
     if (viewer.scene.mode === SceneMode.SCENE3D) {
-      const cameraHeight = viewer.camera.positionCartographic.height;
-      setLabelVisible(cameraHeight < 3000);
+      setLabelVisible(viewer.camera.positionCartographic.height < 3000);
     }
-  };
+  }, [viewerRef]);
 
-  // drone drag and drop event listeners
   useEffect(() => {
-    if (viewerReady) {
-      const viewer = viewerRef.current.cesiumElement;
-      const canvas = viewer.canvas;
+    if (!viewerReady) return;
+    const viewer = viewerRef.current.cesiumElement;
+    const canvas = viewer.canvas;
+    canvas.setAttribute("tabindex", "0");
 
-      // Ensure the canvas is focusable
-      canvas.setAttribute('tabindex', '0');
+    const onDragOver = (e) => {
+      e.preventDefault();
+      canvas.style.border = "2px dashed #f97316";
+    };
 
-      const dragOverHandler = (event) => {
-        event.preventDefault(); // Necessary to allow the drop
-        canvas.style.border = '2px dashed red'; // Visual feedback
-      };
+    const onDrop = (e) => {
+      e.preventDefault();
+      canvas.style.border = "";
 
-      const dropHandler = (event) => {
-        event.preventDefault();
-        canvas.style.border = ''; // Remove visual feedback
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const dragData = JSON.parse(e.dataTransfer.getData("text/plain"));
+      if (dragData.type !== "drone") return;
 
-        const rect = canvas.getBoundingClientRect();
-        // Adjust X and Y coordinate relative to the canvas
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
-        const droneInx = dragData.index;
-        const cesiumCanvasPosition = new Cartesian2(x, y);
-        const cartesian = viewer.scene.pickPosition(cesiumCanvasPosition);
-        if (cartesian) {
-          const cartographic = Cartographic.fromCartesian(cartesian);
-          const latitude = CesiumMath.toDegrees(cartographic.latitude);
-          const longitude = CesiumMath.toDegrees(cartographic.longitude);
+      const canvasPos = new Cartesian2(x, y);
+      const cartesian = viewer.scene.pickPosition(canvasPos);
+      if (!cartesian) return;
 
-          // Use getPickRay to get the building height
-          const ray = viewer.camera.getPickRay(cesiumCanvasPosition);
-          const intersection = viewer.scene.pickFromRay(ray, []);
-          let buildingHeight = 0;
+      const carto = Cartographic.fromCartesian(cartesian);
+      const latitude = CesiumMath.toDegrees(carto.latitude);
+      const longitude = CesiumMath.toDegrees(carto.longitude);
 
-          if (intersection && intersection.position) {
-            buildingHeight = Cartographic.fromCartesian(intersection.position).height;
-          }
+      const ray = viewer.camera.getPickRay(canvasPos);
+      const intersection = viewer.scene.pickFromRay(ray, []);
+      const buildingHeight = intersection?.position
+        ? Cartographic.fromCartesian(intersection.position).height
+        : 0;
 
-          setCameraByPosition();
+      syncDroneLocation(latitude, longitude, buildingHeight, dragData.index);
+    };
 
-          if (dragData.type === 'drone') {
-            syncDroneLocation(latitude, longitude, buildingHeight, droneInx);
-          }
-        }
-      };
+    canvas.addEventListener("dragover", onDragOver);
+    canvas.addEventListener("drop", onDrop);
+    viewer.camera.moveEnd.addEventListener(checkCameraHeight);
 
-      canvas.addEventListener('dragover', dragOverHandler);
-      canvas.addEventListener('drop', dropHandler);
-      viewer.camera.moveEnd.addEventListener(checkCameraHeight);
+    return () => {
+      canvas.removeEventListener("dragover", onDragOver);
+      canvas.removeEventListener("drop", onDrop);
+      viewer.camera.moveEnd.removeEventListener(checkCameraHeight);
+    };
+  }, [checkCameraHeight, syncDroneLocation, viewerReady, viewerRef]);
 
-      return () => {
-        canvas.removeEventListener('dragover', dragOverHandler);
-        canvas.removeEventListener('drop', dropHandler);
-      };
-    }
-  }, [viewerReady, mainJson, envJson]);
+  if (!droneImage) return null;
 
   return (
     <>
       {mainJson.getAllDrones().map((drone, index) => {
-        if (!drone.X || !drone.Y || !drone.Z) return null;
-        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z);
+        if (!drone.X || !drone.Y) return null;
+        const position = Cartesian3.fromDegrees(drone.Y, drone.X, drone.Z ?? 0);
+        const color = Color.fromCssColorString(drone.color || "#F97316");
+        const displayName = drone.Name ?? drone.droneName ?? `Drone ${index + 1}`;
         return (
-          <React.Fragment key={index}>
-            <Entity
-              position={position}
-              billboard={{
-                
-                image: imageUrls.drone_thick_orange,
-                scale: labelVisible ? 1 : 0.75,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-              }}
-              label={{
-                text: drone.droneName,
-                font: '14pt',
-                showBackground: true,
-                backgroundColor: Color.CORAL,
-                backgroundPadding: new Cartesian2(6, 4),
-                fillColor: Color.BLACK,
-                heightReference: HeightReference.NONE, // Use absolute height
-                verticalOrigin: VerticalOrigin.TOP,
-                pixelOffset: new Cartesian2(0, -55),
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-                distanceDisplayCondition: new DistanceDisplayCondition(0.0, 5000.0),
-              }}
-            />
-            <Entity
-              position={position}
-              point={{
-                pixelSize: 5,
-                color: drone.color,
-                outlineColor: Color.WHITE,
-                outlineWidth: 2,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-              }}
-            />
-          </React.Fragment>
+          <Entity
+            key={drone.id ?? displayName + index}
+            position={position}
+            billboard={{
+              image: droneImage,
+              scale: labelVisible ? 1.0 : 0.75,
+              color,
+              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            }}
+            label={{
+              text: displayName,
+              font: "13pt Poppins, sans-serif",
+              showBackground: true,
+              backgroundColor: Color.fromCssColorString("#0d1520").withAlpha(0.85),
+              backgroundPadding: new Cartesian2(6, 4),
+              fillColor: Color.WHITE,
+              heightReference: HeightReference.NONE,
+              verticalOrigin: VerticalOrigin.TOP,
+              pixelOffset: new Cartesian2(0, -55),
+              disableDepthTestDistance: Number.POSITIVE_INFINITY,
+              distanceDisplayCondition: new DistanceDisplayCondition(0.0, 5000.0),
+            }}
+          />
         );
       })}
     </>
@@ -141,7 +160,6 @@ const DroneDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
 DroneDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setCameraByPosition: PropTypes.func.isRequired,
 };
 
 export default DroneDragAndDrop;

@@ -1,328 +1,272 @@
-import * as React from 'react';
-import { Box, Grid } from '@mui/material';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import styled from '@emotion/styled';
-import MissionConfiguration from './Configuration/MissionConfiguration';
-import EnvironmentConfiguration from './EnvironmentConfiguration';
-import MonitorControl from './MonitorControl';
-import Home from '../pages/Home';
-import { useNavigate } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import Tooltip from '@mui/material/Tooltip';
-import CesiumMap from './cesium/CesiumMap';
-import { mapControls } from '../constants/map';
-import ControlsDisplay from './Configuration/ControlsDisplay';
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import Stepper from "@mui/material/Stepper";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import PropTypes from "prop-types";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { mapControls } from "../constants/map";
+import { useMainJson } from "../contexts/MainJsonContext";
+import { useThemeTokens } from "../theme/palette";
+import CesiumMap from "./cesium/CesiumMap";
+import ControlsDisplay from "./Configuration/ControlsDisplay";
+import MissionConfiguration from "./Configuration/MissionConfiguration";
+import EnvironmentConfiguration from "./EnvironmentConfiguration";
+import MonitorControl from "./MonitorControl";
 
-const StyledButton = styled(Button)`
-  border-radius: 25px;
-  font-size: 18px;
-  font-weight: bolder;
-`;
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
+const STEPS = ["Environment", "Mission", "Test Config"];
 
-const steps = ['Environment Configuration', 'Mission Configuration', 'Test Configuration'];
+const BORDER = "1px solid rgba(255,255,255,0.08)";
 
-export default function HorizontalLinearStepper(data) {
+export default function HorizontalLinearStepper({ desc, title }) {
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [skipped, setSkipped] = React.useState(new Set());
-  const [mainJson, setJson, activeScreen] = React.useState({
-    Drones: null,
-    environment: null,
-    monitors: null,
-  });
+  const { mainJson, activeScreen } = useMainJson();
+  const tokens = useThemeTokens();
+  const [activeStep, setActiveStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const windowSize = React.useRef([window.innerWidth, window.innerHeight]);
-
-  const redirectToHome = () => {
-    navigate('/');
-  };
-
-  const isStepSkipped = (step) => {
-    return skipped.has(step);
-  };
-
-  const setMainJson = (envJson, id) => {
-    if (
-      id == 'environment' &&
-      mainJson.Drones != null &&
-      mainJson.Drones[0].X != envJson.Origin.Latitude
-    ) {
-      setJson((prevState) => ({
-        ...prevState,
-        Drones: null,
-      }));
-    }
-    setJson((prevState) => ({
-      ...prevState,
-      [id]: envJson,
-    }));
-  };
-
-  const handleNext = () => {
-    let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
-    }
-    // if(activeStep == 0) {
-    //   setMainJson();
-    // }
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
-    addTask();
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  React.useEffect(() => {
-    if (
-      mainJson.environment != null &&
-      mainJson.environment.enableFuzzy == true &&
-      mainJson.environment.enableFuzzy != null
-    ) {
-      setJson((prevState) => ({
-        ...prevState,
-        FuzzyTest: {
-          target: 'Wind',
-          precision: 5,
-        },
-      }));
-      delete mainJson.environment['enableFuzzy'];
-    }
-    if (
-      mainJson.environment != null &&
-      mainJson.environment.enableFuzzy == false &&
-      mainJson.FuzzyTest != null
-    ) {
-      delete mainJson.FuzzyTest;
-    }
-  }, [mainJson]);
-
-  //Start Logic For Calling POST
-
-  //This function goes in and gets the drone data from main JSON and formats it all pretty for the POST Call
-  function getDronesForPayload(mainJson) {
-    return Array.isArray(mainJson?.Drones)
-      ? mainJson.Drones.map((d) => {
-          const { id, droneName, Sensors, ...rest } = d || {};
-          const sanitizedSensors = Sensors
-            ? {
-                ...Sensors,
-                Barometer: Sensors.Barometer
-                  ? (({ Key, ...b }) => b)(Sensors.Barometer)
-                  : undefined,
-                Magnetometer: Sensors.Magnetometer
-                  ? (({ Key, ...m }) => m)(Sensors.Magnetometer)
-                  : undefined,
-                GPS: Sensors.GPS
-                  ? (({ Key, ...g }) => g)(Sensors.GPS)
-                  : undefined,
-              }
-            : undefined;
-          return { ...rest, Sensors: sanitizedSensors };
-        })
-      : [];
+  function buildDronePayload() {
+    return mainJson.getAllDrones().map((d) => {
+      const { id, droneName, Sensors, ...rest } = d || {};
+      const name = droneName ?? rest.Name;
+      const sanitizedSensors = Sensors
+        ? {
+            ...Sensors,
+            Barometer:   Sensors.Barometer   ? (({ Key, ...b }) => b)(Sensors.Barometer)   : undefined,
+            Magnetometer:Sensors.Magnetometer? (({ Key, ...m }) => m)(Sensors.Magnetometer): undefined,
+            GPS:         Sensors.GPS         ? (({ Key, ...g }) => g)(Sensors.GPS)         : undefined,
+          }
+        : undefined;
+      return { ...rest, Name: name, Sensors: sanitizedSensors };
+    });
   }
 
-  //this function goes in and gets the data for the environment from mainJSON
-  function getEnvironmentForPayload(env) {
+  function buildEnvPayload(env) {
     if (!env) return null;
-
-    const useGeo = !!env.UseGeo;
-
-    const origin = env.Origin || {};
-    const lat = origin.Latitude ?? origin.latitude;
-    const lon = origin.Longitude ?? origin.longitude;
-
-    const environmentToSend = {
-      UseGeo: useGeo,
-      Origin: {
-        Latitude: lat,
-        Longitude: lon,
-      },
+    const origin = env.Origin ?? env._Origin ?? {};
+    return {
+      UseGeo: !!env.UseGeo,
+      Origin: { Latitude: origin.Latitude ?? origin.latitude, Longitude: origin.Longitude ?? origin.longitude },
+      ...(env.Wind     ? { Wind:      env.Wind      } : {}),
+      ...(env.TimeOfDay? { TimeOfDay: env.TimeOfDay } : {}),
+      ...(env.Sades    ? { Sades:     env.Sades     } : {}),
     };
-
-    if (env.Wind) environmentToSend.Wind = env.Wind;
-    if (env.TimeOfDay) environmentToSend.TimeOfDay = env.TimeOfDay;
-    if (env.Sades) environmentToSend.Sades = env.Sades;
-
-    return environmentToSend;
   }
 
-  //meat and potatoes, this function actually makes the call
-  //the other end is simulation_server.py line 139
-  async function addTask() {
-    if (activeStep !== steps.length - 1) return;
-
-    const dronesToSend = getDronesForPayload(mainJson);
-    if (dronesToSend.length === 0) {
-      console.warn('No drones configured; not submitting.');
-      return;
-    }
-
-    const environmentToSend = getEnvironmentForPayload(mainJson.environment);
-    if (
-      !environmentToSend ||
-      (environmentToSend.UseGeo &&
-        (environmentToSend.Origin.Latitude == null ||
-        environmentToSend.Origin.Longitude == null))
-    ) {
-      console.warn('Environment incomplete; not submitting.');
-      return;
-    }
+  async function submitTask() {
+    const drones = buildDronePayload();
+    if (!drones.length) { setSubmitError("No drones configured."); return; }
+    const environment = buildEnvPayload(mainJson.environment);
+    if (!environment) { setSubmitError("Environment not configured."); return; }
 
     const payload = {
-      Drones: dronesToSend,
-      environment: environmentToSend,
-      ...(mainJson.monitors ? { monitors: mainJson.monitors } : {}),
+      Drones: drones,
+      environment,
+      ...(mainJson.monitors  ? { monitors:  mainJson.monitors  } : {}),
       ...(mainJson.FuzzyTest ? { FuzzyTest: mainJson.FuzzyTest } : {}),
     };
-
+    setSubmitting(true);
+    setSubmitError(null);
     try {
-      console.log('POST /addTask payload:', payload);
-      const res = await fetch('http://127.0.0.1:5000/addTask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${BASE_URL}/addTask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const bodyText = await res.text(); 
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${bodyText}`);
-
-      let data;
-      try { data = JSON.parse(bodyText); } catch { data = { raw: bodyText }; }
-      console.log('Task queued:', data); 
-
+      const text = await res.text();
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
+      setSubmitSuccess(true);
+      setTimeout(() => navigate("/report-dashboard"), 1500);
     } catch (err) {
-      console.error('Submit failed:', err);
-
+      console.error("Submit failed:", err);
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  const stepsComponent = [
-    {
-      name: 'Environment Configuration',
-      id: 1,
-      comp: (
-        <EnvironmentConfiguration
-          environmentJson={setMainJson}
-          id='environment'
-          mainJsonValue={mainJson}
-        />
-      ),
-    },
-    {
-      name: 'Mission Configuration',
-      id: 2,
-      comp: (
-        <MissionConfiguration
-          droneArrayJson={setMainJson}
-          id='Drones'
-          mainJsonValue={mainJson}
-          windowHeight={windowSize.current[1]}
-        />
-      ),
-    },
-    {
-      name: 'Test Configuration',
-      id: 3,
-      comp: (
-        <MonitorControl
-          monitorJson={setMainJson}
-          id='monitors'
-          mainJsonValue={mainJson}
-          windowHeight={windowSize.current[1]}
-        />
-      ),
-    },
+  const stepContent = [
+    <EnvironmentConfiguration key="env" />,
+    <MissionConfiguration key="mission" />,
+    <MonitorControl key="monitors" />,
   ];
 
   return (
-    <Box sx={{ width: '95%' }}>
-      <Typography sx={{ mb: 1 }} variant='h4' component='h4'>
-        Requirement
-        <Tooltip title='Home' placement='bottom'>
-          <HomeIcon
-            style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }}
-            onClick={redirectToHome}
-          />
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 64px)",
+        backgroundColor: tokens.surface.base,
+      }}
+    >
+      {/* ── Header bar ── */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          px: 3,
+          py: 1,
+          borderBottom: BORDER,
+          backgroundColor: tokens.surface.canvas,
+          flexShrink: 0,
+          gap: 2,
+          minHeight: 52,
+        }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="overline" sx={{ color: tokens.brand.soft, lineHeight: 1, display: "block" }}>
+            {title || "Custom Scenario"}
+          </Typography>
+          <Typography sx={{ color: tokens.text.muted, fontSize: "0.75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {desc}
+          </Typography>
+        </Box>
+
+        <Stepper
+          activeStep={activeStep}
+          sx={{
+            flex: 2,
+            "& .MuiStepLabel-label":            { color: tokens.text.muted,      fontSize: "0.78rem" },
+            "& .MuiStepLabel-label.Mui-active":  { color: tokens.brand.soft,      fontWeight: 700 },
+            "& .MuiStepLabel-label.Mui-completed":{ color: tokens.brand.secondary },
+            "& .MuiStepIcon-root.Mui-active":    { color: tokens.brand.secondary },
+            "& .MuiStepIcon-root.Mui-completed": { color: tokens.brand.secondary },
+            "& .MuiStepConnector-line": { borderColor: "rgba(255,255,255,0.1)" },
+          }}
+        >
+          {STEPS.map((label) => (
+            <Step key={label}><StepLabel>{label}</StepLabel></Step>
+          ))}
+        </Stepper>
+
+        <Tooltip title="Back to home">
+          <IconButton onClick={() => navigate("/")} size="small" sx={{ color: tokens.text.muted }}>
+            <HomeOutlinedIcon fontSize="small" />
+          </IconButton>
         </Tooltip>
-      </Typography>
-      <Typography sx={{ mt: 2, mb: 1 }} variant='h6' component='h4'>
-        {data.desc}
-      </Typography>
-      <Stepper activeStep={activeStep} style={{ padding: 20 }}>
-        {steps.map((label, index) => {
-          const stepProps = {};
-          const labelProps = {};
-          if (isStepSkipped(index)) {
-            stepProps.completed = false;
-          }
-          return (
-            <Step key={label} {...stepProps}>
-              <StepLabel {...labelProps}>{label}</StepLabel>
-            </Step>
-          );
-        })}
-      </Stepper>
-      {activeStep === steps.length ? (
-        <React.Fragment>
-          Redirect to dashboard //TODO
-          {/* <Typography sx={{ mt: 2, mb: 1 }}>finish</Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <Button onClick={handleReset}>Reset</Button>
-          </Box> */}
-        </React.Fragment>
-      ) : (
-        <React.Fragment>
-          {/* <Typography sx={{ mt: 2, mb: 1 }}  variant="h4" component="h4">Requirement</Typography>
-          <Typography sx={{ mt: 2, mb: 1 }}  variant="h6" component="h4">{data.desc}</Typography> */}
-          <Box
+      </Box>
+
+      {/* ── Two-column body ── */}
+      <Box sx={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Left: config panel */}
+        <Box
+          sx={{
+            width: { xs: "100%", md: "44%" },
+            display: "flex",
+            flexDirection: "column",
+            borderRight: BORDER,
+            overflow: "hidden",
+            backgroundColor: tokens.surface.base,
+          }}
+        >
+          {/* Step tabs */}
+          <Tabs
+            value={activeStep}
+            onChange={(_, v) => setActiveStep(v)}
+            variant="fullWidth"
             sx={{
-              display: 'flex',
+              minHeight: 40,
+              borderBottom: BORDER,
+              backgroundColor: tokens.surface.canvas,
+              "& .MuiTab-root": {
+                color: tokens.text.muted,
+                fontWeight: 600,
+                fontSize: "0.78rem",
+                textTransform: "none",
+                minHeight: 40,
+                transition: "color 140ms",
+                "&:hover": { color: tokens.text.secondary },
+                "&.Mui-selected": { color: tokens.brand.soft },
+              },
+              "& .MuiTabs-indicator": { backgroundColor: tokens.brand.secondary, height: 2 },
             }}
           >
-            <Box sx={{ width: '45%' }}>
-              {stepsComponent.map((compo, index) => {
-                return compo.id === activeStep + 1 ? compo.comp : '';
-              })}
-              <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                <StyledButton
-                  color='inherit'
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  sx={{ mr: 1 }}
-                  variant='outlined'
-                >
-                  Back
-                </StyledButton>
-                <Box sx={{ flex: '1 1 auto' }} />
-                <StyledButton variant='outlined' onClick={handleNext}>
-                  {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                </StyledButton>
-              </Box>
-            </Box>
+            {STEPS.map((label, i) => <Tab key={label} label={label} value={i} />)}
+          </Tabs>
 
-            <Box sx={{ width: '55%', overflow: 'hidden', ml: 5 }}>
-              <Grid container>
-                <ControlsDisplay mapControl={mapControls.default} />
-                <Grid item xs={12}>
-                  <CesiumMap activeConfigStep={activeStep} />
-                </Grid>
-
-                <ControlsDisplay mapControl={mapControls[activeScreen]} />
-              </Grid>
-            </Box>
+          {/* Step content */}
+          <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
+            {stepContent[activeStep]}
           </Box>
-        </React.Fragment>
-      )}
+
+          {/* Nav buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              p: 1.5,
+              borderTop: BORDER,
+              flexShrink: 0,
+              gap: 1,
+              backgroundColor: tokens.surface.canvas,
+            }}
+          >
+            <Button
+              variant="outlined"
+              disabled={activeStep === 0}
+              onClick={() => setActiveStep((s) => s - 1)}
+              sx={{
+                borderColor: "rgba(255,255,255,0.15)",
+                color: tokens.text.primary,
+                textTransform: "none",
+                fontWeight: 600,
+                "&:hover": { borderColor: "rgba(255,255,255,0.3)" },
+              }}
+            >
+              Back
+            </Button>
+
+            <Box sx={{ flex: 1 }}>
+              {submitError && (
+                <Typography sx={{ color: tokens.status.error }} variant="caption">{submitError}</Typography>
+              )}
+              {submitSuccess && (
+                <Typography sx={{ color: tokens.status.success }} variant="caption">
+                  Task queued! Redirecting…
+                </Typography>
+              )}
+            </Box>
+
+            <Button
+              variant="contained"
+              onClick={activeStep === STEPS.length - 1 ? submitTask : () => setActiveStep((s) => s + 1)}
+              disabled={submitting}
+              sx={{
+                bgcolor: tokens.brand.secondary,
+                "&:hover": { bgcolor: tokens.brand.strong },
+                textTransform: "none",
+                fontWeight: 700,
+              }}
+            >
+              {activeStep === STEPS.length - 1 ? (submitting ? "Submitting…" : "Run Simulation") : "Next"}
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Right: Cesium map */}
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <ControlsDisplay mapControl={mapControls[activeScreen] ?? mapControls.default} />
+          <Box sx={{ flex: 1 }}>
+            <CesiumMap activeConfigStep={activeStep} />
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }
+
+HorizontalLinearStepper.propTypes = {
+  desc: PropTypes.string,
+  title: PropTypes.string,
+};

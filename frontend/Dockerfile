@@ -1,20 +1,24 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20
-
-# Set the working directory
+# ── Builder: install deps + compile (used only for production target) ─────────
+FROM node:22-alpine AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install the necessary dependencies
 RUN npm install
-
-# Copy the rest of the application code
 COPY . .
+RUN npm run build
 
-# Expose the port the app runs on
+# ── Production: nginx static file server ──────────────────────────────────────
+FROM nginx:alpine AS production
+COPY --from=builder /app/dist /usr/share/nginx/html
+RUN printf 'server {\n  listen 80;\n  root /usr/share/nginx/html;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html;\n  }\n}\n' \
+    > /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+# ── Dev stage (DEFAULT: must be last) ─────────────────────────────────────────
+# Source lives on the bind-mount ./frontend:/app.
+# npm install runs on every start so packages always match the mounted
+# package.json, regardless of what is in the host node_modules.
+FROM node:22-alpine
+WORKDIR /app
 EXPOSE 3000
-
-# Command to start the frontend
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm install && npm run dev"]

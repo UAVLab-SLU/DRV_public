@@ -1,99 +1,75 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Entity } from 'resium';
 import {
-  Cartesian3,
-  Math as CesiumMath,
-  Cartographic,
-  VerticalOrigin,
   Cartesian2,
+  Cartesian3,
+  Cartographic,
+  Color,
   HeightReference,
   JulianDate,
-  Ellipsoid,
-  LabelStyle,
-  Color,
-  DistanceDisplayCondition,
-} from 'cesium';
-import PropTypes from 'prop-types';
-import { useMainJson } from '../../contexts/MainJsonContext';
-import { SimulationConfigurationModel } from '../../model/SimulationConfigurationModel';
+  Math as CesiumMath,
+  VerticalOrigin,
+} from "cesium";
+import PropTypes from "prop-types";
+import { useEffect } from "react";
+import { Entity } from "resium";
+import { useMainJson } from "../../contexts/MainJsonContext";
 
-const RegionDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
+const RegionDragAndDrop = ({ viewerReady, viewerRef }) => {
   const { syncRegionLocation, envJson } = useMainJson();
 
-  // radius drag and drop event listeners
   useEffect(() => {
-    if (viewerReady) {
-      const viewer = viewerRef.current.cesiumElement;
-      const canvas = viewer.canvas;
+    if (!viewerReady) return;
+    const viewer = viewerRef.current.cesiumElement;
+    const canvas = viewer.canvas;
 
-      viewer.animation.viewModel.timeFormatter = function (date, viewModel) {
-        date = JulianDate.toDate(date);
-        let hours = date.getHours();
-        let minutes = date.getMinutes();
-        let seconds = date.getSeconds();
-        if (hours < 10) {
-          hours = `0${hours}`;
-        }
-        if (minutes < 10) {
-          minutes = `0${minutes}`;
-        }
-        if (seconds < 10) {
-          seconds = `0${seconds}`;
-        }
-        return hours + ':' + minutes + ':' + seconds;
-      };
+    // Custom time display in the Cesium animation widget
+    viewer.animation.viewModel.timeFormatter = (date) => {
+      const d = JulianDate.toDate(date);
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
 
-      // Ensure the canvas is focusable
-      canvas.setAttribute('tabindex', '0');
+    canvas.setAttribute("tabindex", "0");
 
-      const dragOverHandler = (event) => {
-        event.preventDefault(); // Necessary to allow the drop
-        canvas.style.border = '2px dashed red'; // Visual feedback
-      };
+    const onDragOver = (e) => {
+      e.preventDefault();
+      canvas.style.border = "2px dashed #f6e05e";
+    };
 
-      const dropHandler = (event) => {
-        event.preventDefault();
-        canvas.style.border = ''; // Remove visual feedback
+    const onDrop = (e) => {
+      e.preventDefault();
+      canvas.style.border = "";
 
-        const rect = canvas.getBoundingClientRect();
-        // Adjust X and Y coordinate relative to the canvas
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const dragData = JSON.parse(e.dataTransfer.getData("text/plain"));
+      if (dragData.type !== "region") return;
 
-        const dragData = JSON.parse(event.dataTransfer.getData('text/plain'));
-        const cesiumCanvasPosition = new Cartesian2(x, y);
-        const cartesian = viewer.scene.pickPosition(cesiumCanvasPosition);
-        if (cartesian) {
-          const cartographic = Cartographic.fromCartesian(cartesian);
-          const latitude = CesiumMath.toDegrees(cartographic.latitude);
-          const longitude = CesiumMath.toDegrees(cartographic.longitude);
+      const canvasPos = new Cartesian2(x, y);
+      const cartesian = viewer.scene.pickPosition(canvasPos);
+      if (!cartesian) return;
 
-          // Use getPickRay to get the building height
-          const ray = viewer.camera.getPickRay(cesiumCanvasPosition);
-          const intersection = viewer.scene.pickFromRay(ray, []);
-          let buildingHeight = 0;
+      const carto = Cartographic.fromCartesian(cartesian);
+      const latitude = CesiumMath.toDegrees(carto.latitude);
+      const longitude = CesiumMath.toDegrees(carto.longitude);
 
-          if (intersection && intersection.position) {
-            buildingHeight = Cartographic.fromCartesian(intersection.position).height;
-          }
+      const ray = viewer.camera.getPickRay(canvasPos);
+      const intersection = viewer.scene.pickFromRay(ray, []);
+      const buildingHeight = intersection?.position
+        ? Cartographic.fromCartesian(intersection.position).height
+        : 0;
 
-          setCameraByPosition();
+      syncRegionLocation(latitude, longitude, buildingHeight, dragData.src);
+    };
 
-          if (dragData.type == 'region') {
-            syncRegionLocation(latitude, longitude, buildingHeight, dragData.src);
-          }
-        }
-      };
+    canvas.addEventListener("dragover", onDragOver);
+    canvas.addEventListener("drop", onDrop);
 
-      canvas.addEventListener('dragover', dragOverHandler);
-      canvas.addEventListener('drop', dropHandler);
-
-      return () => {
-        canvas.removeEventListener('dragover', dragOverHandler);
-        canvas.removeEventListener('drop', dropHandler);
-      };
-    }
-  }, [viewerReady, envJson]);
+    return () => {
+      canvas.removeEventListener("dragover", onDragOver);
+      canvas.removeEventListener("drop", onDrop);
+    };
+  }, [syncRegionLocation, viewerReady, viewerRef]);
 
   return (
     <Entity
@@ -109,8 +85,8 @@ const RegionDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       }}
       ellipse={{
-        semiMinorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
-        semiMajorAxis: envJson.Origin.radius * 1609.34, // Convert miles to meters
+        semiMinorAxis: envJson.Origin.radius * 1609.34,
+        semiMajorAxis: envJson.Origin.radius * 1609.34,
         material: Color.TRANSPARENT,
         outline: true,
         outlineColor: Color.YELLOW,
@@ -121,13 +97,13 @@ const RegionDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       }}
       label={{
-        text: 'Simulation Origin',
-        font: '14pt',
+        text: "Simulation Origin",
+        font: "13pt Poppins, sans-serif",
         showBackground: true,
-        backgroundColor: Color.YELLOW,
+        backgroundColor: Color.fromCssColorString("#f6e05e").withAlpha(0.9),
         backgroundPadding: new Cartesian2(6, 4),
         fillColor: Color.BLACK,
-        heightReference: HeightReference.NONE, // Use absolute height
+        heightReference: HeightReference.NONE,
         verticalOrigin: VerticalOrigin.TOP,
         pixelOffset: new Cartesian2(0, 20),
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -139,7 +115,6 @@ const RegionDragAndDrop = ({ viewerReady, viewerRef, setCameraByPosition }) => {
 RegionDragAndDrop.propTypes = {
   viewerReady: PropTypes.bool.isRequired,
   viewerRef: PropTypes.object.isRequired,
-  setCameraByPosition: PropTypes.func.isRequired,
 };
 
 export default RegionDragAndDrop;

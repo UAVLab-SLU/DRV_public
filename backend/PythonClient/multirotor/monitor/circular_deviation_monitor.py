@@ -83,7 +83,7 @@ class CircularDeviationMonitor(SingleDroneMissionMonitor):
         while self.mission.state != self.mission.State.END:
             estimated_position = self.client.getMultirotorState(
                 vehicle_name=self.target_drone).kinematics_estimated.position
-            object_position = self.client.simGetObjectPose(object_name=self.target_drone).position
+            object_position = self.get_vehicle_pose(self.target_drone).position
             x = estimated_position.x_val
             y = estimated_position.y_val
             z = estimated_position.z_val

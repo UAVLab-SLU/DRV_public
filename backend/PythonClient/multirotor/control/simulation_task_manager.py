@@ -87,7 +87,6 @@ class SimulationTaskManager:
         new_setting_dot_json = copy.deepcopy(self.__DEFAULT_EMPTY_SETTINGS_DOT_JSON)
         self.__handle_streaming_settings(raw_request_json)
         self.__populate_drone_and_mission_settings(new_setting_dot_json, raw_request_json)
-        self.__handle_wind_settings(new_setting_dot_json, raw_request_json)
         self.__handle_settings_time_of_day(new_setting_dot_json, raw_request_json)
         self.__populate_monitor_list(raw_request_json)
         self.__save_settings_dot_json(new_setting_dot_json)
@@ -167,12 +166,16 @@ class SimulationTaskManager:
                 origin_latitude_ = raw_request_json["environment"]["Origin"]["Latitude"]
                 origin_longitude_ = raw_request_json["environment"]["Origin"]["Longitude"]
                 origin_height_ = GeoUtil.get_elevation(origin_latitude_, origin_longitude_)
-                cesium_origin = [origin_latitude_, origin_longitude_, origin_height_]
-                new_setting_dot_json["OriginGeopoint"] = {
+                if origin_height_ is None:
+                    origin_height_ = raw_request_json["environment"]["Origin"].get("Altitude", 0)
+                if origin_height_ is None:
+                    origin_height_ = 0
+                new_setting_dot_json['OriginGeopoint'] = {
                     "Latitude": origin_latitude_,
                     "Longitude": origin_longitude_,
                     "Altitude": origin_height_
                 }
+                cesium_origin = [origin_latitude_, origin_longitude_, origin_height_]
                 self.__handle_cesium(origin_latitude_, origin_longitude_, origin_height_)
                 drone_name, drone_x, drone_y, drone_z = self.__handle_mission_settings(
                     single_drone_setting_copy, cesium_origin)
@@ -215,19 +218,6 @@ class SimulationTaskManager:
             new_setting_dot_json['Vehicles'].update(new_one_drone_json)
         self.__drone_positions_seen.clear()  # clear the duplicate drone position list
 
-    def __handle_wind_settings(self, new_setting_dot_json, raw_request_json):
-        if "Wind" in raw_request_json['environment']:
-            if 'FuzzyTest' in raw_request_json and raw_request_json['FuzzyTest']['target'] == 'Wind':
-                new_setting_dot_json['Wind'] = raw_request_json['environment']['Wind']
-                # wind vector already handled in run_fuzzy_test_batch
-            else:
-                wind = raw_request_json['environment']['Wind']
-                if "Velocity" in wind:
-                    wind_vector = self.__string_to_wind_vector(wind["Direction"], wind["Velocity"])
-                    new_setting_dot_json['Wind'] = {'X': wind_vector[0], 'Y': wind_vector[1], 'Z': wind_vector[2]}
-                elif not (wind['X'] == 0 and wind['Y'] == 0 and wind['Z'] == 0):
-                    new_setting_dot_json['Wind'] = raw_request_json['environment']['Wind']
-
     def __populate_monitor_list(self, raw_request_json):
         monitors = raw_request_json['monitors']
         monitor_name_param_list = []
@@ -248,7 +238,7 @@ class SimulationTaskManager:
         self.__save_cesium_dot_json(cesium_setting)
 
     def __handle_mission_settings(self, single_drone_setting_copy, cesium_origin=None):
-        drone_name = single_drone_setting_copy['Name']
+        drone_name = self.__normalize_drone_name(single_drone_setting_copy['Name'])
         mission_dict = single_drone_setting_copy['Mission']
         mission_name = mission_dict['name']
         del mission_dict['name']  # Isolate mission parameters
@@ -274,18 +264,46 @@ class SimulationTaskManager:
         return drone_name, x, y, z
 
     @staticmethod
+    def __normalize_drone_name(drone_name):
+        normalized_name = "".join(str(drone_name).split())
+        return normalized_name or "Drone1"
+
+    @staticmethod
     def __remove_non_default_params(single_drone_setting_copy):
-        del single_drone_setting_copy['Mission']
-        del single_drone_setting_copy['Name']
-        del single_drone_setting_copy['X']
-        del single_drone_setting_copy['Y']
-        del single_drone_setting_copy['Z']
+        for key in (
+            'Mission',
+            'Name',
+            'X',
+            'Y',
+            'Z',
+            'MissionValue',
+            'droneType',
+            'droneModel',
+        ):
+            single_drone_setting_copy.pop(key, None)
 
     @staticmethod
     def __save_settings_dot_json(new_setting_dot_json):
+        new_setting_dot_json = SimulationTaskManager.__remove_null_fields(new_setting_dot_json)
         with open(os.path.join(os.path.expanduser('~'), "Documents", "AirSim") + os.sep + 'settings.json',
                   'w') as outfile:
             json.dump(new_setting_dot_json, outfile, indent=4)
+
+    @staticmethod
+    def __remove_null_fields(value):
+        if isinstance(value, dict):
+            return {
+                key: SimulationTaskManager.__remove_null_fields(item)
+                for key, item in value.items()
+                if item is not None
+            }
+        if isinstance(value, list):
+            return [
+                SimulationTaskManager.__remove_null_fields(item)
+                for item in value
+                if item is not None
+            ]
+        return value
 
     @staticmethod
     def __save_cesium_dot_json(cesium_setting):
@@ -319,7 +337,18 @@ class SimulationTaskManager:
         :param fuzzy_test_info: Dict of fuzzy test info, None otherwise
         :return: None
         """
-        airsim.MultirotorClient().reset()  # reset scene before each task
+        rpc_host, rpc_port = airsim.resolve_rpc_endpoint()
+        try:
+            client = airsim.MultirotorClient(timeout_value=10)
+            client.ping()
+            client.reset()  # reset scene before each task
+        except Exception as e:
+            raise RuntimeError(
+                f"Unable to reach AirSim RPC at {rpc_host}:{rpc_port}. "
+                "If Unreal runs on the host, set AIRSIM_HOST=host.docker.internal and AIRSIM_PORT=41451. "
+                "If Unreal runs in Compose, set AIRSIM_HOST=drv-unreal and expose port 41451."
+            ) from e
+
         mission_threads = []
         monitor_threads = []
         for drone_mission_pair in drone_mission_pair_list:

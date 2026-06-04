@@ -14,7 +14,7 @@ class LandspaceMonitor(SingleDroneMissionMonitor):
             other_landing_space_geo = []  # [[lat, long], [lat, long], ...]
         self.landing_threshold = 5  # meters
         self.landing_space_cartesian = []  # [[x, y], [x, y], ...]
-        position = self.client.simGetObjectPose(self.target_drone).position
+        position = self.get_vehicle_pose(self.target_drone).position
         init_position = [position.x_val, position.y_val]
         self.landing_space_cartesian.append(init_position)  # add initial position as landing space
         if len(other_landing_space_geo) > 0:
@@ -40,7 +40,7 @@ class LandspaceMonitor(SingleDroneMissionMonitor):
             # ignore landing space violation during idle
             pass
         while self.mission.state != self.mission.State.END:
-            drone_object = self.client.simGetObjectPose(self.target_drone)
+            drone_object = self.get_vehicle_pose(self.target_drone)
             landed_state = self.client.getMultirotorState(self.target_drone).landed_state
             if landed_state == airsim.LandedState.Landed:
                 x = drone_object.position.x_val

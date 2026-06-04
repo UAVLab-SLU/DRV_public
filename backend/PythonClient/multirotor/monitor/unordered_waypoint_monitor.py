@@ -8,6 +8,10 @@ class UnorderedWaypointMonitor(SingleDroneMissionMonitor):
         self.deviation_threshold = deviation_threshold
         self.point_dict = {}
 
+    @staticmethod
+    def __point_key(point):
+        return tuple(point)
+
     def start(self):
         if type(self.mission).__name__ not in self.polygon_mission_names:
             # print("Mission:", type(self.mission).__name__, "is not compatible with UnorderedWaypointMonitor")
@@ -19,7 +23,7 @@ class UnorderedWaypointMonitor(SingleDroneMissionMonitor):
 
     def init_dict(self):
         for p in self.mission.points:
-            self.point_dict[p] = False
+            self.point_dict[self.__point_key(p)] = False
 
     def update_dict(self):
         dt = 0.1
@@ -28,9 +32,10 @@ class UnorderedWaypointMonitor(SingleDroneMissionMonitor):
                 vehicle_name=self.target_drone).kinematics_estimated.position
             cur = (position.x_val, position.y_val, position.z_val)
             for p in self.mission.points:
-                if (self.get_distance_btw_points(cur, p)) <= self.deviation_threshold and not self.point_dict[p]:
+                point_key = self.__point_key(p)
+                if (self.get_distance_btw_points(cur, p)) <= self.deviation_threshold and not self.point_dict[point_key]:
                     self.append_info_to_log(f"{self.target_drone};reached {p} within {self.deviation_threshold} meters")
-                    self.point_dict[p] = True
+                    self.point_dict[point_key] = True
             sleep(dt)
 
     def stop(self):
@@ -40,6 +45,6 @@ class UnorderedWaypointMonitor(SingleDroneMissionMonitor):
             unreached = []
             for key, value in self.point_dict.items():
                 if not value:
-                    unreached.append(key)
+                    unreached.append(list(key))
             self.append_fail_to_log(self.target_drone + ";Not all points reached, unreached points: " + str(unreached))
         self.save_report()

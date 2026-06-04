@@ -14,6 +14,7 @@ from PythonClient.multirotor.control.simulation_task_manager import SimulationTa
 
 # Import the storage service from the configuration module
 from PythonClient.multirotor.storage.storage_config import get_storage_service
+from PythonClient.multirotor.util.geo.geo_util import GeoUtil
 
 app = Flask(__name__, template_folder="./templates")
 
@@ -230,6 +231,30 @@ def get_map():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok", "message": "Backend is reachable!"})
+
+@app.route('/gnss_az_el', methods=['POST'])
+def get_gnss_az_el():
+    """
+    Returns GPS satellite azimuth and elevation for a location and UTC time.
+    """
+    payload = request.get_json() or {}
+    required_fields = {'latitude', 'longitude', 'altitude', 'dateTime'}
+    missing_fields = sorted(required_fields - payload.keys())
+    if missing_fields:
+        return jsonify({"error": "Missing required fields", "fields": missing_fields}), 400
+
+    try:
+        results = GeoUtil.get_gnss_az_el(
+            payload['latitude'],
+            payload['longitude'],
+            payload['altitude'],
+            payload['dateTime'],
+        )
+    except Exception as e:
+        print(f"Error calculating GNSS azimuth/elevation: {e}")
+        return jsonify({"error": "Failed to calculate GNSS azimuth/elevation"}), 500
+
+    return jsonify(results), 200
 
 # === Run the Flask App ===
 if __name__ == '__main__':

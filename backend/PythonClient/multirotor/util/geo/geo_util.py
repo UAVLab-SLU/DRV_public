@@ -208,3 +208,40 @@ class GeoUtil:
             print(f"No elevation data found for location: {lat}, {lng}")
             print(f"API Response: {response}")
             return None
+
+    @staticmethod
+    def get_gnss_az_el(lat, lon, alt, date_time):
+        """
+        Get GPS satellite azimuth and elevation for a location and UTC time.
+        :param lat: latitude in decimal degrees
+        :param lon: longitude in decimal degrees
+        :param alt: altitude in meters
+        :param date_time: dict with year, month, day, hour, minute, second
+        :return: dict keyed by satellite name
+        """
+        from skyfield.api import Loader, wgs84
+
+        tle_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle"
+        skyfield_loader = Loader(os.path.join(os.path.expanduser("~"), ".skyfield"))
+        satellites = skyfield_loader.tle_file(tle_url, filename="gps-ops.tle")
+        ts = skyfield_loader.timescale()
+        t = ts.utc(
+            date_time["year"],
+            date_time["month"],
+            date_time["day"],
+            date_time["hour"],
+            date_time["minute"],
+            date_time["second"],
+        )
+
+        observer = wgs84.latlon(float(lat), float(lon), elevation_m=float(alt))
+        results = {}
+        for satellite in satellites:
+            topocentric = (satellite - observer).at(t)
+            elevation, azimuth, _ = topocentric.altaz()
+            results[satellite.name] = {
+                "azimuth": float(azimuth.degrees),
+                "elevation": float(elevation.degrees),
+            }
+
+        return results

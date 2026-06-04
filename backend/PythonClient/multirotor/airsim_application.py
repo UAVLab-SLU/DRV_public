@@ -108,6 +108,9 @@ class AirSimApplication:
         """
         self.client.simSetWind(airsim.Vector3r(x_val=x, y_val=y, z_val=z))
 
+    def get_vehicle_pose(self, vehicle_name):
+        return self.client.simGetVehiclePose(vehicle_name)
+
     def get_cesium_origin(self):
         # read cesium origin from file located at Documents/AirSim/cesium.json
         data = self.load_cesium_setting()

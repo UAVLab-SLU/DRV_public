@@ -20,7 +20,7 @@ class GenericMission(AirSimApplication):
         self.state = self.State.IDLE
         self.report_dir = os.path.join(os.path.expanduser('~'), "Documents",
                                        "AirSim") + os.sep + datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S")
-        self.objects = [self.client.simGetObjectPose(i) for i in self.all_drone_names]
+        self.objects = [self.get_vehicle_pose(i) for i in self.all_drone_names]
         self.states = [self.client.getMultirotorState(i) for i in self.all_drone_names]
         self.client.enableApiControl(True, vehicle_name=target_drone)
 

@@ -55,7 +55,7 @@ export default function MissionConfiguration() {
       setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
     setActiveScreen?.(tabEnums.DRONES);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const addDrone = () => {
     const d = buildDefaultDrone(drones.length, envJson);

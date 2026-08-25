@@ -44,7 +44,14 @@ const PANEL_SX = {
 };
 
 export default function EnvironmentConfiguration() {
-  const { envJson, setEnvJson, setActiveScreen } = useMainJson();
+  const {
+    envJson,
+    setEnvJson,
+    setActiveScreen,
+    timeOfDayRef,
+    timeRef,
+    viewerMaintainer,
+  } = useMainJson();
   const tokens = useThemeTokens();
 
   const [windDir, setWindDir] = useState(envJson.Wind?.[0]?.Direction ?? "NE");
@@ -66,6 +73,12 @@ export default function EnvironmentConfiguration() {
     [envJson, setEnvJson],
   );
 
+  useEffect(() => {
+    if (!envJson.Wind?.length) {
+      commitWind(windDir, windVelocity, windType);
+    }
+  }, [commitWind, envJson.Wind?.length, windDir, windType, windVelocity]);
+
   const handleOriginChange = (val) => {
     const origin = ORIGINS.find((o) => o.value === val) ?? ORIGINS[1];
     envJson.setOriginName(origin.value);
@@ -77,9 +90,15 @@ export default function EnvironmentConfiguration() {
   };
 
   const handleTimeChange = (val) => {
+    if (!val?.isValid()) return;
+
+    const timeOfDay = val.format("HH:mm:ss");
     setTime(val);
+    timeRef.current = val;
+    timeOfDayRef.current = timeOfDay;
+    viewerMaintainer.current = true;
     envJson.time = val;
-    envJson.TimeOfDay = dayjs(val).format("HH:mm:ss");
+    envJson.TimeOfDay = timeOfDay;
     setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
   };
 

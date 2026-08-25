@@ -1,5 +1,6 @@
 import math
 import requests
+import os
 
 class Vector:
     """
@@ -189,10 +190,58 @@ class GeoUtil:
 
     @staticmethod
     def get_elevation(lat, lng):
-        #curl -L -X GET 'https://maps.googleapis.com/maps/api/elevation/json?locations=39.7391536%2C-104.9847034&key=AIzaSyAZg02ECdzNzTvjTLbIRr61eh-P9mCq2ac'
-        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key=AIzaSyAZg02ECdzNzTvjTLbIRr61eh-P9mCq2ac"
+        #curl -L -X GET 'https://maps.googleapis.com/maps/api/elevation/json?locations={lat=39.7391536}%2C{long=-104.9847034}&key={api_key}'
+        api_key = os.getenv('GOOGLE_MAPS_API_KEY', 'google maps api key')
+        url = f"https://maps.googleapis.com/maps/api/elevation/json?locations={lat}%2C{lng}&key={api_key}"
         response = requests.get(url).json()
-        if 'results' in response:
+        
+        # Check if the request was successful
+        if response.get('status') != 'OK':
+            print(f"Error from API: {response.get('status')}")
+            print(f"API Response: {response}")
+            return None
+
+        # Check if 'results' is in the response and not empty
+        if 'results' in response and response['results']:
             return response['results'][0]['elevation']
         else:
+            print(f"No elevation data found for location: {lat}, {lng}")
+            print(f"API Response: {response}")
             return None
+
+    @staticmethod
+    def get_gnss_az_el(lat, lon, alt, date_time):
+        """
+        Get GPS satellite azimuth and elevation for a location and UTC time.
+        :param lat: latitude in decimal degrees
+        :param lon: longitude in decimal degrees
+        :param alt: altitude in meters
+        :param date_time: dict with year, month, day, hour, minute, second
+        :return: dict keyed by satellite name
+        """
+        from skyfield.api import Loader, wgs84
+
+        tle_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle"
+        skyfield_loader = Loader(os.path.join(os.path.expanduser("~"), ".skyfield"))
+        satellites = skyfield_loader.tle_file(tle_url, filename="gps-ops.tle")
+        ts = skyfield_loader.timescale()
+        t = ts.utc(
+            date_time["year"],
+            date_time["month"],
+            date_time["day"],
+            date_time["hour"],
+            date_time["minute"],
+            date_time["second"],
+        )
+
+        observer = wgs84.latlon(float(lat), float(lon), elevation_m=float(alt))
+        results = {}
+        for satellite in satellites:
+            topocentric = (satellite - observer).at(t)
+            elevation, azimuth, _ = topocentric.altaz()
+            results[satellite.name] = {
+                "azimuth": float(azimuth.degrees),
+                "elevation": float(elevation.degrees),
+            }
+
+        return results

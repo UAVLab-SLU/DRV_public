@@ -1,283 +1,209 @@
 import logging
-import os.path
+import os
 import threading
 import time
-import base64
 import sys
-from flask import Flask, request, abort, send_file, render_template, Response, jsonify
+from flask import Flask, request, abort, render_template, Response, jsonify
 from flask_cors import CORS
 
-##UNCOMMENT LINE IF TESTING ON LOCAL MACHINE
+# Add parent directories to the Python path for module imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+# Import the SimulationTaskManager
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
+
+# Import the storage service from the configuration module
+from PythonClient.multirotor.storage.storage_config import get_storage_service
+from PythonClient.multirotor.util.geo.geo_util import GeoUtil
 
 app = Flask(__name__, template_folder="./templates")
 
+# Configure logging to suppress Werkzeug logs except for errors
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 CORS(app)
 
+# Initialize the SimulationTaskManager
 task_dispatcher = SimulationTaskManager()
-threading.Thread(target=task_dispatcher.start).start()
-task_number = 1
+threading.Thread(target=task_dispatcher.start, daemon=True).start()
 
+task_number = 1  # Global task counter
 
-# For Frontend to fetch all missions available to use
-#@app.route('/mission', methods=['GET'])
-#def mission():
-#     directory = '../multirotor/mission'
-#     return [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+# Initialize the storage service
+storage_service = get_storage_service()
+print(f"Using {storage_service.__class__.__name__} as the storage service.")
+
+# === Simulation Configuration State ===
+simulation_state = {
+    "environment": {},
+    "monitors": {},
+    "drones": []
+}
+
+# === New API Routes ===
+
+@app.route('/api/simulation', methods=['GET'])
+def get_simulation_state():
+    """Retrieve the current simulation state."""
+    return jsonify(simulation_state), 200
+
+@app.route('/api/simulation/drones', methods=['POST'])
+def add_drone():
+    """Add a new drone to the simulation."""
+    new_drone = request.get_json()
+    if not new_drone or "id" not in new_drone:
+        return jsonify({"error": "Invalid drone data"}), 400
+
+    simulation_state["drones"].append(new_drone)
+    return jsonify(new_drone), 201
+
+@app.route('/api/simulation/drones/<drone_id>', methods=['PUT'])
+def update_drone(drone_id):
+    """Update an existing drone's configuration."""
+    updated_drone = request.get_json()
+    for i, drone in enumerate(simulation_state["drones"]):
+        if str(drone["id"]) == drone_id:
+            simulation_state["drones"][i] = updated_drone
+            return jsonify(updated_drone), 200
+    return jsonify({"error": "Drone not found"}), 404
+
+@app.route('/api/simulation/drones/<drone_id>', methods=['DELETE'])
+def delete_drone(drone_id):
+    """Remove a drone from the simulation."""
+    for i, drone in enumerate(simulation_state["drones"]):
+        if str(drone["id"]) == drone_id:
+            del simulation_state["drones"][i]
+            return jsonify({"message": "Drone deleted"}), 200
+    return jsonify({"error": "Drone not found"}), 404
+
+@app.route('/api/simulation/environment', methods=['PUT'])
+def update_environment():
+    """Update the simulation environment settings."""
+    new_environment = request.get_json()
+    simulation_state["environment"] = new_environment
+    return jsonify({"message": "Environment updated"}), 200
+
+@app.route('/api/simulation/monitors', methods=['PUT'])
+def update_monitors():
+    """Update the simulation monitor settings."""
+    new_monitors = request.get_json()
+    simulation_state["monitors"] = new_monitors
+    return jsonify({"message": "Monitors updated"}), 200
+
+# === Flask Routes ===
 
 @app.route('/list-reports', methods=['GET'])
 def list_reports():
-    # Reports file
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-
-    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
-        return 'Reports directory not found', 404
-
-    def count_pass_fail_from_log(directory):
-        pass_count = fail_count = 0
-        # Navigate to the specific directory structure for GlobalMonitors -> MinSepDistMonitor -> log.txt
-        for root, dirs, files in os.walk(directory):
-            if 'GlobalMonitors' in dirs:
-                global_monitors_path = os.path.join(root, 'GlobalMonitors')
-                min_sep_dist_monitor_path = os.path.join(global_monitors_path, 'MinSepDistMonitor')
-                log_file_path = os.path.join(min_sep_dist_monitor_path, 'log.txt')
-                if os.path.exists(log_file_path):
-                    with open(log_file_path, 'r') as log_file:
-                        for line in log_file:
-                            if 'PASS' in line:
-                                try:
-                                    items_list = eval(line.split(';')[2])
-                                    pass_count += len(items_list)
-                                except SyntaxError:
-                                    pass  # Handle potential eval errors safely
-                            elif 'FAIL' in line:
-                                try:
-                                    items_list = eval(line.split(';')[2])
-                                    fail_count += len(items_list)
-                                except SyntaxError:
-                                    pass
-                    break  # Stop searching once log.txt is found and processed
-        return pass_count, fail_count
-
-    report_files = []
-    for file in os.listdir(reports_path):
-        file_path = os.path.join(reports_path, file)
-        if os.path.isdir(file_path):
-            # Find 'Fuzzy' files
-            fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]
-            contains_fuzzy = len(fuzzy_files) > 0
-
-            # Determine the path to count Drone files
-            if contains_fuzzy:
-                first_fuzzy_path = os.path.join(file_path, fuzzy_files[0])
-                if os.path.isdir(first_fuzzy_path):
-                    flytopoints_path = os.path.join(first_fuzzy_path, 'FlyToPoints')
-                else:
-                    flytopoints_path = os.path.join(file_path, 'FlyToPoints')
-            else:
-                flytopoints_path = os.path.join(file_path, 'FlyToPoints')
-
-            # Count Drones
-            drone_count = 0
-            if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
-                drone_count = sum(1 for f in os.listdir(flytopoints_path) if f.startswith('FlyToPoints_Drone'))
-
-            # Count PASS and FAIL from log.txt
-            pass_count, fail_count = count_pass_fail_from_log(file_path)
-
-            report_files.append({
-                'filename': file,
-                'contains_fuzzy': contains_fuzzy,
-                'drone_count': drone_count,
-                'pass': pass_count,
-                'fail': fail_count
-            })
-        else:
-            # For non-directory files, you could adjust handling if needed
-            report_files.append({
-                'filename': file,
-                'contains_fuzzy': False,
-                'drone_count': 0,
-                'pass': 0,
-                'fail': 0
-            })
-
-    return {'reports': report_files}
-"""
-#old version without the pass fails
-def list_reports():
-    # Reports file
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
-        return 'Reports directory not found', 404
-    #print("Listing items in:", reports_path) #Debugging line
-    #print(os.listdir(reports_path))  #Debugging line
-    report_files = []
-    for file in os.listdir(reports_path):
-        if 'store' in file.lower():
-            continue #skip ds store files entirely, we dont want them
-
-        file_path = os.path.join(reports_path, file)
-        
-        if os.path.isdir(file_path):
-            #Find 'Fuzzy' files
-            fuzzy_files = [f for f in os.listdir(file_path) if 'fuzzy' in f.lower()]
-            contains_fuzzy = len(fuzzy_files) > 0
-            #Determine the path to count Drone files
-            if contains_fuzzy:
-                first_fuzzy_path = os.path.join(file_path, fuzzy_files[0])
-                #Check if the first 'Fuzzy' file is a directory
-                if os.path.isdir(first_fuzzy_path):
-                    flytopoints_path = os.path.join(first_fuzzy_path, 'FlyToPoints')
-                else:
-                    flytopoints_path = os.path.join(file_path, 'FlyToPoints')
-            else:
-                flytopoints_path = os.path.join(file_path, 'FlyToPoints')
-            #Count Drones
-            drone_count = 0
-            if os.path.exists(flytopoints_path) and os.path.isdir(flytopoints_path):
-                drone_count = sum(1 for f in os.listdir(flytopoints_path) if f.startswith('FlyToPoints_Drone'))
-            report_files.append({'filename': file, 'contains_fuzzy': contains_fuzzy, 'drone_count': drone_count})
-        else:
-            report_files.append({'filename': file, 'contains_fuzzy': False, 'drone_count': 0})
-    return {'reports': report_files}
-"""
-
-"""
-@app.route('/list-reports', methods=['GET'])
-def list_reports():
-    # Reports file
-    reports_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    if not os.path.exists(reports_path) or not os.path.isdir(reports_path):
-        return 'Reports directory not found', 404
-    #print("Listing items in:", reports_path) #Debugging line
-    #print(os.listdir(reports_path))  #Debugging line
-    report_files = []
-    for file in os.listdir(reports_path):
-        file_path = os.path.join(reports_path, file)
-        #print("Checking file:", file_path)
-        if os.path.isfile(file_path):
-            #contains_fuzzy = 'Fuzzy' in file
-            report_files.append({'filename': file})
-        else:
-            report_files.append({'filename': file})
-    return {'reports': report_files}
-
-@app.route('/get-file-path/<filename>', methods=['GET'])
-def get_file_path(filename):
-    #construct the full path to the file
-    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
-
-    #return the file path
-    return file_path
-"""
-"""
-#make a report data function that takes the fileName.
-@app.route('/report-data/<filename>', methods=['GET'])
-
-def report_data(filename):
-
-    #construct the full path to the file
-    file_path = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report", filename)
-
-    #check if the file exists
-    if not os.path.exists(file_path):
-        return jsonify({'error': 'File not found'}), 404
-
+    """
+    Lists all report batches from the storage service.
+    """
     try:
-        #open and read the file content
-        with open(file_path, 'r') as file:
-            content = file.read()
-            return jsonify({'content': content})
-        
-        #if error give us an error message to tell the user
+        reports = storage_service.list_reports()
+        if 'error' in reports:
+            return jsonify({'error': 'Failed to list reports'}), 500
+        return jsonify(reports)
     except Exception as e:
-        return jsonify({'error': 'Error reading file', 'details': str(e)}), 500
-"""
+        print(f"Error fetching reports: {e}")
+        return jsonify({'error': 'Failed to list reports'}), 500
 
-@app.route('/list-folder-contents-<foldername>', methods=['GET'])
-def list_folder_contents(foldername):
-    base_directory = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    folder_name = request.args.get(foldername)
-    folder_path = os.path.join(base_directory, folder_name)
+@app.route('/list-folder-contents/<folder_name>', methods=['POST'])
+def list_folder_contents(folder_name):
+    """
+    Lists the contents of a specific report folder from the storage service.
+    """
+    try:
+        folder_contents = storage_service.list_folder_contents(folder_name)
+        if 'error' in folder_contents:
+            return jsonify({'error': 'Failed to list folder contents'}), 500
+        return jsonify(folder_contents)
+    except Exception as e:
+        print(f"Error fetching folder contents: {e}")
+        return jsonify({'error': 'Failed to list folder contents'}), 500
 
-    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
-        return jsonify({'error': 'Folder not found'}), 404
-
-    folder_contents = []
-    for item in os.listdir(folder_path):
-        item_path = os.path.join(folder_path, item)
-        file_content = None
-        file_type = None
-
-        if os.path.isfile(item_path):
-            file_type = 'file'
-            if item.endswith('.txt') or item.endswith('.html'):
-                # For text and HTML files, read as text
-                with open(item_path, 'r', encoding='utf-8') as file:
-                    file_content = file.read()
-            elif item.endswith('.png'):
-                # For PNG images, encode the content in base64
-                with open(item_path, 'rb') as file:
-                    file_content = base64.b64encode(file.read()).decode('utf-8')
-            else:
-                # For other file types, you may add more conditions
-                continue
-
-            folder_contents.append({
-                'name': item,
-                'type': file_type,
-                'content': file_content,
-                'file_extension': item.split('.')[-1]
-            })
-        elif os.path.isdir(item_path):
-            file_type = 'directory'
-            folder_contents.append({
-                'name': item,
-                'type': file_type
-            })
-
-    return jsonify(folder_contents)
-
+@app.route('/serve-html/<folder_name>/<path:relative_path>', methods=['GET'])
+def serve_html(folder_name, relative_path):
+    """
+    Serves HTML files using the storage service.
+    """
+    try:
+        file_contents, status_code = storage_service.serve_html(folder_name, relative_path)
+        if status_code == 200:
+            return Response(file_contents, mimetype='text/html')
+        elif status_code == 404:
+            return jsonify({"error": "HTML file not found"}), 404
+        else:
+            return jsonify({"error": "Failed to serve HTML file"}), 500
+    except Exception as e:
+        print(f"Error serving HTML file: {e}")
+        return jsonify({"error": "Failed to serve HTML file"}), 500
 
 @app.route('/addTask', methods=['POST'])
 def add_task():
+    """
+    Adds a new simulation task to the queue.
+    """
     global task_number
-    uuid_string = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + "_Batch_" + str(task_number)
-    task_dispatcher.add_task(request.get_json(), uuid_string)
-    task_number += 1
-    print(f"New task added to queue, currently {task_dispatcher.mission_queue.qsize()} in queue")
-    return uuid_string
+    try:
+        task_data = request.get_json()
+        if not task_data:
+            return jsonify({'error': 'No task data provided'}), 400
 
+        # Generate a unique UUID string for the task
+        uuid_string = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + "_Batch_" + str(task_number)
+        task_dispatcher.add_task(task_data, uuid_string)
+        task_number += 1
+        print(f"New task added to queue, currently {task_dispatcher.mission_queue.qsize()} in queue")
+        return jsonify({'task_id': uuid_string}), 200
+    except Exception as e:
+        print(f"Error adding task: {e}")
+        return jsonify({'error': 'Failed to add task'}), 500
 
 @app.route('/currentRunning', methods=['GET'])
 def get_current_running():
+    """
+    Retrieves the current running task and the queue size.
+    """
     current_task_batch = task_dispatcher.get_current_task_batch()
     if current_task_batch == "None":
-        return f"{'None'}, {task_dispatcher.mission_queue.qsize()}"
+        return jsonify({'current_task': 'None', 'queue_size': task_dispatcher.mission_queue.qsize()}), 200
     else:
-        return f"{'Running'}, {task_dispatcher.mission_queue.qsize()}"
+        return jsonify({'current_task': 'Running', 'queue_size': task_dispatcher.mission_queue.qsize()}), 200
 
 @app.route('/report')
 @app.route('/report/<path:dir_name>')
 def get_report(dir_name=''):
-    report_root_dir = os.path.join(os.path.expanduser("~"), "Documents", "AirSim", "report")
-    dir_path = os.path.join(report_root_dir, dir_name)
-    if not os.path.exists(dir_path):
-        return abort(404)
-    if os.path.isfile(dir_path):
-        return send_file(dir_path)
-    files = os.listdir(dir_path)
-    return render_template('files.html', files=files)
+    """
+    Serves reports from the storage service.
+    """
+    try:
+        if dir_name:
+            prefix = f'reports/{dir_name}/'
+        else:
+            prefix = 'reports/'
 
+        # Assuming the storage service has a method to list files in a prefix
+        if hasattr(storage_service, 'list_files'):
+            files = storage_service.list_files(prefix)
+        else:
+            # If not implemented, return a 501 Not Implemented
+            return abort(501)
+        
+        if not files:
+            return abort(404)
+
+        return render_template('files.html', files=files)
+
+    except Exception as e:
+        print(f"Error fetching report for directory {dir_name}: {e}")
+        return abort(404)
 
 @app.route('/stream/<drone_name>/<camera_name>')
 def stream(drone_name, camera_name):
-    if task_dispatcher.unreal_state['state'] == 'idle':
-        return "No task running"
+    """
+    Streams camera data for a specific drone and camera.
+    """
+    if task_dispatcher.unreal_state.get('state') == 'idle':
+        return "No task running", 200
     else:
         try:
             return Response(
@@ -286,45 +212,51 @@ def stream(drone_name, camera_name):
             )
         except Exception as e:
             print(e)
-            return "Error"
-
-
-# @app.route('/uploadMission', methods=['POST'])
-# def upload_file():
-#     file = request.files['file']
-#     filename = file.filename
-#     custom_mission_dir = '../multirotor/mission/custom'
-#     path = os.path.join(custom_mission_dir, filename)
-#     file.save(path)
-#     return 'File uploaded'
-
-
-# def update_settings_json(drone_number, separation_distance):
-#     SettingGenerator(drone_number, separation_distance)
-
+            return "Error", 500
 
 @app.route('/state', methods=['GET'])
 def get_state():
     """
-    For unreal engine to check the current run state
-    :return:  json obj consists of the current state with this specific format
-    {
-        "state": "idle"
-    }
-    or
-    {
-        "state": "start"
-    }
-    any other state will be not accepted by the unreal engine side and the change will be ignored
+    Returns the current state of the simulation.
     """
-    return task_dispatcher.unreal_state
-
+    return jsonify(task_dispatcher.unreal_state), 200
 
 @app.route('/cesiumCoordinate', methods=['GET'])
 def get_map():
-    return task_dispatcher.load_cesium_setting()
+    """
+    Loads Cesium map settings.
+    """
+    return task_dispatcher.load_cesium_setting(), 200
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok", "message": "Backend is reachable!"})
 
+@app.route('/gnss_az_el', methods=['POST'])
+def get_gnss_az_el():
+    """
+    Returns GPS satellite azimuth and elevation for a location and UTC time.
+    """
+    payload = request.get_json() or {}
+    required_fields = {'latitude', 'longitude', 'altitude', 'dateTime'}
+    missing_fields = sorted(required_fields - payload.keys())
+    if missing_fields:
+        return jsonify({"error": "Missing required fields", "fields": missing_fields}), 400
+
+    try:
+        results = GeoUtil.get_gnss_az_el(
+            payload['latitude'],
+            payload['longitude'],
+            payload['altitude'],
+            payload['dateTime'],
+        )
+    except Exception as e:
+        print(f"Error calculating GNSS azimuth/elevation: {e}")
+        return jsonify({"error": "Failed to calculate GNSS azimuth/elevation"}), 500
+
+    return jsonify(results), 200
+
+# === Run the Flask App ===
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-    # makes it discoverable by other devices in the network
+    print("Starting DroneWorld API Server...")
+    app.run(host='0.0.0.0', port=5000)  # Makes it discoverable by other devices in the networkecho 

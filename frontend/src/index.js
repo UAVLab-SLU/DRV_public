@@ -1,6 +1,2 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+// Entry point migrated to index.jsx — Vite uses index.html → src/index.jsx
+// This file is intentionally left as a stub.

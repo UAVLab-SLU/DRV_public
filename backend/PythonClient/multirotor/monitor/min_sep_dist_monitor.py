@@ -43,7 +43,7 @@ class MinSepDistMonitor(GlobalMonitor):
         self.run = False
 
     def get_drone_positions(self):
-        return [self.client.simGetObjectPose(i).position for i in self.all_drone_names]
+        return [self.get_vehicle_pose(i).position for i in self.all_drone_names]
 
     def get_horizontal_distance(self):
         # Create a matrix of horizontal distances between all the drones and the target drone named

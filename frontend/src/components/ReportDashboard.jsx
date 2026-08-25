@@ -1,328 +1,214 @@
-import CardMedia from '@mui/material/CardMedia'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import HomeIcon from '@mui/icons-material/Home';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
-import CheckIcon from '@mui/icons-material/Check';
-import List from '@mui/material/List'
-import ClearIcon from '@mui/icons-material/Clear';
-import InfoIcon from '@mui/icons-material/Info';
-import { useLocation } from "react-router-dom";
-import { Container } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
-import Modal from '@mui/material/Modal';
-import { useNavigate } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import Tooltip from '@mui/material/Tooltip';
-import AlertTitle from '@mui/material/AlertTitle';
-import { wait } from '@testing-library/user-event/dist/utils';
-//import { Card, CardContent } from '@mui/material';
-import PropTypes from 'prop-types'; 
-//import FuzzyDashboard from '/dashboard';
-import { Card, CardContent, CardHeader, Typography } from '@mui/material';   
-import FuzzyDashboard from './FuzzyDashboard'; 
-import React, { useEffect } from 'react';
-import { makeStyles } from '@mui/styles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
 import Snackbar from '@mui/material/Snackbar';
+import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Loading from './Loading';
 
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; 
+const BASE_URL = typeof window !== 'undefined'
+  ? (import.meta?.env?.VITE_API_URL ?? 'http://localhost:5000')
+  : 'http://localhost:5000';
 
-import CircularProgress from '@mui/material/CircularProgress'; 
-import { Table, TableBody, TableCell, TableRow, TableColumn } from '@mui/material';
+export default function ReportDashboard() {
+  const [reportFiles, setReportFiles] = React.useState([]);
+  const [isLoading, setIsloading] = React.useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const isReportDashboard = location.pathname.includes('/report-dashboard');
 
+  const redirectToHome = () => navigate('/');
 
-const useStyles = makeStyles((theme) => ({ 
-  lightBlueBackground: {
-    backgroundColor: '#e3f2fd', 
-  },
-  card: {
-    maxWidth: 400,
-    height: 270,
-    border: '1px solid lightgreen', 
-    backgroundColor: '#e3f2fd', 
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', 
-  },
-  invalidData: {
-    fontWeight: 'bold',
-    color: 'red', 
-  },
-  button: {
-    backgroundColor: '#1976d2', 
-    color: '#fff', 
-    '&:hover': {
-      backgroundColor: '#1565c0', 
-    },
-  },
-}));  
-
-//const sampleData = [
-//  {
-//    "contains_fuzzy": false,
-//    "drone_count": 0,
-//    "fail": 0,
-//    "filename": ".DS_Store",
-//    "pass": 0
-//},
-//{
-  //  "contains_fuzzy": true,
-   // "drone_count": 1,
-   // "fail": 0,
-  //  "filename": "2023-10-10-15-09-38_Batch_1",
-  //  "pass": 2
-//},
-//{
- //   "contains_fuzzy": true,
- //   "drone_count": 10,
- //   "fail": 2,
- //   "filename": "2023-10-10-15-13-17_Batch_2",
- //   "pass": 8
-//},
-//{
-  //  "contains_fuzzy": true,
-  //  "drone_count": 15,
-  //  "fail": 5,
-  //  "filename": "2023-10-10-15-15-35_Batch_3",
-   // "pass": 10
-//}
-//];
-
-  
-  export default function ReportDashboard(parameter) {
-
-    const [reportFiles, setReportFiles] = React.useState([]);  
-   // const isFuzzy = file.filename.includes('Fuzzy'); 
-    const classes = useStyles();  
-
-    const navigate = useNavigate(); 
-    const redirectToHome = () => {
-      navigate('/')
-    }
-    const redirectToFuzzyDashboard = () => {
-      navigate('/dashboard')
-    }
-
-    useEffect(() => {
-      const fetchData = () => {
-        fetch('http://localhost:5000/list-reports', { method: 'GET' })
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error('No response from server/something went wrong');
-            }
-            return res.json();
-          })
-          .then((data) => {
-            // 'data.reports' containing filename and fuzzy info
-            console.log('Report Files:', data.reports);
-            setReportFiles(data.reports);
-          })
-          .catch((error) => {
-            console.error('Error fetching report data:', error);
-          });
-      };
-    
-      // Set the sample data initially
-      //setReportFiles(sampleData);
-    
-      // Fetch data after setting the sample data 
-      setReportFiles([]); 
-
-      fetchData();
-    }, []);
-
-  const [snackBarState, setSnackBarState] = React.useState({
-    open: false,
-  });
-
-  const handleSnackBarVisibility = (val) => {
-    setSnackBarState(prevState => ({
-      ...prevState,
-      open: val
-    }))
-  }
-  const handleClickAway = () => {
-    handleSnackBarVisibility(true);
-  };
   useEffect(() => {
-    handleSnackBarVisibility(true);
+    setIsloading(true);
+    fetch(`${BASE_URL}/list-reports`, { method: 'GET' })
+      .then((res) => {
+        if (!res.ok) throw new Error('No response from server');
+        return res.json();
+      })
+      .then((data) => setReportFiles(data.reports ?? []))
+      .catch((error) => console.error('Error fetching report data:', error))
+      .finally(() => setIsloading(false));
   }, []);
-    
-  
+
+  const [snackOpen, setSnackOpen] = React.useState(true);
+
+  const getFolderContents = (file) => {
+    fetch(`${BASE_URL}/list-folder-contents/${file.filename}`, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('No response from server');
+        return res.json();
+      })
+      .then((data) => {
+        navigate('/dashboard', {
+          state: {
+            data,
+            file: { fuzzy: file.contains_fuzzy, fileName: file.filename, fail: file.fail },
+          },
+        });
+      })
+      .catch((error) => console.error('Error fetching report data:', error));
+  };
+
   return (
-   <>
-    {reportFiles.length === 0 && (
-      <>
-        <Snackbar
-          open={snackBarState.open}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          autoHideDuration={60000}
-          onClose={() => handleSnackBarVisibility(false)}
-        >
-          <Alert
-            onClose={() => handleSnackBarVisibility(false)}
-            severity="info"
-            sx={{ maxHeight: '150px', maxWidth: '100%' }}
-          >
-            {"No reports found"}
-          </Alert>
-        </Snackbar>
+    <>
+      <Box sx={{ width: '100vw', margin: 0, padding: 0 }} />
 
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        sx={{ textAlign: 'center', mt: 2.5, mb: 3.5 }}
+      >
+        <Link to="/report-dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
           Acceptance Report
+        </Link>
+        {isReportDashboard && (
           <Tooltip title="Home" placement="bottom">
-            <HomeIcon style={{ float: 'right', cursor: 'pointer', fontSize: '35px' }} onClick={redirectToHome} />
+            <HomeIcon
+              sx={{ float: 'right', cursor: 'pointer', fontSize: '35px' }}
+              onClick={redirectToHome}
+            />
           </Tooltip>
-        </Typography>
+        )}
+      </Typography>
 
-        <Container maxWidth="sm" style={{ padding: '10px', alignContent: 'center' }}>
-          {/* ... (existing Container, Paper, and div) */}
-        </Container>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {reportFiles.length === 0 && (
+            <>
+              <Snackbar
+                open={snackOpen}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                autoHideDuration={60000}
+                onClose={() => setSnackOpen(false)}
+              >
+                <Alert onClose={() => setSnackOpen(false)} severity="info">
+                  No reports found
+                </Alert>
+              </Snackbar>
+              <Container maxWidth="xl" sx={{ p: 1.25, alignContent: 'center' }} />
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1.25 }}>
+                <Button variant="contained" color="primary" onClick={redirectToHome}>
+                  Return to Home
+                </Button>
+              </Box>
+            </>
+          )}
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-          <Button variant="contained" color="primary" onClick={redirectToHome}>
-            Return to Home
-          </Button>
-        </div>
-      </>
-    )}
+          {reportFiles.length > 0 && (
+            <Grid container spacing={2} sx={{ width: '100%', pl: '45px', justifyContent: 'flex-start' }}>
+              {reportFiles.map((file) => {
+                if (!file?.filename || file.filename.includes('.DS_Store')) return null;
+                const parts = file.filename.split('_');
+                if (parts.length < 2) return (
+                  <Grid key={file.filename} item xs={12}>
+                    <Accordion />
+                  </Grid>
+                );
 
-    {reportFiles.length > 0 && (
-      <>
-        <Typography variant="h4" fontWeight="bold" style={{ textAlign: 'center', marginTop: '20px', marginBottom: '2rem' }}>
-          Acceptance Report
-          {/* ... */}
-        </Typography>
-        <Grid container spacing={2} style={{ width: '100%', paddingLeft: '45px', justifyContent: 'flex-start' }}>
-          {reportFiles.map((file) => {
-            const parts = file.filename.split('_');
-            const failed = file.fail > 0;
-            const passed = file.pass > 0;
+                const datePart = parts[0];
+                const batchName = parts.slice(1).join('_');
+                const date = datePart.substring(0, 10);
+                const time = datePart.substring(11, 19);
+                const formattedDate = `${date.substring(5, 7)}-${date.substring(8, 10)}-${date.substring(0, 4)}`;
+                const formattedTime = `${time.substring(0, 2)}:${time.substring(3, 5)}:${time.substring(6, 8)}`;
+                const formattedTimestamp = `${formattedDate} ${formattedTime}`;
+                const passedPercent = file.pass + file.fail > 0
+                  ? Math.round((file.pass / (file.pass + file.fail)) * 100)
+                  : 0;
 
-            if (!file || !file.filename || file.filename.includes('.DS_Store')) {
-              return null;
-            }
-
-            if (parts.length < 2) {
-              return (
-                <Grid key={file.id} item xs={12}>
-                  <Accordion>
-                    {/* ... (other JSX components) */}
-                  </Accordion>
-                </Grid>
-              );
-            }
-
-            const datePart = parts[0];
-            const batchName = parts.slice(1).join('_');
-
-            const date = datePart.substr(0, 10);
-            const time = datePart.substr(11, 8);
-
-            const formattedDate = `${date.substr(5, 2)}-${date.substr(8, 2)}-${date.substr(0, 4)}`;
-            const formattedTime = `${time.substr(0, 2)}:${time.substr(3, 2)}:${time.substr(6, 2)}`;
-
-            const formattedTimestamp = `${formattedDate} ${formattedTime}`;
-
-            const passedPercent = Math.round((file.pass / (file.pass + file.fail)) * 100);
-  
-          return (
-            <Grid key={file.id} item xs={12}> 
-            <Accordion style={{ border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px 0 rgba(33, 150, 243, 0.2)' }}> 
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}> 
-            <Grid container alignItems="center"> 
-            {/* Date and Batch Name */} 
-            <Grid item xs> 
-            <Typography className={classes.heading} style={{ fontWeight: 'bold', marginRight: '9px' }}> 
-            {formattedTimestamp} 
-            <span style={{ fontStyle: 'italic', marginLeft: '9px' }}>{batchName}</span> 
-            </Typography> 
+                return (
+                  <Grid key={file.filename} item xs={12}>
+                    <Accordion sx={{ border: '1px solid #2196F3', borderRadius: '8px', boxShadow: '0 4px 8px rgba(33,150,243,0.2)' }}>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Grid container alignItems="center">
+                          <Grid item xs>
+                            <Typography sx={{ fontWeight: 'bold', mr: 1.125 }}>
+                              {formattedTimestamp}
+                              <span style={{ fontStyle: 'italic', marginLeft: '9px' }}>{batchName}</span>
+                              {file.contains_fuzzy && (
+                                <Chip label="Fuzzy Test" sx={{ ml: 1.125, bgcolor: 'lightgreen', color: 'black' }} />
+                              )}
+                            </Typography>
+                          </Grid>
+                          <Grid item sx={{ ml: 'auto', display: 'flex', alignItems: 'center', position: 'relative' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mr: 1 }}>
+                              {file.fail > 0 && (
+                                <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', mr: 1 }}>
+                                  <Box sx={{ border: '1px solid red', borderRadius: '50%', width: 30, height: 30, overflow: 'hidden', ml: 0.5, position: 'relative' }}>
+                                    <CircularProgress variant="determinate" size={30} thickness={8} value={Math.round((file.fail / (file.pass + file.fail)) * 100)} sx={{ color: 'rgba(255,0,0,0.3)' }} />
+                                    <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '12px', color: 'red' }}>❌</span>
+                                  </Box>
+                                </Box>
+                              )}
+                              {file.pass > 0 && (
+                                <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', mr: 1 }}>
+                                  <Box sx={{ border: '1px solid lightgreen', borderRadius: '50%', width: 30, height: 30, overflow: 'hidden', ml: 0.5, position: 'relative' }}>
+                                    <CircularProgress variant="determinate" size={30} thickness={8} value={passedPercent} sx={{ color: 'lightgreen' }} />
+                                    <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '12px', color: 'lightgreen' }}>✅</span>
+                                  </Box>
+                                </Box>
+                              )}
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Table sx={{ width: '30%' }} aria-label="report summary">
+                          <TableBody>
+                            <TableRow sx={{ borderBottomWidth: '2px' }}>
+                              <TableCell sx={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
+                              <TableCell sx={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
+                              <TableCell sx={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell>{file.drone_count}</TableCell>
+                              <TableCell>{file.pass}</TableCell>
+                              <TableCell>{file.fail}</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                        <Box sx={{ position: 'absolute', bottom: '10px', right: '10px' }}>
+                          <Link
+                            style={{ cursor: 'pointer', fontSize: '18px', paddingRight: '15px' }}
+                            onClick={() => getFolderContents(file)}
+                          >
+                            Simulation Data
+                          </Link>
+                        </Box>
+                      </AccordionDetails>
+                    </Accordion>
+                  </Grid>
+                );
+              })}
             </Grid>
-
-        <Grid item style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }}>
-  {file.fail > 0 && (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
-      <div style={{ border: '1px solid red', borderRadius: '50%', width: '30px', height: '30px', overflow: 'hidden', marginLeft: '4px', position: 'relative' }}>
-        <CircularProgress
-          variant="determinate"
-          size={30}
-          thickness={8}
-          value={Math.round((file.fail / (file.pass + file.fail)) * 100)}
-          style={{
-            color: 'rgba(255, 0, 0, 0.3)',
-          }}
-        />
-        <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: 'red' }}>❌</span>
-      </div>
-    </div>
-  )}
-  {passed && (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginRight: '8px' }}>
-      <div style={{ border: '1px solid lightgreen', borderRadius: '50%', width: '30px', height: '30px', overflow: 'hidden', marginLeft: '4px', position: 'relative' }}>
-        <CircularProgress
-          variant="determinate"
-          size={30}
-          thickness={8}
-          value={passedPercent}
-          style={{
-            color: 'lightgreen',
-          }}
-        />
-        <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', color: 'lightgreen' }}>✅</span>
-      </div>
-    </div>
-  )}
-</div>
-
-
-        </Grid>
-      </Grid>
-    </AccordionSummary>
-    <AccordionDetails>
-    <Table style={{ width: '30%' }} aria-label="simple table" >
-  <TableBody>
-    <TableRow style={{ borderBottomWidth: '2px' }}>
-      {/* <TableCell align="center"></TableCell>  */}
-      <TableCell  style={{ fontWeight: 'bold', color: 'blue' }}>Drone Count</TableCell>
-      <TableCell  style={{ fontWeight: 'bold', color: 'green' }}>Pass</TableCell>
-      <TableCell  style={{ fontWeight: 'bold', color: 'red' }}>Fail</TableCell>
-    </TableRow>
-    <TableRow> 
-      
-      {/* <TableCell align="right"></TableCell>  */}
-      <TableCell >{file.drone_count}</TableCell>
-      <TableCell >{file.pass}</TableCell>
-      <TableCell >{file.fail}</TableCell>
-    </TableRow>
-  </TableBody>
-</Table>
-          {file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Fuzzy Testing {file.contains_fuzzy}</p> 
-          </Typography> 
-          )} 
-          {!file.contains_fuzzy && ( 
-          <Typography style={{ marginLeft: 'auto' }}> 
-          <p>Simulation Testing</p> 
-          </Typography> 
-          )} 
-          </AccordionDetails> 
-          </Accordion> 
-          </Grid>
-        );
-      })}
-    </Grid>
+          )}
+        </>
+      )}
     </>
-    )}
-  </>
-); 
+  );
 }
+
+ReportDashboard.propTypes = {
+  isHomePage: PropTypes.bool,
+};

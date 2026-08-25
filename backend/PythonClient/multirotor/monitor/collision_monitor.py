@@ -20,7 +20,7 @@ class CollisionMonitor(SingleDroneMissionMonitor):
             collision_info = self.client.simGetCollisionInfo(self.target_drone)
             if collision_info.has_collided:
                 if prev_collision is None or prev_collision != collision_info.object_name:
-                    collision_abs_location = self.client.simGetObjectPose(object_name=self.target_drone).position
+                    collision_abs_location = self.get_vehicle_pose(self.target_drone).position
                     self.append_fail_to_log(
                         f"{self.target_drone};collided with {collision_info.object_name} at absolute position"
                         f"x = {collision_abs_location.x_val} meters, "

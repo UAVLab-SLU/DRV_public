@@ -80,8 +80,7 @@ class NoFlyZoneMonitor(SingleDroneMissionMonitor):
         self.save_report()
 
     def get_current_abs_point(self):
-        current_position = self.client.simGetObjectPose(
-            object_name=self.target_drone).position
+        current_position = self.get_vehicle_pose(self.target_drone).position
         x = current_position.x_val
         y = current_position.y_val
         z = current_position.z_val

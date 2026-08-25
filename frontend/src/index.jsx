@@ -5,12 +5,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { runtimeMode } from "./utils/runtimeUtils";
 
-// Token injected at build time by vite.config.js (reads from credentials file)
-Ion.defaultAccessToken =
-  // eslint-disable-next-line no-undef
-  (typeof __CESIUM_ION_TOKEN__ !== "undefined" && __CESIUM_ION_TOKEN__) ||
-  import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN ||
-  "";
+// Token injected by vite.config.js from the credentials file.
+Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN || "";
 
 console.log(`[DroneWorld] running in ${runtimeMode} mode`);
 

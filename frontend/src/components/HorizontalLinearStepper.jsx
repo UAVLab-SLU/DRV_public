@@ -258,7 +258,7 @@ export default function HorizontalLinearStepper({ desc, title }) {
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <ControlsDisplay mapControl={mapControls[activeScreen] ?? mapControls.default} />
           <Box sx={{ flex: 1 }}>
-            <CesiumMap activeConfigStep={activeStep} />
+            <CesiumMap />
           </Box>
         </Box>
       </Box>

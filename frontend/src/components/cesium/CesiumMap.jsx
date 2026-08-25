@@ -8,8 +8,7 @@ import {
   IonResource,
   sampleTerrainMostDetailed,
 } from "cesium";
-import PropTypes from "prop-types";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Cesium3DTileset, Viewer } from "resium";
 import { originTypes } from "../../constants/env";
 import { useMainJson } from "../../contexts/MainJsonContext";
@@ -24,12 +23,29 @@ const DEFAULT_CAMERA_HEIGHT = 1200;
 const SCROLL_ZOOM_FACTOR = 2;
 const SCROLL_ZOOM_INERTIA = 0.6;
 const GOOGLE_3D_TILES_ASSET_ID = 2275207;
+const DEFAULT_CAMERA_ORIGIN = Object.freeze({
+  latitude: 41.980381,
+  longitude: -87.934524,
+});
 
-const CesiumMap = ({ activeConfigStep }) => {
+const getCameraOrigin = (origin) => {
+  const latitude = Number(origin?.latitude);
+  const longitude = Number(origin?.longitude);
+  const hasValidCoordinates =
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    !(latitude === 0 && longitude === 0);
+
+  return hasValidCoordinates ? { latitude, longitude } : DEFAULT_CAMERA_ORIGIN;
+};
+
+const CesiumMap = () => {
   const { envJson, setEnvJson, registerSetCameraByPosition } = useMainJson();
   const viewerRef = useRef(null);
   const hasSetInitialCameraViewRef = useRef(false);
   const [viewerReady, setViewerReady] = useState(false);
+  const [google3DTilesetUrl, setGoogle3DTilesetUrl] = useState(null);
+  const [mapLoadError, setMapLoadError] = useState(null);
 
   // Resolve terrain Promise to an actual TerrainProvider before passing to Viewer.
   // Passing a Promise directly leaves the globe as a bare ellipsoid until re-render.
@@ -42,24 +58,46 @@ const CesiumMap = ({ activeConfigStep }) => {
     return () => { cancelled = true; };
   }, []);
 
-  // Google 3D Photorealistic Tiles — enabled whenever a valid Ion token is present
-  const google3DTilesetUrl = useMemo(
-    () =>
+  // Resolve the Ion resource before mounting the Resium tileset. This keeps a
+  // failed endpoint request from becoming a silent null URL inside Resium.
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.resolve(
       createGoogle3DTilesetUrl({
         cesiumAccessToken: Ion.defaultAccessToken,
         fromAssetId: IonResource.fromAssetId,
         assetId: GOOGLE_3D_TILES_ASSET_ID,
       }),
-    [],
-  );
+    )
+      .then((resource) => {
+        if (cancelled) return;
+        if (resource == null) {
+          setMapLoadError("Google Photorealistic 3D Tiles could not be resolved.");
+          return;
+        }
+        setGoogle3DTilesetUrl(resource);
+      })
+      .catch((error) => {
+        console.error("[Cesium] Google 3D Tiles load failed:", error);
+        if (!cancelled) {
+          setMapLoadError("Google Photorealistic 3D Tiles could not be loaded.");
+        }
+      });
 
-  const [cameraPosition, setCameraPosition] = useState({
-    destination: Cartesian3.fromDegrees(
-      envJson.Origin.longitude,
-      envJson.Origin.latitude,
-      DEFAULT_CAMERA_HEIGHT,
-    ),
-    orientation: { heading: 0, pitch: -Math.PI / 2 },
+    return () => { cancelled = true; };
+  }, []);
+
+  const [cameraPosition, setCameraPosition] = useState(() => {
+    const origin = getCameraOrigin(envJson.Origin);
+    return {
+      destination: Cartesian3.fromDegrees(
+        origin.longitude,
+        origin.latitude,
+        DEFAULT_CAMERA_HEIGHT,
+      ),
+      orientation: { heading: 0, pitch: -Math.PI / 2 },
+    };
   });
 
   const setCameraByLongLat = useCallback(
@@ -115,30 +153,29 @@ const CesiumMap = ({ activeConfigStep }) => {
     const ctrl = viewerRef.current.cesiumElement.scene.screenSpaceCameraController;
     ctrl.zoomFactor  = SCROLL_ZOOM_FACTOR;
     ctrl.inertiaZoom = SCROLL_ZOOM_INERTIA;
-    return () => { ctrl.zoomFactor = 5.0; ctrl.inertiaZoom = 0.8; };
+    ctrl.enableRotate = true;
+    ctrl.enableTilt = true;
+    return () => {
+      ctrl.zoomFactor = 5.0;
+      ctrl.inertiaZoom = 0.8;
+    };
   }, [viewerReady]);
 
-  // Prevent the browser's native autoscroll mode on middle-click.
-  // Without this the browser captures all subsequent mouse events for its own
-  // scroll cursor, so Cesium never receives the MOUSE_MOVE events it needs to
-  // handle middle-drag (tilt in 3D, pan in 2D).
+  // Keep middle-drag on the Cesium canvas instead of allowing the browser's
+  // native autoscroll gesture to capture it.
   useEffect(() => {
     if (!viewerReady) return;
     const canvas = viewerRef.current.cesiumElement.canvas;
-    const block = (e) => { if (e.button === 1) e.preventDefault(); };
-    canvas.addEventListener("mousedown", block, { passive: false });
-    // auxclick fires on a completed middle-click — block it too so the browser
-    // doesn't try to open links in new tabs when clicking on entities.
-    canvas.addEventListener("auxclick", (e) => e.preventDefault());
-    return () => canvas.removeEventListener("mousedown", block);
+    const preventMiddleClickDefault = (event) => {
+      if (event.button === 1) event.preventDefault();
+    };
+    canvas.addEventListener("mousedown", preventMiddleClickDefault, { passive: false });
+    canvas.addEventListener("auxclick", preventMiddleClickDefault, { passive: false });
+    return () => {
+      canvas.removeEventListener("mousedown", preventMiddleClickDefault);
+      canvas.removeEventListener("auxclick", preventMiddleClickDefault);
+    };
   }, [viewerReady]);
-
-  // Lock tilt on mission step (top-down drone placement)
-  useEffect(() => {
-    if (!viewerReady) return;
-    const ctrl = viewerRef.current.cesiumElement.scene.screenSpaceCameraController;
-    ctrl.enableTilt = activeConfigStep !== 1;
-  }, [activeConfigStep, viewerReady]);
 
   // Apply camera position: setView on first load, flyTo afterwards
   useEffect(() => {
@@ -161,9 +198,10 @@ const CesiumMap = ({ activeConfigStep }) => {
 
   // Auto-focus on origin whenever it changes
   useEffect(() => {
+    const origin = getCameraOrigin(envJson.Origin);
     setCameraByLongLat(
-      envJson.Origin.longitude,
-      envJson.Origin.latitude,
+      origin.longitude,
+      origin.latitude,
       DEFAULT_CAMERA_HEIGHT,
       -Math.PI / 2,
       0,
@@ -202,7 +240,13 @@ const CesiumMap = ({ activeConfigStep }) => {
       >
         {/* Google Photorealistic 3D Tiles (requires valid Ion token) */}
         {google3DTilesetUrl != null && (
-          <Cesium3DTileset url={google3DTilesetUrl} />
+          <Cesium3DTileset
+            url={google3DTilesetUrl}
+            onError={(error) => {
+              console.error("[Cesium] Google 3D Tiles render failed:", error);
+              setMapLoadError("Google Photorealistic 3D Tiles could not be rendered.");
+            }}
+          />
         )}
 
         <DroneDragAndDrop viewerReady={viewerReady} viewerRef={viewerRef} />
@@ -210,6 +254,15 @@ const CesiumMap = ({ activeConfigStep }) => {
         <DrawSadeZone viewerReady={viewerReady} viewerRef={viewerRef} />
         <TimeLineSetterCesiumComponent viewerReady={viewerReady} viewerRef={viewerRef} />
       </Viewer>
+
+      {mapLoadError && (
+        <Alert
+          severity="error"
+          sx={{ position: "absolute", top: 16, left: 16, right: 16, zIndex: 11 }}
+        >
+          {mapLoadError}
+        </Alert>
+      )}
 
       {envJson.activeSadeZoneIndex != null && (
         <Box
@@ -226,7 +279,5 @@ const CesiumMap = ({ activeConfigStep }) => {
     </Box>
   );
 };
-
-CesiumMap.propTypes = { activeConfigStep: PropTypes.number.isRequired };
 
 export default CesiumMap;

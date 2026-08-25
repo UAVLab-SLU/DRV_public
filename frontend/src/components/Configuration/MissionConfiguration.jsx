@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { tabEnums } from "../../constants/simConfig";
 import { useMainJson } from "../../contexts/MainJsonContext";
 import { SimulationConfigurationModel } from "../../model/SimulationConfigurationModel";
@@ -44,14 +44,11 @@ const buildDefaultDrone = (idx, env) => ({
 export default function MissionConfiguration() {
   const { mainJson, setMainJson, envJson, setActiveScreen } = useMainJson();
   const tokens = useThemeTokens();
-  const [drones, setDrones] = useState(() => {
-    const existing = mainJson.getAllDrones();
-    return existing.length > 0 ? existing : [buildDefaultDrone(0, envJson)];
-  });
+  const drones = mainJson.getAllDrones();
 
   useEffect(() => {
-    if (mainJson.getAllDrones().length === 0 && drones.length > 0) {
-      mainJson.addNewDrone(drones[0]);
+    if (mainJson.getAllDrones().length === 0) {
+      mainJson.addNewDrone(buildDefaultDrone(0, envJson));
       setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
     setActiveScreen?.(tabEnums.DRONES);
@@ -60,23 +57,19 @@ export default function MissionConfiguration() {
   const addDrone = () => {
     const d = buildDefaultDrone(drones.length, envJson);
     d.X += 0.0001 * drones.length;
-    const next = [...drones, d];
-    setDrones(next);
     mainJson.addNewDrone(d);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
   const removeDrone = (idx) => {
     if (drones.length <= 1) return;
-    const next = drones.filter((_, i) => i !== idx);
-    setDrones(next);
     mainJson.deleteDroneBasedOnIndex(idx);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
   const updateDrone = (idx, data) => {
-    setDrones((prev) => prev.map((d, i) => (i === idx ? { ...d, ...data } : d)));
-    mainJson.updateDroneBasedOnIndex(idx, { ...(drones[idx] ?? {}), ...data });
+    const currentDrone = mainJson.getDroneBasedOnIndex(idx);
+    mainJson.updateDroneBasedOnIndex(idx, { ...(currentDrone ?? {}), ...data });
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 

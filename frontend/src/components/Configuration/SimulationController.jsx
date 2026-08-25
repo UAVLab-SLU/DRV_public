@@ -219,7 +219,7 @@ export default function SimulationController() {
           <Grid container>
             <ControlsDisplay mapControl={mapControls.default} />
             <Grid item xs={12}>
-              <CesiumMap activeConfigStep={activeStep} />
+              <CesiumMap />
             </Grid>
 
             <ControlsDisplay mapControl={mapControls[activeScreen]} />

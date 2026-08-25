@@ -18,40 +18,26 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Cache Node.js modules
-      uses: actions/cache@v4
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '16'
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
-      run: |
-        cd frontend
-        npm install
+      working-directory: frontend
+      run: npm ci
 
     - name: Lint frontend code
-      run: |
-        cd frontend
-        npm run lint
-
-    - name: Format frontend code with Prettier
-      run: |
-        cd frontend
-        npm run format
+      working-directory: frontend
+      run: npm run lint
 
     - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
+      working-directory: frontend
+      run: npm run build
 
-    - name: Run ESLint Security Checks
-      run: |
-        cd frontend
-        npm audit --omit=dev --audit-level=critical || true
+    - name: Audit production dependencies
+      continue-on-error: true
+      working-directory: frontend
+      run: npm audit --omit=dev --audit-level=critical

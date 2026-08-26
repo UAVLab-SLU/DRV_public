@@ -13,13 +13,13 @@ export const mapControls = {
     ],
   },
   [tabEnums.ENV_SADEZONE]: {
-    header: 'DRAW SADE ZONE',
+    header: 'DRAW SAFE ZONE',
     body: [
-      { icon: [imageUrls.sign_up], command: 'CLICK ICON', info: 'TO ACTIVATE SADE ZONE' },
+      { icon: [imageUrls.sign_up], command: 'CLICK ICON', info: 'TO ACTIVATE SAFE ZONE' },
       {
         icon: [imageUrls.shift, imageUrls.left_click],
         command: 'SHIFT + LEFT-CLICK + DRAG',
-        info: 'TO DRAW A SADE ZONE',
+        info: 'TO DRAW A SAFE ZONE',
       },
     ],
   },

@@ -103,9 +103,11 @@ setup instructions in [Troubleshooting](#set-up-github-token).
 ```
 
 Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
-On its first simulator run, PowerShell downloads and extracts the latest Windows
-release. 7-Zip is required because the release can contain a split
-`Windows.z01` and `Windows.zip` archive.
+On each full startup, PowerShell checks the latest release tag once. It reuses
+the installed package when that tag is already present, so no archive is
+downloaded or extracted again. The Windows workflow downloads only `Windows.zip`
+and any `Windows.zNN` archive parts. It never downloads the Linux release. 7-Zip
+is required because the Windows release can be a split archive.
 
 See the [Windows Native Unreal Pixel Streaming wiki](https://github.com/UAVLab-SLU/DRV_public/wiki/Windows-Native-Unreal-Pixel-Streaming)
 for architecture, ports, security, and troubleshooting.

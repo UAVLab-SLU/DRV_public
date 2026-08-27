@@ -10,6 +10,10 @@ $ControlPort = if ($env:SIMULATOR_CONTROL_PORT) { $env:SIMULATOR_CONTROL_PORT } 
 $ControlPidFile = Join-Path $ScriptDir "sim\windows-control.pid"
 
 function Start-SimulatorControl {
+    param(
+        [switch]$SkipDownload
+    )
+
     try {
         Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
         return
@@ -19,7 +23,7 @@ function Start-SimulatorControl {
 
     $powerShellPath = (Get-Process -Id $PID).Path
     $controlScript = Join-Path $ScriptDir "windows_simulator_control.ps1"
-    $skipArgument = if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") { " -SkipDownload" } else { "" }
+    $skipArgument = if ($SkipDownload -or $env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") { " -SkipDownload" } else { "" }
     $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$controlScript`" -Port $ControlPort$skipArgument"
     $process = Start-Process -FilePath $powerShellPath -ArgumentList $arguments -WindowStyle Hidden -PassThru
     Set-Content -LiteralPath $ControlPidFile -Value $process.Id -NoNewline
@@ -63,14 +67,13 @@ switch ($Command) {
             $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" config-dir -SkipDownload)
         }
         else {
-            & "$ScriptDir\windows_simulator.ps1" download
+            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" prepare | Select-Object -Last 1)
             if ($LASTEXITCODE -ne 0) { throw "Unable to prepare the latest Windows simulator release." }
-            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" config-dir)
         }
-        Start-SimulatorControl
+        Start-SimulatorControl -SkipDownload
         docker compose up -d --build frontend backend fake-gcs
         if ($LASTEXITCODE -ne 0) { throw "Unable to start the application services." }
-        & "$ScriptDir\windows_simulator.ps1" start
+        & "$ScriptDir\windows_simulator.ps1" start -SkipDownload
     }
     "dev" {
         Start-SimulatorControl

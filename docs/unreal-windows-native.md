@@ -61,6 +61,15 @@ selects all numbered Windows archive parts and the final `Windows.zip`, checks
 their recorded sizes and SHA-256 digests, then extracts them with 7-Zip. The
 cached package is reused when its release tag matches the current latest tag.
 
+`dev.ps1 full` performs this latest-tag check once. When the installed tag and
+launcher match, it skips archive downloads, checksum work, and extraction. The
+same prepared package is then reused for configuration discovery, initial
+launch, and the browser Start Unreal control.
+
+The Windows workflow selects only `Windows.zip` and its `Windows.zNN` split
+archive parts. It does not invoke the Linux downloader or download Linux
+release artifacts. The Linux workflow remains separate under `dev.sh`.
+
 Useful direct commands are:
 
 ```powershell

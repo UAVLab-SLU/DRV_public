@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("start", "stop", "status", "download", "config-dir")]
+    [ValidateSet("start", "stop", "status", "download", "prepare", "config-dir")]
     [string]$Command = "start",
     [string]$Tag = "latest",
     [string]$ReleaseRoot = $env:DRV_WINDOWS_RELEASE_DIR,
@@ -154,6 +154,7 @@ function Install-WindowsRelease {
     $release = $metadata.Release
     $releaseTag = $release.tag_name
     $assets = @($release.assets | Where-Object { $_.name -match '(?i)^Windows\.(z\d+|zip)$' })
+    Write-Host "Release platform: Windows. Linux release assets are ignored."
 
     if (-not ($assets.name -contains "Windows.zip")) {
         throw "Release $releaseTag does not contain Windows.zip."
@@ -254,10 +255,14 @@ function Get-InstalledExecutable {
 }
 
 function Get-DroneLumeConfigDirectory {
-    $executable = Get-InstalledExecutable
+    param([System.IO.FileInfo]$Executable)
+
+    if (-not $Executable) {
+        $Executable = Get-InstalledExecutable
+    }
     $candidates = @(
-        (Join-Path $executable.Directory.FullName "$($executable.BaseName)\Config"),
-        (Join-Path $executable.Directory.FullName "DRV\Config")
+        (Join-Path $Executable.Directory.FullName "$($Executable.BaseName)\Config"),
+        (Join-Path $Executable.Directory.FullName "DRV\Config")
     )
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Container) {
@@ -371,6 +376,10 @@ function Start-DRVSimulator {
 
 switch ($Command) {
     "download" { Install-WindowsRelease | Out-Null }
+    "prepare" {
+        $executable = Install-WindowsRelease
+        Write-Output (Get-DroneLumeConfigDirectory -Executable $executable)
+    }
     "config-dir" { Write-Output (Get-DroneLumeConfigDirectory) }
     "start" { Start-DRVSimulator }
     "stop" { Stop-DRVSimulator }

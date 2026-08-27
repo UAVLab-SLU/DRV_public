@@ -15,7 +15,7 @@ function Start-SimulatorControl {
     )
 
     try {
-        Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
+        Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 5 | Out-Null
         return
     }
     catch {
@@ -28,13 +28,16 @@ function Start-SimulatorControl {
     $process = Start-Process -FilePath $powerShellPath -ArgumentList $arguments -WindowStyle Hidden -PassThru
     Set-Content -LiteralPath $ControlPidFile -Value $process.Id -NoNewline
 
-    $deadline = (Get-Date).AddSeconds(15)
+    $deadline = (Get-Date).AddSeconds(45)
     do {
         try {
-            Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
+            Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 5 | Out-Null
             return
         }
         catch {
+            if ($process.HasExited) {
+                throw "The Windows simulator control service exited during startup with code $($process.ExitCode)."
+            }
             Start-Sleep -Milliseconds 500
         }
     } while ((Get-Date) -lt $deadline)
@@ -68,7 +71,6 @@ switch ($Command) {
         }
         else {
             $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" prepare | Select-Object -Last 1)
-            if ($LASTEXITCODE -ne 0) { throw "Unable to prepare the latest Windows simulator release." }
         }
         Start-SimulatorControl -SkipDownload
         docker compose up -d --build frontend backend fake-gcs

@@ -1,216 +1,113 @@
-
-    Write-Host "If you get an execution policy error, run this once:"
-    Write-Host ""
-    Write-Host "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"
-    Write-Host ""
-
-# DroneWorld Development Helper Script (PowerShell)
-# Usage: .\dev.ps1 [command]
-
 param(
-    [Parameter(Position=0)]
-    [string]$Command
+    [Parameter(Position = 0)]
+    [string]$Command = "help"
 )
 
-function Set-AirSim-Settings-Dir {
-    if ([string]::IsNullOrWhiteSpace($env:AIRSIM_SETTINGS_DIR)) {
-        $defaultAirSimDir = Join-Path $HOME "Documents\AirSim"
-        New-Item -ItemType Directory -Force -Path $defaultAirSimDir | Out-Null
-        $env:AIRSIM_SETTINGS_DIR = $defaultAirSimDir
-        Write-Host "Using AirSim settings directory: $env:AIRSIM_SETTINGS_DIR" -ForegroundColor Cyan
-    }
-}
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -LiteralPath $ScriptDir
+$ControlPort = if ($env:SIMULATOR_CONTROL_PORT) { $env:SIMULATOR_CONTROL_PORT } else { "8890" }
+$ControlPidFile = Join-Path $ScriptDir "sim\windows-control.pid"
 
-function Check-Token {
-    # Check if token is in environment
-    if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
-        return $true
-    }
-    
-    # Check if token is in .env file and auto-export it
-    if (Test-Path ".env") {
-        $envContent = Get-Content ".env"
-        $tokenLine = $envContent | Where-Object { $_ -match "^GITHUB_TOKEN=" }
-        if ($tokenLine) {
-            $token = $tokenLine -replace "^GITHUB_TOKEN=", ""
-            if (-not [string]::IsNullOrWhiteSpace($token)) {
-                $env:GITHUB_TOKEN = $token
-                Write-Host "Loaded GITHUB_TOKEN from .env" -ForegroundColor Green
-                return $true
-            }
-        }
-    }
-    
-    Write-Host "GITHUB_TOKEN not found." -ForegroundColor Yellow
-    Write-Host "Run '.\dev.ps1 token' to set it up." -ForegroundColor Yellow
-    return $false
-}
+function Start-SimulatorControl {
+    param(
+        [switch]$SkipDownload
+    )
 
-function Set-Token {
-    Write-Host "Setting up GITHUB_TOKEN..." -ForegroundColor Green
-    Write-Host ""
-    
-    # Check if token already exists in .env
-    if (Test-Path ".env") {
-        $envContent = Get-Content ".env"
-        $tokenLine = $envContent | Where-Object { $_ -match "^GITHUB_TOKEN=" }
-        if ($tokenLine) {
-            $currentToken = $tokenLine -replace "^GITHUB_TOKEN=", ""
-            if (-not [string]::IsNullOrWhiteSpace($currentToken)) {
-                $preview = $currentToken.Substring(0, [Math]::Min(10, $currentToken.Length))
-                Write-Host "Found existing token in .env: $preview..." -ForegroundColor Green
-                $response = Read-Host "Use existing token? (Y/n)"
-                if ([string]::IsNullOrWhiteSpace($response) -or $response -match "^[Yy]$") {
-                    $env:GITHUB_TOKEN = $currentToken
-                    Write-Host "Token exported for current session" -ForegroundColor Green
-                    return
-                }
-            }
-        }
-    }
-    
-    # Prompt for new token
-    $secureToken = Read-Host "Enter your GitHub Personal Access Token" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-    $token = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-    
-    if ([string]::IsNullOrWhiteSpace($token)) {
-        Write-Host "No token provided" -ForegroundColor Red
+    try {
+        Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
         return
     }
-    
-    # Set environment variable for current session
-    $env:GITHUB_TOKEN = $token
-    
-    # Save to .env file in root
-    $envFile = ".env"
-    $tokenLine = "GITHUB_TOKEN=$token"
-    
-    if (Test-Path $envFile) {
-        $content = Get-Content $envFile
-        $found = $false
-        $newContent = $content | ForEach-Object {
-            if ($_ -match "^GITHUB_TOKEN=") {
-                $found = $true
-                $tokenLine
-            } else {
-                $_
-            }
-        }
-        
-        if ($found) {
-            $newContent | Set-Content $envFile
-            Write-Host "Updated GITHUB_TOKEN in .env" -ForegroundColor Green
-        } else {
-            Add-Content $envFile "`n$tokenLine"
-            Write-Host "Added GITHUB_TOKEN to .env" -ForegroundColor Green
-        }
-    } else {
-        $tokenLine | Set-Content $envFile
-        Write-Host "Created .env with GITHUB_TOKEN" -ForegroundColor Green
+    catch {
     }
-    
-    Write-Host "Token exported for current session" -ForegroundColor Green
+
+    $powerShellPath = (Get-Process -Id $PID).Path
+    $controlScript = Join-Path $ScriptDir "windows_simulator_control.ps1"
+    $skipArgument = if ($SkipDownload -or $env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") { " -SkipDownload" } else { "" }
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$controlScript`" -Port $ControlPort$skipArgument"
+    $process = Start-Process -FilePath $powerShellPath -ArgumentList $arguments -WindowStyle Hidden -PassThru
+    Set-Content -LiteralPath $ControlPidFile -Value $process.Id -NoNewline
+
+    $deadline = (Get-Date).AddSeconds(15)
+    do {
+        try {
+            Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
+            return
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    } while ((Get-Date) -lt $deadline)
+    throw "The Windows simulator control service did not start on port $ControlPort."
 }
 
-function Print-Usage {
-    Write-Host ""
-    Write-Host "Usage: .\dev.ps1 [command]" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Commands:" -ForegroundColor Yellow
-    Write-Host "  token       - Set GITHUB_TOKEN for building simulator (required for 'full' and 'simulator')"
-    Write-Host "  full        - Start all services (frontend, backend, simulator)"
-    Write-Host "  dev         - Start development services only (frontend, backend)"
-    Write-Host "  frontend    - Start frontend only"
-    Write-Host "  backend     - Start backend only"
-    Write-Host "  simulator   - Start simulator only"
-    Write-Host "  logs        - Follow logs for dev services"
-    Write-Host "  logs-all    - Follow logs for all services"
-    Write-Host "  stop        - Stop all services"
-    Write-Host "  stop-dev    - Stop development services only"
-    Write-Host "  clean       - Stop and remove all containers and volumes"
-    Write-Host "  help        - Show this help message"
-    Write-Host ""
-    Write-Host "Examples:" -ForegroundColor Cyan
-    Write-Host "  .\dev.ps1 token        # Set GitHub token (needed before 'full' or 'simulator')"
-    Write-Host "  .\dev.ps1 dev          # Quick start for development"
-    Write-Host "  .\dev.ps1 full         # Start everything including simulator"
-    Write-Host ""
-    Write-Host "If you get an execution policy error, run this once:" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"
-    Write-Host ""
+function Stop-SimulatorControl {
+    try {
+        Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$ControlPort/shutdown" -TimeoutSec 3 | Out-Null
+    }
+    catch {
+        if (Test-Path -LiteralPath $ControlPidFile) {
+            $storedPid = (Get-Content -LiteralPath $ControlPidFile -Raw).Trim()
+            if ($storedPid -match '^\d+$') {
+                Stop-Process -Id ([int]$storedPid) -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+    Remove-Item -LiteralPath $ControlPidFile -Force -ErrorAction SilentlyContinue
+}
+
+function Show-Usage {
+    Write-Host "Usage: .\dev.ps1 COMMAND"
+    Write-Host "Commands: full, dev, frontend, backend, simulator, simulator-stop, simulator-status, logs, logs-all, stop, stop-dev, clean"
 }
 
 switch ($Command) {
-    "token" {
-        Set-Token
-    }
     "full" {
-        if (-not (Check-Token)) {
-            Write-Host ""
-            $response = Read-Host "Continue without token? The simulator will fail to build. (y/N)"
-            if ($response -notmatch "^[Yy]$") {
-                exit 1
-            }
+        if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") {
+            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" config-dir -SkipDownload)
         }
-        Write-Host "Starting full stack (frontend + backend + simulator)..." -ForegroundColor Green
-        docker-compose up
+        else {
+            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" prepare | Select-Object -Last 1)
+            if ($LASTEXITCODE -ne 0) { throw "Unable to prepare the latest Windows simulator release." }
+        }
+        Start-SimulatorControl -SkipDownload
+        docker compose up -d --build frontend backend fake-gcs
+        if ($LASTEXITCODE -ne 0) { throw "Unable to start the application services." }
+        & "$ScriptDir\windows_simulator.ps1" start -SkipDownload
     }
     "dev" {
-        Set-AirSim-Settings-Dir
-        Write-Host "Starting development services (frontend + backend only)..." -ForegroundColor Green
-        docker-compose -f docker-compose.dev.yaml up
+        Start-SimulatorControl
+        docker compose -f docker-compose.dev.yaml up
     }
     "frontend" {
-        Write-Host "Starting frontend only..." -ForegroundColor Green
-        docker-compose up frontend
+        Start-SimulatorControl
+        docker compose up frontend
     }
-    "backend" {
-        Set-AirSim-Settings-Dir
-        Write-Host "Starting backend only..." -ForegroundColor Green
-        docker-compose up backend
-    }
+    "backend" { docker compose up backend }
     "simulator" {
-        if (-not (Check-Token)) {
-            Write-Host ""
-            $response = Read-Host "Continue without token? The simulator will fail to build. (y/N)"
-            if ($response -notmatch "^[Yy]$") {
-                exit 1
-            }
+        Start-SimulatorControl
+        if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") {
+            & "$ScriptDir\windows_simulator.ps1" start -SkipDownload
         }
-        Write-Host "Starting simulator only..." -ForegroundColor Green
-        docker-compose up drv-unreal
+        else {
+            & "$ScriptDir\windows_simulator.ps1" start
+        }
     }
-    "logs" {
-        Write-Host "Following development service logs..." -ForegroundColor Green
-        docker-compose -f docker-compose.dev.yaml logs -f frontend backend
-    }
-    "logs-all" {
-        Write-Host "Following all service logs..." -ForegroundColor Green
-        docker-compose logs -f
-    }
+    "simulator-stop" { & "$ScriptDir\windows_simulator.ps1" stop }
+    "simulator-status" { & "$ScriptDir\windows_simulator.ps1" status }
+    "logs" { docker compose -f docker-compose.dev.yaml logs -f frontend backend }
+    "logs-all" { docker compose --profile windows-simulator logs -f }
     "stop" {
-        Write-Host "Stopping all services..." -ForegroundColor Yellow
-        docker-compose down
+        & "$ScriptDir\windows_simulator.ps1" stop
+        Stop-SimulatorControl
+        docker compose --profile windows-simulator down
     }
-    "stop-dev" {
-        Write-Host "Stopping development services..." -ForegroundColor Yellow
-        docker-compose -f docker-compose.dev.yaml down
-    }
+    "stop-dev" { docker compose -f docker-compose.dev.yaml down }
     "clean" {
-        Write-Host "Cleaning up all containers and volumes..." -ForegroundColor Yellow
-        docker-compose down -v
-        docker-compose -f docker-compose.dev.yaml down -v
-        Write-Host "Cleanup complete" -ForegroundColor Green
+        & "$ScriptDir\windows_simulator.ps1" stop
+        Stop-SimulatorControl
+        docker compose --profile windows-simulator down -v
+        docker compose -f docker-compose.dev.yaml down -v
     }
-    { $_ -eq "help" -or $_ -eq "" -or $null -eq $_ } {
-        Print-Usage
-    }
-    default {
-        Write-Host "Unknown command: $Command" -ForegroundColor Red
-        Print-Usage
-        exit 1
-    }
+    default { Show-Usage }
 }

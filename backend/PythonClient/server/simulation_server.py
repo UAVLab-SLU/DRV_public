@@ -11,6 +11,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 # Import the SimulationTaskManager
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
+from PythonClient.multirotor.control.dronelume_config import (
+    DroneLumeValidationError,
+    extract_dronelume_request,
+    get_dronelume_contract,
+    validate_init_dsl,
+)
 
 # Import the storage service from the configuration module
 from PythonClient.multirotor.storage.storage_config import get_storage_service
@@ -148,6 +154,14 @@ def add_task():
         if not task_data:
             return jsonify({'error': 'No task data provided'}), 400
 
+        try:
+            extract_dronelume_request(task_data)
+        except DroneLumeValidationError as e:
+            return jsonify({
+                'error': 'Invalid DroneLume InitDSL configuration',
+                'details': e.errors,
+            }), 400
+
         # Generate a unique UUID string for the task
         uuid_string = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + "_Batch_" + str(task_number)
         task_dispatcher.add_task(task_data, uuid_string)
@@ -220,6 +234,38 @@ def get_state():
     Returns the current state of the simulation.
     """
     return jsonify(task_dispatcher.unreal_state), 200
+
+
+@app.route('/api/dronelume/schema', methods=['GET'])
+def get_dronelume_schema():
+    """Returns the canonical LLM/manual authoring contract supported by Unreal."""
+    return jsonify(get_dronelume_contract()), 200
+
+
+@app.route('/api/dronelume/validate', methods=['POST'])
+def validate_dronelume_config():
+    """Validates a direct InitDSL document or an object containing init_dsl."""
+    payload = request.get_json(silent=True)
+    if payload is None:
+        return jsonify({'error': 'A JSON body is required'}), 400
+    document = payload.get('init_dsl') if isinstance(payload, dict) and 'init_dsl' in payload else payload
+    try:
+        validated = validate_init_dsl(document)
+    except DroneLumeValidationError as e:
+        return jsonify({
+            'valid': False,
+            'error': 'Invalid DroneLume InitDSL configuration',
+            'details': e.errors,
+        }), 400
+    return jsonify({'valid': True, 'init_dsl': validated}), 200
+
+
+@app.route('/api/dronelume/stop', methods=['POST'])
+def stop_dronelume():
+    """Stops the active DroneLume scenario and asks Unreal to return to its menu."""
+    if not task_dispatcher.stop_dronelume():
+        return jsonify({'error': 'No DroneLume scenario is running'}), 409
+    return jsonify({'status': 'ok', 'state': 'idle'}), 200
 
 @app.route('/cesiumCoordinate', methods=['GET'])
 def get_map():

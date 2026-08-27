@@ -195,7 +195,7 @@ function SimulationConfigs() {
                             <Box sx={{ display: 'flex' }}>
                               <NoEntryIcon sx={{ ...iconStyle }} />
                               <Typography variant='subtitle1' sx={{ color: 'white', ml: 0.8 }}>
-                                Sade Zones
+                                Safe Zones
                               </Typography>
                             </Box>
                             <Typography sx={{ ...numberStyle, fontSize: '1.6rem' }}>

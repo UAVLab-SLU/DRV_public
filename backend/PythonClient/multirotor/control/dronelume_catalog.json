@@ -1,0 +1,94 @@
+{
+  "catalog_version": "1.0",
+  "goal_types": ["search", "test"],
+  "target_assets": ["GenericHumanAICharacter", "Human_Target_Model_05"],
+  "target_types": ["human"],
+  "target_signatures": ["visible"],
+  "level_sizes": ["small", "medium", "small_indoor"],
+  "level_types": ["urban", "woods"],
+  "times_of_day": ["09:00", "10:00", "11:00", "13:00", "15:00", "16:00"],
+  "weather_types": ["clear", "fog", "rain"],
+  "weather_intensities": [0, 0.1, 0.7, 1.0],
+  "static_assets": ["terrain_flat"],
+  "dynamic_assets": [
+    "BP_BuoyancyDrowner",
+    "BP_MissingAICharacter",
+    "Car_model1",
+    "Drone_Helper",
+    "GenericHumanAICharacter",
+    "Pedestrian_Model"
+  ],
+  "procedural_assets": [
+    "PCG_building_default",
+    "PCG_fire_test",
+    "PCG_grass_default",
+    "PCG_ped_crowd_1",
+    "PCG_tree_default"
+  ],
+  "behavior_orders": ["Sequential", "immediate", "A", "B"],
+  "behavior_tree_assets": [],
+  "actions": {
+    "Idle": {
+      "description": "Wait for duration seconds.",
+      "parameters": []
+    },
+    "SetMySpeed": {
+      "description": "Set movement speed from parameters.",
+      "parameters": ["200.0", "300.0", "400.0", "600.0", "800.0"]
+    },
+    "Loiter": {
+      "description": "Move randomly within the radius in parameters.",
+      "parameters": ["300.0", "400.0"]
+    },
+    "MoveToLocation": {
+      "description": "Move to the x,y,z location string.",
+      "parameters": ["100.0"]
+    },
+    "MoveToTarget": {
+      "description": "Move toward the actor named by target.",
+      "parameters": ["100.0", "200.0", "300.0"]
+    },
+    "Attack": {
+      "description": "Attack the actor named by target.",
+      "parameters": []
+    },
+    "Shoot": {
+      "description": "Alias for Attack.",
+      "parameters": []
+    },
+    "PlayAnimation": {
+      "description": "Play the animation named in parameters.",
+      "parameters": ["AS_AimAndShoot"]
+    },
+    "AttachToHand": {
+      "description": "Attach the selected asset using its transform parameters.",
+      "parameters": [["/Game/FPWeapon/Mesh/SM_Pistol.SM_Pistol", "0", "90", "0"]]
+    },
+    "DetachFromHand": {
+      "description": "Detach the currently held asset.",
+      "parameters": []
+    },
+    "Flee": {
+      "description": "Flee toward an extraction point or map edge.",
+      "parameters": ["800.0"]
+    },
+    "Escape": {
+      "description": "Alias for Flee.",
+      "parameters": ["800.0"]
+    },
+    "Destroy": {
+      "description": "Destroy this actor.",
+      "parameters": []
+    }
+  },
+  "default_sut_asset": "BP_FlyingPawn_Aurelia",
+  "sut_asset_by_drone_model": {
+    "DJI": "BP_FlyingPawn_Aurelia",
+    "ParrotANAFI": "BP_FlyingPawn_Aurelia",
+    "VOXL_m500": "BP_FlyingPawn_Aurelia",
+    "AureliaX6Pro": "BP_FlyingPawn_Aurelia",
+    "Crazyflie": "BP_FlyingPawn_Aurelia",
+    "SenseflyeBeeX": "BP_FlyingPawn_Aurelia",
+    "TrinityF90": "BP_FlyingPawn_Aurelia"
+  }
+}

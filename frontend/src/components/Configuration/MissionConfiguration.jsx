@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { tabEnums } from "../../constants/simConfig";
 import { useMainJson } from "../../contexts/MainJsonContext";
 import { SimulationConfigurationModel } from "../../model/SimulationConfigurationModel";
@@ -20,7 +20,9 @@ import DroneConfiguration from "./DroneConfiguration";
 
 const BORDER = "1px solid rgba(255,255,255,0.08)";
 
-const buildDefaultDrone = (idx, env) => ({
+const buildDefaultDrone = (idx, env) => {
+  const isDroneLume = env?.SceneMode === "dronelume";
+  return ({
   id: idx,
   droneName: `Drone ${idx + 1}`,
   Name: `Drone ${idx + 1}`,
@@ -32,51 +34,62 @@ const buildDefaultDrone = (idx, env) => ({
   EnableCollisions: true,
   AllowAPIAlways: true,
   EnableTrace: false,
-  X: env?.Origin?.latitude ?? env?.Origin?.Latitude ?? 0,
-  Y: env?.Origin?.longitude ?? env?.Origin?.Longitude ?? 0,
-  Z: env?.Origin?.height ?? env?.Origin?.Height ?? 0,
+  X: isDroneLume ? idx * 5 : env?.Origin?.latitude ?? env?.Origin?.Latitude ?? 0,
+  Y: isDroneLume ? 0 : env?.Origin?.longitude ?? env?.Origin?.Longitude ?? 0,
+  Z: isDroneLume ? 200 : env?.Origin?.height ?? env?.Origin?.Height ?? 0,
+  CoordinateFrame: isDroneLume ? "dronelume_cartesian" : "geographic",
   Pitch: 0, Roll: 0, Yaw: 0,
   Sensors: null,
   Mission: { name: "fly_to_points", param: [] },
   color: "#F97316",
-});
+  });
+};
 
 export default function MissionConfiguration() {
   const { mainJson, setMainJson, envJson, setActiveScreen } = useMainJson();
   const tokens = useThemeTokens();
-  const [drones, setDrones] = useState(() => {
-    const existing = mainJson.getAllDrones();
-    return existing.length > 0 ? existing : [buildDefaultDrone(0, envJson)];
-  });
+  const drones = mainJson.getAllDrones();
+  const isDroneLume = envJson.SceneMode === "dronelume";
 
   useEffect(() => {
-    if (mainJson.getAllDrones().length === 0 && drones.length > 0) {
-      mainJson.addNewDrone(drones[0]);
+    if (mainJson.getAllDrones().length === 0) {
+      mainJson.addNewDrone(buildDefaultDrone(0, envJson));
       setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+    } else if (isDroneLume) {
+      let changed = false;
+      mainJson.getAllDrones().forEach((drone, index) => {
+        if (drone.CoordinateFrame !== "dronelume_cartesian") {
+          mainJson.updateDroneBasedOnIndex(index, {
+            ...drone,
+            X: index * 5,
+            Y: 0,
+            Z: 200,
+            CoordinateFrame: "dronelume_cartesian",
+          });
+          changed = true;
+        }
+      });
+      if (changed) setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
     }
     setActiveScreen?.(tabEnums.DRONES);
   }, []);
 
   const addDrone = () => {
     const d = buildDefaultDrone(drones.length, envJson);
-    d.X += 0.0001 * drones.length;
-    const next = [...drones, d];
-    setDrones(next);
+    if (!isDroneLume) d.X += 0.0001 * drones.length;
     mainJson.addNewDrone(d);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
   const removeDrone = (idx) => {
     if (drones.length <= 1) return;
-    const next = drones.filter((_, i) => i !== idx);
-    setDrones(next);
     mainJson.deleteDroneBasedOnIndex(idx);
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
   const updateDrone = (idx, data) => {
-    setDrones((prev) => prev.map((d, i) => (i === idx ? { ...d, ...data } : d)));
-    mainJson.updateDroneBasedOnIndex(idx, { ...(drones[idx] ?? {}), ...data });
+    const currentDrone = mainJson.getDroneBasedOnIndex(idx);
+    mainJson.updateDroneBasedOnIndex(idx, { ...(currentDrone ?? {}), ...data });
     setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
@@ -91,7 +104,7 @@ export default function MissionConfiguration() {
           variant="outlined"
           startIcon={<AddIcon />}
           onClick={addDrone}
-          disabled={drones.length >= 10}
+          disabled={drones.length >= 10 || (isDroneLume && drones.length >= 1)}
           sx={{
             borderColor: "rgba(255,255,255,0.15)",
             color: tokens.text.primary,
@@ -105,7 +118,9 @@ export default function MissionConfiguration() {
       </Box>
 
       <Alert severity="info" sx={{ mb: 2, fontSize: "0.8rem" }}>
-        Drag the drone icon onto the 3D map to place its home location.
+        {isDroneLume
+          ? "The first Mission drone defines the InitDSL system under test. Set its home using relative Cartesian meters from the DroneLume world center."
+          : "Drag the drone icon onto the 3D map to place its home location."}
       </Alert>
 
       {drones.map((drone, idx) => (
@@ -137,7 +152,7 @@ export default function MissionConfiguration() {
                 {drone.droneName ?? drone.Name}
               </Typography>
 
-              <Tooltip title="Drag onto map to set home location">
+              {!isDroneLume && <Tooltip title="Drag onto map to set home location">
                 <Box
                   component="img"
                   src={imageUrls.drone_icon}
@@ -153,7 +168,7 @@ export default function MissionConfiguration() {
                   onClick={(e) => e.stopPropagation()}
                   sx={{ width: 28, cursor: "grab", opacity: 0.85, "&:active": { cursor: "grabbing" } }}
                 />
-              </Tooltip>
+              </Tooltip>}
 
               {drones.length > 1 && (
                 <IconButton
@@ -171,6 +186,7 @@ export default function MissionConfiguration() {
             <DroneConfiguration
               id={idx}
               droneObject={drone}
+              isDroneLume={isDroneLume}
               onUpdate={(data) => updateDrone(idx, data)}
             />
           </AccordionDetails>

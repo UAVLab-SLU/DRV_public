@@ -12,17 +12,22 @@ services:
       - ./backend:/app
       - ./credentials:/app/credentials
       - ${AIRSIM_SETTINGS_DIR:-./config/airsim}:/root/Documents/AirSim
+      - type: bind
+        source: ${DRONELUME_CONFIG_DIR:-./config/dronelume}
+        target: /app/dronelume-config
     depends_on:
       fake-gcs:
         condition: service_healthy
     env_file:
-      - ./backend/.env
+      - path: ${BACKEND_ENV_FILE:-./backend/.env}
+        required: false
     environment:
       - DRV_UNREAL_HOST=drv-unreal
       - DRV_UNREAL_API_PORT=3001
       - DRV_PIXELSTREAM_PORT=8888
       - AIRSIM_HOST=host.docker.internal
       - AIRSIM_PORT=41451
+      - DRONELUME_CONFIG_DIR=/app/dronelume-config
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -35,12 +40,14 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - ./credentials:/credentials:ro
+      - ${CESIUM_CREDENTIALS_DIR:-./credentials}:/credentials:ro
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
       - CESIUM_TOKEN_FILE=/credentials/frontend-cesium-token.json
       - PIXELSTREAM_URL=ws://localhost:8888
+      - VITE_PIXELSTREAM_URL=${VITE_PIXELSTREAM_URL:-http://localhost:8888}
+      - VITE_SIMULATOR_CONTROL_URL=${VITE_SIMULATOR_CONTROL_URL:-http://127.0.0.1:8890}
       - REACT_APP_BACKEND_URL=http://localhost:5000
     depends_on:
       - backend

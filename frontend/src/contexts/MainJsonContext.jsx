@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { EnvironmentModel } from "../model/EnvironmentModel";
 import { SimulationConfigurationModel } from "../model/SimulationConfigurationModel";
+import { roundCoordinate } from "../utils/mapUtils";
 
 const MainJsonContext = createContext(null);
 
@@ -16,9 +17,9 @@ export function MainJsonProvider({ children }) {
   const timeRef = useRef(mainJson.environment?.time);
   const [activeScreen, setActiveScreen] = useState("");
 
-  const setMainJson = (input) => {
+  const setMainJson = useCallback((input) => {
     setMainJsonState(SimulationConfigurationModel.getReactStateBasedUpdate(input));
-  };
+  }, []);
 
   const setEnvJson = (input) => {
     input.time = timeRef.current;
@@ -28,15 +29,15 @@ export function MainJsonProvider({ children }) {
     setMainJsonState(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
   };
 
-  const syncDroneLocation = (latitude, longitude, height, droneIndex) => {
+  const syncDroneLocation = useCallback((latitude, longitude, height, droneIndex) => {
     const drone = mainJson.getDroneBasedOnIndex(droneIndex);
     if (!drone) return;
-    drone.X = latitude;
-    drone.Y = longitude;
+    drone.X = roundCoordinate(latitude);
+    drone.Y = roundCoordinate(longitude);
     drone.Z = height;
     mainJson.updateDroneBasedOnIndex(droneIndex, drone);
-    setMainJson(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
-  };
+    setMainJsonState(SimulationConfigurationModel.getReactStateBasedUpdate(mainJson));
+  }, [mainJson]);
 
   const syncRegionLocation = (latitude, longitude, height, image) => {
     envJson.setOriginLatitude(latitude);

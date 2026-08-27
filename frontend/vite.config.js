@@ -64,7 +64,10 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       CESIUM_BASE_URL: JSON.stringify("/cesium"),
-      __CESIUM_ION_TOKEN__: JSON.stringify(cesiumToken),
+      // Vite reliably replaces import.meta.env keys in both the development
+      // module pipeline and production builds. A standalone global define was
+      // left unresolved in served JSX, which made the runtime token empty.
+      "import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN": JSON.stringify(cesiumToken),
     },
 
     plugins: [

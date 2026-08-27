@@ -6,23 +6,27 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./backend:/app  # Mount backend code
-      - ./credentials:/app/credentials  # Mount credentials folder
-      - ./config/airsim:/root/Documents/AirSim  # Mount the AirSim folder
+      - ./backend:/app
+      - ./credentials:/app/credentials
+      - ./config/airsim:/root/Documents/AirSim
+      - type: bind
+        source: ${DRONELUME_CONFIG_DIR:-./config/dronelume}
+        target: /app/dronelume-config
     depends_on:
       fake-gcs:
         condition: service_healthy
     env_file:
-      - ./backend/.env  # Load environment variables from .env file
+      - path: ${BACKEND_ENV_FILE:-./backend/.env}
+        required: false
     environment:
-      # DRV-Unreal service connection
-      - FLASK_ENV=development  # Enable debug mode
-      - FLASK_DEBUG=1          # Enable hot reload
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
       - DRV_UNREAL_HOST=drv-unreal
-      - DRV_UNREAL_API_PORT=3001  # DRV API port (if available)
+      - DRV_UNREAL_API_PORT=3001
       - DRV_PIXELSTREAM_PORT=8888
       - AIRSIM_HOST=drv-unreal
       - AIRSIM_PORT=41451
+      - DRONELUME_CONFIG_DIR=/app/dronelume-config
     networks:
       - droneworld-network
 
@@ -30,71 +34,97 @@ services:
     image: droneworld/droneworld-frontend:v1.0.0
     build: ./frontend
     ports:
-      - "3000:3000"  # Frontend keeps port 3000
+      - "3000:3000"
     volumes:
-      - ./frontend:/app  # Mount frontend code for live editing
-      - ./credentials:/credentials:ro  # Mount frontend runtime credentials
-      - /app/node_modules # Separate node_modules to avoid host overwrite
+      - ./frontend:/app
+      - ${CESIUM_CREDENTIALS_DIR:-./credentials}:/credentials:ro
+      - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true  # Necessary for live-reload in Docker
-      - CHOKIDAR_INTERVAL=1000  # Poll every 1 second
-      - WATCHPACK_POLLING=true   # Webpack 5 polling
-      - FAST_REFRESH=true        # Ensure fast refresh is on
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=true
       - CESIUM_TOKEN_FILE=/credentials/frontend-cesium-token.json
-      # PixelStreaming connection - frontend connects directly to DRV
       - PIXELSTREAM_URL=ws://localhost:8888
+      - VITE_PIXELSTREAM_URL=${VITE_PIXELSTREAM_URL:-http://localhost:8888}
+      - VITE_SIMULATOR_CONTROL_URL=${VITE_SIMULATOR_CONTROL_URL:-http://127.0.0.1:8890}
       - BACKEND_URL=http://backend:5000
-      - REACT_APP_BACKEND_URL=http://localhost:5000 # For frontend to reach backend
+      - REACT_APP_BACKEND_URL=http://localhost:5000
     depends_on:
       - backend
     networks:
       - droneworld-network
 
   drv-unreal:
-    image: droneworld/drv-unreal:v2.0.0
+    profiles: [linux-simulator]
+    image: droneworld/drv-unreal:linux
     build:
-      context: ./sim  # Build context is now sim directory
+      context: ./sim
       dockerfile: Dockerfile
       args:
-        VERSION: v2.0.0
-        GITHUB_REPO: UAVLab-SLU/DRV-Unreal
-        GITHUB_TOKEN: ${GITHUB_TOKEN}  # Pass token from environment
-    env_file:
-      - ./.env  # Load environment variables from sim/.env for runtime
+        DRV_RELEASE_TAG: ${DRV_RELEASE_TAG:-latest}
+    depends_on:
+      signalling:
+        condition: service_healthy
     ports:
-      - "3001:3000"  # Map DRV's port 3000 to host 3001 to avoid conflict
-      - "41451:41451"  # AirSim RPC API
-      - "8888:8888"  # PixelStreaming - exposed for direct frontend access
-    command: 
-      - "./Blocks.sh"
-      - "-server"
-      - "-log"
-      - "-nullrhi"
-      - "-nosound"
-      - "-unattended"
-      - "-Port=3000"
+      - "3001:3000"
+      - "41451:41451"
     environment:
-      - DISPLAY=${DISPLAY:-:0}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video,display
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:ro  # X11 display support
-      - drv-data:/app/data  # Persistent data for simulation results
-      - ./config/airsim:/home/ue4/Documents/AirSim:ro
-    # Uncomment below for GPU access (requires nvidia-docker2)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+      - drv-data:/opt/drv/data
+      - ${AIRSIM_SETTINGS_DIR:-./config/airsim}:/home/unreal/Documents/AirSim
+    shm_size: "8gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks:
       - droneworld-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "netstat -an | grep -q 3000 || exit 1"]
-      interval: 10s
+      test: ["CMD-SHELL", "nvidia-smi >/dev/null && pgrep -f 'DRV-Linux|Blocks|SADE_drone_rep' >/dev/null"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 90s
+
+  signalling:
+    profiles: [linux-simulator, windows-simulator]
+    image: pixelstreamingunofficial/pixel-streaming-signalling-server:5.5
+    command:
+      - "--publicip"
+      - "${PIXELSTREAM_PUBLIC_IP:-127.0.0.1}"
+      - "--turn"
+      - "host.docker.internal:3478"
+      - "--turn-user"
+      - "${PIXELSTREAM_TURN_USER:-drv}"
+      - "--turn-pass"
+      - "${PIXELSTREAM_TURN_PASSWORD:-drv-local-only}"
+      - "--start-turn"
+      - "--console_messages"
+      - "verbose"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${PIXELSTREAM_HTTP_PORT:-8888}:80"
+      - "127.0.0.1:${PIXELSTREAM_STREAMER_PORT:-8889}:8888"
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+      - "49160-49200:49160-49200/udp"
+    volumes:
+      - ./sim/turnserver.conf:/SignallingWebServer/turnserver.conf:ro
+    networks:
+      - droneworld-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://127.0.0.1:80/ >/dev/null"]
+      interval: 5s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 20
+      start_period: 20s
 
   fake-gcs:
     image: fsouza/fake-gcs-server
@@ -116,20 +146,20 @@ services:
     depends_on:
       fake-gcs:
         condition: service_healthy
-    command: 
-    - sh
-    - -c
-    - |
-      curl -X POST http://fake-gcs:4443/storage/v1/b \
-        -H 'Content-Type: application/json' \
-        -d '{"name":"droneworld"}'
+    command:
+      - sh
+      - -c
+      - |
+        curl -X POST http://fake-gcs:4443/storage/v1/b \
+          -H 'Content-Type: application/json' \
+          -d '{"name":"droneworld"}'
     networks:
       - droneworld-network
 
 networks:
   droneworld-network:
     driver: bridge
-      
+
 volumes:
   fake-gcs-data:
   drv-data:

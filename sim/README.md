@@ -1,197 +1,164 @@
-# DRV-Unreal Docker Setup
+# DRV-Unreal Linux container
 
-This setup containerizes the DRV-Unreal v2.0.0 Linux binary from GitHub releases for local development using a multi-stage build for optimal image size.
+This directory contains the native Linux NVIDIA runtime for the packaged
+DRV-Unreal application. The workflow has three stages:
 
-## Prerequisites
+1. `download_sim_release.sh` queries the latest GitHub release and stages its
+   Linux zip under the ignored `sim/release` directory.
+2. `sim/Dockerfile` copies the staged package into a CUDA runtime image and
+   configures native NVIDIA Vulkan and NVENC access.
+3. Docker Compose starts the UE 5.5 signalling server and TURN relay before
+   launching Unreal with offscreen rendering.
 
-- Docker
-- Docker Compose
-- (Optional) NVIDIA GPU with nvidia-docker2 for GPU acceleration
+GitHub credentials are used by the host-side downloader and are never copied
+into the Docker build context or image layers.
 
-## Architecture
+## Supported host
 
-This setup uses a **multi-stage Docker build**:
+Use a native Linux installation with:
 
-1. **Stage 1 (downloader)**: Downloads and extracts the 1.27 GB `Linux.zip`
-2. **Stage 2 (runtime)**: Clean Ubuntu environment with only runtime dependencies
-   - Vulkan drivers (mesa-vulkan-drivers, libvulkan1, vulkan-tools)
-   - Graphics libraries (libgl1, libglu1-mesa)
-   - X11 libraries (libxrandr2, libxinerama1, libxcursor1, libxi6)
+- Ubuntu 22.04 or a compatible Linux distribution
+- A current NVIDIA driver, version 570 or newer recommended
+- NVIDIA Container Toolkit configured for Docker
+- Docker Engine with Compose v2
+- An NVIDIA GPU with Vulkan and NVENC support
+- At least 16 GB RAM and 25 GB free disk space
 
-This approach keeps the final image clean without build tools like wget and unzip.
+Docker Desktop on Windows is not supported for this Unreal image. Its WSL2 GPU
+path exposes Mesa Dozen over Direct3D 12 instead of a native NVIDIA Vulkan
+device. Investigation details are recorded in
+[`docs/unreal-linux-handoff.md`](../docs/unreal-linux-handoff.md).
 
-## What's Included
+## Quick start
 
-This setup downloads and runs the DRV-Unreal v2.0.0 Linux build which includes:
-
-- Aurelia drone model with React-G GPS receiver
-- Unreal Engine 5.5
-- Raytracing and DLSS support
-- PixelStreaming capability
-- Vulkan driver support
-
-## Quick Start
-
-### 1. Build and Run
-
-```bash
-# Build the image (downloads ~1.27 GB Linux.zip)
-docker-compose build
-
-# Start the service
-docker-compose up -d
-
-# View logs
-docker-compose logs -f drv-unreal
-
-# Stop the service
-docker-compose down
-```
-
-### 2. Access the Application
-
-The DRV ecosystem UI should be available at <http://localhost:3000>
-
-## Configuration Options
-
-### GPU Support (Recommended for Unreal Engine)
-
-If you have an NVIDIA GPU, uncomment the GPU section in `docker-compose.yml`:
-
-```yaml
-deploy:
-  resources:
-    reservations:
-      devices:
-        - driver: nvidia
-          count: 1
-          capabilities: [gpu]
-```
-
-Then ensure you have nvidia-docker2 installed:
+From the repository root:
 
 ```bash
-# Install nvidia-docker2
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-  sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-sudo apt-get update && sudo apt-get install -y nvidia-docker2
-sudo systemctl restart docker
+./dev.sh token
+./dev.sh simulator
 ```
 
-### PixelStreaming (Optional)
+The helper verifies the native Linux Docker/NVIDIA runtime, performs a
+latest-release check, downloads a newer Linux package when necessary, builds
+the image, validates NVIDIA Vulkan inside it, and starts `signalling` and
+`drv-unreal` through the `linux-simulator` Compose profile.
+Open <http://localhost:8888>. A successful idle run displays the DRV main menu.
 
-To enable PixelStreaming for remote rendering:
-
-1. You'll need the PixelStreamingInfrastructure.zip from the release
-2. Run the signaling server separately
-3. Modify the CMD in Dockerfile to include PixelStreaming args:
-
-   ```dockerfile
-   CMD ["./Blocks.sh", "-AudioMixer", "-PixelStreamingIP=localhost", "-PixelStreamingPort=8888"]
-   ```
-
-### Custom Arguments
-
-To run with different arguments, override the command:
+To start the complete application stack:
 
 ```bash
-docker-compose run drv-unreal ./Blocks.sh -graphicsadapter=0
+./dev.sh full
 ```
 
-Or modify the `command` in docker-compose.yml:
-```yaml
-command: ["./Blocks.sh", "-graphicsadapter=1", "-YourCustomArg"]
+## Manual workflow
+
+```bash
+./download_sim_release.sh latest
+export DRV_RELEASE_TAG="$(<sim/release/.release-tag)"
+docker compose build drv-unreal
+docker compose --profile linux-simulator up signalling drv-unreal
 ```
+
+The private release repository requires `GITHUB_TOKEN` in the environment or
+in the ignored root `.env` file. The token needs release read access and any
+required organization SSO authorization.
+
+Optional `.env` settings:
+
+```dotenv
+PIXELSTREAM_HTTP_PORT=8888
+PIXELSTREAM_PUBLIC_IP=192.168.1.10
+PIXELSTREAM_TURN_USER=drv
+PIXELSTREAM_TURN_PASSWORD=replace-for-shared-networks
+AIRSIM_SETTINGS_DIR=./config/airsim
+```
+
+The Linux helper detects the host IPv4 address used by the default route. Set
+`PIXELSTREAM_PUBLIC_IP` explicitly when the host has multiple physical, VPN, or
+virtual network interfaces.
+
+## GPU preflight
+
+Run these checks before building the Unreal image:
+
+```bash
+nvidia-smi
+docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+```
+
+After the image is built, verify native Vulkan injection:
+
+```bash
+docker run --rm --gpus all \
+  --entrypoint vulkaninfo \
+  droneworld/drv-unreal:linux --summary
+```
+
+The output should identify the physical NVIDIA GPU and an NVIDIA driver. Do not
+continue if it reports `Dozen`, `llvmpipe`, or a CPU Vulkan device.
+
+## Runtime behavior
+
+The launcher is discovered as `DRV.sh`, `Blocks.sh`, or
+`SADE_drone_rep.sh`. This avoids coupling the image to one packaged-project
+name. Before launch, the entrypoint rejects Dozen, llvmpipe, CPU Vulkan, and
+missing NVIDIA devices with an actionable error. Set `DRV_SKIP_GPU_PREFLIGHT=1`
+only for diagnostics. Unreal starts with:
+
+- `-RenderOffscreen` so Pixel Streaming receives rendered frames
+- `-PixelStreamingURL=ws://signalling:8888`
+- 1920 by 1080 forced resolution
+- standard output logging
+- no interactive splash screen
+
+Do not add `-nullrhi`. Null RHI disables the renderer that Pixel Streaming
+needs to capture frames.
+
+## Ports
+
+- Browser player: `http://HOST:${PIXELSTREAM_HTTP_PORT:-8888}`
+- AirSim RPC: TCP 41451
+- TURN listener: TCP and UDP 3478
+- TURN relay range: UDP 49160 through 49200
+
+## Verification
+
+In another terminal:
+
+```bash
+docker compose ps
+docker compose logs -f signalling drv-unreal
+```
+
+Completion requires all of the following:
+
+1. `signalling` becomes healthy.
+2. `drv-unreal` remains running and becomes healthy.
+3. The signalling log records the Unreal streamer connection.
+4. `http://localhost:8888` loads from the host browser.
+5. The idle stream shows the DRV main menu and accepts pointer input.
 
 ## Troubleshooting
 
-### Verify Vulkan Installation
+- GitHub returns 404: verify token repository access and organization SSO.
+- The Docker build cannot find a launcher: rerun the downloader and inspect
+  `sim/release/.release-asset`.
+- `useradd: UID 1000 is not unique`: rebuild from the current Dockerfile, which
+  does not force a host UID.
+- `libGLX_nvidia.so.0` cannot initialize Vulkan: confirm the image contains
+  `libegl1` and `/usr/share/glvnd/egl_vendor.d/10_nvidia.json`, then verify
+  NVIDIA Container Toolkit graphics capabilities and Docker configuration.
+- Unreal reports `Out of Local Memory` while allocating 1 MB: check the Vulkan
+  driver name. This was the secondary error produced after Dozen removed the
+  Direct3D 12 device on Docker Desktop.
+- The player page is available but no streamer appears: inspect Unreal startup
+  for Vulkan or plugin failures, then confirm the WebSocket URL is
+  `ws://signalling:8888`.
+- A player connects but video remains black: confirm `-nullrhi` is absent and
+  verify that `libnvidia-encode.so.1` is visible inside the container.
+- Release `v2.1.0` crashes with signal 11 when `Simple map` loads after the
+  AirSim vehicle prompt. A new Linux package with the prepared SM5 and disabled
+  hardware-ray-tracing settings is required before AirSim RPC can pass.
 
-The Dockerfile includes a Vulkan verification step during build. To manually verify:
-
-```bash
-# Check if Vulkan is available in the container
-docker-compose exec drv-unreal vulkaninfo
-
-# Or check the summary
-docker-compose exec drv-unreal vulkaninfo --summary
-```
-
-Expected output should show available Vulkan drivers and devices.
-
-### Vulkan Driver Issues
-
-If you see Vulkan-related errors:
-
-```bash
-# Check if Vulkan is available in the container
-docker-compose exec drv-unreal vulkaninfo
-
-# Or run with debug
-docker-compose run drv-unreal bash
-vulkaninfo
-```
-
-### Display Issues
-
-If running with GUI (not headless):
-
-```bash
-# Allow X11 connections (on host)
-xhost +local:docker
-
-# Run with proper DISPLAY variable
-DISPLAY=:0 docker-compose up
-```
-
-### Container Exits Immediately
-
-Check the logs:
-
-```bash
-docker-compose logs drv-unreal
-```
-
-If the binary requires X11 or other dependencies, you may need to run it in headless mode or with additional configuration.
-
-### Debugging
-
-To keep the container running for debugging:
-
-```yaml
-# In docker-compose.yml, uncomment:
-command: tail -f /dev/null
-```
-
-Then exec into it:
-
-```bash
-docker-compose exec drv-unreal bash
-./Blocks.sh -graphicsadapter=1
-```
-
-## Architecture
-
-The setup includes:
-
-- **drv-unreal service**: Main Unreal application container
-- **Exposed ports**:
-  - 3000: Web UI interface
-  - 8888: PixelStreaming (if enabled)
-
-## Notes
-
-- The Linux.zip file is ~1.27 GB and will be downloaded during build
-- First build will take several minutes
-- Vulkan drivers are pre-installed in the container
-- The application runs with `-graphicsadapter=1` by default
-
-## Next Steps
-
-1. Build and start: `docker-compose up -d`
-2. Check logs: `docker-compose logs -f`
-3. Access UI: `http://localhost:3000`
-4. Configure GPU support if needed
-5. Integrate with your other services in the same docker-compose.yml
+See [`docs/unreal-linux-handoff.md`](../docs/unreal-linux-handoff.md) for the
+investigation record and remaining work.

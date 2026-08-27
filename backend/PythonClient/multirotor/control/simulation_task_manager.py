@@ -13,7 +13,13 @@ from msgpackrpc.error import TransportError
 from numpy import random
 
 from PythonClient import airsim
+from PythonClient.multirotor.control.dronelume_config import (
+    DRONELUME_STATE,
+    DroneLumeConfigManager,
+    extract_dronelume_request,
+)
 from PythonClient.multirotor.socket.stream_manager import StreamManager
+from PythonClient.multirotor.storage.storage_config import get_storage_service
 from PythonClient.multirotor.util.geo.geo_util import GeoUtil
 
 
@@ -35,6 +41,9 @@ class SimulationTaskManager:
         self.__current_task_batch = "None"
         self.__environment_check()
         self.unreal_state = {"state": "start"}
+        self.__unreal_state_lock = threading.Lock()
+        self.__dronelume_stop_event = threading.Event()
+        self.__dronelume_config_manager = DroneLumeConfigManager(get_storage_service())
         self.__user_directory = os.path.join(os.path.expanduser('~'), "Documents", "AirSim")
         self.__FUZZY_TEST_MAX_WIND = 15  # 15 m/s 2023 Jan. max wind speed in st.louis
         self.__FUZZY_TEST_MAX_SPEED = 14  # 14 m/s Based on FAA limit on safe speed for drone flying below 400 feet
@@ -55,10 +64,16 @@ class SimulationTaskManager:
 
 
     def unreal_on(self):
-        self.unreal_state["state"] = "start"
+        with self.__unreal_state_lock:
+            self.unreal_state = {"state": "start"}
 
     def unreal_off(self):
-        self.unreal_state["state"] = "idle"
+        with self.__unreal_state_lock:
+            self.unreal_state = {"state": "idle"}
+
+    def dronelume_on(self, task_id):
+        with self.__unreal_state_lock:
+            self.unreal_state = {"state": DRONELUME_STATE, "task_id": task_id}
 
     def start(self):
         while self.state:
@@ -69,7 +84,9 @@ class SimulationTaskManager:
             current_queue_top = self.mission_queue.get()
             self.__current_task_batch = current_queue_top[1]
             try:
-                if "FuzzyTest" not in current_queue_top[0]:
+                if extract_dronelume_request(current_queue_top[0]) is not None:
+                    self.__run_dronelume_batch(current_queue_top)
+                elif "FuzzyTest" not in current_queue_top[0]:
                     self.__run_regular_batch(current_queue_top)
                 else:
                     self.__run_fuzzy_test_batch(current_queue_top, current_queue_top[0]["FuzzyTest"])
@@ -81,6 +98,25 @@ class SimulationTaskManager:
             if self.__is_streaming_enabled:
                 self.stream_manager.reset()
             print("Ready for next batch")
+
+    def __run_dronelume_batch(self, current_queue_top):
+        task_data, task_id = current_queue_top
+        self.__dronelume_stop_event.clear()
+        deployed_path = self.__dronelume_config_manager.deploy_and_archive(task_data, task_id)
+        print(f"DroneLume InitDSL deployed to {deployed_path}")
+        self.dronelume_on(task_id)
+        while self.state and not self.__dronelume_stop_event.wait(0.5):
+            pass
+        self.unreal_off()
+
+    def stop_dronelume(self):
+        with self.__unreal_state_lock:
+            is_running = self.unreal_state.get("state") == DRONELUME_STATE
+        if not is_running:
+            return False
+        self.__dronelume_stop_event.set()
+        self.unreal_off()
+        return True
 
     def __update_settings(self, raw_request_json):
         self.unreal_off()
@@ -313,6 +349,7 @@ class SimulationTaskManager:
 
     def stop(self):
         self.state = False
+        self.__dronelume_stop_event.set()
 
     # Recursively find difference of two dict and return the difference in the same structure
     def __find_diff(self, dict1, dict2):

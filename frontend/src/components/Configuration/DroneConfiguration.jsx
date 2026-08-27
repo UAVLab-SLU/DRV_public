@@ -38,7 +38,7 @@ const DRONE_MODELS = {
   ],
 };
 
-export default function DroneConfiguration({ id, droneObject, onUpdate }) {
+export default function DroneConfiguration({ id, droneObject, isDroneLume = false, onUpdate }) {
   const { mainJson, setMainJson } = useMainJson();
   const tokens = useThemeTokens();
 
@@ -148,41 +148,41 @@ export default function DroneConfiguration({ id, droneObject, onUpdate }) {
 
       {/* Position */}
       <Typography variant="overline" sx={{ color: tokens.brand.soft, mt: 0.5 }}>
-        Home Location
+        {isDroneLume ? "Home Position (relative Cartesian)" : "Home Location"}
       </Typography>
       <Grid container spacing={1.5}>
         <Grid size={{ xs: 4 }}>
-          <Tooltip title="Latitude (step = ~1m)" placement="top">
+          <Tooltip title={isDroneLume ? "X offset from world center in meters" : "Latitude (step = ~1m)"} placement="top">
             <TextField
-              label="Latitude"
+              label={isDroneLume ? "X (m)" : "Latitude"}
               type="number"
               size="small"
               fullWidth
               value={drone.X}
-              inputProps={{ step: 0.0001 }}
+              inputProps={{ step: isDroneLume ? 1 : 0.0001 }}
               onChange={(e) => commit({ X: parseFloat(e.target.value) || 0 })}
               sx={inputSx}
             />
           </Tooltip>
         </Grid>
         <Grid size={{ xs: 4 }}>
-          <Tooltip title="Longitude (step = ~1m)" placement="top">
+          <Tooltip title={isDroneLume ? "Y offset from world center in meters" : "Longitude (step = ~1m)"} placement="top">
             <TextField
-              label="Longitude"
+              label={isDroneLume ? "Y (m)" : "Longitude"}
               type="number"
               size="small"
               fullWidth
               value={drone.Y}
-              inputProps={{ step: 0.0001 }}
+              inputProps={{ step: isDroneLume ? 1 : 0.0001 }}
               onChange={(e) => commit({ Y: parseFloat(e.target.value) || 0 })}
               sx={inputSx}
             />
           </Tooltip>
         </Grid>
         <Grid size={{ xs: 4 }}>
-          <Tooltip title="Height above ground (m)" placement="top">
+          <Tooltip title={isDroneLume ? "Z offset from world center in meters" : "Height above ground (m)"} placement="top">
             <TextField
-              label="Height (m)"
+              label={isDroneLume ? "Z (m)" : "Height (m)"}
               type="number"
               size="small"
               fullWidth
@@ -207,5 +207,6 @@ export default function DroneConfiguration({ id, droneObject, onUpdate }) {
 DroneConfiguration.propTypes = {
   id: PropTypes.number.isRequired,
   droneObject: PropTypes.object,
+  isDroneLume: PropTypes.bool,
   onUpdate: PropTypes.func,
 };

@@ -60,6 +60,7 @@ config/fake-gcs-data/
 sim/release/
 sim/release-staging-*/
 sim/*.zip
+sim/windows-release/
 
 # MaOS system files
 .DS_Store

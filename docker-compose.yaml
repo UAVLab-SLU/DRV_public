@@ -42,6 +42,7 @@ services:
       - FAST_REFRESH=true
       - CESIUM_TOKEN_FILE=/credentials/frontend-cesium-token.json
       - PIXELSTREAM_URL=ws://localhost:8888
+      - VITE_PIXELSTREAM_URL=${VITE_PIXELSTREAM_URL:-http://localhost:8888}
       - BACKEND_URL=http://backend:5000
       - REACT_APP_BACKEND_URL=http://localhost:5000
     depends_on:
@@ -87,7 +88,7 @@ services:
       start_period: 90s
 
   signalling:
-    profiles: [linux-simulator]
+    profiles: [linux-simulator, windows-simulator]
     image: pixelstreamingunofficial/pixel-streaming-signalling-server:5.5
     command:
       - "--publicip"
@@ -105,6 +106,7 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "${PIXELSTREAM_HTTP_PORT:-8888}:80"
+      - "127.0.0.1:${PIXELSTREAM_STREAMER_PORT:-8889}:8888"
       - "3478:3478/tcp"
       - "3478:3478/udp"
       - "49160-49200:49160-49200/udp"

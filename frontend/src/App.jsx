@@ -10,6 +10,7 @@ import AboutUs from "./pages/AboutUs";
 import Footer from "./pages/Footer";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import Simulator from "./pages/Simulator";
 import Wizard from "./pages/Wizard";
 import { globalTheme } from "./theme/index";
 import "./styles.css";
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/home" element={<Home />} />
             <Route path="/simulation" element={<Wizard />} />
+            <Route path="/simulator" element={<Simulator />} />
             <Route path="/dashboard" element={<FuzzyDashboard />} />
             <Route path="/report-dashboard" element={<ReportDashboard />} />
             <Route path="/aboutus" element={<AboutUs />} />

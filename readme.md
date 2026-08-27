@@ -25,6 +25,7 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 - **Docker** and **Docker Compose**
 - **Linux**, **macOS**, or **Windows with WSL2** for frontend/backend services
 - **Native Linux with an NVIDIA GPU and NVIDIA Container Toolkit** for the Dockerized Unreal Pixel Stream
+- **Windows 10/11, 7-Zip, and a supported GPU** for the native Windows Unreal Pixel Stream
 - 16GB+ RAM recommended for the Unreal workflow
 - 25GB+ available disk space
 
@@ -47,12 +48,15 @@ DroneReqValidator has 3 main components:
 ### Prerequisites
 
 Ensure Docker Engine and Docker Compose v2 are installed. Frontend/backend
-containers work on Linux, macOS, Windows, and WSL2. The packaged Unreal
-container is intentionally enabled only by the native Linux helper workflow.
+containers work on Linux, macOS, Windows, and WSL2. Unreal runs in Docker on a
+native Linux NVIDIA host or as the packaged Windows executable on Windows.
 
 ### GitHub Token (Required for Simulator)
 
-The simulator helper uses a GitHub Personal Access Token to download the latest private `UAVLab-SLU/DRV-Unreal` Linux release before building. The token is not passed into the Docker build. If you're only working on frontend/backend, you can skip this step. See setup instructions in [Troubleshooting](#set-up-github-token).
+The simulator helpers use a GitHub Personal Access Token to download the latest
+private `UAVLab-SLU/DRV-Unreal` release. The token is not passed into a Docker
+build. If you are only working on frontend/backend, you can skip this step. See
+setup instructions in [Troubleshooting](#set-up-github-token).
 
 ### Using Helper Scripts (Recommended)
 
@@ -75,11 +79,21 @@ The simulator helper uses a GitHub Personal Access Token to download the latest 
 ./dev.sh stop
 ```
 
-**Windows (PowerShell, frontend/backend workflow):**
+**Windows (PowerShell):**
 
 ```powershell
 # Development mode (frontend + backend only)
 .\dev.ps1 dev
+
+# Native Windows simulator and Pixel Streaming player
+.\dev.ps1 simulator
+
+# Complete stack, including the native Windows simulator
+.\dev.ps1 full
+
+# Check or stop only the native simulator
+.\dev.ps1 simulator-status
+.\dev.ps1 simulator-stop
 
 # View logs
 .\dev.ps1 logs
@@ -89,8 +103,12 @@ The simulator helper uses a GitHub Personal Access Token to download the latest 
 ```
 
 Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
-PowerShell rejects `full` and `simulator`; run those commands on a native Linux
-NVIDIA host.
+On its first simulator run, PowerShell downloads and extracts the latest Windows
+release. 7-Zip is required because the release can contain a split
+`Windows.z01` and `Windows.zip` archive.
+
+See [the Windows native simulator guide](docs/unreal-windows-native.md) for
+configuration, ports, logs, and troubleshooting.
 
 ### Option 1: Full Stack (Recommended for Testing)
 

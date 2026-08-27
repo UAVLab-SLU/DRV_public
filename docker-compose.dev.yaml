@@ -42,6 +42,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - CESIUM_TOKEN_FILE=/credentials/frontend-cesium-token.json
       - PIXELSTREAM_URL=ws://localhost:8888
+      - VITE_PIXELSTREAM_URL=${VITE_PIXELSTREAM_URL:-http://localhost:8888}
       - REACT_APP_BACKEND_URL=http://localhost:5000
     depends_on:
       - backend

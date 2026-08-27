@@ -4,6 +4,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import TravelExploreOutlinedIcon from "@mui/icons-material/TravelExploreOutlined";
+import VideogameAssetOutlinedIcon from "@mui/icons-material/VideogameAssetOutlined";
 import { AppBar, Box, Button, Divider, IconButton, Tooltip, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -12,7 +13,8 @@ import { stylePrimitives, useThemeTokens } from "../theme/palette";
 
 const NAV_LINKS = [
   { label: "Home", to: "/", icon: <HomeOutlinedIcon fontSize="small" /> },
-  { label: "Simulation", to: "/simulation", icon: <TravelExploreOutlinedIcon fontSize="small" /> },
+  { label: "Configuration", to: "/simulation", icon: <TravelExploreOutlinedIcon fontSize="small" /> },
+  { label: "Simulator", to: "/simulator", icon: <VideogameAssetOutlinedIcon fontSize="small" /> },
   { label: "Reports", to: "/report-dashboard", icon: <AssessmentOutlinedIcon fontSize="small" /> },
   { label: "About", to: "/aboutus", icon: <InfoOutlinedIcon fontSize="small" /> },
 ];

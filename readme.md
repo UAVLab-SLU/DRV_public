@@ -107,8 +107,8 @@ On its first simulator run, PowerShell downloads and extracts the latest Windows
 release. 7-Zip is required because the release can contain a split
 `Windows.z01` and `Windows.zip` archive.
 
-See [the Windows native simulator guide](docs/unreal-windows-native.md) for
-configuration, ports, logs, and troubleshooting.
+See the [Windows Native Unreal Pixel Streaming wiki](https://github.com/UAVLab-SLU/DRV_public/wiki/Windows-Native-Unreal-Pixel-Streaming)
+for architecture, ports, security, and troubleshooting.
 
 The frontend Simulator tab provides Start Unreal and Shut down controls when
 the application was launched through `dev.ps1`. The control endpoint is bound
@@ -116,8 +116,17 @@ to Windows loopback only.
 
 ### Option 1: Full Stack (Recommended for Testing)
 
-Run all services including the simulation engine on a native Linux NVIDIA
-host:
+**Windows:**
+
+```powershell
+.\dev.ps1 full
+```
+
+This downloads the latest Windows package, starts the supporting Docker
+services, launches Unreal natively, and enables the in-app Start Unreal and Shut
+down controls. Open <http://localhost:3000/simulator> for the embedded stream.
+
+**Native Linux NVIDIA host:**
 
 ```bash
 ./dev.sh full           # Native Linux NVIDIA host
@@ -133,13 +142,17 @@ contexts, unavailable host NVIDIA drivers, and Docker engines without the
 NVIDIA runtime. After building, they run `vulkaninfo` inside the image and start
 Compose only when it identifies a native NVIDIA Vulkan device.
 
-**Services started:**
+**Application URLs:**
 
 - Frontend UI (http://localhost:3000)
+- Configuration (http://localhost:3000/simulation)
+- Embedded Simulator (http://localhost:3000/simulator)
 - Backend API (http://localhost:5000)
-- Simulation Engine (http://localhost:3001)
 - Simulation Pixel Stream (http://localhost:8888)
 - Storage services
+
+The Linux container also publishes the simulation engine API at
+<http://localhost:3001>. The Windows game runs directly on the host.
 
 ### Option 2: Frontend/Backend Only (Recommended for Development)
 
@@ -276,6 +289,14 @@ Example `cesium.json`:
 
 ### Start All Services
 
+Windows:
+
+```powershell
+.\dev.ps1 full
+```
+
+Native Linux NVIDIA host:
+
 ```bash
 docker compose --profile linux-simulator up
 ```
@@ -296,9 +317,11 @@ docker compose up frontend
 ### Access the Application
 
 - **Frontend UI**: http://localhost:3000
+- **Configuration**: http://localhost:3000/simulation
+- **Embedded Simulator**: http://localhost:3000/simulator
 - **Backend API**: http://localhost:5000
 - **Backend Health Check**: http://localhost:5000/api/health
-- **Simulation Engine API**: http://localhost:3001
+- **Simulation Engine API (Linux container only)**: http://localhost:3001
 - **Simulation Engine PixelStream**: http://localhost:8888 
 
 ## Architecture Notes

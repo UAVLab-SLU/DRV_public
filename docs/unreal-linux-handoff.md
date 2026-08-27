@@ -7,7 +7,62 @@ publish its Pixel Streaming player to the host, and display the DRV main menu
 when the simulation is idle.
 
 This checkpoint changes the repository runtime to target a native Linux NVIDIA
-desktop. Native Linux validation is still required.
+desktop. Native Linux validation is in progress.
+
+## Native Linux checkpoint (2026-08-26)
+
+The host and container GPU prerequisites now pass on the Linux desktop:
+
+- Host GPU: NVIDIA GeForce RTX 3090 Ti, driver 580.173.02, 24564 MiB.
+- `nvidia-modprobe` was installed because the loaded kernel driver had not
+  created `/dev/nvidia*`; host `nvidia-smi` now succeeds.
+- The user was added to the `docker` group and the Docker CLI context was
+  changed from `desktop-linux` to the native `default` engine. A new login may
+  be required before new shells inherit the group.
+- NVIDIA Container Toolkit is registered with the native engine.
+- `nvidia/cuda:12.8.0-base-ubuntu24.04` sees the same GPU and driver through
+  `--gpus all`.
+- The UE 5.5 signalling/TURN container is healthy and serves the player at
+  `http://localhost:8888`.
+
+Native Linux runtime validation now passes for release `v2.1.0`:
+
+- `Linux.zip` was selected and staged under `sim/release`.
+- The image is labeled `v2.1.0`; the GitHub token was used only by the
+  host-side downloader and is not part of the `sim` build context.
+- In-container `vulkaninfo --summary` identifies the physical RTX 3090 Ti and
+  NVIDIA driver 580.173.02.
+- The packaged Unreal application remained healthy for more than five minutes
+  with zero container restarts.
+- The signalling server registered `DefaultStreamer` and a browser player.
+- The browser displayed the DRV main menu at 1920x1080 and 60 FPS using H.264,
+  with zero dropped frames during validation.
+- Hovering the browser mouse over `City park map` changed the Unreal menu
+  highlight, confirming that the Pixel Streaming data channel carries input.
+
+The runtime image needed both the GLVND EGL loader (`libegl1`) and an NVIDIA EGL
+vendor manifest. Without them, NVIDIA's Vulkan ICD found
+`libGLX_nvidia.so.0` but returned `ERROR_INCOMPATIBLE_DRIVER` while repeatedly
+failing to open `libEGL.so.1`.
+
+AirSim RPC remains unverified at the idle main menu. Docker publishes host TCP
+41451, but `netstat` inside the Unreal container shows no listener before a map
+is loaded. Do not count the Docker proxy accepting a host TCP connection as an
+RPC pass; validate an actual AirSim request after choosing a map.
+
+Attempting that validation with `Simple map` exposed a packaged-release crash.
+Immediately after the AirSim vehicle-choice dialog closed with the quadrotor
+selection, Unreal logged `r.CustomDepth = "3"`, caught signal 11, and exited
+with code 139. The container was not OOM-killed. The shipping build emitted no
+usable Unreal log or stack; its crash directory contained only
+`CrashReportClient.ini`. Restarting the same container restored the healthy
+main-menu streamer. Publish a new Linux package containing the prepared SM5
+and no-hardware-ray-tracing settings, then repeat the map-load and AirSim RPC
+validation before marking criterion 8 complete.
+
+Repository-side compatibility changes are prepared but not yet included in a
+published package: the sibling `DRV-Unreal` checkout explicitly targets Vulkan
+SM5 on Linux and disables hardware ray tracing in `Config/DefaultEngine.ini`.
 
 ## Implemented workflow
 

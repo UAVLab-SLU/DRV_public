@@ -13,7 +13,8 @@ services:
       fake-gcs:
         condition: service_healthy
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
     environment:
       - FLASK_ENV=development
       - FLASK_DEBUG=1
@@ -49,6 +50,7 @@ services:
       - droneworld-network
 
   drv-unreal:
+    profiles: [linux-simulator]
     image: droneworld/drv-unreal:linux
     build:
       context: ./sim
@@ -85,6 +87,7 @@ services:
       start_period: 90s
 
   signalling:
+    profiles: [linux-simulator]
     image: pixelstreamingunofficial/pixel-streaming-signalling-server:5.5
     command:
       - "--publicip"

@@ -42,18 +42,59 @@ set_pixelstream_public_ip() {
         return
     fi
     if [[ -f .env ]] && grep -q '^PIXELSTREAM_PUBLIC_IP=' .env; then
-        export PIXELSTREAM_PUBLIC_IP="$(grep -m 1 '^PIXELSTREAM_PUBLIC_IP=' .env | cut -d '=' -f2-)"
+        PIXELSTREAM_PUBLIC_IP="$(grep -m 1 '^PIXELSTREAM_PUBLIC_IP=' .env | cut -d '=' -f2-)"
+        export PIXELSTREAM_PUBLIC_IP
         return
     fi
     PIXELSTREAM_PUBLIC_IP="$(ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')"
     export PIXELSTREAM_PUBLIC_IP="${PIXELSTREAM_PUBLIC_IP:-127.0.0.1}"
 }
 
+require_linux_simulator_host() {
+    if [[ "$(uname -s)" != "Linux" ]]; then
+        echo "The Dockerized Unreal simulator requires a native Linux NVIDIA host." >&2
+        echo "Use './dev.sh dev' for the frontend/backend workflow on other platforms." >&2
+        return 1
+    fi
+
+    if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+        echo "Docker Engine and Docker Compose v2 are required." >&2
+        return 1
+    fi
+
+    docker_context="$(docker context show 2>/dev/null || true)"
+    if [[ -z "${docker_context}" || "${docker_context}" == *desktop* ]]; then
+        echo "The Unreal simulator requires the native Linux Docker Engine, not Docker Desktop." >&2
+        echo "Select it with: docker context use default" >&2
+        return 1
+    fi
+
+    if ! command -v nvidia-smi >/dev/null 2>&1 || ! nvidia-smi >/dev/null 2>&1; then
+        echo "The host NVIDIA driver is unavailable. Fix 'nvidia-smi' before starting Unreal." >&2
+        return 1
+    fi
+
+    if ! docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q '"nvidia"'; then
+        echo "NVIDIA Container Toolkit is not registered with the native Docker Engine." >&2
+        return 1
+    fi
+}
+
 sync_unreal_release() {
     load_token
     echo "Checking the latest DRV-Unreal Linux release."
     "${script_dir}/download_sim_release.sh" latest
-    export DRV_RELEASE_TAG="$(<"${script_dir}/sim/release/.release-tag")"
+    DRV_RELEASE_TAG="$(<"${script_dir}/sim/release/.release-tag")"
+    export DRV_RELEASE_TAG
+}
+
+build_and_validate_simulator() {
+    echo "Building DRV-Unreal ${DRV_RELEASE_TAG}."
+    docker compose --profile linux-simulator build drv-unreal
+    echo "Validating native NVIDIA Vulkan in the DRV-Unreal image."
+    docker run --rm --gpus all \
+        --entrypoint vulkaninfo \
+        droneworld/drv-unreal:linux --summary
 }
 
 print_usage() {
@@ -61,11 +102,11 @@ print_usage() {
     echo
     echo "Commands:"
     echo "  token       Save the GitHub token used to read private releases"
-    echo "  full        Download the latest simulator and start the full stack"
+    echo "  full        Linux NVIDIA only: validate, build, and start the full stack"
     echo "  dev         Start frontend and backend development services"
     echo "  frontend    Start the frontend"
     echo "  backend     Start the backend"
-    echo "  simulator   Download the latest simulator and start Pixel Streaming"
+    echo "  simulator   Linux NVIDIA only: validate, build, and start Pixel Streaming"
     echo "  logs        Follow frontend and backend development logs"
     echo "  logs-all    Follow all service logs"
     echo "  stop        Stop the full stack"
@@ -78,10 +119,12 @@ case "${1:-help}" in
         set_token
         ;;
     full)
+        require_linux_simulator_host
         set_pixelstream_public_ip
         sync_unreal_release
+        build_and_validate_simulator
         echo "Pixel Stream URL: http://localhost:${PIXELSTREAM_HTTP_PORT:-8888}"
-        docker compose up --build
+        docker compose --profile linux-simulator up --no-build
         ;;
     dev)
         docker compose -f docker-compose.dev.yaml up
@@ -93,25 +136,27 @@ case "${1:-help}" in
         docker compose up backend
         ;;
     simulator)
+        require_linux_simulator_host
         set_pixelstream_public_ip
         sync_unreal_release
+        build_and_validate_simulator
         echo "Pixel Stream URL: http://localhost:${PIXELSTREAM_HTTP_PORT:-8888}"
-        docker compose up --build signalling drv-unreal
+        docker compose --profile linux-simulator up --no-build signalling drv-unreal
         ;;
     logs)
         docker compose -f docker-compose.dev.yaml logs -f frontend backend
         ;;
     logs-all)
-        docker compose logs -f
+        docker compose --profile linux-simulator logs -f
         ;;
     stop)
-        docker compose down
+        docker compose --profile linux-simulator down
         ;;
     stop-dev)
         docker compose -f docker-compose.dev.yaml down
         ;;
     clean)
-        docker compose down -v
+        docker compose --profile linux-simulator down -v
         docker compose -f docker-compose.dev.yaml down -v
         ;;
     help|"")

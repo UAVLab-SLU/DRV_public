@@ -46,7 +46,9 @@ DroneReqValidator has 3 main components:
 
 ### Prerequisites
 
-Ensure Docker and Docker Compose are installed on your system.
+Ensure Docker Engine and Docker Compose v2 are installed. Frontend/backend
+containers work on Linux, macOS, Windows, and WSL2. The packaged Unreal
+container is intentionally enabled only by the native Linux helper workflow.
 
 ### GitHub Token (Required for Simulator)
 
@@ -76,9 +78,6 @@ The simulator helper uses a GitHub Personal Access Token to download the latest 
 **Windows (PowerShell, frontend/backend workflow):**
 
 ```powershell
-# First time: Set GitHub token (only needed for simulator)
-.\dev.ps1 token
-
 # Development mode (frontend + backend only)
 .\dev.ps1 dev
 
@@ -90,18 +89,27 @@ The simulator helper uses a GitHub Personal Access Token to download the latest 
 ```
 
 Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
+PowerShell rejects `full` and `simulator`; run those commands on a native Linux
+NVIDIA host.
 
 ### Option 1: Full Stack (Recommended for Testing)
 
-Run all services including the simulation engine:
+Run all services including the simulation engine on a native Linux NVIDIA
+host:
 
 ```bash
 ./dev.sh full           # Native Linux NVIDIA host
 
-# Or directly:
+# Manual equivalent (does not perform the helper's host checks):
 ./download_sim_release.sh latest
-docker compose up --build
+export DRV_RELEASE_TAG="$(<sim/release/.release-tag)"
+docker compose --profile linux-simulator up --build
 ```
+
+`./dev.sh full` and `./dev.sh simulator` refuse non-Linux hosts, Docker Desktop
+contexts, unavailable host NVIDIA drivers, and Docker engines without the
+NVIDIA runtime. After building, they run `vulkaninfo` inside the image and start
+Compose only when it identifies a native NVIDIA Vulkan device.
 
 **Services started:**
 
@@ -120,7 +128,7 @@ Run without the simulation engine for faster development:
 .\dev.ps1 dev           # Windows
 
 # Or directly:
-docker-compose -f docker-compose.dev.yml up
+docker compose -f docker-compose.dev.yaml up
 ```
 
 For the local Windows Docker setup used while debugging frontend, backend, AirSim RPC, Cesium token, and fake GCS, run this from the repo root:
@@ -174,9 +182,9 @@ docker compose -p drvwtest -f docker-compose.dev.yaml down
 ./dev.sh simulator      # Simulator only
 
 # Or directly:
-docker-compose up frontend
-docker-compose up backend
-docker-compose up drv-unreal
+docker compose up frontend
+docker compose up backend
+docker compose --profile linux-simulator up signalling drv-unreal
 ```
 
 ### Viewing Logs
@@ -188,10 +196,10 @@ docker-compose up drv-unreal
 .\dev.ps1 logs          # Windows
 ```
 
-**Using docker-compose directly:**
+**Using Docker Compose directly:**
 
 ```bash
-docker-compose -f docker-compose.dev.yml logs -f frontend backend
+docker compose -f docker-compose.dev.yaml logs -f frontend backend
 ```
 
 ### Stopping Development Services
@@ -203,10 +211,10 @@ docker-compose -f docker-compose.dev.yml logs -f frontend backend
 .\dev.ps1 stop-dev      # Windows
 ```
 
-**Using docker-compose directly:**
+**Using Docker Compose directly:**
 
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yaml down
 ```
 
 ### Configuration
@@ -247,20 +255,20 @@ Example `cesium.json`:
 ### Start All Services
 
 ```bash
-docker-compose up
+docker compose --profile linux-simulator up
 ```
 
 ### Start Individual Services
 
 ```bash
 # Simulation engine only
-docker-compose up drv-unreal
+docker compose --profile linux-simulator up signalling drv-unreal
 
 # Backend only
-docker-compose up backend
+docker compose up backend
 
 # Frontend only
-docker-compose up frontend
+docker compose up frontend
 ```
 
 ### Access the Application
@@ -281,7 +289,8 @@ Do not use `-nullrhi` for Pixel Streaming. Null RHI disables the frame-producing
 
 ### Network Communication
 
-- The simulation engine exposes AirSim's API on port 3001
+- The simulation engine publishes its application API on port 3001 and AirSim
+  RPC on TCP 41451
 - Backend communicates with the simulation engine via this TCP connection
 - Frontend communicates with backend via REST API
 
@@ -290,36 +299,37 @@ Do not use `-nullrhi` for Pixel Streaming. Null RHI disables the frame-producing
 ### Building Custom Images
 
 ```bash
-# Build DRV-Unreal simulation engine image
-docker-compose build drv-unreal
+# Build the staged DRV-Unreal release on native Linux
+export DRV_RELEASE_TAG="$(<sim/release/.release-tag)"
+docker compose --profile linux-simulator build drv-unreal
 
 # Build backend image
-docker-compose build backend
+docker compose build backend
 
 # Build frontend image
-docker-compose build frontend
+docker compose build frontend
 ```
 
 ### Viewing Logs
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose --profile linux-simulator logs -f
 
 # Specific service
-docker-compose logs -f drv-unreal
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose --profile linux-simulator logs -f drv-unreal
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 ### Stopping Services
 
 ```bash
 # Stop all services
-docker-compose down
+docker compose --profile linux-simulator down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose --profile linux-simulator down -v
 ```
 ### Hot Reload
 
@@ -331,7 +341,7 @@ Both frontend and backend support automatic hot reload during development:
 Verify hot reload is working:
 ```bash
 # Watch logs for recompilation/restart messages
-docker-compose logs -f frontend backend
+docker compose logs -f frontend backend
 ```
 
 For detailed development workflows and contribution guidelines, see our [Contributing Guide](https://github.com/oss-slu/DroneWorld/wiki/Contributing-Guide).
@@ -345,12 +355,6 @@ To begin using DroneReqValidator with traditional installation, refer to our [Ge
 ### Sample `.env` Files
 
 The contents of `.env` might include the following variables:
-
-```sh
-GITHUB_TOKEN=ghp_xxxxxxx
-```
-
-The contents of `./sim/.env` might include the following variables:
 
 ```sh
 GITHUB_TOKEN=ghp_xxxxxxx
@@ -389,16 +393,9 @@ REACT_APP_CESIUM_ION_ACCESS_TOKEN='yaddayaddayadda'
 
 ### Set Up GitHub Token
 
-**Linux/macOS:**
+**Native Linux simulator host:**
 ```bash
 ./dev.sh token
-# Enter your token when prompted
-# Token is automatically saved and loaded for future sessions
-```
-
-**Windows (PowerShell):**
-```powershell
-.\dev.ps1 token
 # Enter your token when prompted
 # Token is automatically saved and loaded for future sessions
 ```
@@ -416,8 +413,8 @@ REACT_APP_CESIUM_ION_ACCESS_TOKEN='yaddayaddayadda'
 ### Port Already in Use
 If you see errors about ports 3000, 3001, or 5000 already being in use:
 ```bash
-# Stop conflicting services or change ports in docker-compose.yml
-docker-compose down
+# Stop conflicting services or change ports in docker-compose.yaml
+docker compose --profile linux-simulator down
 ```
 
 ### Simulation Engine Not Responding
@@ -433,12 +430,22 @@ Look for messages like:
 - `LogWorld: Bringing World ... up for play`
 - Server initialization complete
 
+### Current Packaged-Release Limitation
+
+Release `v2.1.0` passes native Vulkan, Pixel Streaming, five-minute idle, main
+menu rendering, and browser input validation. Loading `Simple map` after the
+AirSim vehicle prompt currently exits the packaged game with signal 11, so a
+real AirSim RPC request cannot yet be validated. Publish a newer Linux release
+containing the SM5/no-hardware-ray-tracing compatibility settings described in
+[`docs/unreal-linux-handoff.md`](docs/unreal-linux-handoff.md), then repeat the
+map-load and TCP 41451 checks.
+
 ### Memory Issues
 
 If the simulation engine container crashes with memory errors, increase Docker's memory limit:
 
-- **Docker Desktop**: Settings → Resources → Memory (set to 8GB+)
-- **Linux**: No limit by default, but ensure system has sufficient RAM
+- Native Linux has no Docker Desktop memory limit by default; ensure the host
+  has at least 16 GB RAM available.
 
 ## Contributing
 

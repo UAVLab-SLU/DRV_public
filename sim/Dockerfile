@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         gosu \
         libasound2t64 \
+        libegl1 \
         libfontconfig1 \
         libgl1 \
         libglu1-mesa \
@@ -52,6 +53,7 @@ WORKDIR /opt/drv
 # Populated by download_sim_release.ps1 or download_sim_release.sh.
 COPY --chown=unreal:unreal release/ /opt/drv/
 COPY nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
+COPY nvidia_egl_vendor.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 COPY docker-entrypoint.sh /usr/local/bin/drv-entrypoint
 
 RUN set -eux; \

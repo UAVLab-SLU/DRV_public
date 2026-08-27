@@ -38,8 +38,10 @@ From the repository root:
 ./dev.sh simulator
 ```
 
-The helper performs a latest-release check, downloads a newer Linux package
-when necessary, builds the image, and starts `signalling` and `drv-unreal`.
+The helper verifies the native Linux Docker/NVIDIA runtime, performs a
+latest-release check, downloads a newer Linux package when necessary, builds
+the image, validates NVIDIA Vulkan inside it, and starts `signalling` and
+`drv-unreal` through the `linux-simulator` Compose profile.
 Open <http://localhost:8888>. A successful idle run displays the DRV main menu.
 
 To start the complete application stack:
@@ -54,7 +56,7 @@ To start the complete application stack:
 ./download_sim_release.sh latest
 export DRV_RELEASE_TAG="$(<sim/release/.release-tag)"
 docker compose build drv-unreal
-docker compose up signalling drv-unreal
+docker compose --profile linux-simulator up signalling drv-unreal
 ```
 
 The private release repository requires `GITHUB_TOKEN` in the environment or
@@ -143,8 +145,9 @@ Completion requires all of the following:
   `sim/release/.release-asset`.
 - `useradd: UID 1000 is not unique`: rebuild from the current Dockerfile, which
   does not force a host UID.
-- `libGLX_nvidia.so.0` cannot load: verify NVIDIA Container Toolkit graphics
-  capabilities and Docker runtime configuration.
+- `libGLX_nvidia.so.0` cannot initialize Vulkan: confirm the image contains
+  `libegl1` and `/usr/share/glvnd/egl_vendor.d/10_nvidia.json`, then verify
+  NVIDIA Container Toolkit graphics capabilities and Docker configuration.
 - Unreal reports `Out of Local Memory` while allocating 1 MB: check the Vulkan
   driver name. This was the secondary error produced after Dozen removed the
   Direct3D 12 device on Docker Desktop.
@@ -153,6 +156,9 @@ Completion requires all of the following:
   `ws://signalling:8888`.
 - A player connects but video remains black: confirm `-nullrhi` is absent and
   verify that `libnvidia-encode.so.1` is visible inside the container.
+- Release `v2.1.0` crashes with signal 11 when `Simple map` loads after the
+  AirSim vehicle prompt. A new Linux package with the prepared SM5 and disabled
+  hardware-ray-tracing settings is required before AirSim RPC can pass.
 
 See [`docs/unreal-linux-handoff.md`](../docs/unreal-linux-handoff.md) for the
 investigation record and remaining work.

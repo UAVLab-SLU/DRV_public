@@ -16,7 +16,8 @@ services:
       fake-gcs:
         condition: service_healthy
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
     environment:
       - DRV_UNREAL_HOST=drv-unreal
       - DRV_UNREAL_API_PORT=3001

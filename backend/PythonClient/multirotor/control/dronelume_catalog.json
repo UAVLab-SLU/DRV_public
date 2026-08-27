@@ -1,5 +1,152 @@
 {
-  "catalog_version": "1.0",
+  "catalog_version": "1.1",
+  "fixture_contract_version": "1.0",
+  "orchestration_semantics": {
+    "atomic_action": "One behavior entry using an action from catalog.actions.",
+    "composite_action": "A scenario-level behavior graph made by combining atomic actions across one or more actors.",
+    "stage_name": "The label of a behavior node. Multiple actors may intentionally share a label so one trigger fans out to all of them.",
+    "trigger": "A directed transition emitted after a behavior. A nonempty trigger must equal at least one behavior stage_name; an empty trigger emits no transition.",
+    "target": "For Attack and MoveToTarget, the target must identify an existing dynamic actor by actor object key or PawnIdentifier.",
+    "cycles": "Trigger cycles are supported for repeating behavior chains.",
+    "composition_rule": "Do not require a real-world scenario phrase to be an action name. Decompose it into supported atomic actions, actor targets, stage labels, and trigger transitions."
+  },
+  "action_intents": {
+    "Idle": ["idle", "wait", "pause", "stand still", "delay"],
+    "SetMySpeed": ["set speed", "change speed", "walk", "run", "move faster", "move slower"],
+    "Loiter": ["loiter", "wander", "roam", "mill around", "normal pedestrian activity"],
+    "MoveToLocation": ["move to a point", "go to a location", "walk to coordinates", "patrol waypoint", "flee route"],
+    "MoveToTarget": ["move toward an actor", "follow", "chase", "approach", "target another person"],
+    "Attack": ["attack", "shoot", "shooting", "active shooter", "mass shooting", "gunman", "fire at a target"],
+    "Shoot": ["shoot alias", "fire weapon alias"],
+    "PlayAnimation": ["play animation", "aim animation", "aim and shoot animation"],
+    "AttachToHand": ["attach to hand", "hold a pistol", "equip pistol", "pick up configured pistol"],
+    "DetachFromHand": ["detach from hand", "drop configured pistol", "unequip pistol"],
+    "Flee": ["flee", "escape", "run away", "evacuate", "panic"],
+    "Escape": ["escape alias"],
+    "Destroy": ["destroy actor", "remove actor", "self destruct", "disappear"]
+  },
+  "fixture_patterns": [
+    {
+      "fixture": "InitDSL_PercCrowd.json",
+      "intents": ["pedestrian crowd", "many pedestrians", "crowded urban area"],
+      "actions": ["SetMySpeed", "Loiter"],
+      "composition": "Multiple GenericHumanAICharacter civilians loiter, optionally with PCG_ped_crowd_1."
+    },
+    {
+      "fixture": "DemoDSL_chainTrigger.json",
+      "intents": ["trigger chain", "chained movement", "actors activate one another"],
+      "actions": ["SetMySpeed", "MoveToTarget"],
+      "composition": "Unique PawnIdentifier values identify actors. Trigger values reference stage_name labels across actors, and cycles can repeat the chain."
+    },
+    {
+      "fixture": "DemoDSL_comprehensive.json",
+      "intents": ["behavior showcase", "multiple tracks", "complex coordinated scenario"],
+      "actions": ["SetMySpeed", "MoveToLocation", "Idle", "PlayAnimation", "Attack", "Loiter", "Flee", "MoveToTarget", "Destroy"],
+      "composition": "Supports Sequential, immediate, A, and B tracks plus triggers and multiple actors."
+    },
+    {
+      "fixture": "DemoDSL_forestLoiter.json",
+      "intents": ["forest wanderer", "person loitering in woods"],
+      "actions": ["SetMySpeed", "Loiter"],
+      "composition": "A GenericHumanAICharacter wanders in woods with optional trees and grass."
+    },
+    {
+      "fixture": "DemoDSL_teamPatrol.json",
+      "intents": ["team patrol", "leader and follower", "follow a patrol leader"],
+      "actions": ["SetMySpeed", "MoveToLocation", "Idle", "MoveToTarget"],
+      "composition": "A leader moves between points and a follower targets the leader PawnIdentifier."
+    },
+    {
+      "fixture": "InitDSL.json",
+      "intents": ["urban crowd search", "search for a visible person", "car pedestrian and helper drone"],
+      "actions": [],
+      "composition": "Uses Car_model1, Pedestrian_Model, Drone_Helper, and PCG_ped_crowd_1."
+    },
+    {
+      "fixture": "InitDSL_ActiveShooter.json",
+      "intents": ["active shooter", "mass shooting", "urban shooting", "gunman among pedestrians"],
+      "actions": ["SetMySpeed", "Loiter", "Attack", "MoveToLocation", "Flee", "Idle"],
+      "composition": "A shooter uses Attack with trigger shots_fired_stage. Civilian and receiver behaviors labeled stage_name shots_fired_stage fan out in response, then may emit further triggers such as victim_flee. The shooter may move or flee. Many pedestrians can use explicit civilians or PCG_ped_crowd_1. This scenario is supported."
+    },
+    {
+      "fixture": "InitDSL_Drown.json",
+      "intents": ["drowning person", "water rescue target"],
+      "actions": [],
+      "composition": "Uses BP_BuoyancyDrowner as a supported dynamic actor."
+    },
+    {
+      "fixture": "InitDSL_Missing.json",
+      "intents": ["missing person", "search for missing person in woods"],
+      "actions": [],
+      "composition": "Uses BP_MissingAICharacter with optional trees and grass."
+    },
+    {
+      "fixture": "Test_PlayAnimation.json",
+      "intents": ["play animation", "aim and shoot animation"],
+      "actions": ["Idle", "PlayAnimation"],
+      "composition": "PlayAnimation uses AS_AimAndShoot."
+    },
+    {
+      "fixture": "Test_Targeting.json",
+      "intents": ["target another actor", "chase and attack", "seeker and target"],
+      "actions": ["Idle", "MoveToTarget", "Attack"],
+      "composition": "MoveToTarget and Attack target a valid PawnIdentifier."
+    },
+    {
+      "fixture": "Test_Triggers.json",
+      "intents": ["send trigger", "respond to trigger", "coordinated trigger response"],
+      "actions": ["SetMySpeed", "Idle", "MoveToLocation"],
+      "composition": "A behavior trigger names another behavior stage_name."
+    },
+    {
+      "fixture": "Test_Weapon.json",
+      "intents": ["weapon behavior", "shooter attacks civilian", "shots fired response"],
+      "actions": ["SetMySpeed", "Idle", "Attack", "MoveToLocation", "Loiter"],
+      "composition": "Attack produces a shots-fired trigger and civilians or receivers move in response."
+    },
+    {
+      "fixture": "Test_AttachDetach.json",
+      "intents": ["equip pistol", "hold and drop pistol", "attach and detach weapon"],
+      "actions": ["Idle", "AttachToHand", "DetachFromHand"],
+      "composition": "AttachToHand uses the configured SM_Pistol transform, followed by DetachFromHand."
+    },
+    {
+      "fixture": "Test_Destroy.json",
+      "intents": ["destroy actor", "self destruct", "remove actor after delay"],
+      "actions": ["Idle", "Destroy"],
+      "composition": "An actor waits and then destroys itself while another actor may witness it."
+    },
+    {
+      "fixture": "Test_Idle.json",
+      "intents": ["idle", "wait", "stand still"],
+      "actions": ["Idle"],
+      "composition": "Idle waits for duration seconds."
+    },
+    {
+      "fixture": "Test_Loiter.json",
+      "intents": ["loiter", "wander", "roam"],
+      "actions": ["Loiter"],
+      "composition": "Loiter moves randomly using an allowed radius parameter."
+    },
+    {
+      "fixture": "Test_Movement.json",
+      "intents": ["movement test", "set speed and move", "move then disappear"],
+      "actions": ["SetMySpeed", "MoveToLocation", "Destroy"],
+      "composition": "Set speed, move to an x,y,z location, then optionally destroy the actor."
+    },
+    {
+      "fixture": "Test_Order.json",
+      "intents": ["behavior tracks", "switch between order A and B", "parallel behavior orders"],
+      "actions": ["SetMySpeed", "MoveToLocation", "Idle"],
+      "composition": "Behaviors use order A and B tracks, with a trigger switching stages."
+    },
+    {
+      "fixture": "Test_PCG.json",
+      "intents": ["procedural environment", "procedural trees grass fire buildings or crowd"],
+      "actions": [],
+      "composition": "Procedural actors use PCG_tree_default, PCG_grass_default, PCG_fire_test, PCG_building_default, or PCG_ped_crowd_1 with density and Seed."
+    }
+  ],
   "goal_types": ["search", "test"],
   "target_assets": ["GenericHumanAICharacter", "Human_Target_Model_05"],
   "target_types": ["human"],

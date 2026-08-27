@@ -1,0 +1,80 @@
+{
+  "evaluation_version": "1.0-prototype",
+  "contract_version": "1.1",
+  "cases": [
+    {
+      "id": "incomplete-basic",
+      "category": "incomplete",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Create a scenario where a person searches in the woods."
+        }
+      ],
+      "expected_status": "clarify"
+    },
+    {
+      "id": "unsupported-teleport",
+      "category": "unsupported",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Create an urban scenario where one person teleports behind another person."
+        }
+      ],
+      "expected_status": "unsupported"
+    },
+    {
+      "id": "supported-active-shooter-intent",
+      "category": "supported-incomplete",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Build a scenario where an active shooter is committing a mass shooting in an urban environment with many pedestrians."
+        }
+      ],
+      "expected_status": "clarify"
+    },
+    {
+      "id": "supported-move-to-location",
+      "category": "supported",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Create a scenario named UrbanMove, version 1.0. It is a test whose objective is to observe a person walking to a point. Use a medium urban level at 13:00 with clear weather intensity 1.0. Add one GenericHumanAICharacter named Walker with PawnIdentifier walker at Cartesian 0,0,0 and orientation pitch 0, yaw 0, roll 0. First set its speed to 300.0 for 0.5 seconds, then move sequentially to Cartesian 100,200,0 using parameter 100.0 and duration 0. Use stage names set_speed and walk_to_point, with no triggers. Use no static or procedural actors other than procedural Seed 1. Use goal target GenericHumanAICharacter, type human, signature visible."
+        }
+      ],
+      "expected_status": "complete"
+    },
+    {
+      "id": "multi-turn-completion",
+      "category": "multi-turn",
+      "messages": [
+        {
+          "role": "user",
+          "content": "I want to test a person moving to a point in an urban world."
+        },
+        {
+          "role": "assistant",
+          "content": "Please supply the scenario name, objective, supported level settings, actor location and orientation, destination, duration, speed parameter, stage, track, and any trigger."
+        },
+        {
+          "role": "user",
+          "content": "Name it GuidedWalk version 1.0. The objective is to observe a person moving to a waypoint. Use goal type test with target GenericHumanAICharacter, human, visible. Use a small urban level at 09:00 with clear weather intensity 0. Put one GenericHumanAICharacter actor named Walker with PawnIdentifier walker at Cartesian 0,0,0 and zero orientation. Move it to 500,0,0 with duration 0, Sequential order, parameter 100.0, stage move_to_waypoint, and no trigger. There are no static actors and procedural Seed is 7 with no other procedural actors."
+        }
+      ],
+      "expected_status": "complete"
+    },
+    {
+      "id": "composite-trigger-fanout",
+      "category": "composite-orchestration",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Name it CoordinatedResponse version 1.0. Use goal type test with objective observe coordinated reactions and target GenericHumanAICharacter, human, visible. Use a medium urban level at 15:00 with clear weather intensity 1.0. Add Shooter at 0,0,0 with PawnIdentifier shooter, Civilian at 300,0,0 with PawnIdentifier civilian, and Witness at 300,200,0 with PawnIdentifier witness. All are GenericHumanAICharacter with zero orientation. Shooter attacks Civilian for duration 2 seconds in stage attack and then triggers shots_fired. Civilian and Witness each flee for duration 5 seconds with parameter 800.0; give both flee behaviors stage_name shots_fired and no trigger so the attack fans out to both actors. Use no order on these behaviors, no static actors, and procedural Seed 1 with no other procedural actors."
+        }
+      ],
+      "expected_status": "complete"
+    }
+  ]
+}

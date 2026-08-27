@@ -121,6 +121,125 @@ class DroneLumeConfigTests(unittest.TestCase):
         with self.assertRaises(DroneLumeValidationError):
             validate_init_dsl(document)
 
+    def test_curated_fixture_actions_are_all_in_the_supported_catalog(self):
+        catalog = get_dronelume_catalog()
+        expected_fixtures = {
+            "InitDSL_PercCrowd.json",
+            "DemoDSL_chainTrigger.json",
+            "DemoDSL_comprehensive.json",
+            "DemoDSL_forestLoiter.json",
+            "DemoDSL_teamPatrol.json",
+            "InitDSL.json",
+            "InitDSL_ActiveShooter.json",
+            "InitDSL_Drown.json",
+            "InitDSL_Missing.json",
+            "Test_PlayAnimation.json",
+            "Test_Targeting.json",
+            "Test_Triggers.json",
+            "Test_Weapon.json",
+            "Test_AttachDetach.json",
+            "Test_Destroy.json",
+            "Test_Idle.json",
+            "Test_Loiter.json",
+            "Test_Movement.json",
+            "Test_Order.json",
+            "Test_PCG.json",
+        }
+        patterns = catalog["fixture_patterns"]
+        self.assertEqual({pattern["fixture"] for pattern in patterns}, expected_fixtures)
+        fixture_actions = {
+            action
+            for pattern in patterns
+            for action in pattern["actions"]
+        }
+        self.assertTrue(fixture_actions.issubset(catalog["actions"]))
+        self.assertTrue(fixture_actions.issubset(catalog["action_intents"]))
+
+    def _dynamic_actor(self, pawn_identifier, behaviors):
+        return {
+            "AssetName": "GenericHumanAICharacter",
+            "PawnIdentifier": pawn_identifier,
+            "location": {"Cartesian": True, "x": 0, "y": 0, "z": 0},
+            "orientation": {"pitch": 0, "yaw": 0, "roll": 0},
+            "behavior": behaviors,
+        }
+
+    def test_composite_trigger_can_fan_out_across_actors(self):
+        document = copy.deepcopy(DRONELUME_TEMPLATE)
+        dynamic = document["Scenario"]["Actors"]["Dynamic"]
+        dynamic["Shooter"] = self._dynamic_actor(
+            "shooter",
+            [{
+                "action": "Attack",
+                "target": "Civilian",
+                "duration": 1,
+                "stage_name": "attack",
+                "trigger": "shots_fired",
+            }],
+        )
+        for name in ("Civilian", "Witness"):
+            dynamic[name] = self._dynamic_actor(
+                name.lower(),
+                [{
+                    "action": "Flee",
+                    "duration": 1,
+                    "parameters": "800.0",
+                    "stage_name": "shots_fired",
+                    "trigger": "",
+                }],
+            )
+        self.assertEqual(validate_init_dsl(document), document)
+
+    def test_trigger_cycle_is_valid(self):
+        document = copy.deepcopy(DRONELUME_TEMPLATE)
+        document["Scenario"]["Actors"]["Dynamic"]["Patroller"] = self._dynamic_actor(
+            "patroller",
+            [
+                {"action": "Idle", "duration": 1, "stage_name": "wait", "trigger": "move"},
+                {
+                    "action": "MoveToLocation",
+                    "duration": 0,
+                    "location": "100,0,0",
+                    "parameters": "100.0",
+                    "stage_name": "move",
+                    "trigger": "wait",
+                },
+            ],
+        )
+        self.assertEqual(validate_init_dsl(document), document)
+
+    def test_unknown_trigger_reports_exact_path(self):
+        document = copy.deepcopy(DRONELUME_TEMPLATE)
+        document["Scenario"]["Actors"]["Dynamic"]["Person"] = self._dynamic_actor(
+            "person",
+            [{"action": "Idle", "duration": 1, "stage_name": "wait", "trigger": "missing"}],
+        )
+        with self.assertRaises(DroneLumeValidationError) as raised:
+            validate_init_dsl(document)
+        self.assertIn(
+            {
+                "path": "$.Scenario.Actors.Dynamic.Person.behavior[0].trigger",
+                "message": "must match at least one behavior stage_name",
+            },
+            raised.exception.errors,
+        )
+
+    def test_unknown_behavior_target_reports_exact_path(self):
+        document = copy.deepcopy(DRONELUME_TEMPLATE)
+        document["Scenario"]["Actors"]["Dynamic"]["Attacker"] = self._dynamic_actor(
+            "attacker",
+            [{"action": "Attack", "target": "missing", "duration": 1}],
+        )
+        with self.assertRaises(DroneLumeValidationError) as raised:
+            validate_init_dsl(document)
+        self.assertIn(
+            {
+                "path": "$.Scenario.Actors.Dynamic.Attacker.behavior[0].target",
+                "message": "must reference an existing dynamic actor key or PawnIdentifier",
+            },
+            raised.exception.errors,
+        )
+
     @unittest.skipIf(SimulationTaskManager is None, "backend runtime dependencies are not installed")
     def test_task_state_stays_active_until_explicit_stop(self):
         storage = RecordingStorage()

@@ -59,7 +59,13 @@ export default defineConfig(({ mode }) => {
     );
   }
 
-  const apiTarget = env.VITE_API_URL ?? env.REACT_APP_API_URL ?? "http://localhost:5000";
+  // Browser requests use a relative URL in development. This separate target is
+  // resolved by Vite inside Docker, where the backend service name is reachable.
+  const apiTarget =
+    env.VITE_BACKEND_PROXY_TARGET ??
+    env.VITE_API_URL ??
+    env.REACT_APP_API_URL ??
+    "http://localhost:5000";
 
   return {
     define: {

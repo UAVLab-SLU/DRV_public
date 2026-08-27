@@ -62,7 +62,9 @@ def get_dronelume_contract():
             "Use the template field names and only catalog values and actions.",
             "Do not generate Scenario.SuT; it is derived from the first Mission drone.",
             "Give every dynamic pawn a unique PawnIdentifier.",
-            "Use PawnIdentifier values for behavior targets and trigger names to connect stages.",
+            "Use an actor key or PawnIdentifier for behavior targets.",
+            "Build composite actions from atomic behaviors. A trigger invokes every behavior whose stage_name matches it.",
+            "Every nonempty trigger must match at least one stage_name. Shared stage names and trigger cycles are valid.",
             "Use relative Cartesian x,y,z coordinates for DroneLume locations.",
             "Submit the generated object as dronelume.init_dsl without Markdown fences.",
         ],
@@ -277,6 +279,9 @@ def validate_init_dsl(value, require_sut=False):
             _error(errors, "$.Scenario.Actors.Dynamic", "must be an object")
         else:
             pawn_ids = set()
+            actor_references = set(dynamic_actors)
+            stage_names = set()
+            behavior_entries = []
             for actor_id, actor in dynamic_actors.items():
                 _validate_actor(actor, f"$.Scenario.Actors.Dynamic.{actor_id}", errors, catalog, dynamic=True)
                 if isinstance(actor, dict) and actor.get("PawnIdentifier"):
@@ -284,6 +289,44 @@ def validate_init_dsl(value, require_sut=False):
                     if pawn_id in pawn_ids:
                         _error(errors, f"$.Scenario.Actors.Dynamic.{actor_id}.PawnIdentifier", "must be unique")
                     pawn_ids.add(pawn_id)
+                    actor_references.add(pawn_id)
+                if isinstance(actor, dict) and isinstance(actor.get("behavior", []), list):
+                    for index, behavior in enumerate(actor.get("behavior", [])):
+                        if not isinstance(behavior, dict):
+                            continue
+                        behavior_path = f"$.Scenario.Actors.Dynamic.{actor_id}.behavior[{index}]"
+                        behavior_entries.append((behavior, behavior_path))
+                        stage_name = behavior.get("stage_name")
+                        if isinstance(stage_name, str) and stage_name.strip():
+                            stage_names.add(stage_name.strip())
+
+            for behavior, behavior_path in behavior_entries:
+                canonical_action = ACTION_ALIASES.get(
+                    str(behavior.get("action", "")).lower(), behavior.get("action")
+                )
+                target = behavior.get("target")
+                if (
+                    canonical_action in ("MoveToTarget", "Attack")
+                    and isinstance(target, str)
+                    and target.strip()
+                    and target.strip() not in actor_references
+                ):
+                    _error(
+                        errors,
+                        f"{behavior_path}.target",
+                        "must reference an existing dynamic actor key or PawnIdentifier",
+                    )
+                trigger = behavior.get("trigger")
+                if (
+                    isinstance(trigger, str)
+                    and trigger.strip()
+                    and trigger.strip() not in stage_names
+                ):
+                    _error(
+                        errors,
+                        f"{behavior_path}.trigger",
+                        "must match at least one behavior stage_name",
+                    )
         if not isinstance(procedural, dict):
             _error(errors, "$.Scenario.Actors.Procedural", "must be an object")
         else:

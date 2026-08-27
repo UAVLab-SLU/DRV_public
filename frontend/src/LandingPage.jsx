@@ -120,7 +120,7 @@ export default function LandingPage() {
           <Stack direction="row" justifyContent="center" spacing={2} flexWrap="wrap">
             <Button
               component={Link}
-              to="/home"
+              to="/llm"
               variant="contained"
               size="large"
               startIcon={<PlayCircleOutlineIcon />}
@@ -261,7 +261,7 @@ export default function LandingPage() {
             <Stack direction="row" spacing={2}>
               <Button
                 component={Link}
-                to="/home"
+                to="/llm"
                 variant="contained"
                 endIcon={<ArrowForwardIcon />}
                 sx={{

@@ -23,7 +23,7 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import PropTypes from "prop-types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DRONELUME_FALLBACK_CATALOG,
   createActor,
@@ -310,6 +310,12 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
   const [errors, setErrors] = useState([]);
   const [validating, setValidating] = useState(false);
   const [contract, setContract] = useState(null);
+  const [conversation, setConversation] = useState([]);
+  const [userMessage, setUserMessage] = useState("");
+  const [assistantResult, setAssistantResult] = useState(null);
+  const [generating, setGenerating] = useState(false);
+  const [showJsonFallback, setShowJsonFallback] = useState(false);
+  const assistantRequest = useRef(null);
   const catalog = contract?.catalog ?? DRONELUME_FALLBACK_CATALOG;
 
   useEffect(() => {
@@ -319,10 +325,16 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
     setRawJson(JSON.stringify(next, null, 2));
     setTab(initialSource === "llm" || initialSource === "imported" ? 1 : 0);
     setErrors([]);
+    setConversation([]);
+    setUserMessage("");
+    setAssistantResult(initialSource === "llm" ? { status: "complete", provider: null } : null);
+    setGenerating(false);
+    setShowJsonFallback(initialSource === "llm" || initialSource === "imported");
     fetch(`${BASE_URL}/api/dronelume/schema`)
       .then((response) => response.ok ? response.json() : null)
       .then(setContract)
       .catch(() => setContract(null));
+    return () => assistantRequest.current?.abort();
   }, [initialConfig, initialSource, open]);
 
   const scenario = draft.Scenario;
@@ -395,12 +407,62 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
     template: createDroneLumeTemplate(),
   }, null, 2));
 
+  const stopAssistant = () => {
+    assistantRequest.current?.abort();
+    assistantRequest.current = null;
+    setGenerating(false);
+  };
+
+  const sendAssistantMessage = async () => {
+    const content = userMessage.trim();
+    if (!content || generating) return;
+    const nextConversation = [...conversation, { role: "user", content }];
+    setConversation(nextConversation);
+    setUserMessage("");
+    setErrors([]);
+    setGenerating(true);
+    setAssistantResult(null);
+    const controller = new AbortController();
+    assistantRequest.current = controller;
+    try {
+      const response = await fetch(`${BASE_URL}/api/dronelume/assist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "ollama", messages: nextConversation }),
+        signal: controller.signal,
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setErrors(result.details ?? [{ path: "$", message: result.error ?? "Scenario assistant failed" }]);
+        return;
+      }
+      const assistantContent = [result.message, ...(result.questions ?? [])].filter(Boolean).join("\n");
+      setConversation([...nextConversation, { role: "assistant", content: assistantContent }]);
+      setAssistantResult(result);
+      if (result.status === "complete" && result.init_dsl) {
+        const document = withoutMissionOwnedSuT(result.init_dsl);
+        setRawJson(JSON.stringify(document, null, 2));
+        setDraft(document);
+        setShowJsonFallback(true);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setErrors([{ path: "$", message: `Scenario assistant is unavailable: ${error.message}` }]);
+      }
+    } finally {
+      if (assistantRequest.current === controller) {
+        assistantRequest.current = null;
+        setGenerating(false);
+      }
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" scroll="paper">
       <DialogTitle>Configure DroneLume InitDSL</DialogTitle>
       <Tabs value={tab} onChange={handleTabChange} sx={{ px: 3 }}>
         <Tab label="Manual builder" />
-        <Tab label="LLM / JSON" />
+        <Tab label="Guided LLM / JSON" />
       </Tabs>
       <DialogContent dividers sx={{ minHeight: "65vh" }}>
         {errors.length > 0 && (
@@ -413,10 +475,74 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
         {tab === 1 ? (
           <Box sx={{ mt: 2 }}>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Ask an LLM to produce the scenario JSON and omit SuT. The backend applies the same catalog validation and derives SuT from Mission when the task starts.
+              Describe the scenario in your own words. The assistant uses the same backend catalog as the dropdowns, asks for missing details, and flags requests outside the current Unreal inventory.
             </Alert>
-            <Button startIcon={<ContentCopyIcon />} onClick={copyContract} sx={{ mb: 1 }}>Copy LLM contract</Button>
-            <TextField label="InitDSL JSON" value={rawJson} onChange={(event) => setRawJson(event.target.value)} multiline minRows={24} fullWidth inputProps={{ spellCheck: false, style: { fontFamily: "monospace", fontSize: 13 } }} />
+            <Box sx={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 1, p: 1.5, mb: 1.5, maxHeight: 280, overflowY: "auto" }}>
+              {conversation.length === 0 && (
+                <Typography color="text.secondary" variant="body2">
+                  Try “Create an urban scenario with a person who moves toward another person,” or describe the test you want to run.
+                </Typography>
+              )}
+              {conversation.map((message, index) => (
+                <Box key={`${message.role}-${index}`} sx={{ mb: 1.25, ml: message.role === "user" ? 5 : 0, mr: message.role === "assistant" ? 5 : 0 }}>
+                  <Typography variant="caption" color="text.secondary">{message.role === "user" ? "You" : "Scenario assistant"}</Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", bgcolor: message.role === "user" ? "primary.dark" : "rgba(255,255,255,0.06)", borderRadius: 1, p: 1 }}>
+                    {message.content}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="flex-start">
+              <TextField
+                label="Describe or complete your scenario"
+                value={userMessage}
+                onChange={(event) => setUserMessage(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendAssistantMessage();
+                  }
+                }}
+                multiline
+                minRows={2}
+                fullWidth
+                disabled={generating}
+              />
+              {generating ? (
+                <Button variant="outlined" color="warning" onClick={stopAssistant}>Stop</Button>
+              ) : (
+                <Button variant="contained" onClick={sendAssistantMessage} disabled={!userMessage.trim()}>Send</Button>
+              )}
+            </Stack>
+            {generating && <Typography variant="caption" color="text.secondary">llama3.1 is reviewing the request against the supported catalog. The first response may take longer while the model loads.</Typography>}
+            {assistantResult?.status === "clarify" && (
+              <Alert severity="info" sx={{ mt: 1.5 }}>More information is needed before a DSL can be constructed.</Alert>
+            )}
+            {assistantResult?.status === "unsupported" && (
+              <Alert severity="warning" sx={{ mt: 1.5 }}>
+                <div>{assistantResult.message}</div>
+                {(assistantResult.unsupported ?? []).map((item) => <div key={`${item.request}-${item.reason}`}><strong>{item.request}</strong>: {item.reason}</div>)}
+              </Alert>
+            )}
+            {assistantResult?.status === "complete" && (
+              <Alert severity="success" sx={{ mt: 1.5 }}>
+                The DSL passed backend catalog and structural validation{assistantResult.provider ? ` using ${assistantResult.provider.model}` : ""}. Review it below before using it.
+              </Alert>
+            )}
+            <Box sx={{ mt: 2 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="subtitle2">{assistantResult?.status === "complete" ? "Validated DSL preview" : "Manual JSON fallback"}</Typography>
+                <Stack direction="row" spacing={1}>
+                  <Button size="small" onClick={() => setShowJsonFallback((current) => !current)}>
+                    {showJsonFallback ? "Hide JSON" : "Edit JSON manually"}
+                  </Button>
+                  <Button size="small" startIcon={<ContentCopyIcon />} onClick={copyContract}>Copy LLM contract</Button>
+                </Stack>
+              </Stack>
+              {showJsonFallback && (
+                <TextField label="InitDSL JSON" value={rawJson} onChange={(event) => setRawJson(event.target.value)} multiline minRows={18} fullWidth inputProps={{ spellCheck: false, style: { fontFamily: "monospace", fontSize: 13 } }} />
+              )}
+            </Box>
           </Box>
         ) : (
           <Stack spacing={1} sx={{ mt: 2 }}>
@@ -491,7 +617,7 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
       <DialogActions>
         <Typography variant="caption" color="text.secondary" sx={{ mr: "auto", ml: 1 }}>Final output: InitDSL.json with Mission-derived SuT</Typography>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={validateAndSave} disabled={validating}>{validating ? "Validating..." : "Validate and use DroneLume"}</Button>
+        <Button variant="contained" onClick={validateAndSave} disabled={validating || (tab === 1 && assistantResult?.status !== "complete" && !showJsonFallback)}>{validating ? "Validating..." : "Validate and use DroneLume"}</Button>
       </DialogActions>
     </Dialog>
   );

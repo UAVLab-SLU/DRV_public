@@ -1,6 +1,6 @@
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import FuzzyDashboard from "./components/FuzzyDashboard";
 import Navbar from "./components/Navbar";
 import ReportDashboard from "./components/ReportDashboard";
@@ -8,8 +8,8 @@ import { MainJsonProvider } from "./contexts/MainJsonContext";
 import LandingPage from "./LandingPage";
 import AboutUs from "./pages/AboutUs";
 import Footer from "./pages/Footer";
-import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import ScenarioAssistant from "./pages/ScenarioAssistant";
 import Simulator from "./pages/Simulator";
 import Wizard from "./pages/Wizard";
 import { globalTheme } from "./theme/index";
@@ -24,7 +24,8 @@ export default function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/home" element={<Navigate to="/llm" replace />} />
+            <Route path="/llm" element={<ScenarioAssistant />} />
             <Route path="/simulation" element={<Wizard />} />
             <Route path="/simulator" element={<Simulator />} />
             <Route path="/dashboard" element={<FuzzyDashboard />} />

@@ -17,6 +17,10 @@ from PythonClient.multirotor.control.dronelume_config import (
     get_dronelume_contract,
     validate_init_dsl,
 )
+from PythonClient.multirotor.control.scenario_model_provider import (
+    ScenarioProviderError,
+    get_scenario_model_provider,
+)
 
 # Import the storage service from the configuration module
 from PythonClient.multirotor.storage.storage_config import get_storage_service
@@ -258,6 +262,23 @@ def validate_dronelume_config():
             'details': e.errors,
         }), 400
     return jsonify({'valid': True, 'init_dsl': validated}), 200
+
+
+@app.route('/api/dronelume/assist', methods=['POST'])
+def assist_dronelume_config():
+    """Turn a bounded conversation into guidance or deterministic InitDSL."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'A JSON object is required', 'code': 'invalid_request'}), 400
+    try:
+        provider = get_scenario_model_provider(payload.get('provider'))
+        result = provider.generate(payload.get('messages'), get_dronelume_contract())
+    except ScenarioProviderError as e:
+        response = {'error': str(e), 'code': e.code}
+        if hasattr(e, 'details'):
+            response['details'] = e.details
+        return jsonify(response), e.status_code
+    return jsonify(result.to_dict()), 200
 
 
 @app.route('/api/dronelume/stop', methods=['POST'])

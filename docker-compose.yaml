@@ -27,6 +27,12 @@ services:
       - AIRSIM_HOST=drv-unreal
       - AIRSIM_PORT=41451
       - DRONELUME_CONFIG_DIR=/app/dronelume-config
+      - SCENARIO_MODEL_PROVIDER=ollama
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      - OLLAMA_TIMEOUT_SECONDS=${OLLAMA_TIMEOUT_SECONDS:-90}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - droneworld-network
 
@@ -75,6 +81,9 @@ services:
     volumes:
       - drv-data:/opt/drv/data
       - ${AIRSIM_SETTINGS_DIR:-./config/airsim}:/home/unreal/Documents/AirSim
+      - type: bind
+        source: ${DRONELUME_CONFIG_DIR:-./config/dronelume}
+        target: /opt/drv/Config
     shm_size: "8gb"
     deploy:
       resources:

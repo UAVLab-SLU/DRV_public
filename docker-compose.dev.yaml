@@ -28,6 +28,10 @@ services:
       - AIRSIM_HOST=host.docker.internal
       - AIRSIM_PORT=41451
       - DRONELUME_CONFIG_DIR=/app/dronelume-config
+      - SCENARIO_MODEL_PROVIDER=ollama
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      - OLLAMA_TIMEOUT_SECONDS=${OLLAMA_TIMEOUT_SECONDS:-90}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -49,6 +53,8 @@ services:
       - VITE_PIXELSTREAM_URL=${VITE_PIXELSTREAM_URL:-http://localhost:8888}
       - VITE_SIMULATOR_CONTROL_URL=${VITE_SIMULATOR_CONTROL_URL:-http://127.0.0.1:8890}
       - REACT_APP_BACKEND_URL=http://localhost:5000
+      - VITE_API_URL=
+      - VITE_BACKEND_PROXY_TARGET=http://backend:5000
     depends_on:
       - backend
     networks:

@@ -256,6 +256,60 @@ docker compose -f docker-compose.dev.yaml down
 
 ### Configuration
 
+#### DroneLume scenarios
+
+DroneLume and geospatial AirSim scenarios share the existing `/addTask` queue. A
+DroneLume request uses the following envelope:
+
+```json
+{
+  "mode": "dronelume",
+  "Drones": [
+    { "Name": "Drone 1", "droneModel": "AureliaX6Pro", "X": 0, "Y": 0, "Z": 200 }
+  ],
+  "dronelume": {
+    "source": "llm",
+    "init_dsl": { "Scenario": {} }
+  }
+}
+```
+
+Use `GET /api/dronelume/schema` as the LLM authoring contract and
+`POST /api/dronelume/validate` before submission. Manual and LLM-generated
+documents pass through the same validator. After validation, the backend writes
+`InitDSL.json` atomically, archives the final document under the task report,
+and publishes `{"state":"dronelume_map"}`. The state remains active until
+`POST /api/dronelume/stop` publishes `{"state":"idle"}`.
+
+`Scenario.SuT` is owned by the Mission tab and must not be authored in the
+manual builder or by the LLM. At final submission, the backend derives the SuT
+asset and relative Cartesian start location from the first Mission drone.
+
+All categorical manual-builder values come from
+`backend/PythonClient/multirotor/control/dronelume_catalog.json`. Add new Unreal
+assets, level choices, or operation parameters there. The frontend retrieves
+the catalog through `/api/dronelume/schema`, and the backend validates against
+the same file. Set `DRONELUME_CATALOG_PATH` to use an external catalog without
+changing the application source.
+
+For a local packaged Windows build, set:
+
+```text
+DRONELUME_CONFIG_DIR=G:\UE_project\DroneWorld 5.5\Packaged\Windows\DRV\Config
+```
+
+Docker Compose mounts `DRONELUME_CONFIG_DIR` into both the backend and Unreal
+containers. If it is not set, Compose uses `./config/dronelume`.
+
+The experimental guided authoring tab sends bounded conversation history to
+`POST /api/dronelume/assist`. Only the backend connects to Ollama, so provider
+configuration is not exposed to the browser. Native backend development uses
+`OLLAMA_URL=http://localhost:11434`; Docker Compose uses the host Ollama service
+through `http://host.docker.internal:11434`. Configure the model and limits with
+`OLLAMA_MODEL`, `OLLAMA_TIMEOUT_SECONDS`, `OLLAMA_NUM_CTX`, and
+`OLLAMA_NUM_PREDICT`. See [the prototype Ollama evaluation](docs/ollama-scenario-evaluation.md)
+for measured results, the preliminary enablement gate, and known gaps.
+
 1. Configure AirSim settings in `config/airsim/`:
    - `settings.json` - Drone and simulation configuration
    - `cesium.json` - Geographic coordinates for terrain generation

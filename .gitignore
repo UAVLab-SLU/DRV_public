@@ -56,6 +56,11 @@ key.json
 config/
 config/fake-gcs-data/
 
+# Downloaded packaged Unreal releases are local Docker build inputs.
+sim/release/
+sim/release-staging-*/
+sim/*.zip
+
 # MaOS system files
 .DS_Store
 

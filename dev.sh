@@ -1,170 +1,124 @@
-#!/bin/bash
-# DroneWorld Development Helper Script
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${script_dir}"
 
-check_token() {
-    # Check if token is in environment
-    if [ -n "$GITHUB_TOKEN" ]; then
+load_token() {
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
         return 0
     fi
-    
-    # Check if token is in .env file and auto-export it
-    if [ -f .env ] && grep -q "^GITHUB_TOKEN=" .env; then
-        token=$(grep "^GITHUB_TOKEN=" .env | cut -d '=' -f2-)
-        if [ -n "$token" ]; then
-            export GITHUB_TOKEN="$token"
-            echo "✅ Loaded GITHUB_TOKEN from .env"
+    if [[ -f .env ]]; then
+        token_line="$(grep -m 1 '^GITHUB_TOKEN=' .env || true)"
+        if [[ -n "${token_line}" ]]; then
+            export GITHUB_TOKEN="${token_line#GITHUB_TOKEN=}"
             return 0
         fi
     fi
-    
-    echo "⚠️  GITHUB_TOKEN not found."
-    echo "Run './dev.sh token' to set it up."
+    echo "GITHUB_TOKEN is required when UAVLab-SLU/DRV-Unreal is private." >&2
+    echo "Run './dev.sh token' or add it to .env." >&2
     return 1
 }
 
 set_token() {
-    echo "🔑 Setting up GITHUB_TOKEN..."
-    echo ""
-    
-    # Check if token already exists in .env
-    if [ -f .env ] && grep -q "^GITHUB_TOKEN=" .env; then
-        current_token=$(grep "^GITHUB_TOKEN=" .env | cut -d '=' -f2-)
-        if [ -n "$current_token" ]; then
-            echo "✅ Found existing token in .env: ${current_token:0:10}..."
-            read -p "Use existing token? (Y/n): " -n 1 -r
-            echo ""
-            if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-                export GITHUB_TOKEN="$current_token"
-                echo "✅ Token exported for current session"
-                return 0
-            fi
-        fi
-    fi
-    
-    # Prompt for new token
-    read -sp "Enter your GitHub Personal Access Token: " token
-    echo ""
-    
-    if [ -z "$token" ]; then
-        echo "❌ No token provided"
+    read -r -s -p "GitHub personal access token: " token
+    echo
+    if [[ -z "${token}" ]]; then
+        echo "No token provided." >&2
         return 1
     fi
-    
-    export GITHUB_TOKEN="$token"
-    
-    # Save to .env file in root
-    if [ -f .env ] && grep -q "^GITHUB_TOKEN=" .env; then
-        # Update existing token
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # macOS
-            sed -i '' "s|^GITHUB_TOKEN=.*|GITHUB_TOKEN=$token|" .env
-        else
-            # Linux
-            sed -i "s|^GITHUB_TOKEN=.*|GITHUB_TOKEN=$token|" .env
-        fi
-        echo "✅ Updated GITHUB_TOKEN in .env"
+
+    if [[ -f .env ]] && grep -q '^GITHUB_TOKEN=' .env; then
+        sed -i "s|^GITHUB_TOKEN=.*|GITHUB_TOKEN=${token}|" .env
     else
-        # Add new token
-        echo "GITHUB_TOKEN=$token" >> .env
-        echo "✅ Added GITHUB_TOKEN to .env"
+        printf '\nGITHUB_TOKEN=%s\n' "${token}" >> .env
     fi
-    
-    echo "✅ Token exported for current session"
+    export GITHUB_TOKEN="${token}"
+    echo "Saved GITHUB_TOKEN in .env."
+}
+
+set_pixelstream_public_ip() {
+    if [[ -n "${PIXELSTREAM_PUBLIC_IP:-}" ]]; then
+        return
+    fi
+    if [[ -f .env ]] && grep -q '^PIXELSTREAM_PUBLIC_IP=' .env; then
+        export PIXELSTREAM_PUBLIC_IP="$(grep -m 1 '^PIXELSTREAM_PUBLIC_IP=' .env | cut -d '=' -f2-)"
+        return
+    fi
+    PIXELSTREAM_PUBLIC_IP="$(ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')"
+    export PIXELSTREAM_PUBLIC_IP="${PIXELSTREAM_PUBLIC_IP:-127.0.0.1}"
+}
+
+sync_unreal_release() {
+    load_token
+    echo "Checking the latest DRV-Unreal Linux release."
+    "${script_dir}/download_sim_release.sh" latest
+    export DRV_RELEASE_TAG="$(<"${script_dir}/sim/release/.release-tag")"
 }
 
 print_usage() {
-    echo "Usage: ./dev.sh [command]"
-    echo ""
+    echo "Usage: ./dev.sh COMMAND"
+    echo
     echo "Commands:"
-    echo "  token       - Set GITHUB_TOKEN for building simulator (required for 'full' and 'simulator')"
-    echo "  full        - Start all services (frontend, backend, simulator)"
-    echo "  dev         - Start development services only (frontend, backend)"
-    echo "  frontend    - Start frontend only"
-    echo "  backend     - Start backend only"
-    echo "  simulator   - Start simulator only"
-    echo "  logs        - Follow logs for dev services"
-    echo "  logs-all    - Follow logs for all services"
-    echo "  stop        - Stop all services"
-    echo "  stop-dev    - Stop development services only"
-    echo "  clean       - Stop and remove all containers and volumes"
-    echo "  help        - Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  ./dev.sh token        # Set GitHub token (needed before 'full' or 'simulator')"
-    echo "  ./dev.sh dev          # Quick start for development"
-    echo "  ./dev.sh full         # Start everything including simulator"
+    echo "  token       Save the GitHub token used to read private releases"
+    echo "  full        Download the latest simulator and start the full stack"
+    echo "  dev         Start frontend and backend development services"
+    echo "  frontend    Start the frontend"
+    echo "  backend     Start the backend"
+    echo "  simulator   Download the latest simulator and start Pixel Streaming"
+    echo "  logs        Follow frontend and backend development logs"
+    echo "  logs-all    Follow all service logs"
+    echo "  stop        Stop the full stack"
+    echo "  stop-dev    Stop development services"
+    echo "  clean       Stop services and remove their volumes"
 }
 
-case "$1" in
+case "${1:-help}" in
     token)
         set_token
         ;;
     full)
-        if ! check_token; then
-            echo ""
-            read -p "Continue without token? The simulator will fail to build. (y/N): " -n 1 -r
-            echo ""
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                exit 1
-            fi
-        fi
-        echo "🚀 Starting full stack (frontend + backend + simulator)..."
-        docker-compose up
+        set_pixelstream_public_ip
+        sync_unreal_release
+        echo "Pixel Stream URL: http://localhost:${PIXELSTREAM_HTTP_PORT:-8888}"
+        docker compose up --build
         ;;
     dev)
-        echo "🔧 Starting development services (frontend + backend only)..."
-        docker-compose -f docker-compose.dev.yaml up
+        docker compose -f docker-compose.dev.yaml up
         ;;
     frontend)
-        echo "⚛️  Starting frontend only..."
-        docker-compose up frontend
+        docker compose up frontend
         ;;
     backend)
-        echo "🐍 Starting backend only..."
-        docker-compose up backend
+        docker compose up backend
         ;;
     simulator)
-        if ! check_token; then
-            echo ""
-            read -p "Continue without token? The simulator will fail to build. (y/N): " -n 1 -r
-            echo ""
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                exit 1
-            fi
-        fi
-        echo "🎮 Starting simulator only..."
-        docker-compose up drv-unreal
+        set_pixelstream_public_ip
+        sync_unreal_release
+        echo "Pixel Stream URL: http://localhost:${PIXELSTREAM_HTTP_PORT:-8888}"
+        docker compose up --build signalling drv-unreal
         ;;
     logs)
-        echo "📋 Following development service logs..."
-        docker-compose -f docker-compose.dev.yaml logs -f frontend backend
+        docker compose -f docker-compose.dev.yaml logs -f frontend backend
         ;;
     logs-all)
-        echo "📋 Following all service logs..."
-        docker-compose logs -f
+        docker compose logs -f
         ;;
     stop)
-        echo "🛑 Stopping all services..."
-        docker-compose down
+        docker compose down
         ;;
     stop-dev)
-        echo "🛑 Stopping development services..."
-        docker-compose -f docker-compose.dev.yaml down
+        docker compose -f docker-compose.dev.yaml down
         ;;
     clean)
-        echo "🧹 Cleaning up all containers and volumes..."
-        docker-compose down -v
-        docker-compose -f docker-compose.dev.yaml down -v
-        echo "✅ Cleanup complete"
+        docker compose down -v
+        docker compose -f docker-compose.dev.yaml down -v
         ;;
     help|"")
         print_usage
         ;;
     *)
-        echo "❌ Unknown command: $1"
-        echo ""
+        echo "Unknown command: $1" >&2
         print_usage
         exit 1
         ;;

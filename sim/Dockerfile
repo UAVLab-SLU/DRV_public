@@ -1,128 +1,77 @@
-# Stage 1: Download and extract the binary
-FROM ubuntu:22.04 AS downloader
+FROM python:3.8.1-buster AS legacy-openssl
 
-# Prevent interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive
+FROM nvidia/cuda:12.8.0-base-ubuntu24.04
 
-# Install download tools
-RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
-    ca-certificates \
-    jq \
+ARG DEBIAN_FRONTEND=noninteractive
+ARG DRV_RELEASE_TAG=unknown
+
+LABEL org.opencontainers.image.title="DRV-Unreal Linux runtime" \
+      org.opencontainers.image.version="${DRV_RELEASE_TAG}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gosu \
+        libasound2t64 \
+        libfontconfig1 \
+        libgl1 \
+        libglu1-mesa \
+        libnss3 \
+        libpulse0 \
+        libsdl2-2.0-0 \
+        libvulkan1 \
+        libx11-6 \
+        libxau6 \
+        libxcb1 \
+        libxcursor1 \
+        libxdmcp6 \
+        libxext6 \
+        libxi6 \
+        libxinerama1 \
+        libxrandr2 \
+        libxrender1 \
+        libxss1 \
+        libxtst6 \
+        net-tools \
+        procps \
+        vulkan-tools \
+        xdg-user-dirs \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /tmp/download
+# Some packaged UE plugins still link against OpenSSL 1.1. Copy the compatible
+# libraries without adding an obsolete package repository to the runtime image.
+COPY --from=legacy-openssl /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib/x86_64-linux-gnu/libssl.so.1.1
+COPY --from=legacy-openssl /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1
 
-# Download the DRV-Unreal Linux binary from GitHub releases
-ARG VERSION=v2.0.0
-ARG GITHUB_REPO=UAVLab-SLU/DRV-Unreal
-ARG GITHUB_TOKEN
+RUN useradd --create-home --shell /bin/bash unreal \
+    && mkdir -p /home/unreal/Documents/AirSim /opt/drv \
+    && chown -R unreal:unreal /home/unreal /opt/drv
 
-# Download and extract the Linux release
-# For private repos, must use GitHub API asset endpoint
-RUN if [ -n "$GITHUB_TOKEN" ]; then \
-        echo "Downloading from private repo via GitHub API..." && \
-        # Get the asset ID for Linux.zip using jq
-        ASSET_ID=$(wget -qO- \
-                   --header="Authorization: Bearer ${GITHUB_TOKEN}" \
-                   "https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${VERSION}" | \
-                   jq -r '.assets[] | select(.name=="Linux.zip") | .id') && \
-        echo "Found Linux.zip asset ID: $ASSET_ID" && \
-        # Download using API endpoint (required for private repos)
-        wget --header="Authorization: Bearer ${GITHUB_TOKEN}" \
-             --header="Accept: application/octet-stream" \
-             "https://api.github.com/repos/${GITHUB_REPO}/releases/assets/$ASSET_ID" \
-             -O linux.zip; \
-    else \
-        echo "Downloading from public repo..." && \
-        wget https://github.com/${GITHUB_REPO}/releases/download/${VERSION}/Linux.zip \
-             -O linux.zip; \
-    fi \
-    && echo "Download complete, extracting..." \
-    && unzip -q linux.zip -d /tmp/extract \
-    && rm linux.zip \
-    && echo "Searching for Blocks.sh..." \
-    && BLOCKS_DIR=$(find /tmp/extract -name "Blocks.sh" -type f | head -1 | xargs dirname) \
-    && echo "Found in: $BLOCKS_DIR" \
-    && echo "Contents:" \
-    && ls -la "$BLOCKS_DIR" \
-    && echo "Moving contents to /app..." \
-    && cp -r "$BLOCKS_DIR"/. /app/ \
-    && rm -rf /tmp/extract \
-    && echo "Files in /app:" \
-    && ls -la /app/ | head -20
+WORKDIR /opt/drv
 
-# Make the binary executable
-RUN chmod +x /app/Blocks.sh
+# Populated by download_sim_release.ps1 or download_sim_release.sh.
+COPY --chown=unreal:unreal release/ /opt/drv/
+COPY nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
+COPY docker-entrypoint.sh /usr/local/bin/drv-entrypoint
 
-# Stage 2: Runtime environment with Vulkan drivers
-# Force x86_64 platform for Apple Silicon compatibility
-FROM --platform=linux/amd64 ubuntu:22.04 AS runtime
+RUN set -eux; \
+    launcher="$(find /opt/drv -type f \( -name 'DRV.sh' -o -name 'Blocks.sh' -o -name 'SADE_drone_rep.sh' \) | head -n 1)"; \
+    test -n "$launcher" || (echo 'No Unreal launcher found. Run the release downloader before building.' >&2; exit 1); \
+    chmod +x "$launcher" /usr/local/bin/drv-entrypoint; \
+    ln -s "$launcher" /opt/drv/launch.sh
 
-# Prevent interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive
+# NVIDIA Container Toolkit injects host-matched graphics, Vulkan, and NVENC
+# libraries into these locations when the capabilities include them.
+ENV HOME=/home/unreal \
+    LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64 \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,video,display \
+    NVIDIA_VISIBLE_DEVICES=all \
+    SDL_AUDIODRIVER=dummy \
+    SDL_VIDEODRIVER=offscreen \
+    VK_DRIVER_FILES=/etc/vulkan/icd.d/nvidia_icd.json \
+    XDG_RUNTIME_DIR=/tmp/runtime-unreal
 
-# Install Vulkan drivers and ALL runtime dependencies for Unreal Engine
-# Including 32-bit libraries that might be needed
-RUN apt-get update && apt-get install -y \
-    mesa-vulkan-drivers \
-    vulkan-tools \
-    libvulkan1 \
-    libgl1 \
-    libglu1-mesa \
-    libxrandr2 \
-    libxinerama1 \
-    libxcursor1 \
-    libxi6 \
-    libc6 \
-    libstdc++6 \
-    libgcc-s1 \
-    zlib1g \
-    libx11-6 \
-    libxext6 \
-    libxrender1 \
-    libxtst6 \
-    libxau6 \
-    libxdmcp6 \
-    libxcb1 \
-    libasound2 \
-    libpulse0 \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+EXPOSE 3000 41451
 
-# Create non-root user for running Unreal Engine
-RUN useradd -m -s /bin/bash -u 1000 ue4 && \
-    echo "ue4 ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-
-# Set working directory
-WORKDIR /app
-
-# Copy the extracted binary from downloader stage
-COPY --from=downloader /app /app
-
-# Change ownership to non-root user
-RUN chown -R ue4:ue4 /app
-
-# Verify Vulkan installation (optional, for debugging)
-RUN vulkaninfo --summary || echo "Vulkan info check complete"
-
-RUN mkdir -p /home/ue4/Documents/AirSim && \ 
-    touch /home/ue4/Documents/AirSim/settings.json && \
-    touch /home/ue4/Documents/AirSim/cesium.json && \
-    ln -sf /home/ue4/Documents/AirSim/settings.json /home/ue4/Documents/AirSim\\settings.json && \
-    ln -sf /home/ue4/Documents/AirSim/cesium.json /home/ue4/Documents/AirSim\\cesium.json
-
-# Switch to non-root user
-USER ue4
-
-# Expose ports
-# Port 3000 for the UI (from DRV docs)
-# Port 41451 for AirSim RPC
-# Port 8888 for PixelStreaming (if using that feature)
-EXPOSE 3000 41451 8888
-
-# Default command - run with graphicsadapter flag as shown in docs
-CMD ["./Blocks.sh", "-RenderOffscreen", "-graphicsadapter=0"]
+ENTRYPOINT ["/usr/local/bin/drv-entrypoint"]
+CMD ["-AudioMixer", "-RenderOffscreen", "-PixelStreamingURL=ws://signalling:8888", "-ResX=1920", "-ResY=1080", "-ForceRes", "-Unattended", "-NoSplash", "-StdOut", "-FullStdOutLogOutput", "-PixelStreamingWebRTCMinPort=49160", "-PixelStreamingWebRTCMaxPort=49200"]

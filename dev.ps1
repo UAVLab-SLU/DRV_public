@@ -1,216 +1,109 @@
-
-    Write-Host "If you get an execution policy error, run this once:"
-    Write-Host ""
-    Write-Host "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"
-    Write-Host ""
-
-# DroneWorld Development Helper Script (PowerShell)
-# Usage: .\dev.ps1 [command]
-
 param(
-    [Parameter(Position=0)]
-    [string]$Command
+    [Parameter(Position = 0)]
+    [string]$Command = "help"
 )
 
-function Set-AirSim-Settings-Dir {
-    if ([string]::IsNullOrWhiteSpace($env:AIRSIM_SETTINGS_DIR)) {
-        $defaultAirSimDir = Join-Path $HOME "Documents\AirSim"
-        New-Item -ItemType Directory -Force -Path $defaultAirSimDir | Out-Null
-        $env:AIRSIM_SETTINGS_DIR = $defaultAirSimDir
-        Write-Host "Using AirSim settings directory: $env:AIRSIM_SETTINGS_DIR" -ForegroundColor Cyan
-    }
-}
+$ErrorActionPreference = "Stop"
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -LiteralPath $ScriptDir
 
-function Check-Token {
-    # Check if token is in environment
+function Import-GitHubToken {
     if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
-        return $true
-    }
-    
-    # Check if token is in .env file and auto-export it
-    if (Test-Path ".env") {
-        $envContent = Get-Content ".env"
-        $tokenLine = $envContent | Where-Object { $_ -match "^GITHUB_TOKEN=" }
-        if ($tokenLine) {
-            $token = $tokenLine -replace "^GITHUB_TOKEN=", ""
-            if (-not [string]::IsNullOrWhiteSpace($token)) {
-                $env:GITHUB_TOKEN = $token
-                Write-Host "Loaded GITHUB_TOKEN from .env" -ForegroundColor Green
-                return $true
-            }
-        }
-    }
-    
-    Write-Host "GITHUB_TOKEN not found." -ForegroundColor Yellow
-    Write-Host "Run '.\dev.ps1 token' to set it up." -ForegroundColor Yellow
-    return $false
-}
-
-function Set-Token {
-    Write-Host "Setting up GITHUB_TOKEN..." -ForegroundColor Green
-    Write-Host ""
-    
-    # Check if token already exists in .env
-    if (Test-Path ".env") {
-        $envContent = Get-Content ".env"
-        $tokenLine = $envContent | Where-Object { $_ -match "^GITHUB_TOKEN=" }
-        if ($tokenLine) {
-            $currentToken = $tokenLine -replace "^GITHUB_TOKEN=", ""
-            if (-not [string]::IsNullOrWhiteSpace($currentToken)) {
-                $preview = $currentToken.Substring(0, [Math]::Min(10, $currentToken.Length))
-                Write-Host "Found existing token in .env: $preview..." -ForegroundColor Green
-                $response = Read-Host "Use existing token? (Y/n)"
-                if ([string]::IsNullOrWhiteSpace($response) -or $response -match "^[Yy]$") {
-                    $env:GITHUB_TOKEN = $currentToken
-                    Write-Host "Token exported for current session" -ForegroundColor Green
-                    return
-                }
-            }
-        }
-    }
-    
-    # Prompt for new token
-    $secureToken = Read-Host "Enter your GitHub Personal Access Token" -AsSecureString
-    $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-    $token = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
-    
-    if ([string]::IsNullOrWhiteSpace($token)) {
-        Write-Host "No token provided" -ForegroundColor Red
         return
     }
-    
-    # Set environment variable for current session
-    $env:GITHUB_TOKEN = $token
-    
-    # Save to .env file in root
-    $envFile = ".env"
-    $tokenLine = "GITHUB_TOKEN=$token"
-    
-    if (Test-Path $envFile) {
-        $content = Get-Content $envFile
-        $found = $false
-        $newContent = $content | ForEach-Object {
-            if ($_ -match "^GITHUB_TOKEN=") {
-                $found = $true
-                $tokenLine
-            } else {
-                $_
-            }
+    if (Test-Path -LiteralPath ".env") {
+        $line = Get-Content -LiteralPath ".env" |
+            Where-Object { $_ -match '^GITHUB_TOKEN=(.+)$' } |
+            Select-Object -First 1
+        if ($line) {
+            $env:GITHUB_TOKEN = ($line -replace '^GITHUB_TOKEN=', '').Trim()
+            return
         }
-        
-        if ($found) {
-            $newContent | Set-Content $envFile
-            Write-Host "Updated GITHUB_TOKEN in .env" -ForegroundColor Green
-        } else {
-            Add-Content $envFile "`n$tokenLine"
-            Write-Host "Added GITHUB_TOKEN to .env" -ForegroundColor Green
-        }
-    } else {
-        $tokenLine | Set-Content $envFile
-        Write-Host "Created .env with GITHUB_TOKEN" -ForegroundColor Green
     }
-    
-    Write-Host "Token exported for current session" -ForegroundColor Green
+    throw "GITHUB_TOKEN is required when UAVLab-SLU/DRV-Unreal is private. Run '.\dev.ps1 token'."
 }
 
-function Print-Usage {
-    Write-Host ""
-    Write-Host "Usage: .\dev.ps1 [command]" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Commands:" -ForegroundColor Yellow
-    Write-Host "  token       - Set GITHUB_TOKEN for building simulator (required for 'full' and 'simulator')"
-    Write-Host "  full        - Start all services (frontend, backend, simulator)"
-    Write-Host "  dev         - Start development services only (frontend, backend)"
-    Write-Host "  frontend    - Start frontend only"
-    Write-Host "  backend     - Start backend only"
-    Write-Host "  simulator   - Start simulator only"
-    Write-Host "  logs        - Follow logs for dev services"
-    Write-Host "  logs-all    - Follow logs for all services"
-    Write-Host "  stop        - Stop all services"
-    Write-Host "  stop-dev    - Stop development services only"
-    Write-Host "  clean       - Stop and remove all containers and volumes"
-    Write-Host "  help        - Show this help message"
-    Write-Host ""
-    Write-Host "Examples:" -ForegroundColor Cyan
-    Write-Host "  .\dev.ps1 token        # Set GitHub token (needed before 'full' or 'simulator')"
-    Write-Host "  .\dev.ps1 dev          # Quick start for development"
-    Write-Host "  .\dev.ps1 full         # Start everything including simulator"
-    Write-Host ""
-    Write-Host "If you get an execution policy error, run this once:" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser"
-    Write-Host ""
+function Set-GitHubToken {
+    $secureToken = Read-Host "GitHub personal access token" -AsSecureString
+    $pointer = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+    try {
+        $token = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
+    }
+    finally {
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
+    }
+    if ([string]::IsNullOrWhiteSpace($token)) {
+        throw "No token provided."
+    }
+
+    $content = if (Test-Path -LiteralPath ".env") { Get-Content -LiteralPath ".env" } else { @() }
+    $filtered = @($content | Where-Object { $_ -notmatch '^GITHUB_TOKEN=' })
+    @($filtered; "GITHUB_TOKEN=$token") | Set-Content -LiteralPath ".env"
+    $env:GITHUB_TOKEN = $token
+    Write-Host "Saved GITHUB_TOKEN in .env."
+}
+
+function Set-PixelStreamPublicIP {
+    if (-not [string]::IsNullOrWhiteSpace($env:PIXELSTREAM_PUBLIC_IP)) {
+        return
+    }
+    if (Test-Path -LiteralPath ".env") {
+        $line = Get-Content -LiteralPath ".env" |
+            Where-Object { $_ -match '^PIXELSTREAM_PUBLIC_IP=(.+)$' } |
+            Select-Object -First 1
+        if ($line) {
+            $env:PIXELSTREAM_PUBLIC_IP = ($line -replace '^PIXELSTREAM_PUBLIC_IP=', '').Trim()
+            return
+        }
+    }
+    $network = Get-NetIPConfiguration -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq 'Up' -and $_.IPv4Address } |
+        Select-Object -First 1
+    $env:PIXELSTREAM_PUBLIC_IP = if ($network) { $network.IPv4Address.IPAddress } else { "127.0.0.1" }
+}
+
+function Sync-UnrealRelease {
+    Import-GitHubToken
+    & "$ScriptDir\download_sim_release.ps1" -Tag latest
+    $env:DRV_RELEASE_TAG = (Get-Content -LiteralPath "$ScriptDir\sim\release\.release-tag" -Raw).Trim()
+}
+
+function Get-PixelStreamHttpPort {
+    if ([string]::IsNullOrWhiteSpace($env:PIXELSTREAM_HTTP_PORT)) {
+        return "8888"
+    }
+    return $env:PIXELSTREAM_HTTP_PORT
+}
+
+function Show-Usage {
+    Write-Host "Usage: .\dev.ps1 COMMAND"
+    Write-Host "Commands: token, full, dev, frontend, backend, simulator, logs, logs-all, stop, stop-dev, clean"
 }
 
 switch ($Command) {
-    "token" {
-        Set-Token
-    }
+    "token" { Set-GitHubToken }
     "full" {
-        if (-not (Check-Token)) {
-            Write-Host ""
-            $response = Read-Host "Continue without token? The simulator will fail to build. (y/N)"
-            if ($response -notmatch "^[Yy]$") {
-                exit 1
-            }
-        }
-        Write-Host "Starting full stack (frontend + backend + simulator)..." -ForegroundColor Green
-        docker-compose up
+        Set-PixelStreamPublicIP
+        Sync-UnrealRelease
+        Write-Host "Pixel Stream URL: http://localhost:$(Get-PixelStreamHttpPort)"
+        docker compose up --build
     }
-    "dev" {
-        Set-AirSim-Settings-Dir
-        Write-Host "Starting development services (frontend + backend only)..." -ForegroundColor Green
-        docker-compose -f docker-compose.dev.yaml up
-    }
-    "frontend" {
-        Write-Host "Starting frontend only..." -ForegroundColor Green
-        docker-compose up frontend
-    }
-    "backend" {
-        Set-AirSim-Settings-Dir
-        Write-Host "Starting backend only..." -ForegroundColor Green
-        docker-compose up backend
-    }
+    "dev" { docker compose -f docker-compose.dev.yaml up }
+    "frontend" { docker compose up frontend }
+    "backend" { docker compose up backend }
     "simulator" {
-        if (-not (Check-Token)) {
-            Write-Host ""
-            $response = Read-Host "Continue without token? The simulator will fail to build. (y/N)"
-            if ($response -notmatch "^[Yy]$") {
-                exit 1
-            }
-        }
-        Write-Host "Starting simulator only..." -ForegroundColor Green
-        docker-compose up drv-unreal
+        Set-PixelStreamPublicIP
+        Sync-UnrealRelease
+        Write-Host "Pixel Stream URL: http://localhost:$(Get-PixelStreamHttpPort)"
+        docker compose up --build signalling drv-unreal
     }
-    "logs" {
-        Write-Host "Following development service logs..." -ForegroundColor Green
-        docker-compose -f docker-compose.dev.yaml logs -f frontend backend
-    }
-    "logs-all" {
-        Write-Host "Following all service logs..." -ForegroundColor Green
-        docker-compose logs -f
-    }
-    "stop" {
-        Write-Host "Stopping all services..." -ForegroundColor Yellow
-        docker-compose down
-    }
-    "stop-dev" {
-        Write-Host "Stopping development services..." -ForegroundColor Yellow
-        docker-compose -f docker-compose.dev.yaml down
-    }
+    "logs" { docker compose -f docker-compose.dev.yaml logs -f frontend backend }
+    "logs-all" { docker compose logs -f }
+    "stop" { docker compose down }
+    "stop-dev" { docker compose -f docker-compose.dev.yaml down }
     "clean" {
-        Write-Host "Cleaning up all containers and volumes..." -ForegroundColor Yellow
-        docker-compose down -v
-        docker-compose -f docker-compose.dev.yaml down -v
-        Write-Host "Cleanup complete" -ForegroundColor Green
+        docker compose down -v
+        docker compose -f docker-compose.dev.yaml down -v
     }
-    { $_ -eq "help" -or $_ -eq "" -or $null -eq $_ } {
-        Print-Usage
-    }
-    default {
-        Write-Host "Unknown command: $Command" -ForegroundColor Red
-        Print-Usage
-        exit 1
-    }
+    default { Show-Usage }
 }

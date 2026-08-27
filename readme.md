@@ -23,9 +23,10 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 ### Docker Deployment (Recommended)
 
 - **Docker** and **Docker Compose**
-- **macOS** (Apple Silicon or Intel) / **Linux** / **Windows with WSL2**
-- 8GB+ RAM recommended
-- 20GB+ available disk space
+- **Linux**, **macOS**, or **Windows with WSL2** for frontend/backend services
+- **Native Linux with an NVIDIA GPU and NVIDIA Container Toolkit** for the Dockerized Unreal Pixel Stream
+- 16GB+ RAM recommended for the Unreal workflow
+- 25GB+ available disk space
 
 ### Traditional Deployment
 
@@ -37,7 +38,7 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 
 DroneReqValidator has 3 main components:
 
-1. **DRV-Unreal** - Unreal-based simulation engine (headless mode)
+1. **DRV-Unreal** - Unreal-based simulation engine with offscreen GPU rendering
 2. **Flask Backend** - Python-based simulation controller and monitoring service
 3. **React Frontend** - JavaScript-based user interface for configuration and visualization
 
@@ -49,11 +50,11 @@ Ensure Docker and Docker Compose are installed on your system.
 
 ### GitHub Token (Required for Simulator)
 
-The simulator (`drv-unreal`) requires a GitHub Personal Access Token to build. If you're only working on frontend/backend, you can skip this step. See setup instructions in [Troubleshooting](#set-up-github-token).
+The simulator helper uses a GitHub Personal Access Token to download the latest private `UAVLab-SLU/DRV-Unreal` Linux release before building. The token is not passed into the Docker build. If you're only working on frontend/backend, you can skip this step. See setup instructions in [Troubleshooting](#set-up-github-token).
 
 ### Using Helper Scripts (Recommended)
 
-**Linux/macOS:**
+**Linux:**
 
 ```bash
 # First time: Set GitHub token (only needed for simulator)
@@ -62,7 +63,7 @@ The simulator (`drv-unreal`) requires a GitHub Personal Access Token to build. I
 # Development mode (frontend + backend only)
 ./dev.sh dev
 
-# Full stack (includes simulator)
+# Full stack (downloads the latest simulator release)
 ./dev.sh full
 
 # View logs
@@ -72,7 +73,7 @@ The simulator (`drv-unreal`) requires a GitHub Personal Access Token to build. I
 ./dev.sh stop
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell, frontend/backend workflow):**
 
 ```powershell
 # First time: Set GitHub token (only needed for simulator)
@@ -80,9 +81,6 @@ The simulator (`drv-unreal`) requires a GitHub Personal Access Token to build. I
 
 # Development mode (frontend + backend only)
 .\dev.ps1 dev
-
-# Full stack (includes simulator)
-.\dev.ps1 full
 
 # View logs
 .\dev.ps1 logs
@@ -98,11 +96,11 @@ Run `./dev.sh help` or `.\dev.ps1 help` to see all available commands.
 Run all services including the simulation engine:
 
 ```bash
-./dev.sh full           # Linux/macOS
-.\dev.ps1 full          # Windows
+./dev.sh full           # Native Linux NVIDIA host
 
 # Or directly:
-docker-compose up
+./download_sim_release.sh latest
+docker compose up --build
 ```
 
 **Services started:**
@@ -110,6 +108,7 @@ docker-compose up
 - Frontend UI (http://localhost:3000)
 - Backend API (http://localhost:5000)
 - Simulation Engine (http://localhost:3001)
+- Simulation Pixel Stream (http://localhost:8888)
 - Storage services
 
 ### Option 2: Frontend/Backend Only (Recommended for Development)
@@ -276,12 +275,9 @@ docker-compose up frontend
 
 ### Headless Simulation
 
-The DRV-Unreal simulation engine runs in **headless mode** using the `-nullrhi` flag, which:
+The DRV-Unreal simulation engine uses `-RenderOffscreen` on a native Linux NVIDIA GPU. This keeps Vulkan rendering active without a desktop window so Pixel Streaming can capture frames.
 
-- Bypasses GPU rendering requirements
-- Enables deployment on servers without graphics hardware
-- Works on Apple Silicon Macs via QEMU emulation
-- Reduces resource consumption while maintaining physics simulation
+Do not use `-nullrhi` for Pixel Streaming. Null RHI disables the frame-producing render path. Docker Desktop on Windows is not a supported Vulkan host for this Linux Unreal image. See [the Linux handoff](docs/unreal-linux-handoff.md) for prerequisites, investigation results, and acceptance criteria.
 
 ### Network Communication
 

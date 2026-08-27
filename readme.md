@@ -110,6 +110,10 @@ release. 7-Zip is required because the release can contain a split
 See [the Windows native simulator guide](docs/unreal-windows-native.md) for
 configuration, ports, logs, and troubleshooting.
 
+The frontend Simulator tab provides Start Unreal and Shut down controls when
+the application was launched through `dev.ps1`. The control endpoint is bound
+to Windows loopback only.
+
 ### Option 1: Full Stack (Recommended for Testing)
 
 Run all services including the simulation engine on a native Linux NVIDIA

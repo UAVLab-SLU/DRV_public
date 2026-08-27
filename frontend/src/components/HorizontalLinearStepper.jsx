@@ -10,7 +10,7 @@ import Tabs from "@mui/material/Tabs";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mapControls } from "../constants/map";
 import { useMainJson } from "../contexts/MainJsonContext";
@@ -34,6 +34,19 @@ export default function HorizontalLinearStepper({ desc, title }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [activeDroneLumeTask, setActiveDroneLumeTask] = useState(null);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/state`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((state) => {
+        if (state?.state === "dronelume_map" && state.task_id) {
+          setActiveDroneLumeTask(state.task_id);
+          setSubmitSuccess(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function buildDronePayload() {
     return mainJson.getAllDrones().map((d) => {
@@ -64,17 +77,32 @@ export default function HorizontalLinearStepper({ desc, title }) {
   }
 
   async function submitTask() {
+    const isDroneLume = mainJson.environment?.SceneMode === "dronelume";
     const drones = buildDronePayload();
     if (!drones.length) { setSubmitError("No drones configured."); return; }
     const environment = buildEnvPayload(mainJson.environment);
-    if (!environment) { setSubmitError("Environment not configured."); return; }
+    if (!isDroneLume && !environment) { setSubmitError("Environment not configured."); return; }
 
-    const payload = {
-      Drones: drones,
-      environment,
-      ...(mainJson.monitors  ? { monitors:  mainJson.monitors  } : {}),
-      ...(mainJson.FuzzyTest ? { FuzzyTest: mainJson.FuzzyTest } : {}),
-    };
+    if (isDroneLume && !mainJson.environment.DroneLumeConfig) {
+      setSubmitError("Configure and validate DroneLume InitDSL before running.");
+      return;
+    }
+
+    const payload = isDroneLume
+      ? {
+          mode: "dronelume",
+          Drones: drones,
+          dronelume: {
+            source: mainJson.environment.DroneLumeSource ?? "manual",
+            init_dsl: mainJson.environment.DroneLumeConfig,
+          },
+        }
+      : {
+          Drones: drones,
+          environment,
+          ...(mainJson.monitors  ? { monitors:  mainJson.monitors  } : {}),
+          ...(mainJson.FuzzyTest ? { FuzzyTest: mainJson.FuzzyTest } : {}),
+        };
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -85,11 +113,32 @@ export default function HorizontalLinearStepper({ desc, title }) {
       });
       const text = await res.text();
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
+      const result = JSON.parse(text);
       setSubmitSuccess(true);
-      setTimeout(() => navigate("/report-dashboard"), 1500);
+      if (isDroneLume) {
+        setActiveDroneLumeTask(result.task_id);
+      } else {
+        setTimeout(() => navigate("/report-dashboard"), 1500);
+      }
     } catch (err) {
       console.error("Submit failed:", err);
       setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function stopDroneLume() {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const response = await fetch(`${BASE_URL}/api/dronelume/stop`, { method: "POST" });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+      setActiveDroneLumeTask(null);
+      navigate("/report-dashboard");
+    } catch (error) {
+      setSubmitError(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -233,14 +282,20 @@ export default function HorizontalLinearStepper({ desc, title }) {
               )}
               {submitSuccess && (
                 <Typography sx={{ color: tokens.status.success }} variant="caption">
-                  Task queued! Redirecting…
+                  {activeDroneLumeTask
+                    ? `DroneLume active (${activeDroneLumeTask}). Stop it to return Unreal to the main menu.`
+                    : "Task queued! Redirecting…"}
                 </Typography>
               )}
             </Box>
 
             <Button
               variant="contained"
-              onClick={activeStep === STEPS.length - 1 ? submitTask : () => setActiveStep((s) => s + 1)}
+              onClick={activeDroneLumeTask
+                ? stopDroneLume
+                : activeStep === STEPS.length - 1
+                  ? submitTask
+                  : () => setActiveStep((s) => s + 1)}
               disabled={submitting}
               sx={{
                 bgcolor: tokens.brand.secondary,
@@ -249,17 +304,39 @@ export default function HorizontalLinearStepper({ desc, title }) {
                 fontWeight: 700,
               }}
             >
-              {activeStep === STEPS.length - 1 ? (submitting ? "Submitting…" : "Run Simulation") : "Next"}
+              {activeDroneLumeTask
+                ? (submitting ? "Stopping…" : "Stop DroneLume")
+                : activeStep === STEPS.length - 1
+                  ? (submitting ? "Submitting…" : "Run Simulation")
+                  : "Next"}
             </Button>
           </Box>
         </Box>
 
         {/* Right: Cesium map */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <ControlsDisplay mapControl={mapControls[activeScreen] ?? mapControls.default} />
-          <Box sx={{ flex: 1 }}>
-            <CesiumMap />
-          </Box>
+          {mainJson.environment?.SceneMode === "dronelume" ? (
+            <Box sx={{ flex: 1, display: "grid", placeItems: "center", p: 4, bgcolor: tokens.surface.canvas }}>
+              <Box sx={{ maxWidth: 520, textAlign: "center" }}>
+                <Typography variant="h5" sx={{ color: tokens.text.primary, fontWeight: 700, mb: 1 }}>
+                  DroneLume scene
+                </Typography>
+                <Typography sx={{ color: tokens.text.secondary, mb: 2 }}>
+                  The Unreal scene is generated from InitDSL, so a Cesium simulation origin is not used.
+                </Typography>
+                <Typography variant="body2" sx={{ color: tokens.brand.soft }}>
+                  {mainJson.environment.DroneLumeConfig?.Scenario?.Metadata?.name ?? "Open the Environment step to configure InitDSL."}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <>
+              <ControlsDisplay mapControl={mapControls[activeScreen] ?? mapControls.default} />
+              <Box sx={{ flex: 1 }}>
+                <CesiumMap />
+              </Box>
+            </>
+          )}
         </Box>
       </Box>
     </Box>

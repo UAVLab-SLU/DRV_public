@@ -6,6 +6,10 @@ TURN relay, frontend, backend, and storage services. The browser player remains
 available at <http://localhost:8888>, and the frontend embeds it at
 <http://localhost:3000/simulator>.
 
+The Simulator page includes Start Unreal, Shut down, and Refresh controls. A
+small PowerShell control service listens only on `127.0.0.1:8890` and translates
+those browser requests into the same guarded simulator helper commands.
+
 ## Prerequisites
 
 - Windows 10 or 11
@@ -30,6 +34,11 @@ This starts the regular application services, downloads the latest Windows
 release when necessary, extracts it, starts the signalling service, and runs
 the packaged executable with offscreen rendering. Open
 <http://localhost:3000/simulator> to use the embedded stream.
+
+Before starting the backend, the full workflow discovers the packaged
+`DRV\Config` directory and mounts it at `/app/dronelume-config`. DroneLume
+submissions therefore update the `InitDSL.json` read by the same native Unreal
+package that is running.
 
 To start only signalling and Unreal:
 
@@ -75,6 +84,7 @@ Useful direct commands are:
 - TCP and UDP 3478: TURN listener
 - UDP 49160 through 49200: TURN relay range
 - `http://localhost:3000/simulator`: DRV frontend with the player embedded
+- `http://127.0.0.1:8890`: loopback-only Windows simulator control API
 
 Port 8889 is separate because the signalling container already publishes its
 browser UI on host port 8888. Unreal is launched with:
@@ -89,8 +99,18 @@ browser UI on host port 8888. Unreal is launched with:
 
 Set `PIXELSTREAM_HTTP_PORT`, `PIXELSTREAM_STREAMER_PORT`, or
 `VITE_PIXELSTREAM_URL` in `.env` when the defaults conflict with another local
-service. The URL must be reachable by the user's browser, so do not use a
-Docker-only service name for `VITE_PIXELSTREAM_URL`.
+service. Set `SIMULATOR_CONTROL_PORT` and `VITE_SIMULATOR_CONTROL_URL` together
+to change the control port. The URLs must be reachable by the user's browser,
+so do not use Docker-only service names.
+
+The control API accepts only `GET /status`, `POST /start`, `POST /stop`, and
+`POST /shutdown`. It is not published through Docker and does not bind to a LAN
+interface.
+
+Local Cesium and backend credentials remain outside the repository history.
+`CESIUM_CREDENTIALS_DIR` can point Compose to an existing credentials folder,
+and `BACKEND_ENV_FILE` can point it to an existing ignored backend `.env` file
+when running from a separate worktree.
 
 ## Operations and verification
 
@@ -127,5 +147,8 @@ root.
 - If the embedded player is blank while port 8888 works separately, verify
   `VITE_PIXELSTREAM_URL=http://localhost:8888` and recreate the frontend
   container so Vite receives the updated environment value.
+- If the start and shutdown controls are unavailable, launch through
+  `.\dev.ps1 full` or `.\dev.ps1 simulator`. Those commands start the loopback
+  control service automatically.
 - If Windows asks for firewall permission, allow the packaged Unreal executable
   on the network profile used by Docker Desktop.

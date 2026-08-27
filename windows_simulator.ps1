@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("start", "stop", "status", "download")]
+    [ValidateSet("start", "stop", "status", "download", "config-dir")]
     [string]$Command = "start",
     [string]$Tag = "latest",
     [string]$ReleaseRoot = $env:DRV_WINDOWS_RELEASE_DIR,
@@ -253,6 +253,28 @@ function Get-InstalledExecutable {
     return Install-WindowsRelease
 }
 
+function Get-DroneLumeConfigDirectory {
+    $executable = Get-InstalledExecutable
+    $candidates = @(
+        (Join-Path $executable.Directory.FullName "$($executable.BaseName)\Config"),
+        (Join-Path $executable.Directory.FullName "DRV\Config")
+    )
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate -PathType Container) {
+            return [System.IO.Path]::GetFullPath($candidate)
+        }
+    }
+
+    $configDirectory = Get-ChildItem -LiteralPath $ReleaseRoot -Directory -Recurse -Filter "Config" |
+        Where-Object { $_.Parent.Name -match '^(DRV|Blocks|SADE_drone_rep)$' } |
+        Sort-Object @{ Expression = { $_.FullName.Length } } |
+        Select-Object -First 1
+    if (-not $configDirectory) {
+        throw "No packaged DroneLume Config directory was found under $ReleaseRoot."
+    }
+    return $configDirectory.FullName
+}
+
 function Get-DRVProcesses {
     return Get-CimInstance Win32_Process -Filter "Name='DRV.exe' OR Name='Blocks.exe' OR Name='SADE_drone_rep.exe'" |
         Where-Object {
@@ -349,6 +371,7 @@ function Start-DRVSimulator {
 
 switch ($Command) {
     "download" { Install-WindowsRelease | Out-Null }
+    "config-dir" { Write-Output (Get-DroneLumeConfigDirectory) }
     "start" { Start-DRVSimulator }
     "stop" { Stop-DRVSimulator }
     "status" {

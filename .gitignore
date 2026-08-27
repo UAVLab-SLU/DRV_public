@@ -52,15 +52,18 @@ desktop.ini
 # Ignore Google Cloud service account key
 key.json
 
-# Ignore config directory; so that changes wont be made to it 
-config/
-config/fake-gcs-data/
+# Keep only the empty DroneLume mount point. Runtime configuration stays local.
+config/*
+!config/dronelume/
+config/dronelume/*
+!config/dronelume/.gitkeep
 
 # Downloaded packaged Unreal releases are local Docker build inputs.
 sim/release/
 sim/release-staging-*/
 sim/*.zip
 sim/windows-release/
+sim/windows-control.pid
 
 # MaOS system files
 .DS_Store

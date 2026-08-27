@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
@@ -27,6 +28,7 @@ import { EnvironmentModel } from "../model/EnvironmentModel";
 import { SadeModel } from "../model/SadeModel";
 import { useThemeTokens } from "../theme/palette";
 import { imageUrls } from "../utils/const";
+import DroneLumeConfigDialog from "./dronelume/DroneLumeConfigDialog";
 
 const WIND_DIRECTIONS = ["N", "S", "E", "W", "NE", "SE", "SW", "NW"];
 const WIND_TYPES = ["Constant Wind", "Turbulent Wind"];
@@ -45,6 +47,7 @@ const PANEL_SX = {
 
 export default function EnvironmentConfiguration() {
   const {
+    mainJson,
     envJson,
     setEnvJson,
     setActiveScreen,
@@ -60,6 +63,7 @@ export default function EnvironmentConfiguration() {
   const [time, setTime] = useState(
     envJson.time ? dayjs(envJson.time) : dayjs("2020-01-01 10:00"),
   );
+  const [droneLumeDialogOpen, setDroneLumeDialogOpen] = useState(false);
 
   useEffect(() => {
     setActiveScreen?.(tabEnums.ENV_REGION);
@@ -102,6 +106,25 @@ export default function EnvironmentConfiguration() {
     setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
   };
 
+  const selectGeospatialMode = () => {
+    envJson.SceneMode = "geospatial";
+    envJson.UseGeo = true;
+    setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
+  };
+
+  const openDroneLume = () => {
+    setDroneLumeDialogOpen(true);
+  };
+
+  const saveDroneLume = (config, source) => {
+    envJson.SceneMode = "dronelume";
+    envJson.UseGeo = false;
+    envJson.DroneLumeConfig = config;
+    envJson.DroneLumeSource = source;
+    setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
+    setDroneLumeDialogOpen(false);
+  };
+
   const handleAddSadeZone = () => {
     const sade = new SadeModel(`Zone ${envJson.getSadesCount() + 1}`);
     envJson.addNewSade(sade);
@@ -125,6 +148,38 @@ export default function EnvironmentConfiguration() {
         <Typography variant="overline" sx={labelSx}>
           Simulation Origin
         </Typography>
+
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mb: 2 }}>
+          <Button
+            variant={envJson.SceneMode !== "dronelume" ? "contained" : "outlined"}
+            onClick={selectGeospatialMode}
+            fullWidth
+            sx={{ textTransform: "none" }}
+          >
+            Use geographic origin
+          </Button>
+          <Button
+            variant={envJson.SceneMode === "dronelume" ? "contained" : "outlined"}
+            onClick={openDroneLume}
+            fullWidth
+            sx={{ textTransform: "none" }}
+          >
+            Use DroneLume
+          </Button>
+        </Stack>
+
+        {envJson.SceneMode === "dronelume" ? (
+          <Alert
+            severity="success"
+            action={<Button color="inherit" size="small" onClick={openDroneLume}>Edit InitDSL</Button>}
+          >
+            DroneLume scene selected. No simulation origin is required.
+            {envJson.DroneLumeConfig?.Scenario?.Metadata?.name
+              ? ` Scenario: ${envJson.DroneLumeConfig.Scenario.Metadata.name}.`
+              : " Configure the scenario before running."}
+          </Alert>
+        ) : (
+          <>
 
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
           <InputLabel>Location</InputLabel>
@@ -200,7 +255,18 @@ export default function EnvironmentConfiguration() {
             </Box>
           </Tooltip>
         )}
+          </>
+        )}
       </Box>
+
+      <DroneLumeConfigDialog
+        open={droneLumeDialogOpen}
+        initialConfig={envJson.DroneLumeConfig}
+        initialSource={envJson.DroneLumeSource}
+        missionDrones={mainJson.getAllDrones()}
+        onClose={() => setDroneLumeDialogOpen(false)}
+        onSave={saveDroneLume}
+      />
 
       {/* ── Wind ───────────────────────────────────────── */}
       <Box sx={PANEL_SX}>

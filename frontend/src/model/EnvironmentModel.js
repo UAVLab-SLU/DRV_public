@@ -12,6 +12,9 @@ export class EnvironmentModel {
     this._windFuzzy = false;
     this._TimeOfDay = null;
     this._UseGeo = false;
+    this._SceneMode = 'geospatial';
+    this._DroneLumeConfig = null;
+    this._DroneLumeSource = 'manual';
     this._time = null;
     this._Wind = [];
     this._Origin = {
@@ -49,6 +52,18 @@ export class EnvironmentModel {
 
   get UseGeo() {
     return this._UseGeo;
+  }
+
+  get SceneMode() {
+    return this._SceneMode;
+  }
+
+  get DroneLumeConfig() {
+    return this._DroneLumeConfig;
+  }
+
+  get DroneLumeSource() {
+    return this._DroneLumeSource;
   }
 
   get time() {
@@ -98,6 +113,18 @@ export class EnvironmentModel {
 
   set UseGeo(value) {
     this._UseGeo = value;
+  }
+
+  set SceneMode(value) {
+    this._SceneMode = value;
+  }
+
+  set DroneLumeConfig(value) {
+    this._DroneLumeConfig = value;
+  }
+
+  set DroneLumeSource(value) {
+    this._DroneLumeSource = value;
   }
 
   set time(value) {
@@ -234,6 +261,9 @@ export class EnvironmentModel {
     model.setOriginName(instance._Origin.name);
     model.TimeOfDay = instance.TimeOfDay;
     model.UseGeo = instance.UseGeo;
+    model.SceneMode = instance.SceneMode ?? 'geospatial';
+    model.DroneLumeConfig = instance.DroneLumeConfig ?? null;
+    model.DroneLumeSource = instance.DroneLumeSource ?? 'manual';
     model.time = instance.time;
     model.Origin = instance.Origin;
     model.Wind = instance.Wind;
@@ -259,6 +289,9 @@ export class EnvironmentModel {
       origin: origin,
       time_of_day: this._TimeOfDay,
       use_geo: this.UseGeo,
+      scene_mode: this.SceneMode,
+      dronelume_config: this.DroneLumeConfig,
+      dronelume_source: this.DroneLumeSource,
       time: this._time,
       sades: this._sades?.map((obj) => obj.toJSONString()),
     };

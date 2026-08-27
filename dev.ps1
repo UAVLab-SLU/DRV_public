@@ -6,6 +6,51 @@ param(
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -LiteralPath $ScriptDir
+$ControlPort = if ($env:SIMULATOR_CONTROL_PORT) { $env:SIMULATOR_CONTROL_PORT } else { "8890" }
+$ControlPidFile = Join-Path $ScriptDir "sim\windows-control.pid"
+
+function Start-SimulatorControl {
+    try {
+        Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
+        return
+    }
+    catch {
+    }
+
+    $powerShellPath = (Get-Process -Id $PID).Path
+    $controlScript = Join-Path $ScriptDir "windows_simulator_control.ps1"
+    $skipArgument = if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") { " -SkipDownload" } else { "" }
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$controlScript`" -Port $ControlPort$skipArgument"
+    $process = Start-Process -FilePath $powerShellPath -ArgumentList $arguments -WindowStyle Hidden -PassThru
+    Set-Content -LiteralPath $ControlPidFile -Value $process.Id -NoNewline
+
+    $deadline = (Get-Date).AddSeconds(15)
+    do {
+        try {
+            Invoke-RestMethod -Uri "http://127.0.0.1:$ControlPort/status" -TimeoutSec 2 | Out-Null
+            return
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    } while ((Get-Date) -lt $deadline)
+    throw "The Windows simulator control service did not start on port $ControlPort."
+}
+
+function Stop-SimulatorControl {
+    try {
+        Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$ControlPort/shutdown" -TimeoutSec 3 | Out-Null
+    }
+    catch {
+        if (Test-Path -LiteralPath $ControlPidFile) {
+            $storedPid = (Get-Content -LiteralPath $ControlPidFile -Raw).Trim()
+            if ($storedPid -match '^\d+$') {
+                Stop-Process -Id ([int]$storedPid) -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+    Remove-Item -LiteralPath $ControlPidFile -Force -ErrorAction SilentlyContinue
+}
 
 function Show-Usage {
     Write-Host "Usage: .\dev.ps1 COMMAND"
@@ -14,25 +59,50 @@ function Show-Usage {
 
 switch ($Command) {
     "full" {
+        if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") {
+            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" config-dir -SkipDownload)
+        }
+        else {
+            & "$ScriptDir\windows_simulator.ps1" download
+            if ($LASTEXITCODE -ne 0) { throw "Unable to prepare the latest Windows simulator release." }
+            $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" config-dir)
+        }
+        Start-SimulatorControl
         docker compose up -d --build frontend backend fake-gcs
         if ($LASTEXITCODE -ne 0) { throw "Unable to start the application services." }
         & "$ScriptDir\windows_simulator.ps1" start
     }
-    "dev" { docker compose -f docker-compose.dev.yaml up }
-    "frontend" { docker compose up frontend }
+    "dev" {
+        Start-SimulatorControl
+        docker compose -f docker-compose.dev.yaml up
+    }
+    "frontend" {
+        Start-SimulatorControl
+        docker compose up frontend
+    }
     "backend" { docker compose up backend }
-    "simulator" { & "$ScriptDir\windows_simulator.ps1" start }
+    "simulator" {
+        Start-SimulatorControl
+        if ($env:DRV_WINDOWS_SKIP_DOWNLOAD -eq "1") {
+            & "$ScriptDir\windows_simulator.ps1" start -SkipDownload
+        }
+        else {
+            & "$ScriptDir\windows_simulator.ps1" start
+        }
+    }
     "simulator-stop" { & "$ScriptDir\windows_simulator.ps1" stop }
     "simulator-status" { & "$ScriptDir\windows_simulator.ps1" status }
     "logs" { docker compose -f docker-compose.dev.yaml logs -f frontend backend }
     "logs-all" { docker compose --profile windows-simulator logs -f }
     "stop" {
         & "$ScriptDir\windows_simulator.ps1" stop
+        Stop-SimulatorControl
         docker compose --profile windows-simulator down
     }
     "stop-dev" { docker compose -f docker-compose.dev.yaml down }
     "clean" {
         & "$ScriptDir\windows_simulator.ps1" stop
+        Stop-SimulatorControl
         docker compose --profile windows-simulator down -v
         docker compose -f docker-compose.dev.yaml down -v
     }

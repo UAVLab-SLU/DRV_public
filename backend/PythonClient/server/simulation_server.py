@@ -272,7 +272,11 @@ def assist_dronelume_config():
         return jsonify({'error': 'A JSON object is required', 'code': 'invalid_request'}), 400
     try:
         provider = get_scenario_model_provider(payload.get('provider'))
-        result = provider.generate(payload.get('messages'), get_dronelume_contract())
+        result = provider.generate(
+            payload.get('messages'),
+            get_dronelume_contract(),
+            payload.get('current_init_dsl'),
+        )
     except ScenarioProviderError as e:
         response = {'error': str(e), 'code': e.code}
         if hasattr(e, 'details'):

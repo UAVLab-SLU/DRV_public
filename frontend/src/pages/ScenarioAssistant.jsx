@@ -19,9 +19,10 @@ import { useThemeTokens } from "../theme/palette";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 const EXAMPLE_PROMPTS = [
-  "Create a person who loiters in a wooded environment.",
-  "Build an urban scenario where one person moves toward another person.",
-  "Can a person teleport behind another actor?",
+  "Create an active shooter scene in a densely populated area.",
+  "Create a maritime search and rescue mission for a drowning person.",
+  "Create a person wandering in the woods to simulate someone gone missing.",
+  "Create a scene with a lot of people, four explicit and the rest procedural.",
 ];
 
 function assistantText(result) {
@@ -49,7 +50,11 @@ export default function ScenarioAssistant() {
         if (!response.ok) throw new Error("The supported catalog could not be loaded");
         return response.json();
       })
-      .then(setContract)
+      .then((payload) => {
+        setContract(payload);
+        setRawDsl(JSON.stringify(payload.template, null, 2));
+        setDslValid(true);
+      })
       .catch((error) => {
         if (error.name !== "AbortError") setContractError(error.message);
       });
@@ -79,12 +84,19 @@ export default function ScenarioAssistant() {
   const sendMessage = async (providedInput) => {
     const content = String(providedInput ?? input).trim();
     if (!content || generating || !contract) return;
+    let currentInitDsl;
+    try {
+      currentInitDsl = JSON.parse(rawDsl);
+    } catch (error) {
+      setRequestError([{ path: "$", message: `Validate the current DSL before asking the assistant to edit it: ${error.message}` }]);
+      setDslValid(false);
+      return;
+    }
     const nextConversation = [...conversation, { role: "user", content }];
     setConversation(nextConversation);
     setInput("");
     setRequestError([]);
     setResult(null);
-    setDslValid(false);
     setGenerating(true);
 
     const controller = new AbortController();
@@ -98,7 +110,11 @@ export default function ScenarioAssistant() {
       const response = await fetch(`${BASE_URL}/api/dronelume/assist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider: "ollama", messages: nextConversation }),
+        body: JSON.stringify({
+          provider: "ollama",
+          messages: nextConversation,
+          current_init_dsl: currentInitDsl,
+        }),
         signal: controller.signal,
       });
       const payload = await response.json();
@@ -167,9 +183,9 @@ export default function ScenarioAssistant() {
     setConversation([]);
     setInput("");
     setResult(null);
-    setRawDsl("");
+    setRawDsl(JSON.stringify(contract?.template ?? {}, null, 2));
     setRequestError([]);
-    setDslValid(false);
+    setDslValid(Boolean(contract?.template));
   };
 
   const copyDsl = async () => navigator.clipboard.writeText(rawDsl);
@@ -197,7 +213,7 @@ export default function ScenarioAssistant() {
               Scenario Assistant
             </Typography>
             <Typography sx={{ color: tokens.text.secondary, mt: 0.5, maxWidth: 760 }}>
-              Describe a DroneLume world over several messages. The assistant asks for missing details, rejects unsupported capabilities, and returns DSL only after backend validation.
+              Describe the scenario you want. For recognized scenarios, the assistant proposes a validated baseline immediately and lets you adjust it conversationally.
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="flex-start">
@@ -227,7 +243,7 @@ export default function ScenarioAssistant() {
             <Box sx={{ p: 2.5, minHeight: 390, maxHeight: 540, overflowY: "auto" }}>
               {conversation.length === 0 ? (
                 <Box>
-                  <Typography sx={{ color: tokens.text.secondary, mb: 2 }}>Start with a rough idea. You do not need to provide every setting at once.</Typography>
+                  <Typography sx={{ color: tokens.text.secondary, mb: 2 }}>Start with a rough idea. The assistant will choose sensible supported defaults and show a ready baseline when the intent is clear.</Typography>
                   <Stack spacing={1}>
                     {EXAMPLE_PROMPTS.map((prompt) => (
                       <Button key={prompt} variant="outlined" onClick={() => sendMessage(prompt)} disabled={!contract} sx={{ justifyContent: "flex-start", textAlign: "left", textTransform: "none" }}>

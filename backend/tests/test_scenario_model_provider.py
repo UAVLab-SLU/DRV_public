@@ -141,7 +141,7 @@ class OllamaScenarioModelProviderTests(unittest.TestCase):
         self.assertEqual(raised.exception.status_code, 422)
         self.assertTrue(raised.exception.details)
 
-    def test_sparse_request_cannot_be_completed_with_model_invented_defaults(self):
+    def test_sparse_complete_request_keeps_supported_model_defaults(self):
         provider, _ = self.provider_for(encoded_response(
             "complete",
             "The scenario is ready.",
@@ -152,11 +152,170 @@ class OllamaScenarioModelProviderTests(unittest.TestCase):
             self.contract,
         )
 
+        self.assertEqual(result.status, "complete")
+        self.assertIsNotNone(result.init_dsl)
+        self.assertFalse(result.questions)
+
+    def test_four_known_sparse_intents_fall_back_to_ready_baselines(self):
+        cases = (
+            ("Create an active shooter scene in a densely populated area.", "ActiveShooterBaseline", "ActiveShooter"),
+            ("Create a maritime search and rescue mission for a drowning person.", "DrowningPersonBaseline", "Drowner"),
+            ("Create a person wandering in the woods to simulate someone gone missing.", "MissingPersonBaseline", "MissingPerson"),
+            ("Create a scene with a lot of people, four explicit and the rest procedural.", "ProceduralCrowdBaseline", "Civilian4"),
+        )
+        for prompt, expected_name, expected_actor in cases:
+            with self.subTest(prompt=prompt):
+                provider, session = self.provider_for(encoded_response(
+                    "clarify",
+                    "Please specify every setting.",
+                    questions=["Which supported level size should be used?"],
+                ))
+                result = provider.generate([{"role": "user", "content": prompt}], self.contract)
+
+                self.assertEqual(result.status, "complete")
+                self.assertFalse(result.questions)
+                self.assertEqual(result.init_dsl["Scenario"]["Metadata"]["name"], expected_name)
+                self.assertIn(expected_actor, result.init_dsl["Scenario"]["Actors"]["Dynamic"])
+                self.assertIn("Would you like any adjustments?", result.message)
+                system_prompt = session.last_request["json"]["messages"][0]["content"]
+                self.assertIn("Four fixture patterns are preferred baselines", system_prompt)
+
+    def test_known_intent_replaces_invalid_complete_dsl_with_validated_baseline(self):
+        document = copy.deepcopy(DRONELUME_TEMPLATE)
+        document["Scenario"]["Actors"]["Dynamic"] = {
+            "Shooter": {
+                "AssetName": "GenericHumanAICharacter",
+                "PawnIdentifier": "shooter",
+                "location": {"Cartesian": True, "x": 0, "y": 0, "z": 0},
+                "orientation": {"pitch": 0, "yaw": 0, "roll": 0},
+                "behavior": [{
+                    "action": "Attack",
+                    "target": "nonexistent_civilian",
+                    "duration": 10,
+                    "stage_name": "shooting",
+                    "trigger": "nonexistent_reaction",
+                }],
+            }
+        }
+        provider, _ = self.provider_for(encoded_response(
+            "complete",
+            "The active shooter scenario is ready.",
+            init_dsl=document,
+        ))
+
+        result = provider.generate([{
+            "role": "user",
+            "content": "Create an active shooter scene in a densely populated area.",
+        }], self.contract)
+
+        self.assertEqual(result.status, "complete")
+        self.assertEqual(result.init_dsl["Scenario"]["Metadata"]["name"], "ActiveShooterBaseline")
+        self.assertIn("replaced it with the validated fixture baseline", result.message)
+
+    def test_withdrawing_unsupported_drone_pursuit_allows_active_shooter_baseline(self):
+        provider, _ = self.provider_for(encoded_response(
+            "clarify",
+            "Please specify every setting.",
+            questions=["What should the scenario be named?"],
+        ))
+        result = provider.generate([
+            {
+                "role": "user",
+                "content": "Create an active shooter scene and have the drone pursue the shooter.",
+            },
+            {
+                "role": "assistant",
+                "content": "Drone pursuit is unsupported, but the active shooter scene is supported.",
+            },
+            {"role": "user", "content": "Forget the drone pursuit. Construct the rest."},
+        ], self.contract)
+
+        self.assertEqual(result.status, "complete")
+        self.assertEqual(result.init_dsl["Scenario"]["Metadata"]["name"], "ActiveShooterBaseline")
+
+    def test_shooter_loiter_edits_apply_to_current_preview_dsl(self):
+        baseline_provider, _ = self.provider_for(encoded_response(
+            "clarify",
+            "Please specify every setting.",
+            questions=["Which supported level size should be used?"],
+        ))
+        baseline = baseline_provider.generate([{
+            "role": "user",
+            "content": "Create an active shooter scene in a densely populated area.",
+        }], self.contract).init_dsl
+
+        cases = (
+            ("make the shooter's initial delay a bit longer", 20),
+            ("make the shooter's intial loiter 30 sec", 30),
+        )
+        for request, expected_duration in cases:
+            with self.subTest(request=request):
+                provider, session = self.provider_for(encoded_response(
+                    "unsupported",
+                    "This response should not be used.",
+                    unsupported=[{"request": "unused", "reason": "unused"}],
+                ))
+                result = provider.generate(
+                    [{"role": "user", "content": request}],
+                    self.contract,
+                    baseline,
+                )
+                loiter = next(
+                    behavior
+                    for behavior in result.init_dsl["Scenario"]["Actors"]["Dynamic"]["ActiveShooter"]["behavior"]
+                    if behavior["action"] == "Loiter"
+                )
+
+                self.assertEqual(result.status, "complete")
+                self.assertEqual(loiter["duration"], expected_duration)
+                self.assertIn("DSL preview now contains this change", result.message)
+                self.assertIsNone(session.last_request)
+
+    def test_current_preview_is_included_as_source_of_truth_for_model_edits(self):
+        current = copy.deepcopy(DRONELUME_TEMPLATE)
+        provider, session = self.provider_for(encoded_response(
+            "complete",
+            "Updated the current scenario.",
+            init_dsl=copy.deepcopy(current),
+        ))
+        provider.generate(
+            [{"role": "user", "content": "Rename the scenario."}],
+            self.contract,
+            current,
+        )
+
+        contexts = session.last_request["json"]["messages"]
+        self.assertTrue(any("current validated DSL preview" in item["content"] for item in contexts))
+
+    def test_clarification_during_edit_does_not_reset_authored_preview_to_baseline(self):
+        baseline_provider, _ = self.provider_for(encoded_response(
+            "clarify",
+            "Please specify every setting.",
+            questions=["Which supported level size should be used?"],
+        ))
+        baseline = baseline_provider.generate([{
+            "role": "user",
+            "content": "Create an active shooter scene in a densely populated area.",
+        }], self.contract).init_dsl
+        provider, _ = self.provider_for(encoded_response(
+            "clarify",
+            "I need one meaningful choice.",
+            questions=["Which actor should change?"],
+        ))
+
+        result = provider.generate(
+            [
+                {"role": "user", "content": "Create an active shooter scene."},
+                {"role": "assistant", "content": "The baseline is ready."},
+                {"role": "user", "content": "Change that behavior."},
+            ],
+            self.contract,
+            baseline,
+        )
+
         self.assertEqual(result.status, "clarify")
         self.assertIsNone(result.init_dsl)
-        self.assertTrue(result.questions)
-        self.assertFalse(any("coordinate" in question.lower() for question in result.questions))
-        self.assertIn("example DSL", result.message)
+        self.assertEqual(result.questions, ("Which actor should change?",))
 
     def test_timeout_has_a_distinct_gateway_status(self):
         session = FakeSession(error=TimeoutError())

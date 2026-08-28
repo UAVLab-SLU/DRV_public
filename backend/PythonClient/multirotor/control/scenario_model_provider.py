@@ -68,7 +68,7 @@ class ScenarioModelResponse:
 
 class ScenarioModelProvider(ABC):
     @abstractmethod
-    def generate(self, messages, contract):
+    def generate(self, messages, contract, current_init_dsl=None):
         """Return a structured conversational update without compiling runtime artifacts."""
 
 
@@ -105,15 +105,16 @@ def _system_prompt(contract):
 
 Your only supported world and action knowledge is the JSON contract below. Treat every catalog list as a strict allowlist. Do not invent assets, actions, parameters, fields, or capabilities.
 
-Work conversationally because the user will often provide an incomplete request:
+Work conversationally because the user will often provide a high-level request:
 1. Preserve facts from all conversation messages.
 2. If the request needs unsupported actions or assets, return status \"unsupported\" and name each unsupported part. Do not silently substitute it.
-3. If required scenario choices are missing or ambiguous, return status \"clarify\" and ask a short, focused set of questions. Do not choose values for the user, except for actor starting locations as described below. Required choices include the objective, level size/type, time, weather, actor types, and every requested actor behavior's supported action, duration, target or destination, and parameter when applicable.
-4. Return status \"complete\" only when the conversation contains enough information to construct the requested scenario. Then return exactly one InitDSL object in init_dsl.
-5. Never author Scenario.SuT. The Mission step owns it.
-6. Use relative Cartesian coordinates. Behavior targets refer to an existing dynamic actor by actor object key or PawnIdentifier. Attack and MoveToTarget require a valid target. MoveToLocation requires an x,y,z string.
-7. Use empty arrays and objects when a supported section has no entries. Keep metadata factual and concise. Use ISO date only if the user supplied a date.
-8. Treat each behavior entry as an atomic action and construct complex requests as a composite behavior graph. stage_name labels a behavior node. A nonempty trigger is a directed edge that invokes every behavior with a matching stage_name, including behaviors on other actors. Shared stage names intentionally support fan-out. Trigger cycles intentionally support repeating chains. Every nonempty trigger in generated DSL must resolve to at least one stage_name.
+3. When the user's intent is clear, choose sensible supported defaults for unspecified authoring details and return a nearly ready scenario immediately. Defaults may include the scenario name, objective, level settings, time, weather, actor placements, behavior durations, destinations, parameters, and procedural density. Summarize the choices in message and invite adjustments. Do not make the user configure every field through questions.
+4. Return status \"clarify\" only when a missing choice would materially change the scenario intent, such as two plausible scenario types, an unknown target, or mutually incompatible requests. Ask the smallest possible number of focused questions.
+5. Return status \"complete\" as soon as a valid baseline can represent the clear intent, even if the user did not specify every field. Return exactly one InitDSL object in init_dsl and use message to explain the baseline and ask whether they want adjustments.
+6. Never author Scenario.SuT. The Mission step owns it.
+7. Use relative Cartesian coordinates. Behavior targets refer to an existing dynamic actor by actor object key or PawnIdentifier. Attack and MoveToTarget require a valid target. MoveToLocation requires an x,y,z string.
+8. Use empty arrays and objects when a supported section has no entries. Keep metadata factual and concise. Use ISO date only if the user supplied a date.
+9. Treat each behavior entry as an atomic action and construct complex requests as a composite behavior graph. stage_name labels a behavior node. A nonempty trigger is a directed edge that invokes every behavior with a matching stage_name, including behaviors on other actors. Shared stage names intentionally support fan-out. Trigger cycles intentionally support repeating chains. Every nonempty trigger in generated DSL must resolve to at least one stage_name.
 
 Decision rules:
 - First map the user's natural-language scenario intent through catalog.fixture_patterns and catalog.action_intents. Scenario labels and real-world descriptions are not required to be literal action names. For example, active shooter and mass shooting are supported compositions using Attack, crowd actors, triggers, movement, and Flee.
@@ -121,9 +122,10 @@ Decision rules:
 - Construct the stage-trigger graph deliberately: assign stage_name labels to destination behaviors, set the preceding behavior's trigger to that exact label, and use one shared label when several actors should react together. An empty trigger is terminal and emits no transition.
 - Preserve actor keys, PawnIdentifier values, stage_name values, and trigger values exactly as supplied. Never rename one side of a target or trigger reference without renaming its matching declaration.
 - Every action listed in catalog.fixture_patterns is supported. Reuse the named fixture's composition as guidance while constructing a new scenario from the user's details.
+- Four fixture patterns are preferred baselines when their intent is recognized: InitDSL_ActiveShooter.json for an active shooter or mass shooting, InitDSL_Drown.json for maritime search and rescue involving a drowning person, InitDSL_Missing.json for a missing person wandering in woods, and InitDSL_PercCrowd.json for a large crowd. Start from these compositions and fill their demonstrated defaults instead of asking for routine settings.
 - Only return unsupported after checking whether all requested behavior can be composed from supported fixture patterns, action intents, assets, and actions. Name only the remaining unrepresentable capability. Teleport, speak, drive, and swim remain unsupported because no fixture composition implements them.
 - Never ask the user to confirm an unambiguous value already present in the conversation. Phrases such as \"medium urban level at 13:00\" explicitly supply size=medium, type=urban, and TimeOfDay=13:00.
-- Do not ask the user for actor starting x,y,z coordinates. When starting locations are absent, select relative Cartesian actor placements demonstrated in the closest example DSL and clearly state that choice in the response message. User-supplied coordinates always take precedence. This exception applies only to starting placement, not requested movement destinations.
+- Do not ask the user for routine values that have safe supported defaults. When values are absent, prefer the closest fixture's name, objective, level, time, weather, placements, durations, destinations, parameters, and procedural settings. User-supplied values always take precedence.
 - Do not require optional author, date, description, use-case, static actor, or procedural actor details. Empty values from the template are valid for those fields.
 - A phrase such as \"no procedural actors other than Seed 1\" supplies Actors.Procedural={{\"Seed\":1}}. A phrase such as \"no static actors\" supplies Actors.Static={{}}.
 
@@ -132,6 +134,297 @@ For clarify or unsupported responses, init_dsl must be null. For complete respon
 DroneLume knowledge contract:
 {json.dumps(knowledge, separators=(",", ":"), ensure_ascii=False)}
 """
+
+
+def _behavior(action, duration=0, *, target="", order="", location="", parameters="", stage_name="", trigger=""):
+    return {
+        "action": action,
+        "target": target,
+        "duration": duration,
+        "order": order,
+        "location": location,
+        "parameters": parameters,
+        "stage_name": stage_name,
+        "trigger": trigger,
+    }
+
+
+def _actor(asset_name, pawn_identifier, x, y, z=0, *, yaw=0, pitch=0, behavior=None):
+    actor = {
+        "AssetName": asset_name,
+        "PawnIdentifier": pawn_identifier,
+        "location": {"Cartesian": True, "x": x, "y": y, "z": z},
+        "orientation": {"pitch": pitch, "yaw": yaw, "roll": 0},
+    }
+    if behavior:
+        actor["behavior"] = behavior
+    return actor
+
+
+def _baseline_document(contract, name, objective, level, dynamic, procedural, static=None):
+    document = copy.deepcopy(contract["template"])
+    scenario = document["Scenario"]
+    scenario["Metadata"].update({
+        "name": name,
+        "Description": f"Baseline generated from the {name} fixture pattern.",
+        "UseCase": ["baseline"],
+    })
+    scenario["Goal"]["Objective"] = objective
+    scenario["Level"] = level
+    scenario["Actors"] = {
+        "Static": static or {},
+        "Dynamic": dynamic,
+        "Procedural": procedural,
+    }
+    return document
+
+
+def _scenario_baselines(contract):
+    terrain = {
+        "Terrain": {
+            "AssetName": "terrain_flat",
+            "location": {"Cartesian": True, "x": 0, "y": 0, "z": 0},
+            "orientation": {"pitch": 0, "yaw": 0, "roll": 0},
+        }
+    }
+    active_dynamic = {
+        "ActiveShooter": _actor(
+            "GenericHumanAICharacter", "shooter", 0, 0,
+            behavior=[
+                _behavior("SetMySpeed", 0.5, parameters="300.0", stage_name="set_shooter_speed"),
+                _behavior("Loiter", 15, parameters="300.0", stage_name="prepare_for_attack"),
+                _behavior("Attack", 15, target="Civilian1", stage_name="first_shooting", trigger="shots_fired_stage"),
+                _behavior("MoveToLocation", 1, location="1600,800,0", parameters="100.0", stage_name="leave_scene"),
+                _behavior("Flee", 10, parameters="800.0", stage_name="shooter_flee"),
+            ],
+        ),
+        "Civilian1": _actor(
+            "GenericHumanAICharacter", "civilian_1", 400, 300, yaw=180,
+            behavior=[
+                _behavior("SetMySpeed", 0.5, parameters="200.0", stage_name="set_civilian_speed"),
+                _behavior("Loiter", 20, parameters="300.0", stage_name="normal_activity"),
+                _behavior("SetMySpeed", 0.5, parameters="600.0", stage_name="shots_fired_stage", trigger="victim_flee"),
+                _behavior("MoveToLocation", 1, location="2000,1500,0", parameters="100.0", stage_name="victim_flee"),
+            ],
+        ),
+        "TriggerReceiver1": _actor(
+            "GenericHumanAICharacter", "receiver_1", 1000, 1000,
+            behavior=[
+                _behavior("Idle", 30, stage_name="waiting_for_alarm"),
+                _behavior("Flee", 10, order="A", parameters="800.0", stage_name="shots_fired_stage"),
+            ],
+        ),
+        "TriggerReceiver2": _actor(
+            "GenericHumanAICharacter", "receiver_2", 1000, -1000,
+            behavior=[
+                _behavior("Idle", 30, stage_name="waiting_for_alarm"),
+                _behavior("Flee", 10, order="A", parameters="800.0", stage_name="shots_fired_stage"),
+            ],
+        ),
+    }
+    active = _baseline_document(
+        contract,
+        "ActiveShooterBaseline",
+        "Simulate an active shooter attacking a civilian and fleeing while nearby civilians react",
+        {"size": "medium", "type": "urban", "TimeOfDay": "10:00", "Weather": {"type": "clear", "intensity": 0}},
+        active_dynamic,
+        {
+            "Seed": 651985,
+            "Buildings": {"AssetName": "PCG_building_default", "density": 0.9},
+            "Crowd": {"AssetName": "PCG_ped_crowd_1", "density": 0.9},
+        },
+        terrain,
+    )
+    drowning = _baseline_document(
+        contract,
+        "DrowningPersonBaseline",
+        "Locate a drowning person during a maritime search and rescue mission",
+        {"size": "medium", "type": "woods", "TimeOfDay": "13:00", "Weather": {"type": "fog", "intensity": 0.1}},
+        {"Drowner": _actor("BP_BuoyancyDrowner", "drowning_person", -128, -3407, pitch=90)},
+        {
+            "Seed": 1,
+            "Tree": {"AssetName": "PCG_tree_default", "density": 0.2},
+            "Grass": {"AssetName": "PCG_grass_default", "density": 0.2},
+        },
+    )
+    missing = _baseline_document(
+        contract,
+        "MissingPersonBaseline",
+        "Locate a missing person wandering in the woods",
+        {"size": "medium", "type": "woods", "TimeOfDay": "15:00", "Weather": {"type": "rain", "intensity": 0.7}},
+        {"MissingPerson": _actor("BP_MissingAICharacter", "missing_person", 1064, 6092)},
+        {
+            "Seed": 123456789,
+            "Tree": {"AssetName": "PCG_tree_default", "density": 0.5},
+            "Grass": {"AssetName": "PCG_grass_default", "density": 0.2},
+        },
+    )
+    crowd_dynamic = {}
+    for index, (x, y, yaw) in enumerate(
+        ((1000, 1000, 0), (1100, 1100, 180), (1200, 1200, 0), (1300, 1000, 0)),
+        start=1,
+    ):
+        crowd_dynamic[f"Civilian{index}"] = _actor(
+            "GenericHumanAICharacter", f"civilian_{index}", x, y, yaw=yaw,
+            behavior=[
+                _behavior("SetMySpeed", 0.5, parameters="600.0", stage_name="set_speed"),
+                _behavior("Loiter", 20, parameters="300.0", stage_name="normal_activity"),
+            ],
+        )
+    crowd = _baseline_document(
+        contract,
+        "ProceduralCrowdBaseline",
+        "Populate an urban area with four explicit pedestrians and a larger procedural crowd",
+        {"size": "medium", "type": "urban", "TimeOfDay": "16:00", "Weather": {"type": "fog", "intensity": 0.1}},
+        crowd_dynamic,
+        {
+            "Seed": 651985,
+            "Buildings": {"AssetName": "PCG_building_default", "density": 0.5},
+            "Crowd": {"AssetName": "PCG_ped_crowd_1", "density": 0.3},
+            "Grass": {"AssetName": "PCG_grass_default", "density": 0.2},
+        },
+        terrain,
+    )
+    return {
+        "active_shooter": active,
+        "drowning_person": drowning,
+        "missing_person": missing,
+        "procedural_crowd": crowd,
+    }
+
+
+_BASELINE_SUMMARIES = {
+    "active_shooter": "I prepared the active-shooter baseline: a medium urban scene with a shooter, three explicit civilians, a dense procedural crowd, a shots-fired reaction, civilian flight, and the shooter leaving the scene.",
+    "drowning_person": "I prepared the drowning-person baseline: a foggy medium search area with a BP_BuoyancyDrowner target and light procedural vegetation.",
+    "missing_person": "I prepared the missing-person baseline: a rainy medium wooded scene with a BP_MissingAICharacter target among procedural trees and grass.",
+    "procedural_crowd": "I prepared the procedural-crowd baseline: a medium urban scene with four explicit loitering civilians plus procedurally populated buildings, pedestrians, and grass.",
+}
+
+
+def _recognized_baseline_intent(messages):
+    text = " ".join(message["content"] for message in messages if message["role"] == "user").lower()
+    specific = []
+    if re.search(r"\b(active shooter|mass shooting|gunman|shooting)\b", text):
+        specific.append("active_shooter")
+    if re.search(r"\b(drowning|drowner|water rescue|maritime|marine[- ]time)\b", text):
+        specific.append("drowning_person")
+    if re.search(r"\b(missing person|gone missing|lost person)\b", text) or (
+        re.search(r"\b(wander|wandering|lost)\b", text) and re.search(r"\b(woods|forest)\b", text)
+    ):
+        specific.append("missing_person")
+    if len(set(specific)) == 1:
+        return specific[0]
+    if specific:
+        return None
+    if re.search(r"\b(crowd|many people|many pedestrians|a lot of people|densely populated)\b", text):
+        return "procedural_crowd"
+    return None
+
+
+def _baseline_response(intent, contract):
+    return {
+        "status": "complete",
+        "message": _BASELINE_SUMMARIES[intent] + " The DSL is ready to use. Would you like any adjustments?",
+        "questions": [],
+        "unsupported": [],
+        "init_dsl": _scenario_baselines(contract)[intent],
+    }
+
+
+def _validate_current_dsl(value):
+    if value is None:
+        return None
+    document = copy.deepcopy(value)
+    scenario = document.get("Scenario") if isinstance(document, dict) else None
+    if isinstance(scenario, dict):
+        scenario.pop("SuT", None)
+    try:
+        return validate_init_dsl(document)
+    except DroneLumeValidationError as exc:
+        error = ScenarioProviderError(
+            "The current DSL preview must be valid before the assistant can edit it",
+            "invalid_current_dsl",
+            400,
+        )
+        error.details = exc.errors
+        raise error from exc
+
+
+def _has_authored_content(document):
+    if not document:
+        return False
+    scenario = document.get("Scenario", {})
+    actors = scenario.get("Actors", {})
+    procedural = actors.get("Procedural", {})
+    return bool(
+        actors.get("Static")
+        or actors.get("Dynamic")
+        or any(key != "Seed" for key in procedural)
+        or scenario.get("Goal", {}).get("Objective")
+    )
+
+
+def _deterministic_current_dsl_edit(messages, current_document):
+    if not current_document:
+        return None
+    latest = next(
+        (message["content"] for message in reversed(messages) if message["role"] == "user"),
+        "",
+    )
+    lowered = latest.lower()
+    if not (
+        "shooter" in lowered
+        and any(term in lowered for term in ("delay", "loiter", "wait"))
+        and (
+            "longer" in lowered
+            or re.search(r"\d+(?:\.\d+)?\s*(?:sec|secs|second|seconds)\b", lowered)
+        )
+    ):
+        return None
+
+    document = copy.deepcopy(current_document)
+    dynamic = document["Scenario"]["Actors"].get("Dynamic", {})
+    shooter = next(
+        (
+            actor
+            for actor_id, actor in dynamic.items()
+            if "shooter" in actor_id.lower()
+            or "shooter" in str(actor.get("PawnIdentifier", "")).lower()
+        ),
+        None,
+    )
+    if not shooter:
+        return None
+    loiter = next(
+        (
+            behavior
+            for behavior in shooter.get("behavior", [])
+            if isinstance(behavior, dict) and behavior.get("action") == "Loiter"
+        ),
+        None,
+    )
+    if not loiter:
+        return None
+
+    old_duration = loiter.get("duration", 0)
+    explicit = re.search(r"(\d+(?:\.\d+)?)\s*(?:sec|secs|second|seconds)\b", lowered)
+    if explicit:
+        new_duration = float(explicit.group(1))
+        if new_duration.is_integer():
+            new_duration = int(new_duration)
+    else:
+        new_duration = old_duration + 5
+    loiter["duration"] = new_duration
+    return {
+        "status": "complete",
+        "message": (
+            f"Updated the shooter's initial loiter from {old_duration} seconds to "
+            f"{new_duration} seconds. The DSL preview now contains this change."
+        ),
+        "questions": [],
+        "unsupported": [],
+        "init_dsl": document,
+    }
 
 
 def _knowledge_examples(contract):
@@ -190,23 +483,6 @@ def _knowledge_examples(contract):
         "unsupported": [
             {"request": "teleport", "reason": "Teleport is not in catalog.actions"}
         ],
-        "init_dsl": None,
-    }
-    active_shooter_response = {
-        "status": "clarify",
-        "message": (
-            "An urban active-shooter scenario with many pedestrians is supported by "
-            "InitDSL_ActiveShooter.json and InitDSL_PercCrowd.json using Attack, Loiter, "
-            "triggers, movement, and Flee. I will use actor placements demonstrated "
-            "in the closest example DSL."
-        ),
-        "questions": [
-            "How many explicit civilian actors or what procedural crowd density should be used?",
-            "How long should the shooter loiter before attacking, and how long should the attack last?",
-            "Should civilians flee when the shots-fired trigger occurs, and where should they move?",
-            "Which supported level size, time, weather, and intensity should be used?",
-        ],
-        "unsupported": [],
         "init_dsl": None,
     }
     composite_document = copy.deepcopy(contract["template"])
@@ -313,17 +589,6 @@ def _knowledge_examples(contract):
             "role": "assistant",
             "content": json.dumps(composite_response, separators=(",", ":")),
         },
-        {
-            "role": "user",
-            "content": (
-                "Knowledge example: Build a scenario where an active shooter commits a mass "
-                "shooting in an urban environment with many pedestrians."
-            ),
-        },
-        {
-            "role": "assistant",
-            "content": json.dumps(active_shooter_response, separators=(",", ":")),
-        },
     ]
 
 
@@ -348,48 +613,7 @@ def _normalize_messages(messages):
     return normalized
 
 
-def _missing_completion_evidence(messages, contract):
-    """Require user-supplied evidence for fields the model must not silently default."""
-    text = " ".join(
-        message["content"] for message in messages if message["role"] == "user"
-    ).lower()
-    catalog = contract["catalog"]
-    checks = [
-        (
-            not re.search(
-                r"\b(?:name it|named|scenario named|scenario be named)\b[?:\s]+[a-z0-9_-]+",
-                text,
-            ),
-            "What should the scenario be named?",
-        ),
-        (
-            not any(re.search(rf"\b{re.escape(str(value).lower())}\b", text) for value in catalog["level_sizes"]),
-            "Which supported level size should be used?",
-        ),
-        (
-            not any(re.search(rf"\b{re.escape(str(value).lower())}\b", text) for value in catalog["level_types"]),
-            "Which supported level type should be used?",
-        ),
-        (
-            not re.search(r"\b\d{1,2}:\d{2}\b", text),
-            "Which supported time of day should be used?",
-        ),
-        (
-            not (
-                any(re.search(rf"\b{re.escape(str(value).lower())}\b", text) for value in catalog["weather_types"])
-                and re.search(r"\bintensity\b[^.]{0,20}\d+(?:\.\d+)?", text)
-            ),
-            "Which supported weather type and intensity should be used?",
-        ),
-        (
-            not re.search(r"\b(?:duration|second|seconds|last(?:s|ing)?(?:\s+for)?)\b[^.]{0,30}\d", text),
-            "What duration should each requested behavior use?",
-        ),
-    ]
-    return [question for missing, question in checks if missing]
-
-
-def _apply_clarification_policy(value, messages, contract):
+def _apply_clarification_policy(value, messages):
     if value.get("status") != "clarify":
         return value
 
@@ -407,11 +631,6 @@ def _apply_clarification_policy(value, messages, contract):
         for question in adjusted.get("questions", [])
         if not any(phrase in question.lower() for phrase in excluded_question_phrases)
     ]
-    existing = {question.lower() for question in questions}
-    for question in _missing_completion_evidence(messages, contract):
-        if question.lower() not in existing:
-            questions.append(question)
-            existing.add(question.lower())
     adjusted["questions"] = questions
 
     user_text = " ".join(
@@ -496,8 +715,35 @@ class OllamaScenarioModelProvider(ScenarioModelProvider):
         self.num_predict = int(os.getenv("OLLAMA_NUM_PREDICT", "4096"))
         self.session = session or _UrlLibSession()
 
-    def generate(self, messages, contract):
+    def generate(self, messages, contract, current_init_dsl=None):
         normalized_messages = _normalize_messages(messages)
+        current_document = _validate_current_dsl(current_init_dsl)
+        deterministic_edit = _deterministic_current_dsl_edit(
+            normalized_messages, current_document
+        )
+        if deterministic_edit:
+            metadata = {
+                "name": "deterministic",
+                "model": self.model,
+                "contract_version": contract.get("contract_version"),
+                "catalog_version": contract.get("catalog", {}).get("catalog_version"),
+                "duration_ms": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+            }
+            return _normalize_provider_response(deterministic_edit, metadata)
+        current_context = []
+        if current_document:
+            current_context.append({
+                "role": "system",
+                "content": (
+                    "The JSON below is the current validated DSL preview and is the source of "
+                    "truth for this turn. Apply the user's latest requested changes to this "
+                    "document, preserve everything they did not ask to change, and return the "
+                    "entire updated InitDSL object.\nCurrent InitDSL:\n"
+                    + json.dumps(current_document, separators=(",", ":"), ensure_ascii=False)
+                ),
+            })
         payload = {
             "model": self.model,
             "stream": False,
@@ -505,6 +751,7 @@ class OllamaScenarioModelProvider(ScenarioModelProvider):
             "messages": [
                 {"role": "system", "content": _system_prompt(contract)},
                 *_knowledge_examples(contract),
+                *current_context,
                 *normalized_messages,
             ],
             "options": {
@@ -537,7 +784,8 @@ class OllamaScenarioModelProvider(ScenarioModelProvider):
                     "Your previous response was not valid JSON. Retry once. Return only one "
                     "JSON object that exactly matches the required response schema. If any "
                     "user value is vague or outside an allowlist, return clarify with focused "
-                    "questions instead of guessing."
+                    "questions only when the missing choice would materially change the intent. "
+                    "Otherwise choose supported fixture-based defaults and return a complete baseline."
                 ),
             })
             try:
@@ -568,36 +816,38 @@ class OllamaScenarioModelProvider(ScenarioModelProvider):
             "prompt_tokens": response_payload.get("prompt_eval_count"),
             "completion_tokens": response_payload.get("eval_count"),
         }
-        if value.get("status") == "complete":
-            missing_questions = _missing_completion_evidence(normalized_messages, contract)
-            if missing_questions:
-                user_text = " ".join(
-                    message["content"]
-                    for message in normalized_messages
-                    if message["role"] == "user"
-                )
-                has_user_coordinates = bool(re.search(
-                    r"-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
-                    user_text,
-                ))
-                placement_note = (
-                    " I will use actor placements demonstrated in the closest example DSL."
-                    if not has_user_coordinates
-                    else ""
-                )
-                value = {
+        baseline_intent = _recognized_baseline_intent(normalized_messages)
+        if (
+            value.get("status") == "clarify"
+            and baseline_intent
+            and not _has_authored_content(current_document)
+        ):
+            value = _baseline_response(baseline_intent, contract)
+        else:
+            value = _apply_clarification_policy(value, normalized_messages)
+        try:
+            return _normalize_provider_response(value, metadata)
+        except ScenarioProviderError as exc:
+            if exc.code != "validation_failed" or not baseline_intent:
+                raise
+            if _has_authored_content(current_document):
+                preserved = {
                     "status": "clarify",
                     "message": (
-                        "This scenario can be composed from supported DroneLume actions, "
-                        "but I need the remaining authoring details before constructing it."
-                        + placement_note
+                        "I could not safely apply that edit because the generated revision was "
+                        "invalid. I kept the current DSL preview unchanged."
                     ),
-                    "questions": missing_questions,
+                    "questions": ["Could you restate the requested DSL change more specifically?"],
                     "unsupported": [],
                     "init_dsl": None,
                 }
-        value = _apply_clarification_policy(value, normalized_messages, contract)
-        return _normalize_provider_response(value, metadata)
+                return _normalize_provider_response(preserved, metadata)
+            baseline = _baseline_response(baseline_intent, contract)
+            baseline["message"] = (
+                "The generated draft contained invalid actor references, so I replaced it "
+                "with the validated fixture baseline. " + baseline["message"]
+            )
+            return _normalize_provider_response(baseline, metadata)
 
 
 def get_scenario_model_provider(name=None):

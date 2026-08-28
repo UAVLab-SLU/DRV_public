@@ -365,7 +365,10 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
   ];
 
   const handleTabChange = (_, value) => {
-    if (value === 1) setRawJson(JSON.stringify(withoutMissionOwnedSuT(draft), null, 2));
+    if (value === 1) {
+      setRawJson(JSON.stringify(withoutMissionOwnedSuT(draft), null, 2));
+      setShowJsonFallback(true);
+    }
     setTab(value);
     setErrors([]);
   };
@@ -416,6 +419,13 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
   const sendAssistantMessage = async () => {
     const content = userMessage.trim();
     if (!content || generating) return;
+    let currentInitDsl;
+    try {
+      currentInitDsl = withoutMissionOwnedSuT(JSON.parse(rawJson));
+    } catch (error) {
+      setErrors([{ path: "$", message: `Validate the current DSL before asking the assistant to edit it: ${error.message}` }]);
+      return;
+    }
     const nextConversation = [...conversation, { role: "user", content }];
     setConversation(nextConversation);
     setUserMessage("");
@@ -428,7 +438,11 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
       const response = await fetch(`${BASE_URL}/api/dronelume/assist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider: "ollama", messages: nextConversation }),
+        body: JSON.stringify({
+          provider: "ollama",
+          messages: nextConversation,
+          current_init_dsl: currentInitDsl,
+        }),
         signal: controller.signal,
       });
       const result = await response.json();
@@ -475,12 +489,12 @@ export default function DroneLumeConfigDialog({ open, initialConfig, initialSour
         {tab === 1 ? (
           <Box sx={{ mt: 2 }}>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Describe the scenario in your own words. The assistant uses the same backend catalog as the dropdowns, asks for missing details, and flags requests outside the current Unreal inventory.
+              Describe the scenario in your own words. The assistant uses the same backend catalog as the dropdowns, proposes supported defaults when the intent is clear, and flags requests outside the current Unreal inventory.
             </Alert>
             <Box sx={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 1, p: 1.5, mb: 1.5, maxHeight: 280, overflowY: "auto" }}>
               {conversation.length === 0 && (
                 <Typography color="text.secondary" variant="body2">
-                  Try “Create an urban scenario with a person who moves toward another person,” or describe the test you want to run.
+                  Try “Create a maritime search and rescue mission for a drowning person,” or describe the test you want to run.
                 </Typography>
               )}
               {conversation.map((message, index) => (

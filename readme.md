@@ -187,9 +187,10 @@ The dev compose file mounts `$env:AIRSIM_SETTINGS_DIR` into the backend containe
 For a clean restart after code changes:
 
 ```powershell
-$env:AIRSIM_SETTINGS_DIR = Join-Path $HOME 'Documents\AirSim'
-docker compose -p drvwtest -f docker-compose.dev.yaml restart backend frontend
+.\dev.ps1 restart
 ```
+
+This restarts the bind-mounted backend and frontend containers without rebuilding images or stopping fake GCS.
 
 To stop this local dev stack:
 

@@ -61,7 +61,7 @@ function Stop-SimulatorControl {
 
 function Show-Usage {
     Write-Host "Usage: .\dev.ps1 COMMAND"
-    Write-Host "Commands: full, dev, frontend, backend, simulator, simulator-stop, simulator-status, logs, logs-all, stop, stop-dev, clean"
+    Write-Host "Commands: full, dev, restart, frontend, backend, simulator, simulator-stop, simulator-status, logs, logs-all, stop, stop-dev, clean"
 }
 
 switch ($Command) {
@@ -80,6 +80,10 @@ switch ($Command) {
     "dev" {
         Start-SimulatorControl
         docker compose -f docker-compose.dev.yaml up
+    }
+    "restart" {
+        docker compose -f docker-compose.dev.yaml restart backend frontend
+        if ($LASTEXITCODE -ne 0) { throw "Unable to restart the development services." }
     }
     "frontend" {
         Start-SimulatorControl

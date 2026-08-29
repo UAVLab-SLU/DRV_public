@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Owner = "UAVLab-SLU"
-$Repo = "DRV-Unreal"
+$Repo = "DRV_public"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 function Get-LocalSetting {
@@ -169,8 +169,14 @@ function Install-WindowsRelease {
     }
 
     $existing = Find-DRVExecutable -Root $PackageDir
-    if (-not $ForceDownload -and $existing -and (Test-Path -LiteralPath $TagFile)) {
-        $installedTag = (Get-Content -LiteralPath $TagFile -Raw).Trim()
+    $installedTag = if (Test-Path -LiteralPath $TagFile) {
+        (Get-Content -LiteralPath $TagFile -Raw).Trim()
+    }
+    else {
+        $null
+    }
+
+    if (-not $ForceDownload -and $existing -and $installedTag) {
         if ($installedTag -eq $releaseTag) {
             Write-Host "DRV-Unreal Windows $releaseTag is already installed."
             return $existing
@@ -181,6 +187,7 @@ function Install-WindowsRelease {
     foreach ($asset in $assets | Sort-Object name) {
         $destination = Join-Path $ArchiveDir $asset.name
         $needsDownload = $ForceDownload -or
+            ($installedTag -and $installedTag -ne $releaseTag) -or
             -not (Test-Path -LiteralPath $destination) -or
             (Get-Item -LiteralPath $destination).Length -ne [int64]$asset.size
 

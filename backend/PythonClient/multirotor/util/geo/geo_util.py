@@ -84,8 +84,10 @@ class GeoUtil:
         ratio = GeoUtil.geo_to_cartesian_ratio(lat)
         y = lat * ratio - cesium_origin[0] * ratio
         x = long * EQUATORIAL_RATIO - cesium_origin[1] * EQUATORIAL_RATIO
-        # z is negative because in unreal, -z is up
-        z = -alt
+        # Altitude is relative to the Cesium origin in AirSim settings.
+        # Preserve the configured-minus-origin sign convention used by the
+        # frontend and AirSim's Unreal Z axis.
+        z = alt - cesium_origin[2]
         return x, y, z
 
     @staticmethod
@@ -101,7 +103,8 @@ class GeoUtil:
         ratio = GeoUtil.geo_to_cartesian_ratio(lat)
         y = lat * ratio - cesium_origin[0] * ratio
         x = long * EQUATORIAL_RATIO - cesium_origin[1] * EQUATORIAL_RATIO
-        z = -alt
+        # AirSim settings use the configured altitude relative to the origin.
+        z = alt - cesium_origin[2]
         return x, y, z
 
     @staticmethod

@@ -262,7 +262,6 @@ export default function EnvironmentConfiguration() {
       <DroneLumeConfigDialog
         open={droneLumeDialogOpen}
         initialConfig={envJson.DroneLumeConfig}
-        initialSource={envJson.DroneLumeSource}
         missionDrones={mainJson.getAllDrones()}
         onClose={() => setDroneLumeDialogOpen(false)}
         onSave={saveDroneLume}

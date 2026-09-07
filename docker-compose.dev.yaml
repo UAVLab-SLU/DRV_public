@@ -15,6 +15,8 @@ services:
       - type: bind
         source: ${DRONELUME_CONFIG_DIR:-./config/dronelume}
         target: /app/dronelume-config
+        bind:
+          create_host_path: true
     depends_on:
       fake-gcs:
         condition: service_healthy
@@ -28,6 +30,7 @@ services:
       - AIRSIM_HOST=host.docker.internal
       - AIRSIM_PORT=41451
       - DRONELUME_CONFIG_DIR=/app/dronelume-config
+      - DRONELUME_RUNTIME_FILE_NAME=${DRONELUME_RUNTIME_FILE_NAME:-initDSL_ActiveShooter.json}
       - SCENARIO_MODEL_PROVIDER=ollama
       - OLLAMA_URL=http://host.docker.internal:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}

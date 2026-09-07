@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from PythonClient.multirotor.control.dronelume_config import (
     DRONELUME_FILE_NAME,
+    DRONELUME_RUNTIME_FILE_NAME,
     DRONELUME_TEMPLATE,
     DroneLumeConfigManager,
     DroneLumeValidationError,
@@ -32,6 +33,11 @@ class RecordingStorage:
 
     def upload_to_service(self, file_name, content, content_type="text/plain"):
         self.uploads[file_name] = {"content": content, "content_type": content_type}
+
+
+class FailingStorage:
+    def upload_to_service(self, file_name, content, content_type="text/plain"):
+        raise RuntimeError("storage unavailable")
 
 
 class DroneLumeConfigTests(unittest.TestCase):
@@ -81,6 +87,50 @@ class DroneLumeConfigTests(unittest.TestCase):
             self.assertEqual(deployed["Scenario"]["SuT"]["StartLocation"]["z"], 125)
             self.assertIn("task-1/InitDSL.json", storage.uploads)
             self.assertIn("task-1/dronelume_metadata.json", storage.uploads)
+
+    def test_deploy_creates_a_missing_mounted_config_directory(self):
+        storage = RecordingStorage()
+        with tempfile.TemporaryDirectory() as directory:
+            config_dir = Path(directory) / "new" / "dronelume-config"
+            manager = DroneLumeConfigManager(storage, config_dir)
+            request = {
+                "mode": "dronelume",
+                "Drones": self.mission_drones,
+                "dronelume": {"source": "llm", "init_dsl": DRONELUME_TEMPLATE},
+            }
+
+            destination = manager.deploy_and_archive(request, "task-new-config")
+
+            self.assertEqual(destination, config_dir / DRONELUME_FILE_NAME)
+            self.assertTrue(destination.is_file())
+            runtime_file = config_dir / DRONELUME_RUNTIME_FILE_NAME
+            self.assertTrue(runtime_file.is_file())
+            self.assertEqual(runtime_file.read_text(), destination.read_text())
+
+    def test_immediate_deploy_writes_valid_authoring_dsl_without_sut(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manager = DroneLumeConfigManager(RecordingStorage(), directory)
+
+            destination, _ = manager.deploy(DRONELUME_TEMPLATE, deployment_id="preview")
+
+            deployed = json.loads(destination.read_text())
+            self.assertEqual(deployed, DRONELUME_TEMPLATE)
+            self.assertNotIn("SuT", deployed["Scenario"])
+
+    def test_archive_failure_does_not_cancel_runtime_deployment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manager = DroneLumeConfigManager(FailingStorage(), directory)
+            request = {
+                "mode": "dronelume",
+                "Drones": self.mission_drones,
+                "dronelume": {"source": "llm", "init_dsl": DRONELUME_TEMPLATE},
+            }
+
+            destination = manager.deploy_and_archive(request, "task-storage-down")
+
+            self.assertTrue(destination.is_file())
+            deployed = json.loads(destination.read_text())
+            self.assertIn("SuT", deployed["Scenario"])
 
     def test_manual_and_llm_requests_share_the_same_contract(self):
         for source in ("manual", "llm", "imported"):

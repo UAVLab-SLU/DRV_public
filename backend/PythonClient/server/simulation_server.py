@@ -12,6 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 # Import the SimulationTaskManager
 from PythonClient.multirotor.control.simulation_task_manager import SimulationTaskManager
 from PythonClient.multirotor.control.dronelume_config import (
+    DRONELUME_STATE,
     DroneLumeValidationError,
     extract_dronelume_request,
     get_dronelume_contract,
@@ -279,6 +280,40 @@ def validate_dronelume_config():
             'details': e.errors,
         }), 400
     return jsonify({'valid': True, 'init_dsl': validated}), 200
+
+
+@app.route('/api/dronelume/apply', methods=['POST'])
+def apply_dronelume_config():
+    """Validate and immediately deploy InitDSL to the active simulator mount."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'A JSON object is required'}), 400
+    document = payload.get('init_dsl')
+    if document is None:
+        return jsonify({'error': 'init_dsl is required'}), 400
+    source = payload.get('source', 'llm')
+    try:
+        validated = validate_init_dsl(document)
+        destination = task_dispatcher.apply_dronelume(validated, source)
+    except DroneLumeValidationError as e:
+        return jsonify({
+            'applied': False,
+            'error': 'Invalid DroneLume InitDSL configuration',
+            'details': e.errors,
+        }), 400
+    except ValueError as e:
+        return jsonify({'applied': False, 'error': str(e)}), 400
+    except OSError as e:
+        return jsonify({
+            'applied': False,
+            'error': f'Unable to write InitDSL.json to the simulator configuration: {e}',
+        }), 500
+    return jsonify({
+        'applied': True,
+        'init_dsl': validated,
+        'file_name': destination.name,
+        'state': DRONELUME_STATE,
+    }), 200
 
 
 @app.route('/api/dronelume/assist', methods=['POST'])

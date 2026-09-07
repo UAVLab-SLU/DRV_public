@@ -80,6 +80,10 @@ SM5 on Linux and disables hardware ray tracing in `Config/DefaultEngine.ini`.
 - Compose starts a UE 5.5 signalling server and local TURN relay.
 - Unreal uses offscreen rendering and connects to `ws://signalling:8888`.
 - AirSim settings can be mounted from `AIRSIM_SETTINGS_DIR`.
+- DroneLume configuration is mounted from `DRONELUME_CONFIG_DIR`, defaulting to
+  `config/dronelume` on the host. The launch script creates this directory and
+  the container entrypoint links its `InitDSL.json` into the active packaged
+  project's `Config` directory before Unreal starts.
 
 Primary files:
 

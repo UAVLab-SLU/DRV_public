@@ -97,6 +97,16 @@ build_and_validate_simulator() {
         droneworld/drv-unreal:linux --summary
 }
 
+ensure_dronelume_config_dir() {
+    dronelume_config_dir="${DRONELUME_CONFIG_DIR:-}"
+    if [[ -z "${dronelume_config_dir}" && -f .env ]]; then
+        config_line="$(grep -m 1 '^DRONELUME_CONFIG_DIR=' .env || true)"
+        dronelume_config_dir="${config_line#DRONELUME_CONFIG_DIR=}"
+    fi
+    dronelume_config_dir="${dronelume_config_dir:-${script_dir}/config/dronelume}"
+    mkdir -p "${dronelume_config_dir}"
+}
+
 print_usage() {
     echo "Usage: ./dev.sh COMMAND"
     echo
@@ -120,6 +130,7 @@ case "${1:-help}" in
         ;;
     full)
         require_linux_simulator_host
+        ensure_dronelume_config_dir
         set_pixelstream_public_ip
         sync_unreal_release
         build_and_validate_simulator
@@ -127,16 +138,20 @@ case "${1:-help}" in
         docker compose --profile linux-simulator up --no-build
         ;;
     dev)
+        ensure_dronelume_config_dir
         docker compose -f docker-compose.dev.yaml up
         ;;
     frontend)
+        ensure_dronelume_config_dir
         docker compose up frontend
         ;;
     backend)
+        ensure_dronelume_config_dir
         docker compose up backend
         ;;
     simulator)
         require_linux_simulator_host
+        ensure_dronelume_config_dir
         set_pixelstream_public_ip
         sync_unreal_release
         build_and_validate_simulator

@@ -276,11 +276,26 @@ DroneLume request uses the following envelope:
 ```
 
 Use `GET /api/dronelume/schema` as the LLM authoring contract and
-`POST /api/dronelume/validate` before submission. Manual and LLM-generated
-documents pass through the same validator. After validation, the backend writes
-`InitDSL.json` atomically, archives the final document under the task report,
-and publishes `{"state":"dronelume_map"}`. The state remains active until
-`POST /api/dronelume/stop` publishes `{"state":"idle"}`.
+`POST /api/dronelume/validate` before submission. On the Scenario Assistant
+page, **Apply to Configuration** calls `POST /api/dronelume/apply`. The backend
+validates and atomically writes the document into the active simulator mount,
+then publishes `{"state":"dronelume_map","preview":true}` so Unreal can load
+the scenario immediately. If a DroneLume scene is already active, Apply first
+returns Unreal to its menu and then loads the replacement. Only after deployment succeeds does the browser store
+the same document in the active configuration and open the configuration
+workflow. The manual builder then loads that document and can refine it. Manual
+and LLM-generated documents pass through the same validator. When the completed
+configuration is run, the backend rewrites `InitDSL.json` with the Mission-owned
+SuT and attempts to archive the final document under the task report. A report
+storage outage is logged but does not cancel a successful simulator deployment.
+The state remains active until `POST /api/dronelume/stop` publishes
+`{"state":"idle"}`.
+
+The backend writes both canonical `InitDSL.json` and the runtime selector file
+named by `DRONELUME_RUNTIME_FILE_NAME`. The current packaged standby map selects
+`initDSL_ActiveShooter.json`, so that is the default runtime name even when the
+applied scenario is not an active-shooter scenario. This alias can be changed
+when a future package exposes a different selector.
 
 `Scenario.SuT` is owned by the Mission tab and must not be authored in the
 manual builder or by the LLM. At final submission, the backend derives the SuT
@@ -293,16 +308,26 @@ the catalog through `/api/dronelume/schema`, and the backend validates against
 the same file. Set `DRONELUME_CATALOG_PATH` to use an external catalog without
 changing the application source.
 
-For a local packaged Windows build, set:
+For a local packaged Windows build started outside the helper workflow, set:
 
 ```text
 DRONELUME_CONFIG_DIR=G:\UE_project\DroneWorld 5.5\Packaged\Windows\DRV\Config
 ```
 
-Docker Compose mounts `DRONELUME_CONFIG_DIR` into both the backend and Unreal
-containers. If it is not set, Compose uses `./config/dronelume`.
+`dev.ps1 full` discovers the `Config` directory belonging to the packaged
+executable it starts and mounts that exact directory into the backend. This
+keeps submissions connected to the currently running Windows simulator even
+when the release is installed in a non-default location.
 
-The experimental guided authoring tab sends bounded conversation history to
+Docker Compose mounts `DRONELUME_CONFIG_DIR` into both the backend at
+`/app/dronelume-config` and the Linux Unreal container at
+`/opt/drv/dronelume-config`. The Linux entrypoint links `InitDSL.json` from that
+mount into the packaged project's `Config` directory, whether the release is
+named `DRV`, `Blocks`, or `SADE_drone_rep`. If the host setting is not present,
+Compose uses `./config/dronelume`. `dev.sh` creates the host directory before
+Compose starts, including on a clean Linux checkout.
+
+The experimental Scenario Assistant page sends bounded conversation history to
 `POST /api/dronelume/assist`. Only the backend connects to Ollama, so provider
 configuration is not exposed to the browser. Native backend development uses
 `OLLAMA_URL=http://localhost:11434`; Docker Compose uses the host Ollama service

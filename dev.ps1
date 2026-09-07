@@ -73,7 +73,7 @@ switch ($Command) {
             $env:DRONELUME_CONFIG_DIR = (& "$ScriptDir\windows_simulator.ps1" prepare | Select-Object -Last 1)
         }
         Start-SimulatorControl -SkipDownload
-        docker compose up -d --build frontend backend fake-gcs
+        docker compose up -d --build frontend backend fake-gcs init-storage
         if ($LASTEXITCODE -ne 0) { throw "Unable to start the application services." }
         & "$ScriptDir\windows_simulator.ps1" start -SkipDownload
     }

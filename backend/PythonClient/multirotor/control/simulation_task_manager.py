@@ -79,7 +79,10 @@ class SimulationTaskManager:
         while self.state:
             while self.mission_queue.empty():
                 self.__current_task_batch = "None"
-                self.unreal_off()
+                with self.__unreal_state_lock:
+                    is_dronelume_applied = self.unreal_state.get("state") == DRONELUME_STATE
+                if not is_dronelume_applied:
+                    self.unreal_off()
                 sleep(1)
             current_queue_top = self.mission_queue.get()
             self.__current_task_batch = current_queue_top[1]
@@ -108,6 +111,27 @@ class SimulationTaskManager:
         while self.state and not self.__dronelume_stop_event.wait(0.5):
             pass
         self.unreal_off()
+
+    def apply_dronelume(self, document, source="llm"):
+        if source not in ("llm", "manual", "imported"):
+            raise ValueError("source must be llm, manual, or imported")
+        with self.__unreal_state_lock:
+            is_replacing_active_scenario = self.unreal_state.get("state") == DRONELUME_STATE
+        if is_replacing_active_scenario:
+            self.stop_dronelume()
+            sleep(2)
+        destination, _ = self.__dronelume_config_manager.deploy(
+            document,
+            require_sut=False,
+            deployment_id="preview",
+        )
+        with self.__unreal_state_lock:
+            self.unreal_state = {
+                "state": DRONELUME_STATE,
+                "source": source,
+                "preview": True,
+            }
+        return destination
 
     def stop_dronelume(self):
         with self.__unreal_state_lock:

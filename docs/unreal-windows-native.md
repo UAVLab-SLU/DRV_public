@@ -37,8 +37,10 @@ the packaged executable with offscreen rendering. Open
 
 Before starting the backend, the full workflow discovers the packaged
 `DRV\Config` directory and mounts it at `/app/dronelume-config`. DroneLume
-submissions therefore update the `InitDSL.json` read by the same native Unreal
-package that is running.
+submissions therefore update both canonical `InitDSL.json` and the packaged
+standby map's runtime selector file, `initDSL_ActiveShooter.json`, for the same
+native Unreal package that is running. The selector name is historical and does
+not restrict the applied scenario type.
 
 To start only signalling and Unreal:
 

@@ -2,7 +2,25 @@
 set -euo pipefail
 
 runtime_dir="${XDG_RUNTIME_DIR:-/tmp/runtime-unreal}"
-mkdir -p "${runtime_dir}" /home/unreal/Documents/AirSim
+dronelume_mount="${DRONELUME_CONFIG_DIR:-/opt/drv/dronelume-config}"
+dronelume_runtime_file_name="${DRONELUME_RUNTIME_FILE_NAME:-initDSL_ActiveShooter.json}"
+if [[ "${dronelume_runtime_file_name}" == */* || "${dronelume_runtime_file_name}" == *\\* ]]; then
+    echo "DRONELUME_RUNTIME_FILE_NAME must be a file name without directory components." >&2
+    exit 1
+fi
+launcher_path="$(readlink -f /opt/drv/launch.sh)"
+launcher_dir="$(dirname "${launcher_path}")"
+project_name="$(basename "${launcher_path}" .sh)"
+
+if [[ -d "${launcher_dir}/${project_name}" ]]; then
+    dronelume_runtime_config="${launcher_dir}/${project_name}/Config"
+else
+    dronelume_runtime_config="${launcher_dir}/Config"
+fi
+
+mkdir -p "${runtime_dir}" /home/unreal/Documents/AirSim "${dronelume_mount}" "${dronelume_runtime_config}"
+ln -sfn "${dronelume_mount}/InitDSL.json" "${dronelume_runtime_config}/InitDSL.json"
+ln -sfn "${dronelume_mount}/${dronelume_runtime_file_name}" "${dronelume_runtime_config}/${dronelume_runtime_file_name}"
 chmod 700 "${runtime_dir}"
 
 while IFS= read -r saved_dir; do

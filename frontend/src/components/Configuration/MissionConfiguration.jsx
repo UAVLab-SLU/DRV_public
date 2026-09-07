@@ -36,7 +36,7 @@ const buildDefaultDrone = (idx, env) => {
   EnableTrace: false,
   X: isDroneLume ? idx * 5 : env?.Origin?.latitude ?? env?.Origin?.Latitude ?? 0,
   Y: isDroneLume ? 0 : env?.Origin?.longitude ?? env?.Origin?.Longitude ?? 0,
-  Z: isDroneLume ? 200 : env?.Origin?.height ?? env?.Origin?.Height ?? 0,
+  Z: isDroneLume ? 0 : env?.Origin?.height ?? env?.Origin?.Height ?? 0,
   CoordinateFrame: isDroneLume ? "dronelume_cartesian" : "geographic",
   Pitch: 0, Roll: 0, Yaw: 0,
   Sensors: null,
@@ -63,7 +63,7 @@ export default function MissionConfiguration() {
             ...drone,
             X: index * 5,
             Y: 0,
-            Z: 200,
+            Z: 0,
             CoordinateFrame: "dronelume_cartesian",
           });
           changed = true;

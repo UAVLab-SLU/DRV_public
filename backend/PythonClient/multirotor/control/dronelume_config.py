@@ -7,6 +7,9 @@ from pathlib import Path
 
 DRONELUME_STATE = "dronelume_map"
 DRONELUME_FILE_NAME = "InitDSL.json"
+DRONELUME_RUNTIME_FILE_NAME = os.getenv(
+    "DRONELUME_RUNTIME_FILE_NAME", "initDSL_ActiveShooter.json"
+)
 DEFAULT_WINDOWS_CONFIG_DIR = Path(
     r"G:\UE_project\DroneWorld 5.5\Packaged\Windows\DRV\Config"
 )
@@ -430,35 +433,50 @@ class DroneLumeConfigManager:
         self.storage_service = storage_service
         self.config_dir = Path(config_dir) if config_dir else get_dronelume_config_dir()
 
+    def deploy(self, document, require_sut=False, deployment_id="apply"):
+        document = validate_init_dsl(document, require_sut=require_sut)
+        serialized = json.dumps(document, indent=2, ensure_ascii=False) + "\n"
+        self.config_dir.mkdir(parents=True, exist_ok=True)
+        file_names = {DRONELUME_FILE_NAME, DRONELUME_RUNTIME_FILE_NAME}
+        if any(Path(file_name).name != file_name for file_name in file_names):
+            raise OSError("DroneLume file names must not contain directory components")
+        for file_name in file_names:
+            destination = self.config_dir / file_name
+            temporary = self.config_dir / f".{file_name}.{deployment_id}.tmp"
+            try:
+                temporary.write_text(serialized, encoding="utf-8")
+                os.replace(temporary, destination)
+            finally:
+                if temporary.exists():
+                    temporary.unlink()
+        destination = self.config_dir / DRONELUME_FILE_NAME
+        return destination, serialized
+
     def deploy_and_archive(self, request_data, task_id):
         parsed = extract_dronelume_request(request_data)
         if parsed is None:
             raise DroneLumeValidationError([{"path": "$.mode", "message": "must be dronelume"}])
 
         document = parsed["init_dsl"]
-        serialized = json.dumps(document, indent=2, ensure_ascii=False) + "\n"
-        self.config_dir.mkdir(parents=True, exist_ok=True)
-        destination = self.config_dir / DRONELUME_FILE_NAME
-        temporary = self.config_dir / f".{DRONELUME_FILE_NAME}.{task_id}.tmp"
+        destination, serialized = self.deploy(document, require_sut=True, deployment_id=task_id)
         try:
-            temporary.write_text(serialized, encoding="utf-8")
-            os.replace(temporary, destination)
-        finally:
-            if temporary.exists():
-                temporary.unlink()
-
-        self.storage_service.upload_to_service(
-            f"{task_id}/{DRONELUME_FILE_NAME}", serialized, content_type="application/json"
-        )
-        metadata = {
-            "mode": "dronelume",
-            "source": parsed["source"],
-            "file_name": DRONELUME_FILE_NAME,
-            "deployed_at": datetime.now(timezone.utc).isoformat(),
-        }
-        self.storage_service.upload_to_service(
-            f"{task_id}/dronelume_metadata.json",
-            json.dumps(metadata, indent=2) + "\n",
-            content_type="application/json",
-        )
+            self.storage_service.upload_to_service(
+                f"{task_id}/{DRONELUME_FILE_NAME}", serialized, content_type="application/json"
+            )
+            metadata = {
+                "mode": "dronelume",
+                "source": parsed["source"],
+                "file_name": DRONELUME_FILE_NAME,
+                "deployed_at": datetime.now(timezone.utc).isoformat(),
+            }
+            self.storage_service.upload_to_service(
+                f"{task_id}/dronelume_metadata.json",
+                json.dumps(metadata, indent=2) + "\n",
+                content_type="application/json",
+            )
+        except Exception as exc:
+            print(
+                f"Warning: DroneLume runtime configuration was deployed to {destination}, "
+                f"but report archival failed: {exc}"
+            )
         return destination

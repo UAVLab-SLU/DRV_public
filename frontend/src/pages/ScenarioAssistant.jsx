@@ -4,6 +4,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SendIcon from "@mui/icons-material/Send";
 import StopCircleOutlinedIcon from "@mui/icons-material/StopCircleOutlined";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -15,6 +16,9 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMainJson } from "../contexts/MainJsonContext";
+import { EnvironmentModel } from "../model/EnvironmentModel";
 import { useThemeTokens } from "../theme/palette";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
@@ -31,6 +35,8 @@ function assistantText(result) {
 
 export default function ScenarioAssistant() {
   const tokens = useThemeTokens();
+  const navigate = useNavigate();
+  const { envJson, setEnvJson } = useMainJson();
   const [contract, setContract] = useState(null);
   const [contractError, setContractError] = useState("");
   const [conversation, setConversation] = useState([]);
@@ -40,6 +46,7 @@ export default function ScenarioAssistant() {
   const [requestError, setRequestError] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [applying, setApplying] = useState(false);
   const [dslValid, setDslValid] = useState(false);
   const activeRequest = useRef(null);
 
@@ -199,6 +206,35 @@ export default function ScenarioAssistant() {
     URL.revokeObjectURL(url);
   };
 
+  const applyDsl = async () => {
+    if (!dslValid) return;
+    const document = JSON.parse(rawDsl);
+    setApplying(true);
+    setRequestError([]);
+    try {
+      const response = await fetch(`${BASE_URL}/api/dronelume/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: "llm", init_dsl: document }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setRequestError(payload.details ?? [{ path: "$", message: payload.error ?? "Unable to apply the DSL" }]);
+        return;
+      }
+      envJson.SceneMode = "dronelume";
+      envJson.UseGeo = false;
+      envJson.DroneLumeConfig = payload.init_dsl;
+      envJson.DroneLumeSource = "llm";
+      setEnvJson(EnvironmentModel.getReactStateBasedUpdate(envJson));
+      navigate("/simulation");
+    } catch (error) {
+      setRequestError([{ path: "$", message: `Backend deployment is unavailable: ${error.message}` }]);
+    } finally {
+      setApplying(false);
+    }
+  };
+
   return (
     <Box sx={{ minHeight: "calc(100vh - 128px)", background: tokens.surface.heroOverlay, py: { xs: 3, md: 5 } }}>
       <Container maxWidth="xl">
@@ -337,6 +373,7 @@ export default function ScenarioAssistant() {
                 />
                 <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
                   <Button variant="contained" onClick={validateDsl} disabled={validating}>{validating ? "Validating..." : "Validate DSL"}</Button>
+                  <Button variant="contained" color="success" startIcon={<PlayArrowIcon />} onClick={applyDsl} disabled={!dslValid || validating || applying}>{applying ? "Applying..." : "Apply to Configuration"}</Button>
                   <Button startIcon={<ContentCopyIcon />} onClick={copyDsl} disabled={!dslValid}>Copy</Button>
                   <Button startIcon={<DownloadIcon />} onClick={downloadDsl} disabled={!dslValid}>Download</Button>
                 </Stack>

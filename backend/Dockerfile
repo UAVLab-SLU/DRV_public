@@ -18,11 +18,12 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the backend code into the container
-COPY . .
-
-# Install the Python dependencies
+# Copy dependency metadata first so source-only changes reuse this layer.
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the backend code after dependencies have been installed.
+COPY . .
 
 # Expose the port the backend will use
 EXPOSE 5000

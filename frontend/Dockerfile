@@ -2,7 +2,7 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -16,9 +16,15 @@ CMD ["nginx", "-g", "daemon off;"]
 
 # ── Dev stage (DEFAULT: must be last) ─────────────────────────────────────────
 # Source lives on the bind-mount ./frontend:/app.
-# npm install runs on every start so packages always match the mounted
-# package.json, regardless of what is in the host node_modules.
+# Dependencies are installed at build time and used to seed Compose's
+# /app/node_modules volume when its container is first created. At runtime,
+# the lockfile hash prevents reinstalling them unless the mounted lockfile changes.
 FROM node:22-alpine
 WORKDIR /app
+# Keep dependencies in an image layer keyed only by the lockfiles. The
+# /app/node_modules volume in Compose is initialized from this layer.
+COPY package.json package-lock.json ./
+RUN npm ci \
+    && sha256sum package-lock.json | awk '{print $1}' > node_modules/.package-lock.hash
 EXPOSE 3000
-CMD ["sh", "-c", "npm install && npm run dev"]
+CMD ["sh", "-c", "lock_hash=$(sha256sum package-lock.json | awk '{print $1}'); if [ ! -f node_modules/.package-lock.hash ] || [ \"$(cat node_modules/.package-lock.hash)\" != \"$lock_hash\" ]; then npm ci && printf '%s\\n' \"$lock_hash\" > node_modules/.package-lock.hash; fi; exec npm run dev"]

@@ -33,6 +33,8 @@ class FlyToPoints(GenericMission):
         self.append_info_to_log(self.target_drone + ";taking off")
         # self.takeoff(self.target_drone)
         for p in cartesian_points:
+            if self.state == self.State.END:
+                return
             self.append_info_to_log(self.target_drone + ";heading: " + str(p))
             self.async_fly_to_position(self.target_drone, p, self.speed)
 

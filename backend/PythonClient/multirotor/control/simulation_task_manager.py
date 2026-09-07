@@ -50,6 +50,9 @@ class SimulationTaskManager:
         self.batch_number = 1
         self.mission_queue = Queue()
         self.state = True
+        self.__run_cancel_event = threading.Event()
+        self.__active_missions = []
+        self.__active_missions_lock = threading.Lock()
         self.__monitor_list = []  # list of tuples
         # [('collision_monitor', []), ('ordered_waypoint_monitor', [10]), ('point_deviation_monitor', [])]
         self.__global_monitor_names = {"min_sep_dist_monitor"}
@@ -85,6 +88,7 @@ class SimulationTaskManager:
                     self.unreal_off()
                 sleep(1)
             current_queue_top = self.mission_queue.get()
+            self.__run_cancel_event.clear()
             self.__current_task_batch = current_queue_top[1]
             try:
                 if extract_dronelume_request(current_queue_top[0]) is not None:
@@ -104,13 +108,63 @@ class SimulationTaskManager:
 
     def __run_dronelume_batch(self, current_queue_top):
         task_data, task_id = current_queue_top
+        with self.__unreal_state_lock:
+            is_replacing_preview = self.unreal_state.get("state") == DRONELUME_STATE
+        if is_replacing_preview:
+            self.unreal_off()
+            sleep(2)
+
         self.__dronelume_stop_event.clear()
+        mission_request = copy.deepcopy(task_data)
+        mission_request["environment"] = {"UseGeo": False}
+        mission_request["monitors"] = mission_request.get("monitors", {})
+        new_setting_dot_json = copy.deepcopy(self.__DEFAULT_EMPTY_SETTINGS_DOT_JSON)
+        self.__handle_streaming_settings(mission_request)
+        self.__populate_drone_and_mission_settings(new_setting_dot_json, mission_request)
+        self.__populate_monitor_list(mission_request)
+        self.__save_settings_dot_json(new_setting_dot_json)
+
         deployed_path = self.__dronelume_config_manager.deploy_and_archive(task_data, task_id)
         print(f"DroneLume InitDSL deployed to {deployed_path}")
+        self.__report_subdir_string = task_id
         self.dronelume_on(task_id)
-        while self.state and not self.__dronelume_stop_event.wait(0.5):
-            pass
+        if not self.__wait_for_airsim():
+            self.__drone_mission_pair_list.clear()
+            self.__monitor_list.clear()
+            self.unreal_off()
+            return
+        print("Starting DroneLume missions:", self.__drone_mission_pair_list)
+        self.__batch_exe_all(
+            self.__drone_mission_pair_list,
+            self.__monitor_list,
+            False,
+            reset_scene=False,
+        )
+        self.__drone_mission_pair_list.clear()
+        self.__monitor_list.clear()
         self.unreal_off()
+
+    def __wait_for_airsim(self, attempts=30):
+        rpc_host, rpc_port = airsim.resolve_rpc_endpoint()
+        last_error = None
+        for _ in range(attempts):
+            if self.__run_cancel_event.is_set() or self.__dronelume_stop_event.is_set():
+                return False
+            try:
+                client = airsim.MultirotorClient(timeout_value=2)
+                client.ping()
+                if not client.listVehicles():
+                    sleep(1)
+                    continue
+                sleep(1)
+                print(f"AirSim RPC ready at {rpc_host}:{rpc_port}")
+                return True
+            except Exception as error:
+                last_error = error
+                sleep(1)
+        raise RuntimeError(
+            f"DroneLume loaded, but AirSim RPC did not become ready at {rpc_host}:{rpc_port}"
+        ) from last_error
 
     def apply_dronelume(self, document, source="llm"):
         if source not in ("llm", "manual", "imported"):
@@ -143,6 +197,8 @@ class SimulationTaskManager:
         return True
 
     def __update_settings(self, raw_request_json):
+        if self.__run_cancel_event.is_set():
+            return False
         self.unreal_off()
         new_setting_dot_json = copy.deepcopy(self.__DEFAULT_EMPTY_SETTINGS_DOT_JSON)
         self.__handle_streaming_settings(raw_request_json)
@@ -153,8 +209,11 @@ class SimulationTaskManager:
         print("Settings deployed, waiting for DroneWorld to catch up")
         self.unreal_off()
         sleep(2)
+        if self.__run_cancel_event.is_set():
+            return False
         self.unreal_on()
         sleep(1)
+        return not self.__run_cancel_event.is_set()
 
     def __run_fuzzy_test_batch(self, current_queue_top, fuzzy_test_dict):
 
@@ -170,7 +229,8 @@ class SimulationTaskManager:
                 setting_copy['environment']['Wind']['Y'] = y
                 setting_copy['environment']['Wind']['Z'] = z
                 self.__report_subdir_string = current_queue_top[1] + os.sep + f"Fuzzy_Wind_{i}"
-                self.__update_settings(setting_copy)
+                if not self.__update_settings(setting_copy):
+                    return
                 try:
                     self.__batch_exe_all(self.__drone_mission_pair_list, self.__monitor_list, fuzzy_test_dict)
                 except TransportError:
@@ -182,7 +242,8 @@ class SimulationTaskManager:
             for i in range(1, self.__FUZZY_TEST_MAX_SPEED, precision):
                 fuzzy_test_dict["value"] = i
                 self.__report_subdir_string = current_queue_top[1] + os.sep + f"Fuzzy_Speed_{i}"
-                self.__update_settings(setting_copy)
+                if not self.__update_settings(setting_copy):
+                    return
                 try:
                     self.__batch_exe_all(self.__drone_mission_pair_list, self.__monitor_list, fuzzy_test_dict)
                 except TransportError:
@@ -195,7 +256,8 @@ class SimulationTaskManager:
         self.batch_number += 1
 
     def __run_regular_batch(self, current_queue_top):
-        self.__update_settings(current_queue_top[0])
+        if not self.__update_settings(current_queue_top[0]):
+            return
         print("next up: ", self.__drone_mission_pair_list, self.__monitor_list)
         self.__report_subdir_string = current_queue_top[1]
 
@@ -215,6 +277,38 @@ class SimulationTaskManager:
         if self.__save_raw_request:
             with open(os.path.join(uuid + ".json"), "w") as f:
                 json.dump(raw_request_json, f, indent=4)
+
+    def reset_active_run(self):
+        """Cancel the active run, clear pending work, and return Unreal to idle."""
+        self.__run_cancel_event.set()
+        self.__dronelume_stop_event.set()
+
+        with self.__active_missions_lock:
+            active_missions = list(self.__active_missions)
+        for mission in active_missions:
+            mission.kill_mission()
+
+        with self.mission_queue.mutex:
+            cleared_tasks = len(self.mission_queue.queue)
+            self.mission_queue.queue.clear()
+
+        had_active_task = self.__current_task_batch != "None"
+        self.__current_task_batch = "None"
+        self.__drone_mission_pair_list.clear()
+        self.__monitor_list.clear()
+        self.unreal_off()
+
+        try:
+            client = airsim.MultirotorClient(timeout_value=10)
+            client.reset()
+        except Exception as error:
+            print(f"Unable to reset AirSim while cancelling the current run: {error}")
+
+        return {
+            "cleared_tasks": cleared_tasks,
+            "cancelled_current_task": had_active_task,
+            "state": "idle",
+        }
 
     def __populate_drone_and_mission_settings(self, new_setting_dot_json, raw_request_json):
         print(new_setting_dot_json)
@@ -390,7 +484,13 @@ class SimulationTaskManager:
                 diff[key] = dict1[key]
         return diff
 
-    def __batch_exe_all(self, drone_mission_pair_list, monitor_list, fuzzy_test_info):
+    def __batch_exe_all(
+        self,
+        drone_mission_pair_list,
+        monitor_list,
+        fuzzy_test_info,
+        reset_scene=False,
+    ):
         """
         Create and execute all missions and monitors in parallel
         :param drone_mission_pair_list: list of tuples (mission_name, drone_name, params)
@@ -398,17 +498,26 @@ class SimulationTaskManager:
         :param fuzzy_test_info: Dict of fuzzy test info, None otherwise
         :return: None
         """
+        if self.__run_cancel_event.is_set():
+            return
+
         rpc_host, rpc_port = airsim.resolve_rpc_endpoint()
         try:
             client = airsim.MultirotorClient(timeout_value=10)
             client.ping()
-            client.reset()  # reset scene before each task
         except Exception as e:
             raise RuntimeError(
                 f"Unable to reach AirSim RPC at {rpc_host}:{rpc_port}. "
                 "If Unreal runs on the host, set AIRSIM_HOST=host.docker.internal and AIRSIM_PORT=41451. "
                 "If Unreal runs in Compose, set AIRSIM_HOST=drv-unreal and expose port 41451."
             ) from e
+        if reset_scene:
+            try:
+                client.reset()
+            except Exception as e:
+                raise RuntimeError(
+                    f"AirSim RPC is reachable at {rpc_host}:{rpc_port}, but scene reset failed"
+                ) from e
 
         mission_threads = []
         monitor_threads = []
@@ -419,6 +528,9 @@ class SimulationTaskManager:
                 thread_and_instance = self.__create_mission_thread(drone_mission_pair)
             mission_threads.append(thread_and_instance[0])
             mission_instance = thread_and_instance[1]  # instance reference for monitors
+
+            with self.__active_missions_lock:
+                self.__active_missions.append(mission_instance)
 
             monitors_thread = self.__create_monitors_thread(monitor_list, mission_instance)
             monitor_threads.extend(monitors_thread)
@@ -448,6 +560,8 @@ class SimulationTaskManager:
         for global_monitor in global_monitor_start_threads:
             global_monitor.join()
         print("All processes finished, server return to idle state")
+        with self.__active_missions_lock:
+            self.__active_missions.clear()
         mission_threads.clear()
         monitor_threads.clear()
 

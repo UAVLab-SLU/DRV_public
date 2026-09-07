@@ -8,7 +8,7 @@ services:
     volumes:
       - ./backend:/app
       - ./credentials:/app/credentials
-      - ./config/airsim:/root/Documents/AirSim
+      - ${AIRSIM_SETTINGS_DIR:-./config/airsim}:/root/Documents/AirSim
       - type: bind
         source: ${DRONELUME_CONFIG_DIR:-./config/dronelume}
         target: /app/dronelume-config
@@ -26,7 +26,7 @@ services:
       - DRV_UNREAL_HOST=drv-unreal
       - DRV_UNREAL_API_PORT=3001
       - DRV_PIXELSTREAM_PORT=8888
-      - AIRSIM_HOST=drv-unreal
+      - AIRSIM_HOST=${AIRSIM_HOST:-drv-unreal}
       - AIRSIM_PORT=41451
       - DRONELUME_CONFIG_DIR=/app/dronelume-config
       - DRONELUME_RUNTIME_FILE_NAME=${DRONELUME_RUNTIME_FILE_NAME:-initDSL_ActiveShooter.json}

@@ -84,7 +84,7 @@ class FlyInCircle(GenericMission):
         # ramp_time = self.radius / 10
         # start_time = time.time()
 
-        while count < self.iterations:
+        while count < self.iterations and self.state != self.State.END:
             # if self.snapshots > 0 and not (self.snapshot_index < self.snapshots):
             #     break
             # # ramp up to full speed in smooth increments, so we don't start too aggressively.

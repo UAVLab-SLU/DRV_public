@@ -340,6 +340,11 @@ for measured results, the preliminary enablement gate, and known gaps.
    - `settings.json` - Drone and simulation configuration
    - `cesium.json` - Geographic coordinates for terrain generation
 
+On Linux, Compose mounts this directory into both the backend and Unreal
+containers. On Windows, `dev.ps1` sets `AIRSIM_SETTINGS_DIR` to the current
+user's `Documents\AirSim` directory so the Docker backend writes the same
+`settings.json` and `cesium.json` files read by the native Unreal process.
+
 Example `settings.json`:
 
 ```json

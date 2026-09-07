@@ -2,6 +2,7 @@ import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
+import RestartAltOutlinedIcon from "@mui/icons-material/RestartAltOutlined";
 import StopOutlinedIcon from "@mui/icons-material/StopOutlined";
 import VideogameAssetOutlinedIcon from "@mui/icons-material/VideogameAssetOutlined";
 import Alert from "@mui/material/Alert";
@@ -25,6 +26,8 @@ export default function Simulator() {
   const [simulatorState, setSimulatorState] = useState(null);
   const [controlBusy, setControlBusy] = useState(false);
   const [controlError, setControlError] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
   const [simulateStateNotFound, setSimulateStateNotFound] = useState(false);
 
   const refreshStatus = useCallback(async () => {
@@ -77,6 +80,26 @@ export default function Simulator() {
     }
   };
 
+  const resetMission = async () => {
+    setResetBusy(true);
+    setControlError("");
+    setResetMessage("");
+    try {
+      const response = await fetch(`${BASE_URL}/api/simulation/reset`, { method: "POST" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error ?? `HTTP ${response.status}`);
+      setResetMessage(
+        result.cancelled_current_task
+          ? `Mission cancelled and ${result.cleared_tasks} queued task${result.cleared_tasks === 1 ? "" : "s"} cleared.`
+          : `No active mission. ${result.cleared_tasks} queued task${result.cleared_tasks === 1 ? "" : "s"} cleared.`,
+      );
+    } catch (error) {
+      setControlError(`Unable to reset the mission. ${error.message}`);
+    } finally {
+      setResetBusy(false);
+    }
+  };
+
   return (
     <Box
       component="main"
@@ -119,7 +142,7 @@ export default function Simulator() {
             />
             <Button
               onClick={() => runControl("start")}
-              disabled={controlBusy || simulatorState?.running === true}
+              disabled={controlBusy || resetBusy || simulatorState?.running === true}
               startIcon={controlBusy ? <CircularProgress size={16} /> : <PlayArrowOutlinedIcon />}
               variant="contained"
             >
@@ -127,7 +150,7 @@ export default function Simulator() {
             </Button>
             <Button
               onClick={() => runControl("stop")}
-              disabled={controlBusy || simulatorState?.running !== true}
+              disabled={controlBusy || resetBusy || simulatorState?.running !== true}
               startIcon={<StopOutlinedIcon />}
               color="error"
               variant="outlined"
@@ -136,7 +159,7 @@ export default function Simulator() {
             </Button>
             <Button
               onClick={refreshStatus}
-              disabled={controlBusy}
+              disabled={controlBusy || resetBusy}
               startIcon={<RefreshOutlinedIcon />}
               variant="text"
             >
@@ -152,6 +175,17 @@ export default function Simulator() {
             >
               Open separately
             </Button>
+            <Tooltip title="Stop the active mission, clear queued tasks, and return Unreal to idle">
+              <Button
+                onClick={resetMission}
+                disabled={controlBusy || resetBusy}
+                startIcon={resetBusy ? <CircularProgress size={16} /> : <RestartAltOutlinedIcon />}
+                color="error"
+                variant="outlined"
+              >
+                Reset mission
+              </Button>
+            </Tooltip>
             <Tooltip title="Debug: make Unreal's state endpoint return 404">
               <IconButton
                 aria-label="Toggle Unreal state endpoint 404 debug override"
@@ -169,6 +203,12 @@ export default function Simulator() {
         {controlError && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {controlError} Start the application with <code>.\dev.ps1 full</code> to enable host controls.
+          </Alert>
+        )}
+
+        {resetMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {resetMessage} Unreal is ready for the next run.
           </Alert>
         )}
 

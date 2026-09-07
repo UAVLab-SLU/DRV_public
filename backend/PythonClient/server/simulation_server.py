@@ -244,6 +244,12 @@ def get_state():
     return jsonify(task_dispatcher.unreal_state), 200
 
 
+@app.route('/api/simulation/reset', methods=['POST'])
+def reset_simulation():
+    """Cancel the active run and clear any queued missions."""
+    return jsonify(task_dispatcher.reset_active_run()), 200
+
+
 @app.route('/api/debug/unreal-state-not-found', methods=['POST'])
 def set_unreal_state_not_found():
     """Development-only override that makes Unreal's state request return 404."""

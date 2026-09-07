@@ -8,6 +8,11 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -LiteralPath $ScriptDir
 $ControlPort = if ($env:SIMULATOR_CONTROL_PORT) { $env:SIMULATOR_CONTROL_PORT } else { "8890" }
 $ControlPidFile = Join-Path $ScriptDir "sim\windows-control.pid"
+if (-not $env:AIRSIM_HOST) { $env:AIRSIM_HOST = "host.docker.internal" }
+if (-not $env:AIRSIM_SETTINGS_DIR) {
+    $env:AIRSIM_SETTINGS_DIR = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "AirSim"
+}
+New-Item -ItemType Directory -Force -Path $env:AIRSIM_SETTINGS_DIR | Out-Null
 
 function Start-SimulatorControl {
     param(

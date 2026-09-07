@@ -48,6 +48,7 @@ class DroneLumeConfigTests(unittest.TestCase):
             "X": 10,
             "Y": -5,
             "Z": 125,
+            "Mission": {"name": "fly_to_points", "param": []},
         }
     ]
 
@@ -291,7 +292,7 @@ class DroneLumeConfigTests(unittest.TestCase):
         )
 
     @unittest.skipIf(SimulationTaskManager is None, "backend runtime dependencies are not installed")
-    def test_task_state_stays_active_until_explicit_stop(self):
+    def test_task_returns_to_idle_after_missions_finish(self):
         storage = RecordingStorage()
         with tempfile.TemporaryDirectory() as directory:
             with patch(
@@ -314,21 +315,33 @@ class DroneLumeConfigTests(unittest.TestCase):
                 },
                 "task-state",
             )
-            worker = threading.Thread(target=manager.start, daemon=True)
-            worker.start()
+            mission_started = threading.Event()
 
-            deadline = time.time() + 3
-            while manager.unreal_state.get("state") != "dronelume_map" and time.time() < deadline:
-                time.sleep(0.02)
-            self.assertEqual(manager.unreal_state["state"], "dronelume_map")
-            self.assertEqual(manager.unreal_state["task_id"], "task-state")
+            def execute_missions(*args, **kwargs):
+                self.assertEqual(manager.unreal_state["state"], "dronelume_map")
+                self.assertEqual(manager.unreal_state["task_id"], "task-state")
+                self.assertFalse(kwargs["reset_scene"])
+                mission_started.set()
 
-            self.assertTrue(manager.stop_dronelume())
-            deadline = time.time() + 3
-            while manager.unreal_state.get("state") != "idle" and time.time() < deadline:
-                time.sleep(0.02)
-            self.assertEqual(manager.unreal_state, {"state": "idle"})
-            manager.stop()
+            with patch.object(
+                manager,
+                "_SimulationTaskManager__wait_for_airsim",
+                return_value=True,
+            ), patch.object(
+                manager,
+                "_SimulationTaskManager__batch_exe_all",
+                side_effect=execute_missions,
+            ) as mission_executor:
+                worker = threading.Thread(target=manager.start, daemon=True)
+                worker.start()
+
+                self.assertTrue(mission_started.wait(3))
+                deadline = time.time() + 3
+                while manager.unreal_state.get("state") != "idle" and time.time() < deadline:
+                    time.sleep(0.02)
+                self.assertEqual(manager.unreal_state, {"state": "idle"})
+                mission_executor.assert_called_once()
+                manager.stop()
 
 
 if __name__ == "__main__":

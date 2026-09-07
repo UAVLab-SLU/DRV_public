@@ -69,7 +69,11 @@ export default function HorizontalLinearStepper({ desc, title }) {
     const origin = env.Origin ?? env._Origin ?? {};
     return {
       UseGeo: !!env.UseGeo,
-      Origin: { Latitude: origin.Latitude ?? origin.latitude, Longitude: origin.Longitude ?? origin.longitude },
+      Origin: {
+        Latitude: origin.Latitude ?? origin.latitude,
+        Longitude: origin.Longitude ?? origin.longitude,
+        Altitude: origin.Altitude ?? origin.altitude ?? origin.Height ?? origin.height,
+      },
       ...(env.Wind     ? { Wind:      env.Wind      } : {}),
       ...(env.TimeOfDay? { TimeOfDay: env.TimeOfDay } : {}),
       ...(env.Sades    ? { Sades:     env.Sades     } : {}),

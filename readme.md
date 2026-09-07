@@ -22,18 +22,28 @@ Check out our [Wiki](https://github.com/oss-slu/DroneWorld/wiki) for detailed an
 
 ### Docker Deployment (Recommended)
 
-- **Docker** and **Docker Compose**
-- **Linux**, **macOS**, or **Windows with WSL2** for frontend/backend services
-- **Native Linux with an NVIDIA GPU and NVIDIA Container Toolkit** for the Dockerized Unreal Pixel Stream
+- **Docker Engine** and **Docker Compose v2**
+- **Linux**, **macOS**, or **Windows with WSL2** for the frontend/backend services
+- **Native Linux with an NVIDIA GPU, a current NVIDIA driver, Vulkan/NVENC support, and NVIDIA Container Toolkit** for the Dockerized Unreal Pixel Stream
 - **Windows 10/11, 7-Zip, and a supported GPU** for the native Windows Unreal Pixel Stream
+- A **Cesium Ion access token** in `credentials/frontend-cesium-token.json` for the Cesium map
+- A **GitHub Personal Access Token** only when downloading the private `DRV-Unreal` simulator release
+- **Ollama** is optional and required only for the local, LLM-assisted DroneLume Scenario Assistant
 - 16GB+ RAM recommended for the Unreal workflow
 - 25GB+ available disk space
 
-### Traditional Deployment
+The Docker workflow supplies Python, Node.js, backend packages, and frontend packages inside containers. Python and Node.js are not required on the host for Docker-based frontend/backend development. Docker Desktop on Windows is also not a supported host for the Linux Unreal container; use the native Windows simulator workflow instead.
 
-- Windows 10/11
-- Python 3.10
-- Node.js
+### Source Installation (Optional)
+
+- Windows, macOS, or Linux
+- Python 3.10 for the backend
+- Node.js 22 for the Vite frontend
+- The packages listed in `backend/requirements.txt` and `frontend/package.json`
+- Ollama only if using the Scenario Assistant locally
+
+The source-install path does not replace the simulator runtime requirements. Use the
+native Windows package or a native Linux NVIDIA host for Unreal Pixel Streaming.
 
 ## Architecture
 
@@ -334,7 +344,14 @@ configuration is not exposed to the browser. Native backend development uses
 through `http://host.docker.internal:11434`. Configure the model and limits with
 `OLLAMA_MODEL`, `OLLAMA_TIMEOUT_SECONDS`, `OLLAMA_NUM_CTX`, and
 `OLLAMA_NUM_PREDICT`. See [the prototype Ollama evaluation](docs/ollama-scenario-evaluation.md)
-for measured results, the preliminary enablement gate, and known gaps.
+for measured results, the preliminary enablement gate, and known gaps. Ollama is
+not required for ordinary manual DroneLume authoring or for running simulations.
+Install Ollama separately, start its service, and pull the configured model before
+opening the Scenario Assistant, for example:
+
+```bash
+ollama pull llama3.1
+```
 
 1. Configure AirSim settings in `config/airsim/`:
    - `settings.json` - Drone and simulation configuration

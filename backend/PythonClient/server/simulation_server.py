@@ -38,6 +38,7 @@ task_dispatcher = SimulationTaskManager()
 threading.Thread(target=task_dispatcher.start, daemon=True).start()
 
 task_number = 1  # Global task counter
+unreal_state_not_found = threading.Event()
 
 # Initialize the storage service
 storage_service = get_storage_service()
@@ -237,7 +238,23 @@ def get_state():
     """
     Returns the current state of the simulation.
     """
+    if unreal_state_not_found.is_set():
+        return jsonify({'error': 'Not found'}), 404
     return jsonify(task_dispatcher.unreal_state), 200
+
+
+@app.route('/api/debug/unreal-state-not-found', methods=['POST'])
+def set_unreal_state_not_found():
+    """Development-only override that makes Unreal's state request return 404."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict) or not isinstance(payload.get('enabled'), bool):
+        return jsonify({'error': 'A boolean enabled field is required'}), 400
+
+    if payload['enabled']:
+        unreal_state_not_found.set()
+    else:
+        unreal_state_not_found.clear()
+    return jsonify({'enabled': unreal_state_not_found.is_set()}), 200
 
 
 @app.route('/api/dronelume/schema', methods=['GET'])

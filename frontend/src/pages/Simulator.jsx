@@ -1,3 +1,4 @@
+import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
@@ -8,10 +9,13 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { useThemeTokens } from "../theme/palette";
 
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 const PIXEL_STREAM_URL = import.meta.env.VITE_PIXELSTREAM_URL ?? "http://localhost:8888";
 const CONTROL_URL = import.meta.env.VITE_SIMULATOR_CONTROL_URL ?? "http://127.0.0.1:8890";
 
@@ -21,6 +25,7 @@ export default function Simulator() {
   const [simulatorState, setSimulatorState] = useState(null);
   const [controlBusy, setControlBusy] = useState(false);
   const [controlError, setControlError] = useState("");
+  const [simulateStateNotFound, setSimulateStateNotFound] = useState(false);
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -53,6 +58,22 @@ export default function Simulator() {
       setControlError(`Unable to ${action} Unreal. ${error.message}`);
     } finally {
       setControlBusy(false);
+    }
+  };
+
+  const toggleStateNotFound = async () => {
+    const enabled = !simulateStateNotFound;
+    try {
+      const response = await fetch(`${BASE_URL}/api/debug/unreal-state-not-found`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error ?? `HTTP ${response.status}`);
+      setSimulateStateNotFound(result.enabled);
+    } catch (error) {
+      setControlError(`Unable to update the Unreal state debug override. ${error.message}`);
     }
   };
 
@@ -131,6 +152,17 @@ export default function Simulator() {
             >
               Open separately
             </Button>
+            <Tooltip title="Debug: make Unreal's state endpoint return 404">
+              <IconButton
+                aria-label="Toggle Unreal state endpoint 404 debug override"
+                aria-pressed={simulateStateNotFound}
+                onClick={toggleStateNotFound}
+                size="small"
+                sx={{ color: tokens.text.muted, opacity: simulateStateNotFound ? 0.9 : 0.35 }}
+              >
+                <BugReportOutlinedIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 

@@ -35,7 +35,7 @@ export const DRONELUME_FALLBACK_CATALOG = {
     value,
     { description: hint, parameters: [] },
   ])),
-  default_sut_asset: "BP_FlyingPawn_Aurelia",
+  default_sut_asset: "/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C",
   sut_asset_by_drone_model: {},
 };
 

@@ -1,6 +1,12 @@
 export const flightPaths = [
-  { value: 'fly_in_circle', label: 'Circle', id: 1 },
-  { value: 'fly_to_points', label: 'Square', id: 1 },
+  { value: 'fly_in_circle', label: 'Fly in Circle', id: 1 },
+  { value: 'fly_to_points', label: 'Fly to Waypoints', id: 2 },
+  { value: 'river_search_and_rescue', label: 'River Search and Rescue', id: 3,
+    description: 'From local home (0, 0, 0): climb to 60 m, turn 90° counterclockwise, move to (0, -362), point the camera straight down, turn another 10° counterclockwise, then move to (276, -362) at 2 m/s and hover. Transit speed: 4 m/s.' },
+  { value: 'active_shooter_surveillance', label: 'Active Shooter Surveillance', id: 4,
+    description: 'Climb to 100 m, move to (-140, 0) with the initial heading fixed, tilt camera 0 from the horizon to 45° down, and hover for 30 seconds.' },
+  { value: 'missing_person_search_and_rescue', label: 'Missing Person Search and Rescue', id: 5,
+    description: 'Climb to 100 m, move to (100, 600), tilt camera 0 straight down, then fly one 5 m radius circle at 2 m/s around (105, 600), returning to (100, 600) and hovering.' },
   // {value:'fly_straight',label:'Straight', id:1}
 ];
 
@@ -9,21 +15,14 @@ export const droneTypes = [
   // { value: 'FixedWing', label: 'Fixed Wing' },
 ];
 
+export const DEFAULT_DRONE_MODEL = 'AirSim';
+
 export const droneModels = {
-  FixedWing: [
-    { value: 'SenseflyeBeeX', label: 'Sensefly eBee X', src: '/images/SenseflyeBeeX.png' },
-    { value: 'TrinityF90', label: 'Trinity F90', src: '/images/TrinityF90.png' },
-  ],
   MultiRotor: [
-    { value: 'ParrotANAFI', label: 'Parrot ANAFI', src: '/images/Parrot-ANAFI.png' },
-    { value: 'DJI', label: 'DJI', src: '/images/DJI.png' },
-    { value: 'VOXLm500', label: 'VOXL m500', src: '/images/VOXLm500.png' },
-    { value: 'AureliaX6Pro', label: 'Aurelia X6 Pro', src: '/images/Aurelia-X6-Pro.png' },
-    { value: 'IF1200', label: 'IF 1200', src: '/images/IF1200.png' },
-    { value: 'Crazyflie 2.0', label: 'Crazyflie 2.0', src: '/images/Craziefly2.1.png' },
-    {
-      /*value: 'StreamLineDesignX189', label: 'StreamLineDesign X189', src: null*/
-    },
+    { value: 'AirSim', label: 'AirSim (default)' },
+    { value: 'Aurelia', label: 'Aurelia X6 Pro v2 (hexacopter)' },
+    { value: 'AirSimGPS', label: 'AirSim GPS (not yet supported)', disabled: true },
+    { value: 'AureliaGPS', label: 'Aurelia X6 Pro v2 GPS (not yet supported)', disabled: true },
   ],
 };
 

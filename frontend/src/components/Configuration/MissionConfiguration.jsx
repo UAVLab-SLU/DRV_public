@@ -28,7 +28,7 @@ const buildDefaultDrone = (idx, env) => {
   Name: `Drone ${idx + 1}`,
   FlightController: "SimpleFlight",
   droneType: "MultiRotor",
-  droneModel: "DJI",
+  droneModel: "AirSim",
   VehicleType: "SimpleFlight",
   DefaultVehicleState: "Armed",
   EnableCollisions: true,

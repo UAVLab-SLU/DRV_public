@@ -13,30 +13,7 @@ import { useMainJson } from "../../contexts/MainJsonContext";
 import { SimulationConfigurationModel } from "../../model/SimulationConfigurationModel";
 import { useThemeTokens } from "../../theme/palette";
 import SensorConfiguration from "./SensorConfiguration";
-
-const FLIGHT_PATHS = [
-  { value: "fly_to_points", label: "Fly to Waypoints" },
-  { value: "fly_in_circle", label: "Fly in Circle" },
-];
-
-const DRONE_TYPES = [
-  { value: "MultiRotor", label: "Multi-Rotor" },
-  { value: "FixedWing", label: "Fixed Wing" },
-];
-
-const DRONE_MODELS = {
-  MultiRotor: [
-    { value: "DJI", label: "DJI" },
-    { value: "ParrotANAFI", label: "Parrot ANAFI" },
-    { value: "VOXL_m500", label: "VOXL m500" },
-    { value: "AureliaX6Pro", label: "Aurelia X6 Pro" },
-    { value: "Crazyflie", label: "Crazyflie" },
-  ],
-  FixedWing: [
-    { value: "SenseflyeBeeX", label: "Sensefly eBee X" },
-    { value: "TrinityF90", label: "Trinity F90" },
-  ],
-};
+import { flightPaths as FLIGHT_PATHS, droneTypes as DRONE_TYPES, droneModels as DRONE_MODELS, DEFAULT_DRONE_MODEL } from "../../constants/drone";
 
 export default function DroneConfiguration({ id, droneObject, isDroneLume = false, onUpdate }) {
   const { mainJson, setMainJson } = useMainJson();
@@ -45,7 +22,7 @@ export default function DroneConfiguration({ id, droneObject, isDroneLume = fals
   const [drone, setDrone] = useState({
     Name: droneObject?.Name ?? droneObject?.droneName ?? `Drone ${id + 1}`,
     droneType: droneObject?.droneType ?? "MultiRotor",
-    droneModel: droneObject?.droneModel ?? "DJI",
+    droneModel: droneObject?.droneModel || DEFAULT_DRONE_MODEL,
     X: droneObject?.X ?? 0,
     Y: droneObject?.Y ?? 0,
     Z: droneObject?.Z ?? 0,
@@ -95,7 +72,7 @@ export default function DroneConfiguration({ id, droneObject, isDroneLume = fals
             <Select
               label="Mission"
               value={drone.Mission.name}
-              onChange={(e) => commit({ Mission: { ...drone.Mission, name: e.target.value } })}
+              onChange={(e) => commit({ Mission: { name: e.target.value, param: [] } })}
               sx={{ color: tokens.text.primary }}
             >
               {FLIGHT_PATHS.map((fp) => (
@@ -114,7 +91,7 @@ export default function DroneConfiguration({ id, droneObject, isDroneLume = fals
             <Select
               label="Type"
               value={drone.droneType}
-              onChange={(e) => commit({ droneType: e.target.value, droneModel: "" })}
+              onChange={(e) => commit({ droneType: e.target.value, droneModel: DEFAULT_DRONE_MODEL })}
               sx={{ color: tokens.text.primary }}
             >
               {DRONE_TYPES.map((t) => (
@@ -137,7 +114,7 @@ export default function DroneConfiguration({ id, droneObject, isDroneLume = fals
               sx={{ color: tokens.text.primary }}
             >
               {(DRONE_MODELS[drone.droneType] ?? []).map((m) => (
-                <MenuItem key={m.value} value={m.value}>
+                <MenuItem key={m.value} value={m.value} disabled={m.disabled}>
                   {m.label}
                 </MenuItem>
               ))}
@@ -145,6 +122,13 @@ export default function DroneConfiguration({ id, droneObject, isDroneLume = fals
           </FormControl>
         </Grid>
       </Grid>
+
+      {FLIGHT_PATHS.find((path) => path.value === drone.Mission.name)?.description && (
+        <Typography variant="body2" sx={{ color: tokens.text.secondary }}>
+          {FLIGHT_PATHS.find((path) => path.value === drone.Mission.name).description}
+          {" Coordinates are local meters from the drone's home; heights are positive above home. Use an initial yaw of 0° for the prescribed route."}
+        </Typography>
+      )}
 
       {/* Position */}
       <Typography variant="overline" sx={{ color: tokens.brand.soft, mt: 0.5 }}>

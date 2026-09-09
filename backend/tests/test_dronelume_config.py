@@ -44,7 +44,7 @@ class DroneLumeConfigTests(unittest.TestCase):
     mission_drones = [
         {
             "Name": "Drone 1",
-            "droneModel": "AureliaX6Pro",
+            "droneModel": "Aurelia",
             "X": 10,
             "Y": -5,
             "Z": 125,

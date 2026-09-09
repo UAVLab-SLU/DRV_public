@@ -228,14 +228,9 @@
       "parameters": []
     }
   },
-  "default_sut_asset": "BP_FlyingPawn_Aurelia",
+  "default_sut_asset": "/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C",
   "sut_asset_by_drone_model": {
-    "DJI": "BP_FlyingPawn_Aurelia",
-    "ParrotANAFI": "BP_FlyingPawn_Aurelia",
-    "VOXL_m500": "BP_FlyingPawn_Aurelia",
-    "AureliaX6Pro": "BP_FlyingPawn_Aurelia",
-    "Crazyflie": "BP_FlyingPawn_Aurelia",
-    "SenseflyeBeeX": "BP_FlyingPawn_Aurelia",
-    "TrinityF90": "BP_FlyingPawn_Aurelia"
+    "AirSim": "/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C",
+    "Aurelia": "BP_FlyingPawn_Aurelia"
   }
 }

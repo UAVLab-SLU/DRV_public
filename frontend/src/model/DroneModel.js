@@ -4,8 +4,8 @@ export class DroneModel {
   constructor() {
     this._Name = `Drone-${uuidv4().substring(0, 4)}`;
     this._FlightController = '';
-    this._droneType = '';
-    this._droneModel = '';
+    this._droneType = 'MultiRotor';
+    this._droneModel = 'AirSim';
     this._VehicleType = '';
     this._DefaultVehicleState = '';
     this._EnableCollisionPassthrogh = false;

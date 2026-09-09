@@ -1,0 +1,44 @@
+{
+  "SettingsVersion": 1.2,
+  "SimMode": "Multirotor",
+  "ViewMode": "SpringArmChase",
+  "PawnPaths": {
+    "Aurelia": {
+      "PawnBP": "Class'/Game/Blueprints/BP_FlyingPawn_Aurelia.BP_FlyingPawn_Aurelia_C'"
+    }
+  },
+  "Vehicles": {
+    "Drone 1": {
+      "VehicleType": "SimpleFlight",
+      "PawnPath": "Aurelia",
+      "X": 0,
+      "Y": 0,
+      "Z": -5
+    },
+    "Drone 2": {
+      "VehicleType": "SimpleFlight",
+      "PawnPath": "Aurelia",
+      "X": 0,
+      "Y": 5,
+      "Z": -5
+    },
+    "Drone 3": {
+      "VehicleType": "SimpleFlight",
+      "PawnPath": "Aurelia",
+      "X": 5,
+      "Y": 5,
+      "Z": -5
+    },
+    "Drone 4": {
+      "VehicleType": "SimpleFlight",
+      "PawnPath": "Aurelia",
+      "X": 5,
+      "Y": 0,
+      "Z": -5
+    }
+  },
+  "TimeOfDay": {
+    "Enabled": true,
+    "StartDateTime": "2018-02-12 17:20:00"
+  }
+}

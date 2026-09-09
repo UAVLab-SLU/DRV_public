@@ -1,0 +1,52 @@
+{
+  "Scenario": {
+    "Level": {
+      "size": "medium",
+      "type": "woods",
+      "TimeOfDay": "15:00",
+      "Weather": {
+        "type": "rain",
+        "intensity": 0.0
+      }
+    },
+    "Actors": {
+      "Static": {},
+      "Dynamic": {
+        "MissingPerson": {
+          "AssetName": "BP_MissingAICharacter",
+          "PawnIdentifier": "missing_person",
+          "location": {
+            "Cartesian": true,
+            "x": 1064,
+            "y": 6092
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          }
+        }
+      },
+      "Procedural": {
+        "Seed": 2001,
+        "Tree": {
+          "AssetName": "PCG_tree_default",
+          "density": 0.2
+        },
+        "Grass": {
+          "AssetName": "PCG_grass_default",
+          "density": 0.2
+        }
+      }
+    },
+    "SuT": {
+      "AssetName": "BP_FlyingPawn_Aurelia",
+      "StartLocation": {
+        "Cartesian": true,
+        "x": 0,
+        "y": 0,
+        "z": 200
+      }
+    }
+  }
+}

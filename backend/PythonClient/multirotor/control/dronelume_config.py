@@ -1,3 +1,4 @@
+from PythonClient.multirotor.control.drone_models import resolve_drone_model
 import copy
 import json
 import os
@@ -383,7 +384,10 @@ def derive_sut_from_mission(document, drones):
         raise DroneLumeValidationError(errors)
 
     catalog = get_dronelume_catalog()
-    drone_model = drone.get("droneModel")
+    try:
+        drone_model = resolve_drone_model(drone.get("droneModel"))
+    except ValueError as exc:
+        raise DroneLumeValidationError([{"path": "$.Drones[0].droneModel", "message": str(exc)}]) from exc
     asset_name = catalog["sut_asset_by_drone_model"].get(
         drone_model, catalog["default_sut_asset"]
     )

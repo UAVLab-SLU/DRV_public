@@ -1,0 +1,72 @@
+{
+  "Scenario": {
+    "Level": {
+      "size": "medium",
+      "type": "woods",
+      "TimeOfDay": "13:00",
+      "Weather": {
+        "type": "fog",
+        "intensity": 0.0
+      }
+    },
+    "Actors": {
+      "Static": {},
+      "Dynamic": {
+        "Drowner": {
+          "AssetName": "BP_BuoyancyDrowner",
+          "PawnIdentifier": "Drowner",
+          "location": {
+            "Cartesian": true,
+            "x": 13800,
+            "y": -36200
+          },
+          "orientation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          },
+          "behavior": []
+        }
+      },
+      "Procedural": {
+        "Seed": 2003,
+        "Tree": {
+          "AssetName": "PCG_tree_default",
+          "density": 0.2
+        },
+        "Grass": {
+          "AssetName": "PCG_grass_default",
+          "density": 0.2
+        }
+      }
+    },
+    "Metadata": {
+      "name": "W_N_s2003",
+      "version": "2.0",
+      "Author": "DRV regression study",
+      "Date": "2026-09-08",
+      "Description": "Mission-aligned capture configuration; see suite manifest for protocol adaptations.",
+      "UseCase": [
+        "water"
+      ]
+    },
+    "Goal": {
+      "type": "test",
+      "Objective": "Record visible people for offline person-detection regression evaluation.",
+      "Target": {
+        "AssetName": "GenericHumanAICharacter",
+        "Type": "human",
+        "Signature": "visible"
+      }
+    },
+    "SuT": {
+      "AssetName": "BP_FlyingPawn_Aurelia",
+      "StartLocation": {
+        "Cartesian": true,
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  }
+}

@@ -13,6 +13,7 @@ from msgpackrpc.error import TransportError
 from numpy import random
 
 from PythonClient import airsim
+from PythonClient.multirotor.control.drone_models import apply_drone_model
 from PythonClient.multirotor.control.dronelume_config import (
     DRONELUME_STATE,
     DroneLumeConfigManager,
@@ -144,18 +145,26 @@ class SimulationTaskManager:
         self.__monitor_list.clear()
         self.unreal_off()
 
-    def __wait_for_airsim(self, attempts=30):
+    def __wait_for_airsim(self, attempts=30, required_vehicle_names=None):
         rpc_host, rpc_port = airsim.resolve_rpc_endpoint()
         last_error = None
+        required_vehicle_names = set(required_vehicle_names or ())
         for _ in range(attempts):
             if self.__run_cancel_event.is_set() or self.__dronelume_stop_event.is_set():
                 return False
             try:
                 client = airsim.MultirotorClient(timeout_value=2)
                 client.ping()
-                if not client.listVehicles():
+                vehicle_names = set(client.listVehicles())
+                if not vehicle_names or not required_vehicle_names.issubset(vehicle_names):
                     sleep(1)
                     continue
+                # The RPC endpoint and vehicle registry can become available a
+                # little before the spawned vehicle accepts state requests.
+                # Probe each mission vehicle so callers do not race that
+                # final initialization phase.
+                for vehicle_name in required_vehicle_names:
+                    client.getMultirotorState(vehicle_name=vehicle_name)
                 sleep(1)
                 print(f"AirSim RPC ready at {rpc_host}:{rpc_port}")
                 return True
@@ -315,6 +324,7 @@ class SimulationTaskManager:
         for single_drone_setting in raw_request_json["Drones"]:
             # Must-exist params for setting.json or mission dispatch
             single_drone_setting_copy = copy.deepcopy(single_drone_setting)
+            apply_drone_model(new_setting_dot_json, single_drone_setting_copy)
 
             if "UseGeo" in raw_request_json["environment"] and raw_request_json["environment"]["UseGeo"]:
                 origin_latitude_ = raw_request_json["environment"]["Origin"]["Latitude"]
@@ -338,7 +348,7 @@ class SimulationTaskManager:
 
             diff_dict = self.__find_diff(single_drone_setting_copy, self.__DEFAULT_DRONE_FULL_LENGTH)
 
-            if "Sensors" in single_drone_setting:
+            if isinstance(single_drone_setting.get("Sensors"), dict):
                 diff_dict["Sensors"] = diff_dict.get("Sensors", {})
                 if "Barometer" in single_drone_setting["Sensors"]:
                     diff_dict["Sensors"]["Barometer"] = single_drone_setting["Sensors"]["Barometer"]
@@ -502,9 +512,14 @@ class SimulationTaskManager:
             return
 
         rpc_host, rpc_port = airsim.resolve_rpc_endpoint()
+        required_vehicle_names = {pair[1] for pair in drone_mission_pair_list}
         try:
+            if not self.__wait_for_airsim(
+                attempts=30,
+                required_vehicle_names=required_vehicle_names,
+            ):
+                return
             client = airsim.MultirotorClient(timeout_value=10)
-            client.ping()
         except Exception as e:
             raise RuntimeError(
                 f"Unable to reach AirSim RPC at {rpc_host}:{rpc_port}. "

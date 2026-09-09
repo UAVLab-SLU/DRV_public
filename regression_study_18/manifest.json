@@ -1,0 +1,591 @@
+{
+  "suite": "SANER2027 DRV mission-aligned regression study",
+  "version": "2.0",
+  "design": "3 families x nominal/stress x 3 seeds",
+  "seeds": [
+    2001,
+    2002,
+    2003
+  ],
+  "protocol_snapshot": "sources/protocol.md",
+  "protocol_sha256": "ebaff50b07f16ffc20c2215a6915d26968c7ac6e30bd6eb179410b5dfd1b4d57",
+  "water_stress_adaptation": {
+    "protocol_fog": 0.5,
+    "supported_fog_used": 0.7
+  },
+  "capture": {
+    "camera": "0",
+    "width": 1280,
+    "height": 720,
+    "fov_degrees": 90,
+    "recorder_nominal_fps": 5,
+    "motion_blur_amount": 0,
+    "runtime_verified": false,
+    "raw_frame_timestamps_available": false,
+    "automatic_scoring_window": false
+  },
+  "sources": [
+    {
+      "family": "forest",
+      "file": "sources/forest.json",
+      "sha256": "6dc1aec24a6929715c0c8c31946090274c2820e6386ea90a4be7b4284e8fdcdc",
+      "common_adaptations": [
+        {
+          "path": "Scenario.Actors.Dynamic.MissingPerson.PawnIdentifier",
+          "before": "missing_person",
+          "after": "MissingPerson"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.MissingPerson.behavior",
+          "before": null,
+          "after": []
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.MissingPerson.location.x",
+          "before": 1064,
+          "after": 1050
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.MissingPerson.location.y",
+          "before": 6092,
+          "after": 6000
+        },
+        {
+          "path": "Scenario.Goal",
+          "before": null,
+          "after": {
+            "type": "test",
+            "Objective": "Record visible people for offline person-detection regression evaluation.",
+            "Target": {
+              "AssetName": "GenericHumanAICharacter",
+              "Type": "human",
+              "Signature": "visible"
+            }
+          }
+        },
+        {
+          "path": "Scenario.Metadata",
+          "before": null,
+          "after": {
+            "name": "RegressionStudy18_F",
+            "version": "2.0",
+            "Author": "DRV regression study",
+            "Date": "2026-09-08",
+            "Description": "Mission-aligned capture configuration; see suite manifest for protocol adaptations.",
+            "UseCase": [
+              "forest"
+            ]
+          }
+        },
+        {
+          "path": "Scenario.SuT",
+          "before": {
+            "AssetName": "BP_FlyingPawn_Aurelia",
+            "StartLocation": {
+              "Cartesian": true,
+              "x": 0,
+              "y": 0,
+              "z": 200
+            }
+          },
+          "after": null
+        }
+      ]
+    },
+    {
+      "family": "water",
+      "file": "sources/water.json",
+      "sha256": "92fab5918428f745ed6108bb3fd266491d96920c63e313c5888694d29633fbb5",
+      "common_adaptations": [
+        {
+          "path": "Scenario.Actors.Dynamic.Drowner.PawnIdentifier",
+          "before": "drowning_person",
+          "after": "Drowner"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Drowner.behavior",
+          "before": null,
+          "after": []
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Drowner.location.x",
+          "before": -128,
+          "after": 13800
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Drowner.location.y",
+          "before": -3407,
+          "after": -36200
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Drowner.location.z",
+          "before": 0,
+          "after": null
+        },
+        {
+          "path": "Scenario.Goal",
+          "before": null,
+          "after": {
+            "type": "test",
+            "Objective": "Record visible people for offline person-detection regression evaluation.",
+            "Target": {
+              "AssetName": "GenericHumanAICharacter",
+              "Type": "human",
+              "Signature": "visible"
+            }
+          }
+        },
+        {
+          "path": "Scenario.Metadata",
+          "before": null,
+          "after": {
+            "name": "RegressionStudy18_W",
+            "version": "2.0",
+            "Author": "DRV regression study",
+            "Date": "2026-09-08",
+            "Description": "Mission-aligned capture configuration; see suite manifest for protocol adaptations.",
+            "UseCase": [
+              "water"
+            ]
+          }
+        },
+        {
+          "path": "Scenario.SuT",
+          "before": {
+            "AssetName": "BP_FlyingPawn_Aurelia",
+            "StartLocation": {
+              "Cartesian": true,
+              "x": 0,
+              "y": 0,
+              "z": 200
+            }
+          },
+          "after": null
+        }
+      ]
+    },
+    {
+      "family": "triggered",
+      "file": "sources/triggered.json",
+      "sha256": "6ba95ba3e8b805ebf4f99c00c621c506dcc384610d5d69106006fcc4f4520507",
+      "common_adaptations": [
+        {
+          "path": "Scenario.Actors.Dynamic.ActiveShooter.PawnIdentifier",
+          "before": "shooter",
+          "after": "ActiveShooter"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.ActiveShooter.behavior[1].duration",
+          "before": 15.0,
+          "after": 75.0
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Civilian1.PawnIdentifier",
+          "before": "civilian_1",
+          "after": "Civilian1"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Civilian1.behavior[1].duration",
+          "before": 20.0,
+          "after": 90.0
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Civilian1.behavior[2].order",
+          "before": "",
+          "after": "A"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.Civilian1.behavior[3].order",
+          "before": "",
+          "after": "A"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.TriggerReceiver1.PawnIdentifier",
+          "before": "receiver_1",
+          "after": "TriggerReceiver1"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.TriggerReceiver1.behavior[1].duration",
+          "before": 30.0,
+          "after": 90.0
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.TriggerReceiver2.PawnIdentifier",
+          "before": "receiver_2",
+          "after": "TriggerReceiver2"
+        },
+        {
+          "path": "Scenario.Actors.Dynamic.TriggerReceiver2.behavior[1].duration",
+          "before": 30.0,
+          "after": 90.0
+        },
+        {
+          "path": "Scenario.Goal",
+          "before": null,
+          "after": {
+            "type": "test",
+            "Objective": "Record visible people for offline person-detection regression evaluation.",
+            "Target": {
+              "AssetName": "GenericHumanAICharacter",
+              "Type": "human",
+              "Signature": "visible"
+            }
+          }
+        },
+        {
+          "path": "Scenario.Metadata",
+          "before": null,
+          "after": {
+            "name": "RegressionStudy18_T",
+            "version": "2.0",
+            "Author": "DRV regression study",
+            "Date": "2026-09-08",
+            "Description": "Mission-aligned capture configuration; see suite manifest for protocol adaptations.",
+            "UseCase": [
+              "triggered"
+            ]
+          }
+        },
+        {
+          "path": "Scenario.SuT",
+          "before": {
+            "AssetName": "BP_FlyingPawn_Aurelia",
+            "StartLocation": {
+              "Cartesian": true,
+              "x": 0,
+              "y": 0,
+              "z": 200
+            }
+          },
+          "after": null
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "F_N_s2001",
+      "family": "forest",
+      "variant": "N",
+      "seed": 2001,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/F_N_s2001/frontend_payload.json",
+      "init_dsl": "cases/F_N_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "5fce5a862b5df084a647f28c37e55208f119ba6c1756c1bf1d5a24d9bd7a743c",
+        "init_dsl": "bc8da4798cf46c53ef5aa8487d34c6692b6b5f7d8ccf771927d9c274f8b656ab"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "F_A_s2001",
+      "family": "forest",
+      "variant": "A",
+      "seed": 2001,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/F_A_s2001/frontend_payload.json",
+      "init_dsl": "cases/F_A_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "d70bc0819b3659658d2dfb3d7a6ac0460ba145fb7fc449b8445eae3e0f6e7bb3",
+        "init_dsl": "25d40a4f799a0dd5322be8a6ada898b3522a4d068bc954b7e009f86f765f8dd2"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "F_N_s2002",
+      "family": "forest",
+      "variant": "N",
+      "seed": 2002,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/F_N_s2002/frontend_payload.json",
+      "init_dsl": "cases/F_N_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "a1e0b8dcf3fa4d066b89ff0a3cfe3c556e02d9ba369f89f2a39248c98c92fb6f",
+        "init_dsl": "49a9d48ed22eaea33e6384b6a6769f1d4af415f40d9eb1548efd8668401bda44"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "F_A_s2002",
+      "family": "forest",
+      "variant": "A",
+      "seed": 2002,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/F_A_s2002/frontend_payload.json",
+      "init_dsl": "cases/F_A_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "d50b4860ca901452bf5c94a40127c571f5124e5a661ecd45ac33ae9548f546c3",
+        "init_dsl": "f231da9ecc818e22f68e10e07a383530920fd295ec026c7807a040c1f6f93548"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "F_N_s2003",
+      "family": "forest",
+      "variant": "N",
+      "seed": 2003,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/F_N_s2003/frontend_payload.json",
+      "init_dsl": "cases/F_N_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "2e260fd6352f1646f1719943656047af281040be00160af930976fa4ebb85537",
+        "init_dsl": "dbcdb44e8f1388aa8fa9af99df7f0458e95ccd4040df266bd5b41efba7e3c9a7"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "F_A_s2003",
+      "family": "forest",
+      "variant": "A",
+      "seed": 2003,
+      "mission": "missing_person_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/F_A_s2003/frontend_payload.json",
+      "init_dsl": "cases/F_A_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "2fc731775535312d4e5a22920aa87892be5d21bfe0ab681769d6abb8323f69a3",
+        "init_dsl": "78c315cc9e15f4bfbac8b1a63d3486b1305417d6571e542dd12cfb041d3222cb"
+      },
+      "report_recording_relative_path": "MissingPersonSearchAndRescue/MissingPersonSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "last 20s, includes end of approach and the single orbit",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_N_s2001",
+      "family": "water",
+      "variant": "N",
+      "seed": 2001,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/W_N_s2001/frontend_payload.json",
+      "init_dsl": "cases/W_N_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "abdd225137f6c360b97225d428eed9ab8b89a7d624befc95a69df06fa69d3ae1",
+        "init_dsl": "be955d6649c5a7016f1526b0f4d66f8fa0fc4f761bc31e29bdd31800ac328d42"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_A_s2001",
+      "family": "water",
+      "variant": "A",
+      "seed": 2001,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/W_A_s2001/frontend_payload.json",
+      "init_dsl": "cases/W_A_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "3ddd689fb5cee906b12b28716faeb983c6fdc844258c0f19449a10468b00c5cc",
+        "init_dsl": "4ed2523a7f32e4083faa11bf836a63ea8cd4536d57d2877a1ea29986abe0a2b7"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_N_s2002",
+      "family": "water",
+      "variant": "N",
+      "seed": 2002,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/W_N_s2002/frontend_payload.json",
+      "init_dsl": "cases/W_N_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "9d1c272d9527bf80f0961567c36c56fbb7bbf4dadba0dcc4f7cff4761e219005",
+        "init_dsl": "312faadeca132cc48d842f80a0fa4cb0a75976dd5f391c4b4d23cfab23331e35"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_A_s2002",
+      "family": "water",
+      "variant": "A",
+      "seed": 2002,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/W_A_s2002/frontend_payload.json",
+      "init_dsl": "cases/W_A_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "a15fc9b8f42cb3fa16bb787e7eb8ac5fc5a5cc0970f91a3c9c56cd384bb4cd0e",
+        "init_dsl": "620e84e1c66800ab4ae8770008d1127e92dd47f2ab354311591b13f005e3ab9c"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_N_s2003",
+      "family": "water",
+      "variant": "N",
+      "seed": 2003,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.0,
+      "frontend_payload": "cases/W_N_s2003/frontend_payload.json",
+      "init_dsl": "cases/W_N_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "b3374416b8693e46accec15c1d9bdab4b3ee5b088d4fa30d1f6a52e50396fd95",
+        "init_dsl": "3b24031d12bcdf8134b67389f2a3bf3a26f7869793d31814d341605e5f1fc540"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "W_A_s2003",
+      "family": "water",
+      "variant": "A",
+      "seed": 2003,
+      "mission": "river_search_and_rescue",
+      "factor_path": "Scenario.Level.Weather.intensity",
+      "factor_value": 0.7,
+      "frontend_payload": "cases/W_A_s2003/frontend_payload.json",
+      "init_dsl": "cases/W_A_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "e2ea995a023a1b33580f0066ebbfb9597905443c0a06abe3a748bde85224ccb5",
+        "init_dsl": "051f1fdf302171250b1ac83acd73f101bd760457bb371ac86eb8e8486cf4bb57"
+      },
+      "report_recording_relative_path": "RiverSearchAndRescue/RiverSearchAndRescue_Drone1_recording.mp4",
+      "evaluation_window": "20s around target visibility during the slow river leg",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_N_s2001",
+      "family": "triggered",
+      "variant": "N",
+      "seed": 2001,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.1,
+      "frontend_payload": "cases/T_N_s2001/frontend_payload.json",
+      "init_dsl": "cases/T_N_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "af4c7f6898a8829c2ed646b49632e64bca9b11da08925475d5cef0670fdfac1f",
+        "init_dsl": "b3c579a31cb2042b9920926a43ca5a333726ef5f2b1c7383219b7a8b8a4f6331"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_A_s2001",
+      "family": "triggered",
+      "variant": "A",
+      "seed": 2001,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.5,
+      "frontend_payload": "cases/T_A_s2001/frontend_payload.json",
+      "init_dsl": "cases/T_A_s2001/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "6fd9b604a62b9737d33bd35b236359e4963429b60a02647a5c998c06f395c4bc",
+        "init_dsl": "bef96c0c841bda8f22b9766ee43b425475c7eb1fe3d23e3abbff03c8fd798acb"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_N_s2002",
+      "family": "triggered",
+      "variant": "N",
+      "seed": 2002,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.1,
+      "frontend_payload": "cases/T_N_s2002/frontend_payload.json",
+      "init_dsl": "cases/T_N_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "a8045d5f850bcea8e6f1609919cb9b2dd169624e15be03e0ece968e7582210cf",
+        "init_dsl": "4653e9a2330e388b849cb606636690703c7f0fc0b07fa8072cc19628e50f8db8"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_A_s2002",
+      "family": "triggered",
+      "variant": "A",
+      "seed": 2002,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.5,
+      "frontend_payload": "cases/T_A_s2002/frontend_payload.json",
+      "init_dsl": "cases/T_A_s2002/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "1ee11b1e364b5e1ed7e5d75cf34467eabca87c42d6c9a065771c0269c13a255e",
+        "init_dsl": "cb07efa379988edaa3812e9ed268063d952eeb6bcd08db19dcab57e4263995f5"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_N_s2003",
+      "family": "triggered",
+      "variant": "N",
+      "seed": 2003,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.1,
+      "frontend_payload": "cases/T_N_s2003/frontend_payload.json",
+      "init_dsl": "cases/T_N_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "e9d2ac8aea43e4a66dbf1931ce5841347320c63c233fd461aad89ddeb00ba028",
+        "init_dsl": "3d69197114ce3682a934d9777d1dd8f5cccbf904e00666f4374fc2f34b850e47"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    },
+    {
+      "case_id": "T_A_s2003",
+      "family": "triggered",
+      "variant": "A",
+      "seed": 2003,
+      "mission": "active_shooter_surveillance",
+      "factor_path": "Scenario.Actors.Procedural.Crowd.density",
+      "factor_value": 0.5,
+      "frontend_payload": "cases/T_A_s2003/frontend_payload.json",
+      "init_dsl": "cases/T_A_s2003/InitDSL.json",
+      "sha256": {
+        "frontend_payload": "1ad2759f4070b9166bb21d4aeb7f35163e4be53d218116911a1473cbdb008f02",
+        "init_dsl": "0d8e998da36ddaa7af2f708c3d11e2281913e79813ee5e02c97615357f4392fd"
+      },
+      "report_recording_relative_path": "ActiveShooterSurveillance/ActiveShooterSurveillance_Drone1_recording.mp4",
+      "evaluation_window": "observed trigger -5s through +15s",
+      "runtime_verified": false
+    }
+  ]
+}

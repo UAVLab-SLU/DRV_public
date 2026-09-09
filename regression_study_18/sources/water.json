@@ -1,0 +1,53 @@
+{
+  "Scenario": {
+    "Level": {
+      "size": "medium",
+      "type": "woods",
+      "TimeOfDay": "13:00",
+      "Weather": {
+        "type": "fog",
+        "intensity": 0.0
+      }
+    },
+    "Actors": {
+      "Static": {},
+      "Dynamic": {
+        "Drowner": {
+          "AssetName": "BP_BuoyancyDrowner",
+          "PawnIdentifier": "drowning_person",
+          "location": {
+            "Cartesian": true,
+            "x": -128,
+            "y": -3407,
+            "z": 0
+          },
+          "orientation": {
+            "pitch": 90,
+            "yaw": 0,
+            "roll": 0
+          }
+        }
+      },
+      "Procedural": {
+        "Seed": 2001,
+        "Tree": {
+          "AssetName": "PCG_tree_default",
+          "density": 0.2
+        },
+        "Grass": {
+          "AssetName": "PCG_grass_default",
+          "density": 0.2
+        }
+      }
+    },
+    "SuT": {
+      "AssetName": "BP_FlyingPawn_Aurelia",
+      "StartLocation": {
+        "Cartesian": true,
+        "x": 0,
+        "y": 0,
+        "z": 200
+      }
+    }
+  }
+}

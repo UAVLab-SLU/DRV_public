@@ -1,0 +1,266 @@
+{
+  "Scenario": {
+    "Level": {
+      "size": "medium",
+      "type": "urban",
+      "TimeOfDay": "10:00",
+      "Weather": {
+        "type": "clear",
+        "intensity": 0.0
+      }
+    },
+    "Actors": {
+      "Static": {
+        "Object1": {
+          "AssetName": "terrain_flat",
+          "location": {
+            "Cartesian": true,
+            "x": 0,
+            "y": 0
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          }
+        }
+      },
+      "Dynamic": {
+        "ActiveShooter": {
+          "AssetName": "GenericHumanAICharacter",
+          "PawnIdentifier": "shooter",
+          "location": {
+            "Cartesian": true,
+            "x": 0,
+            "y": 0
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "behavior": [
+            {
+              "action": "SetMySpeed",
+              "target": "",
+              "duration": 0.5,
+              "order": "",
+              "location": "",
+              "parameters": "300.0",
+              "stage_name": "set_shooter_speed",
+              "trigger": ""
+            },
+            {
+              "action": "Loiter",
+              "target": "",
+              "duration": 15.0,
+              "order": "",
+              "location": "",
+              "parameters": "",
+              "stage_name": "prepare_for_attack",
+              "trigger": ""
+            },
+            {
+              "action": "Attack",
+              "target": "Civilian1",
+              "duration": 15.0,
+              "order": "",
+              "location": "",
+              "parameters": "",
+              "stage_name": "first_shooting",
+              "trigger": "shots_fired_stage"
+            },
+            {
+              "action": "MoveToLocation",
+              "target": "",
+              "duration": 1.0,
+              "order": "",
+              "location": "1600,800,0",
+              "parameters": "100.0",
+              "stage_name": "check_victim_reaction",
+              "trigger": ""
+            },
+            {
+              "action": "Flee",
+              "target": "",
+              "duration": 10.0,
+              "order": "",
+              "location": "",
+              "parameters": "800.0",
+              "stage_name": "shooter_flee",
+              "trigger": ""
+            }
+          ]
+        },
+        "Civilian1": {
+          "AssetName": "GenericHumanAICharacter",
+          "PawnIdentifier": "civilian_1",
+          "location": {
+            "Cartesian": true,
+            "x": 400,
+            "y": 300
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 180,
+            "roll": 0
+          },
+          "behavior": [
+            {
+              "action": "SetMySpeed",
+              "target": "",
+              "duration": 0.5,
+              "order": "",
+              "location": "",
+              "parameters": "200.0",
+              "stage_name": "set_civilian_speed",
+              "trigger": ""
+            },
+            {
+              "action": "Loiter",
+              "target": "",
+              "duration": 20.0,
+              "order": "",
+              "location": "",
+              "parameters": "300.0",
+              "stage_name": "normal_activity",
+              "trigger": ""
+            },
+            {
+              "action": "SetMySpeed",
+              "target": "",
+              "duration": 0.5,
+              "order": "",
+              "location": "",
+              "parameters": "600.0",
+              "stage_name": "shots_fired_stage",
+              "trigger": "victim_flee"
+            },
+            {
+              "action": "MoveToLocation",
+              "target": "",
+              "duration": 1.0,
+              "order": "",
+              "location": "2000,1500,0",
+              "parameters": "100.0",
+              "stage_name": "victim_flee",
+              "trigger": ""
+            }
+          ]
+        },
+        "TriggerReceiver1": {
+          "AssetName": "GenericHumanAICharacter",
+          "PawnIdentifier": "receiver_1",
+          "location": {
+            "Cartesian": true,
+            "x": 1000,
+            "y": 1000
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "behavior": [
+            {
+              "action": "SetMySpeed",
+              "target": "",
+              "duration": 0.5,
+              "order": "",
+              "location": "",
+              "parameters": "600.0",
+              "stage_name": "set_receiver1_speed",
+              "trigger": ""
+            },
+            {
+              "action": "Idle",
+              "target": "",
+              "duration": 30.0,
+              "order": "",
+              "location": "",
+              "parameters": "",
+              "stage_name": "waiting_for_alarm",
+              "trigger": ""
+            },
+            {
+              "action": "Flee",
+              "target": "",
+              "duration": 10.0,
+              "order": "A",
+              "location": "",
+              "parameters": "800.0",
+              "stage_name": "shots_fired_stage",
+              "trigger": ""
+            }
+          ]
+        },
+        "TriggerReceiver2": {
+          "AssetName": "GenericHumanAICharacter",
+          "PawnIdentifier": "receiver_2",
+          "location": {
+            "Cartesian": true,
+            "x": 1000,
+            "y": -1000
+          },
+          "orientation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "behavior": [
+            {
+              "action": "SetMySpeed",
+              "target": "",
+              "duration": 0.5,
+              "order": "",
+              "location": "",
+              "parameters": "600.0",
+              "stage_name": "set_receiver2_speed",
+              "trigger": ""
+            },
+            {
+              "action": "Idle",
+              "target": "",
+              "duration": 30.0,
+              "order": "",
+              "location": "",
+              "parameters": "",
+              "stage_name": "waiting_for_alarm",
+              "trigger": ""
+            },
+            {
+              "action": "Flee",
+              "target": "",
+              "duration": 10.0,
+              "order": "A",
+              "location": "",
+              "parameters": "800.0",
+              "stage_name": "shots_fired_stage",
+              "trigger": ""
+            }
+          ]
+        }
+      },
+      "Procedural": {
+        "Seed": 2001,
+        "Buildings": {
+          "AssetName": "PCG_building_default",
+          "density": 0.9
+        },
+        "Crowd": {
+          "AssetName": "PCG_ped_crowd_1",
+          "density": 0.1
+        }
+      }
+    },
+    "SuT": {
+      "AssetName": "BP_FlyingPawn_Aurelia",
+      "StartLocation": {
+        "Cartesian": true,
+        "x": 0,
+        "y": 0,
+        "z": 200
+      }
+    }
+  }
+}
